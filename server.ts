@@ -1631,29 +1631,38 @@ export async function buildLiveResearcherProfile(
   if (scraped?.sidebarCoAuthors) {
     for (const sAuth of scraped.sidebarCoAuthors) {
       if (!sAuth.affiliation) continue;
-      const parts = sAuth.affiliation
-        .split(',')
-        .map((p) => p.trim())
+      const cleanedAffil = sAuth.affiliation
+        .replace(
+          /^.*?\b(?:at|of|from)\s+(?=[A-Z].*?(?:university|universitat|universiti|universit|institute|college|polytechnic|dtu|buet|ulab|iut|bubt|normale))/i,
+          ''
+        )
+        .trim();
+      const parts = cleanedAffil
+        .split(/[,|-]/)
+        .map((p) =>
+          p
+            .replace(
+              /^(?:associate|assistant|adjunct|visiting|emeritus|distinguished)?\s*(?:professor|lecturer|researcher|fellow|student|faculty|chair|dean|director|head)\s*(?:of\s+[A-Za-z&\s]+)?\s*(?:at\s+)?/i,
+              ''
+            )
+            .trim()
+        )
         .filter(Boolean);
       const uniPart = parts.find((p) =>
-        /university|universitat|universiti|universit|college|polytechnic|dtu|buet|ulab|iut|bubt|normale/i.test(
+        /university|universitat|universiti|universit|institute of technology|college|polytechnic|dtu|buet|cuet|kuet|ruet|duet|sust|ulab|iut|bubt|aiub|iub|nsu|ewu|brac|diu|uiu|gub|normale/i.test(
           p
         )
       );
-      if (
-        uniPart &&
-        uniPart.length >= 4 &&
-        !/fellow|professor|lecturer|student|researcher|department|faculty|ieee/i.test(
-          uniPart
-        )
-      ) {
+      if (uniPart && uniPart.length >= 3) {
         const mapped = await resolveInstitutionFromOfficialSources(
           uniPart,
           '',
           undefined,
           geoCache
         );
-        knownAuthorInstitution.set(sAuth.name.toLowerCase(), mapped);
+        if (mapped.universityId !== 'unlisted') {
+          knownAuthorInstitution.set(sAuth.name.toLowerCase(), mapped);
+        }
       }
     }
   }
@@ -1674,11 +1683,56 @@ export async function buildLiveResearcherProfile(
           shortId,
           geoCache
         );
-        if (!knownAuthorInstitution.has(aName.toLowerCase())) {
+        if (
+          mapped.universityId !== 'unlisted' &&
+          !knownAuthorInstitution.has(aName.toLowerCase())
+        ) {
           knownAuthorInstitution.set(aName.toLowerCase(), mapped);
         }
       }
     }
+  }
+
+  function matchKnownInstitutionByAuthorName(
+    rawName: string
+  ): {
+    matchedName: string;
+    inst: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>;
+  } | null {
+    const lower = rawName.toLowerCase().trim();
+    if (knownAuthorInstitution.has(lower)) {
+      return {
+        matchedName: rawName,
+        inst: knownAuthorInstitution.get(lower)!,
+      };
+    }
+    const rawParts = lower
+      .replace(/\./g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+    const rawFirstInitial = rawParts[0]?.[0] || '';
+    const rawLastName = rawParts[rawParts.length - 1] || '';
+    if (!rawLastName || rawLastName.length < 3) return null;
+
+    for (const [kName, kInst] of knownAuthorInstitution.entries()) {
+      const kParts = kName
+        .replace(/\./g, ' ')
+        .split(/\s+/)
+        .filter(Boolean);
+      const kFirstInitial = kParts[0]?.[0] || '';
+      const kLastName = kParts[kParts.length - 1] || '';
+      if (
+        kLastName === rawLastName &&
+        (!rawFirstInitial || !kFirstInitial || kFirstInitial === rawFirstInitial)
+      ) {
+        const formatted = kName
+          .split(' ')
+          .map((w) => (w.length <= 3 && w === w.toLowerCase() ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+          .join(' ');
+        return { matchedName: formatted, inst: kInst };
+      }
+    }
+    return null;
   }
 
   async function extractOaWorkDetails(w: any): Promise<{
@@ -1781,10 +1835,13 @@ export async function buildLiveResearcherProfile(
           shortId,
           geoCache
         );
-      } else if (knownAuthorInstitution.has(nameKey)) {
-        mapped = knownAuthorInstitution.get(nameKey)!;
-      } else if (singlePaperInstitution) {
-        mapped = singlePaperInstitution;
+      } else {
+        const matched = matchKnownInstitutionByAuthorName(aName);
+        if (matched) {
+          mapped = matched.inst;
+        } else if (singlePaperInstitution) {
+          mapped = singlePaperInstitution;
+        }
       }
 
       if (mapped) {
@@ -1841,37 +1898,9 @@ export async function buildLiveResearcherProfile(
     const seenCoAuthorNames = new Set<string>();
 
     for (const rawAuth of rawAuthorParts) {
-      let matchedKnownName = rawAuth;
-      let matchedInst: Omit<
-        CoAuthorAffiliation,
-        'name' | 'isHomeInstitution'
-      > | null = null;
-
-      const rawParts = rawAuth
-        .toLowerCase()
-        .replace(/\./g, '')
-        .split(/\s+/)
-        .filter(Boolean);
-      const rawFirstInitial = rawParts[0]?.[0] || '';
-      const rawLastName = rawParts[rawParts.length - 1] || '';
-
-      for (const [kName, kInst] of knownAuthorInstitution.entries()) {
-        const kFirstInitial = kName[0] || '';
-        if (
-          kName === rawAuth.toLowerCase() ||
-          (rawLastName &&
-            rawLastName.length >= 4 &&
-            kName.endsWith(rawLastName) &&
-            (!rawFirstInitial || kFirstInitial === rawFirstInitial))
-        ) {
-          matchedKnownName = kName
-            .split(' ')
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(' ');
-          matchedInst = kInst;
-          break;
-        }
-      }
+      const matched = matchKnownInstitutionByAuthorName(rawAuth);
+      const matchedKnownName = matched ? matched.matchedName : rawAuth;
+      const matchedInst = matched ? matched.inst : null;
 
       const dedupKey = matchedKnownName.toLowerCase();
       if (seenCoAuthorNames.has(dedupKey)) continue;

@@ -60,14 +60,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             },
             {
@@ -208,14 +208,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "J Luengo",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "universidad-de-granada",
+              universityName: "Universidad de Granada",
+              city: "Granada",
+              country: "Spain",
+              countryCode: "ES",
+              continent: "Europe",
+              lat: 37.1843,
+              lng: -3.6012,
               isHomeInstitution: false
             },
             {
@@ -482,14 +482,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             },
             {
@@ -666,14 +666,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "M Faucourt",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "ecole-normale-superieure-psl",
+              universityName: "\xC9cole Normale Sup\xE9rieure - PSL",
+              city: "Paris",
+              country: "France",
+              countryCode: "FR",
+              continent: "Europe",
+              lat: 48.8422,
+              lng: 2.3452,
               isHomeInstitution: false
             }
           ]
@@ -704,14 +704,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -766,14 +766,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "M Faucourt",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "ecole-normale-superieure-psl",
+              universityName: "\xC9cole Normale Sup\xE9rieure - PSL",
+              city: "Paris",
+              country: "France",
+              countryCode: "FR",
+              continent: "Europe",
+              lat: 48.8422,
+              lng: 2.3452,
               isHomeInstitution: false
             },
             {
@@ -840,14 +840,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "M Faucourt",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "ecole-normale-superieure-psl",
+              universityName: "\xC9cole Normale Sup\xE9rieure - PSL",
+              city: "Paris",
+              country: "France",
+              countryCode: "FR",
+              continent: "Europe",
+              lat: 48.8422,
+              lng: 2.3452,
               isHomeInstitution: false
             },
             {
@@ -926,14 +926,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -952,14 +952,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
@@ -976,14 +976,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "AA Mansur",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -1162,50 +1162,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MA ul Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SK Dey",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -1224,62 +1224,62 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MA ul Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -1322,14 +1322,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "J Luengo",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "universidad-de-granada",
+              universityName: "Universidad de Granada",
+              city: "Granada",
+              country: "Spain",
+              countryCode: "ES",
+              continent: "Europe",
+              lat: 37.1843,
+              lng: -3.6012,
               isHomeInstitution: false
             },
             {
@@ -1434,14 +1434,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             }
           ]
@@ -1496,14 +1496,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -1608,14 +1608,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             },
             {
@@ -1856,38 +1856,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "M Rabbani",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "university-of-liberal-arts-bangladesh",
+              universityName: "University of Liberal Arts Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
+              lat: 23.7548,
+              lng: 90.3585,
+              isHomeInstitution: true
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -1904,26 +1904,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MK Nipun",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MAU Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -1980,62 +1980,62 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "MA ul Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "MI Islam",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8824,
+              lng: 90.2671,
+              isHomeInstitution: false
+            },
+            {
+              name: "MA ul Haq",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MR Amin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -2116,14 +2116,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             },
             {
@@ -2154,14 +2154,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2178,14 +2178,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2302,14 +2302,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2326,14 +2326,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
@@ -2376,50 +2376,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "MR Amin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "MA ul Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "MR Amin",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "MA ul Haq",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2436,14 +2436,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -2524,14 +2524,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "K Ahmed",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "mawlana-bhashani-science-and-technology-university",
+              universityName: "Mawlana Bhashani Science and Technology University",
+              city: "Tangail",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 24.2355,
+              lng: 89.8906,
               isHomeInstitution: false
             },
             {
@@ -2610,14 +2610,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2660,14 +2660,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MMN Arefin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2734,14 +2734,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "R Campos",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-girona",
+              universityName: "University of Girona",
+              city: "Girona",
+              country: "Spain",
+              countryCode: "ES",
+              continent: "Europe",
+              lat: 41.9848,
+              lng: 2.8278,
               isHomeInstitution: false
             },
             {
@@ -2784,38 +2784,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MSI Ashrafi",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SI Ali",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -2872,26 +2872,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "AA Mansur",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MR Amin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2908,26 +2908,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -2970,38 +2970,38 @@ var verifiedScholarCache_default = {
             },
             {
               name: "M Rabbani",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "university-of-liberal-arts-bangladesh",
+              universityName: "University of Liberal Arts Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.7548,
+              lng: 90.3585,
+              isHomeInstitution: true
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             }
           ]
@@ -3020,39 +3020,39 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SA July",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "M Rabbani",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "university-of-liberal-arts-bangladesh",
+              universityName: "University of Liberal Arts Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
+              lat: 23.7548,
+              lng: 90.3585,
+              isHomeInstitution: true
             },
             {
               name: "S Sahrani",
@@ -3142,38 +3142,38 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
               name: "MAU Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -3192,38 +3192,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MS Alam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
@@ -3240,26 +3240,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "SA Himo",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MAU Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -3290,38 +3290,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MM Khan",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             },
             {
@@ -3338,14 +3338,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MSB Arif",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -3450,38 +3450,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MIH Bhuiyan",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "bangladesh-university-of-engineering-and-technology",
+              universityName: "Bangladesh University of Engineering and Technology",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.7266,
+              lng: 90.3926,
               isHomeInstitution: false
             },
             {
               name: "MS Tanveer",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -3500,14 +3500,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MMN Arefin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -3562,50 +3562,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "MM Khan",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "MM Khan",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -3624,38 +3624,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MS Tanveer",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MIH Bhuiyan",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "bangladesh-university-of-engineering-and-technology",
+              universityName: "Bangladesh University of Engineering and Technology",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.7266,
+              lng: 90.3926,
               isHomeInstitution: false
             }
           ]
@@ -3686,26 +3686,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -3798,50 +3798,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MR Robin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MRI Rashed",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MSI Ashrafi",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -3872,14 +3872,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
@@ -3896,38 +3896,38 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "M Naiem-Ur-Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "M Naiem-Ur-Rahman",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -3958,26 +3958,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
@@ -3994,26 +3994,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MAU Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -4032,26 +4032,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -4080,27 +4080,27 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             },
             {
               name: "M Rabbani",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "university-of-liberal-arts-bangladesh",
+              universityName: "University of Liberal Arts Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
+              lat: 23.7548,
+              lng: 90.3585,
+              isHomeInstitution: true
             }
           ]
         },
@@ -4118,50 +4118,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MA Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "A Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "A Islam",
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -4216,14 +4216,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "R Campos",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-girona",
+              universityName: "University of Girona",
+              city: "Girona",
+              country: "Spain",
+              countryCode: "ES",
+              continent: "Europe",
+              lat: 41.9848,
+              lng: 2.8278,
               isHomeInstitution: false
             },
             {
@@ -4254,38 +4254,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MSI Ashrafi",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SI Ali",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -4328,26 +4328,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "M Rabbani",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "university-of-liberal-arts-bangladesh",
+              universityName: "University of Liberal Arts Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.7548,
+              lng: 90.3585,
+              isHomeInstitution: true
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -4490,14 +4490,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MMN Arefin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -4602,14 +4602,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             },
             {
@@ -4676,50 +4676,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "MA ul Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "MA ul Haq",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MR Amin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -4738,14 +4738,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "A Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             },
             {
@@ -4848,14 +4848,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -4886,50 +4886,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -4972,26 +4972,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MSI Ashrafi",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -5008,14 +5008,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -5082,14 +5082,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "DM Saaduzzaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -5132,14 +5132,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "J Luengo",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "universidad-de-granada",
+              universityName: "Universidad de Granada",
+              city: "Granada",
+              country: "Spain",
+              countryCode: "ES",
+              continent: "Europe",
+              lat: 37.1843,
+              lng: -3.6012,
               isHomeInstitution: false
             },
             {
@@ -5170,14 +5170,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             }
           ]
@@ -5306,14 +5306,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "M Faucourt",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "ecole-normale-superieure-psl",
+              universityName: "\xC9cole Normale Sup\xE9rieure - PSL",
+              city: "Paris",
+              country: "France",
+              countryCode: "FR",
+              continent: "Europe",
+              lat: 48.8422,
+              lng: 2.3452,
               isHomeInstitution: false
             }
           ]
@@ -5332,14 +5332,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SA Himo",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -5356,26 +5356,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MS Alam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -5518,26 +5518,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MS Alam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "O Jannat",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -5554,14 +5554,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -5592,50 +5592,50 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -5754,26 +5754,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MIH Bhuiyan",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "bangladesh-university-of-engineering-and-technology",
+              universityName: "Bangladesh University of Engineering and Technology",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.7266,
+              lng: 90.3926,
               isHomeInstitution: false
             },
             {
@@ -5840,14 +5840,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MF Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -5864,14 +5864,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -5890,26 +5890,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MM Khan",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -5936,7 +5936,7 @@ var verifiedScholarCache_default = {
               countryCode: "BD",
               continent: "Asia",
               lat: 23.8285,
-              lng: 90.5663,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -5991,26 +5991,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -6029,26 +6029,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SI Pranto",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -6077,14 +6077,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -6177,26 +6177,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -6213,14 +6213,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -6399,14 +6399,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MF Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -6447,14 +6447,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "SA July",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -6585,26 +6585,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MA Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -6623,14 +6623,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             },
             {
@@ -6771,14 +6771,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-iowa",
+              universityName: "University of Iowa",
+              city: "Iowa City",
+              country: "United States",
+              countryCode: "US",
+              continent: "North America",
+              lat: 41.6611,
+              lng: -91.5302,
               isHomeInstitution: false
             },
             {
@@ -6857,14 +6857,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "R Campos",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-girona",
+              universityName: "University of Girona",
+              city: "Girona",
+              country: "Spain",
+              countryCode: "ES",
+              continent: "Europe",
+              lat: 41.9848,
+              lng: 2.8278,
               isHomeInstitution: false
             },
             {
@@ -6969,14 +6969,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "K Ahmed",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "mawlana-bhashani-science-and-technology-university",
+              universityName: "Mawlana Bhashani Science and Technology University",
+              city: "Tangail",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 24.2355,
+              lng: 89.8906,
               isHomeInstitution: false
             },
             {
@@ -7081,14 +7081,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "DM Saaduzzaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -7131,14 +7131,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -7167,26 +7167,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "SA July",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "jahangirnagar-university",
+              universityName: "Jahangirnagar University",
+              city: "Savar, Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8824,
+              lng: 90.2671,
               isHomeInstitution: false
             }
           ]
@@ -7267,26 +7267,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MSB Arif",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -7303,26 +7303,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -7341,50 +7341,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "P Thejll",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             },
             {
               name: "MJ Emerson",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             },
             {
               name: "DM Saaduzzaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -7403,38 +7403,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MSI Ashrafi",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -7465,14 +7465,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MS Tanveer",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -7489,14 +7489,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -7527,26 +7527,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -7563,14 +7563,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MF Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -7589,14 +7589,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "DMS Zaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -7765,38 +7765,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MRI Rashed",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MR Robin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -7813,14 +7813,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "SI Ali",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -7863,14 +7863,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MF Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -7925,14 +7925,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -8023,14 +8023,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -8097,14 +8097,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -8259,14 +8259,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MF Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -8283,14 +8283,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MA Niloy",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -8345,14 +8345,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MA Niloy",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -8507,14 +8507,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -8533,26 +8533,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MS Alam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SA Himo",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -8643,26 +8643,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MA Niloy",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -8681,14 +8681,14 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MA Niloy",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -8717,14 +8717,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -8815,14 +8815,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MA Niloy",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -8877,26 +8877,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MS Alam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SA Himo",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -8927,38 +8927,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SI Pranto",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MSI Ashrafi",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -8987,14 +8987,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MK Nipun",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9049,26 +9049,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "DM Saaduzzaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9087,38 +9087,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "M Naiem-Ur-Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MF Rahman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "K Ahmed",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "mawlana-bhashani-science-and-technology-university",
+              universityName: "Mawlana Bhashani Science and Technology University",
+              city: "Tangail",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 24.2355,
+              lng: 89.8906,
               isHomeInstitution: false
             }
           ]
@@ -9185,14 +9185,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "O Jannat",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9223,26 +9223,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "DM Saaduzzaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9273,26 +9273,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "DM Saaduzzaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9311,38 +9311,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "RPM Cruz",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-porto",
+              universityName: "University of Porto",
+              city: "Porto",
+              country: "Portugal",
+              countryCode: "PT",
+              continent: "Europe",
+              lat: 41.1496,
+              lng: -8.6109,
               isHomeInstitution: false
             },
             {
               name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "JS Cardoso",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "university-of-porto",
+              universityName: "University of Porto",
+              city: "Porto",
+              country: "Portugal",
+              countryCode: "PT",
+              continent: "Europe",
+              lat: 41.1496,
+              lng: -8.6109,
               isHomeInstitution: false
             }
           ]
@@ -9423,26 +9423,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SA July",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -9459,26 +9459,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9497,50 +9497,50 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "P Thejll",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             },
             {
               name: "MJ Emerson",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             },
             {
               name: "DM Saaduzzaman",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "united-international-university",
-              universityName: "United International University",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
               city: "Dhaka",
               country: "Bangladesh",
               countryCode: "BD",
               continent: "Asia",
-              lat: 23.7977,
-              lng: 90.4497,
+              lat: 23.8285,
+              lng: 90.5662,
+              isHomeInstitution: false
+            },
+            {
+              name: "Md. Hasan Maruf",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9647,38 +9647,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MS Tanveer",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "MIH Bhuiyan",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "bangladesh-university-of-engineering-and-technology",
+              universityName: "Bangladesh University of Engineering and Technology",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.7266,
+              lng: 90.3926,
               isHomeInstitution: false
             }
           ]
@@ -9697,38 +9697,38 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "H Maruf Md",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "M Rabbani",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "university-of-liberal-arts-bangladesh",
+              universityName: "University of Liberal Arts Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
+              lat: 23.7548,
+              lng: 90.3585,
+              isHomeInstitution: true
             },
             {
               name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
@@ -9745,26 +9745,26 @@ var verifiedScholarCache_default = {
             },
             {
               name: "MK Nipun",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "M Asif",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9783,26 +9783,26 @@ var verifiedScholarCache_default = {
           coAuthors: [
             {
               name: "MS Tanveer",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             },
             {
               name: "SM Kabir",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "green-university-of-bangladesh",
+              universityName: "Green University of Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 23.8285,
+              lng: 90.5662,
               isHomeInstitution: false
             }
           ]
@@ -9945,14 +9945,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "K Ahmed",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "mawlana-bhashani-science-and-technology-university",
+              universityName: "Mawlana Bhashani Science and Technology University",
+              city: "Tangail",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 24.2355,
+              lng: 89.8906,
               isHomeInstitution: false
             },
             {
@@ -10007,14 +10007,14 @@ var verifiedScholarCache_default = {
             },
             {
               name: "K Ahmed",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
+              universityId: "mawlana-bhashani-science-and-technology-university",
+              universityName: "Mawlana Bhashani Science and Technology University",
+              city: "Tangail",
+              country: "Bangladesh",
+              countryCode: "BD",
               continent: "Asia",
-              lat: 0,
-              lng: 0,
+              lat: 24.2355,
+              lng: 89.8906,
               isHomeInstitution: false
             },
             {
@@ -11228,22 +11228,31 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
   if (scraped?.sidebarCoAuthors) {
     for (const sAuth of scraped.sidebarCoAuthors) {
       if (!sAuth.affiliation) continue;
-      const parts = sAuth.affiliation.split(",").map((p) => p.trim()).filter(Boolean);
+      const cleanedAffil = sAuth.affiliation.replace(
+        /^.*?\b(?:at|of|from)\s+(?=[A-Z].*?(?:university|universitat|universiti|universit|institute|college|polytechnic|dtu|buet|ulab|iut|bubt|normale))/i,
+        ""
+      ).trim();
+      const parts = cleanedAffil.split(/[,|-]/).map(
+        (p) => p.replace(
+          /^(?:associate|assistant|adjunct|visiting|emeritus|distinguished)?\s*(?:professor|lecturer|researcher|fellow|student|faculty|chair|dean|director|head)\s*(?:of\s+[A-Za-z&\s]+)?\s*(?:at\s+)?/i,
+          ""
+        ).trim()
+      ).filter(Boolean);
       const uniPart = parts.find(
-        (p) => /university|universitat|universiti|universit|college|polytechnic|dtu|buet|ulab|iut|bubt|normale/i.test(
+        (p) => /university|universitat|universiti|universit|institute of technology|college|polytechnic|dtu|buet|cuet|kuet|ruet|duet|sust|ulab|iut|bubt|aiub|iub|nsu|ewu|brac|diu|uiu|gub|normale/i.test(
           p
         )
       );
-      if (uniPart && uniPart.length >= 4 && !/fellow|professor|lecturer|student|researcher|department|faculty|ieee/i.test(
-        uniPart
-      )) {
+      if (uniPart && uniPart.length >= 3) {
         const mapped = await resolveInstitutionFromOfficialSources(
           uniPart,
           "",
           void 0,
           geoCache
         );
-        knownAuthorInstitution.set(sAuth.name.toLowerCase(), mapped);
+        if (mapped.universityId !== "unlisted") {
+          knownAuthorInstitution.set(sAuth.name.toLowerCase(), mapped);
+        }
       }
     }
   }
@@ -11263,11 +11272,34 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
           shortId,
           geoCache
         );
-        if (!knownAuthorInstitution.has(aName.toLowerCase())) {
+        if (mapped.universityId !== "unlisted" && !knownAuthorInstitution.has(aName.toLowerCase())) {
           knownAuthorInstitution.set(aName.toLowerCase(), mapped);
         }
       }
     }
+  }
+  function matchKnownInstitutionByAuthorName(rawName) {
+    const lower = rawName.toLowerCase().trim();
+    if (knownAuthorInstitution.has(lower)) {
+      return {
+        matchedName: rawName,
+        inst: knownAuthorInstitution.get(lower)
+      };
+    }
+    const rawParts = lower.replace(/\./g, " ").split(/\s+/).filter(Boolean);
+    const rawFirstInitial = rawParts[0]?.[0] || "";
+    const rawLastName = rawParts[rawParts.length - 1] || "";
+    if (!rawLastName || rawLastName.length < 3) return null;
+    for (const [kName, kInst] of knownAuthorInstitution.entries()) {
+      const kParts = kName.replace(/\./g, " ").split(/\s+/).filter(Boolean);
+      const kFirstInitial = kParts[0]?.[0] || "";
+      const kLastName = kParts[kParts.length - 1] || "";
+      if (kLastName === rawLastName && (!rawFirstInitial || !kFirstInitial || kFirstInitial === rawFirstInitial)) {
+        const formatted = kName.split(" ").map((w) => w.length <= 3 && w === w.toLowerCase() ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        return { matchedName: formatted, inst: kInst };
+      }
+    }
+    return null;
   }
   async function extractOaWorkDetails(w) {
     const year = Number(w.publication_year) || 0;
@@ -11333,10 +11365,13 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
           shortId,
           geoCache
         );
-      } else if (knownAuthorInstitution.has(nameKey)) {
-        mapped = knownAuthorInstitution.get(nameKey);
-      } else if (singlePaperInstitution) {
-        mapped = singlePaperInstitution;
+      } else {
+        const matched = matchKnownInstitutionByAuthorName(aName);
+        if (matched) {
+          mapped = matched.inst;
+        } else if (singlePaperInstitution) {
+          mapped = singlePaperInstitution;
+        }
       }
       if (mapped) {
         coAuthors.push({
@@ -11379,19 +11414,9 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     const coAuthors = [];
     const seenCoAuthorNames = /* @__PURE__ */ new Set();
     for (const rawAuth of rawAuthorParts) {
-      let matchedKnownName = rawAuth;
-      let matchedInst = null;
-      const rawParts = rawAuth.toLowerCase().replace(/\./g, "").split(/\s+/).filter(Boolean);
-      const rawFirstInitial = rawParts[0]?.[0] || "";
-      const rawLastName = rawParts[rawParts.length - 1] || "";
-      for (const [kName, kInst] of knownAuthorInstitution.entries()) {
-        const kFirstInitial = kName[0] || "";
-        if (kName === rawAuth.toLowerCase() || rawLastName && rawLastName.length >= 4 && kName.endsWith(rawLastName) && (!rawFirstInitial || kFirstInitial === rawFirstInitial)) {
-          matchedKnownName = kName.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-          matchedInst = kInst;
-          break;
-        }
-      }
+      const matched = matchKnownInstitutionByAuthorName(rawAuth);
+      const matchedKnownName = matched ? matched.matchedName : rawAuth;
+      const matchedInst = matched ? matched.inst : null;
       const dedupKey = matchedKnownName.toLowerCase();
       if (seenCoAuthorNames.has(dedupKey)) continue;
       seenCoAuthorNames.add(dedupKey);

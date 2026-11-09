@@ -4,6 +4,10 @@ import {
   ImageDown,
   Search,
   ExternalLink,
+  Plus,
+  Minus,
+  RotateCcw,
+  Compass,
 } from 'lucide-react';
 import {
   geoOrthographic,
@@ -14,6 +18,7 @@ import {
 } from 'd3-geo';
 import * as topojson from 'topojson-client';
 import worldAtlasData from 'world-atlas/countries-110m.json';
+import countryDistrictsData from '../data/countryDistrictsGeo.json';
 import {
   UniversityCollaboration,
   ResearcherProfile,
@@ -48,13 +53,30 @@ const WORLD_BORDERS_MESH = topojson.mesh(
 );
 const STATIC_GRATICULE = geoGraticule().step([15, 15])();
 
+const districtsGeo = countryDistrictsData as any;
+const BD_DISTRICT_FEATURES: any[] = districtsGeo?.bdDistricts?.features || [];
+const BD_DISTRICT_CENTROIDS: { name: string; lat: number; lng: number }[] =
+  districtsGeo?.bdCentroids || [];
+const WORLD_SUBDIVISIONS_MESH: any =
+  districtsGeo?.worldSubdivisionsMesh || null;
+
 const GLOBE_WIDTH = 680;
 const GLOBE_HEIGHT = 520;
 const CENTER_X = GLOBE_WIDTH / 2;
 const CENTER_Y = GLOBE_HEIGHT / 2;
 const BASE_RADIUS = 210;
 const MIN_ZOOM = 0.8;
-const MAX_ZOOM = 250;
+const MAX_ZOOM = 1500;
+
+// Flattened full-world Equirectangular projection for PNG & PDF export
+const FLAT_WIDTH = 1100;
+const FLAT_HEIGHT = 540;
+const FLAT_PROJECTION = geoEquirectangular()
+  .scale(172)
+  .translate([FLAT_WIDTH / 2, FLAT_HEIGHT / 2 + 18]);
+const FLAT_PATH_GENERATOR = geoPath(FLAT_PROJECTION);
+const FLAT_GRATICULE_PATH = FLAT_PATH_GENERATOR(STATIC_GRATICULE as any) || '';
+const FLAT_BORDERS_PATH = FLAT_PATH_GENERATOR(WORLD_BORDERS_MESH as any) || '';
 
 function matchesCollaboratingCountry(
   featureName: string,
@@ -98,6 +120,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [coAuthorQuery, setCoAuthorQuery] = useState<string>('');
+  const [hoveredUniId, setHoveredUniId] = useState<string | null>(null);
 
   const centerLat = viewState.lat;
   const centerLng = viewState.lng;
@@ -219,7 +242,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
 
     const handleTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement | null;
-      if (target && target.closest('button')) {
+      if (
+        target &&
+        (target.closest('button') || target.closest('[data-globe-dot="true"]'))
+      ) {
         return;
       }
       setAutoRotate(false);
@@ -254,7 +280,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           e.preventDefault();
           g.lastTapTime = 0;
           const nextZoom =
-            cur.zoom >= 20
+            cur.zoom >= 40
               ? 1
               : Number(Math.min(MAX_ZOOM, cur.zoom * 2.1).toFixed(2));
           scheduleViewUpdate({ ...cur, zoom: nextZoom });
@@ -389,17 +415,23 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
 
   const focusOnUniversity = (uni: UniversityCollaboration) => {
     setAutoRotate(false);
-    setViewState((prev) => ({
-      ...prev,
+    const curZoom = viewStateRef.current.zoom;
+    const nextZoom = curZoom < 3.5 ? 4.2 : curZoom;
+    scheduleViewUpdate({
+      ...viewStateRef.current,
       lat: Math.max(-82, Math.min(82, uni.lat)),
       lng: uni.lng,
-    }));
+      zoom: nextZoom,
+    });
     onSelectUniversity(uni.universityId);
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'touch') return;
-    if ((e.target as HTMLElement).closest('button')) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[data-globe-dot="true"]')) {
+      return;
+    }
     setIsDragging(true);
     setAutoRotate(false);
     mouseDragRef.current = {
@@ -462,6 +494,57 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     return pathGenerator(WORLD_BORDERS_MESH as any) || '';
   }, [pathGenerator]);
 
+  // District & state/province internal boundaries when zoomed inside a country
+  const worldSubdivisionsPath = useMemo(() => {
+    if (zoom < 1.75 || !WORLD_SUBDIVISIONS_MESH) return '';
+    return pathGenerator(WORLD_SUBDIVISIONS_MESH) || '';
+  }, [pathGenerator, zoom]);
+
+  const bdDistrictPaths = useMemo(() => {
+    if (zoom < 1.75) return [];
+    return BD_DISTRICT_FEATURES.map((feat, idx) => {
+      const d = pathGenerator(feat);
+      if (!d) return null;
+      return {
+        id: `bd-dist-${idx}-${feat.properties?.name || idx}`,
+        name: String(feat.properties?.name || 'District'),
+        d,
+      };
+    }).filter(Boolean) as { id: string; name: string; d: string }[];
+  }, [pathGenerator, zoom]);
+
+  const projectedDistrictLabels = useMemo(() => {
+    if (zoom < 3.5) return [];
+    const centerCoord: [number, number] = [centerLng, centerLat];
+    const pointProj = geoOrthographic()
+      .translate([CENTER_X, CENTER_Y])
+      .scale(projectedScale)
+      .rotate([-centerLng, -centerLat, 0])
+      .clipAngle(90);
+
+    const candidateLabels: { name: string; x: number; y: number }[] = [];
+    const minLabelSep = zoom >= 12 ? 32 : 48;
+
+    for (const dist of BD_DISTRICT_CENTROIDS) {
+      const angularDist = geoDistance(centerCoord, [dist.lng, dist.lat]);
+      if (angularDist > Math.PI / 2 - 0.02) continue;
+      const pt = pointProj([dist.lng, dist.lat]);
+      if (!pt) continue;
+      const [x, y] = pt;
+      if (x < 24 || x > GLOBE_WIDTH - 24 || y < 24 || y > GLOBE_HEIGHT - 24) {
+        continue;
+      }
+      // Prevent label overlap at intermediate zooms
+      const tooClose = candidateLabels.some(
+        (existing) => Math.hypot(existing.x - x, existing.y - y) < minLabelSep
+      );
+      if (!tooClose) {
+        candidateLabels.push({ name: dist.name, x, y });
+      }
+    }
+    return candidateLabels;
+  }, [centerLat, centerLng, projectedScale, zoom]);
+
   const arcPaths = useMemo(() => {
     return universities
       .filter((u) => u.universityId !== profile.homeUniversityId)
@@ -502,10 +585,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       const y = pt ? pt[1] : CENTER_Y;
       const inViewport =
         Boolean(visible && pt) &&
-        x >= -40 &&
-        x <= GLOBE_WIDTH + 40 &&
-        y >= -40 &&
-        y <= GLOBE_HEIGHT + 40;
+        x >= -30 &&
+        x <= GLOBE_WIDTH + 30 &&
+        y >= -30 &&
+        y <= GLOBE_HEIGHT + 30;
       return {
         uni: u,
         visible: inViewport,
@@ -516,12 +599,12 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       };
     });
 
+    // Subtle on-globe spacing so co-located city universities (e.g. in Dhaka) are individually clickable without any second floating dot
     const visibleItems = raw.filter((item) => item.visible);
-    const minSepPx = zoom >= 6 ? 20 : zoom >= 2 ? 15 : 11;
-    const maxDriftPx = zoom >= 10 ? 110 : zoom >= 3 ? 75 : 32;
-    const iterations = zoom >= 3 ? 10 : 6;
+    const minSepPx = zoom >= 25 ? 12 : zoom >= 6 ? 15 : 14;
+    const maxDriftPx = zoom >= 25 ? 6 : zoom >= 6 ? 18 : 22;
 
-    for (let iter = 0; iter < iterations; iter++) {
+    for (let iter = 0; iter < 6; iter++) {
       for (let i = 0; i < visibleItems.length; i++) {
         for (let j = i + 1; j < visibleItems.length; j++) {
           const dx = visibleItems[j].screenX - visibleItems[i].screenX;
@@ -529,8 +612,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           const dist = Math.hypot(dx, dy);
           if (dist < minSepPx) {
             const angle =
-              dist > 0.05 ? Math.atan2(dy, dx) : ((i * 7 + j * 13) % 12) * 0.52;
-            const push = (minSepPx - dist) * 0.45;
+              dist > 0.05
+                ? Math.atan2(dy, dx)
+                : ((i * 7 + j * 13) % 12) * 0.52;
+            const push = (minSepPx - dist) * 0.42;
             visibleItems[i].screenX -= Math.cos(angle) * push;
             visibleItems[i].screenY -= Math.sin(angle) * push;
             visibleItems[j].screenX += Math.cos(angle) * push;
@@ -547,21 +632,99 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           item.screenX = item.exactX + (dx / drift) * maxDriftPx;
           item.screenY = item.exactY + (dy / drift) * maxDriftPx;
         }
-        if (projectedScale < Math.max(GLOBE_WIDTH, GLOBE_HEIGHT)) {
-          const cx = item.screenX - CENTER_X;
-          const cy = item.screenY - CENTER_Y;
-          const r = Math.hypot(cx, cy);
-          const maxR = projectedScale - 6;
-          if (r > maxR && r > 0) {
-            item.screenX = CENTER_X + (cx / r) * maxR;
-            item.screenY = CENTER_Y + (cy / r) * maxR;
-          }
+        // Keep strictly inside the globe circle
+        const cx = item.screenX - CENTER_X;
+        const cy = item.screenY - CENTER_Y;
+        const r = Math.hypot(cx, cy);
+        const maxR = Math.max(10, projectedScale - 8);
+        if (r > maxR && r > 0) {
+          item.screenX = CENTER_X + (cx / r) * maxR;
+          item.screenY = CENTER_Y + (cy / r) * maxR;
         }
       }
     }
 
     return raw;
   }, [universities, centerLat, centerLng, projectedScale, zoom]);
+
+  // Precomputed flattened world map data for PNG & PDF exports
+  const flatMapData = useMemo(() => {
+    const countries = WORLD_COUNTRY_FEATURES.map((feat, idx) => {
+      const d = FLAT_PATH_GENERATOR(feat);
+      if (!d) return null;
+      const name = String(feat.properties?.name || `country-${idx}`);
+      const isCollab = matchesCollaboratingCountry(
+        name,
+        collaboratingCountryNames
+      );
+      return { id: `flat-${idx}`, name, d, isCollab };
+    }).filter(Boolean) as {
+      id: string;
+      name: string;
+      d: string;
+      isCollab: boolean;
+    }[];
+
+    const homePt = FLAT_PROJECTION([
+      profile.homeLng || 90.4,
+      profile.homeLat || 23.78,
+    ]) || [FLAT_WIDTH / 2, FLAT_HEIGHT / 2];
+
+    const nodes = universities.map((u) => {
+      const pt = FLAT_PROJECTION([u.lng, u.lat]) || [
+        FLAT_WIDTH / 2,
+        FLAT_HEIGHT / 2,
+      ];
+      return {
+        uni: u,
+        x: pt[0],
+        y: pt[1],
+        isHome: u.universityId === profile.homeUniversityId,
+      };
+    });
+
+    const arcs = nodes
+      .filter((n) => !n.isHome)
+      .map((n) => {
+        const midX = (homePt[0] + n.x) / 2;
+        const dist = Math.hypot(n.x - homePt[0], n.y - homePt[1]);
+        const midY = Math.max(24, (homePt[1] + n.y) / 2 - dist * 0.18);
+        return {
+          id: `flat-arc-${n.uni.universityId}`,
+          d: `M ${homePt[0].toFixed(1)} ${homePt[1].toFixed(1)} Q ${midX.toFixed(1)} ${midY.toFixed(1)} ${n.x.toFixed(1)} ${n.y.toFixed(1)}`,
+        };
+      });
+
+    // Place non-overlapping labels for top institutions on the flat map
+    const labelNodes: {
+      id: string;
+      text: string;
+      x: number;
+      y: number;
+      isHome: boolean;
+    }[] = [];
+    for (const n of nodes.slice(0, 12)) {
+      const labelY = n.y - 11;
+      const overlaps = labelNodes.some(
+        (l) => Math.abs(l.x - n.x) < 95 && Math.abs(l.y - labelY) < 16
+      );
+      if (!overlaps) {
+        const shortName =
+          n.uni.universityName.length > 28
+            ? `${n.uni.universityName.slice(0, 26)}…`
+            : n.uni.universityName;
+        labelNodes.push({
+          id: n.uni.universityId,
+          text: `${shortName} (${n.uni.paperCount})`,
+          x: Math.max(70, Math.min(FLAT_WIDTH - 70, n.x)),
+          y: Math.max(18, labelY),
+          isHome: n.isHome,
+        });
+      }
+    }
+
+    return { countries, nodes, arcs, labelNodes };
+  }, [universities, profile, collaboratingCountryNames]);
 
   const filteredSelectedCoAuthors = useMemo(() => {
     if (!selectedUni) return [];
@@ -572,13 +735,141 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     );
   }, [selectedUni, coAuthorQuery]);
 
+  const activeBadgeUni = useMemo(() => {
+    if (hoveredUniId) {
+      const hovered = universities.find((u) => u.universityId === hoveredUniId);
+      if (hovered) return hovered;
+    }
+    return selectedUni;
+  }, [hoveredUniId, universities, selectedUni]);
+
   return (
     <section
       id="global-map"
       aria-labelledby="globe-section-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs"
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs relative"
     >
-      {/* Top Header: Clean on Android/Mobile (manual zoom & surrounding buttons hidden on mobile/Android) */}
+      {/* Offscreen Full Flattened World Map used when exporting PNG or PDF Report */}
+      <div
+        id="chart-collaboration-globe-flat"
+        aria-hidden="true"
+        className="fixed -left-[9999px] -top-[9999px] w-[1100px] h-[540px] pointer-events-none overflow-hidden"
+      >
+        <svg
+          viewBox={`0 0 ${FLAT_WIDTH} ${FLAT_HEIGHT}`}
+          width={FLAT_WIDTH}
+          height={FLAT_HEIGHT}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient id="flatOceanBg" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#091526" />
+              <stop offset="50%" stopColor="#0c1f38" />
+              <stop offset="100%" stopColor="#071120" />
+            </linearGradient>
+          </defs>
+          <rect
+            x={0}
+            y={0}
+            width={FLAT_WIDTH}
+            height={FLAT_HEIGHT}
+            rx={12}
+            fill="url(#flatOceanBg)"
+          />
+          {FLAT_GRATICULE_PATH && (
+            <path
+              d={FLAT_GRATICULE_PATH}
+              fill="none"
+              stroke="rgba(148, 163, 184, 0.14)"
+              strokeWidth="0.6"
+            />
+          )}
+          {flatMapData.countries.map((c) => (
+            <path
+              key={c.id}
+              d={c.d}
+              fill={
+                c.isCollab
+                  ? 'rgba(14, 116, 144, 0.48)'
+                  : 'rgba(30, 41, 59, 0.85)'
+              }
+              stroke={
+                c.isCollab
+                  ? 'rgba(56, 189, 248, 0.75)'
+                  : 'rgba(100, 116, 139, 0.4)'
+              }
+              strokeWidth={c.isCollab ? '0.9' : '0.5'}
+            />
+          ))}
+          {FLAT_BORDERS_PATH && (
+            <path
+              d={FLAT_BORDERS_PATH}
+              fill="none"
+              stroke="rgba(148, 163, 184, 0.45)"
+              strokeWidth="0.55"
+            />
+          )}
+          {flatMapData.arcs.map((arc) => (
+            <path
+              key={arc.id}
+              d={arc.d}
+              fill="none"
+              stroke="rgba(56, 189, 248, 0.65)"
+              strokeWidth="1.4"
+              strokeDasharray="4 3"
+            />
+          ))}
+          {flatMapData.nodes.map((n) => (
+            <g key={`flat-node-${n.uni.universityId}`}>
+              <circle
+                cx={n.x}
+                cy={n.y}
+                r={n.isHome ? 8.5 : 6.5}
+                fill={
+                  n.isHome
+                    ? 'rgba(251, 191, 36, 0.28)'
+                    : 'rgba(56, 189, 248, 0.25)'
+                }
+              />
+              <circle
+                cx={n.x}
+                cy={n.y}
+                r={n.isHome ? 5.5 : 4.2}
+                fill={n.isHome ? '#fbbf24' : '#38bdf8'}
+                stroke="#0f172a"
+                strokeWidth="1.4"
+              />
+            </g>
+          ))}
+          {flatMapData.labelNodes.map((lbl) => (
+            <g key={`flat-lbl-${lbl.id}`}>
+              <rect
+                x={lbl.x - lbl.text.length * 3.1 - 6}
+                y={lbl.y - 10}
+                width={lbl.text.length * 6.2 + 12}
+                height={15}
+                rx={4}
+                fill="rgba(15, 23, 42, 0.88)"
+                stroke={lbl.isHome ? '#fbbf24' : 'rgba(56, 189, 248, 0.5)'}
+                strokeWidth="0.8"
+              />
+              <text
+                x={lbl.x}
+                y={lbl.y + 0.5}
+                textAnchor="middle"
+                fill="#f8fafc"
+                fontSize="9.5"
+                fontWeight="600"
+                fontFamily="Inter, system-ui, sans-serif"
+              >
+                {lbl.text}
+              </text>
+            </g>
+          ))}
+        </svg>
+      </div>
+
+      {/* Top Header */}
       <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex items-center justify-between gap-4">
         <h2
           id="globe-section-heading"
@@ -593,15 +884,15 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             onExportChartPng(
               'chart-collaboration-globe',
               `Global University Collaborations — ${profile.name}`,
-              'global_collaboration_globe.png',
+              'global_collaboration_world_map.png',
               true
             )
           }
-          aria-label="Export Collaboration Globe as PNG"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
+          aria-label="Export Flattened World Collaboration Map as PNG"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
         >
           <ImageDown className="w-3.5 h-3.5" />
-          <span>Export PNG</span>
+          <span>Export World Map PNG</span>
         </button>
       </div>
 
@@ -637,7 +928,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               viewBox={`0 0 ${GLOBE_WIDTH} ${GLOBE_HEIGHT}`}
               preserveAspectRatio="xMidYMid meet"
               className="w-full h-full overflow-hidden"
-              aria-label="Interactive round-world collaboration globe with country boundaries"
+              aria-label="Interactive round-world collaboration globe with country and district boundaries"
             >
               <defs>
                 <radialGradient id="oceanSphereGrad" cx="35%" cy="30%" r="70%">
@@ -689,6 +980,31 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   </path>
                 ))}
 
+                {/* Global state/province/division boundaries when zoomed in */}
+                {worldSubdivisionsPath && (
+                  <path
+                    d={worldSubdivisionsPath}
+                    fill="none"
+                    stroke="rgba(148, 163, 184, 0.36)"
+                    strokeWidth="0.65"
+                    strokeDasharray="2.5 2"
+                  />
+                )}
+
+                {/* Detailed district boundaries inside the country when zoomed in */}
+                {bdDistrictPaths.map((dist) => (
+                  <path
+                    key={dist.id}
+                    d={dist.d}
+                    fill="rgba(14, 116, 144, 0.12)"
+                    stroke="rgba(125, 211, 252, 0.52)"
+                    strokeWidth={zoom >= 6 ? '0.9' : '0.65'}
+                    strokeDasharray="2 1.5"
+                  >
+                    <title>{dist.name} District</title>
+                  </path>
+                ))}
+
                 {bordersMeshPath && (
                   <path
                     d={bordersMeshPath}
@@ -697,6 +1013,27 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     strokeWidth="0.65"
                   />
                 )}
+
+                {/* District name labels when zoomed into a country */}
+                {projectedDistrictLabels.map((lbl) => (
+                  <text
+                    key={`dist-lbl-${lbl.name}`}
+                    x={lbl.x}
+                    y={lbl.y}
+                    textAnchor="middle"
+                    fill="rgba(226, 232, 240, 0.78)"
+                    fontSize={zoom >= 10 ? '10' : '8.5'}
+                    fontWeight="500"
+                    className="pointer-events-none select-none"
+                    style={{
+                      paintOrder: 'stroke',
+                      stroke: 'rgba(15, 23, 42, 0.85)',
+                      strokeWidth: '2.4px',
+                    }}
+                  >
+                    {lbl.name}
+                  </text>
+                ))}
 
                 {arcPaths.map((arc) => (
                   <path
@@ -711,35 +1048,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   />
                 ))}
 
-                {projectedUniversities.map(
-                  ({ uni, visible, exactX, exactY, screenX, screenY }) => {
-                    if (!visible) return null;
-                    const drift = Math.hypot(
-                      screenX - exactX,
-                      screenY - exactY
-                    );
-                    if (drift < 3) return null;
-                    return (
-                      <g key={`leader-${uni.universityId}`}>
-                        <line
-                          x1={exactX}
-                          y1={exactY}
-                          x2={screenX}
-                          y2={screenY}
-                          stroke="rgba(56, 189, 248, 0.65)"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx={exactX}
-                          cy={exactY}
-                          r={2}
-                          fill="#38bdf8"
-                        />
-                      </g>
-                    );
-                  }
-                )}
-
+                {/* Single, clear, easily clickable university dot directly on the round globe (zero duplicate floating dots) */}
                 {projectedUniversities.map(
                   ({ uni, visible, screenX, screenY }) => {
                     if (!visible) return null;
@@ -747,116 +1056,200 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       uni.universityId === profile.homeUniversityId;
                     const isSelected =
                       selectedUni?.universityId === uni.universityId;
+                    const isHovered = hoveredUniId === uni.universityId;
+                    const dotRadius = isSelected
+                      ? 8.5
+                      : isHovered
+                      ? 8
+                      : isHome
+                      ? 7.5
+                      : 6.5;
+
                     return (
-                      <circle
-                        key={`svg-dot-${uni.universityId}`}
-                        cx={screenX}
-                        cy={screenY}
-                        r={isSelected ? 6.5 : 5}
-                        fill={
-                          isHome
-                            ? '#fbbf24'
-                            : isSelected
-                            ? '#ffffff'
-                            : '#38bdf8'
+                      <g
+                        key={`globe-node-${uni.universityId}`}
+                        data-testid={`globe-dot-${uni.universityId}`}
+                        data-globe-dot="true"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Inspect collaboration with ${uni.universityName} (${uni.paperCount} papers)`}
+                        className="cursor-pointer focus:outline-none"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onMouseEnter={() => setHoveredUniId(uni.universityId)}
+                        onMouseLeave={() =>
+                          setHoveredUniId((prev) =>
+                            prev === uni.universityId ? null : prev
+                          )
                         }
-                        stroke="#0f172a"
-                        strokeWidth="1.5"
-                        className="cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectUniversity(uni.universityId);
+                          focusOnUniversity(uni);
                         }}
-                      />
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            focusOnUniversity(uni);
+                          }
+                        }}
+                      >
+                        <title>{`${uni.universityName} (${uni.city}, ${uni.country}) — ${uni.paperCount} papers`}</title>
+                        {/* Generous transparent hit area so tapping/clicking is effortless */}
+                        <circle
+                          cx={screenX}
+                          cy={screenY}
+                          r={15}
+                          fill="transparent"
+                        />
+                        {/* Outer halo ring for selected, hovered, or home institution */}
+                        {(isSelected || isHovered || isHome) && (
+                          <circle
+                            cx={screenX}
+                            cy={screenY}
+                            r={dotRadius + 4.5}
+                            fill={
+                              isHome
+                                ? 'rgba(251, 191, 36, 0.28)'
+                                : 'rgba(56, 189, 248, 0.35)'
+                            }
+                            stroke={
+                              isSelected
+                                ? '#38bdf8'
+                                : isHome
+                                ? 'rgba(251, 191, 36, 0.65)'
+                                : 'rgba(56, 189, 248, 0.6)'
+                            }
+                            strokeWidth={isSelected ? '1.6' : '1'}
+                          />
+                        )}
+                        {/* Primary on-globe university marker */}
+                        <circle
+                          cx={screenX}
+                          cy={screenY}
+                          r={dotRadius}
+                          fill={
+                            isHome
+                              ? '#fbbf24'
+                              : isSelected
+                              ? '#ffffff'
+                              : '#38bdf8'
+                          }
+                          stroke={isSelected ? '#0284c7' : '#0f172a'}
+                          strokeWidth={isSelected ? '2.4' : '1.8'}
+                        />
+                      </g>
                     );
                   }
                 )}
               </g>
             </svg>
 
-            {/* Easily Clickable University Dots */}
-            {projectedUniversities.map(({ uni, visible, screenX, screenY }) => {
-              if (!visible) return null;
-
-              const isSelected = selectedUni?.universityId === uni.universityId;
-              const isHome = uni.universityId === profile.homeUniversityId;
-              const visualDotSize =
-                zoom >= 8
-                  ? 13
-                  : Math.min(
-                      18,
-                      Math.max(11, 9 + Math.log2(uni.paperCount + 1) * 2.2)
-                    );
-              const hitAreaSize = Math.max(28, visualDotSize + 14);
-
-              return (
-                <button
-                  key={uni.universityId}
-                  type="button"
-                  data-testid={`globe-dot-${uni.universityId}`}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectUniversity(uni.universityId);
-                  }}
-                  aria-label={`Inspect collaboration with ${uni.universityName} (${uni.paperCount} papers)`}
-                  title={`${uni.universityName} (${uni.city}, ${uni.country}) — ${uni.lat.toFixed(4)}°N, ${uni.lng.toFixed(4)}°E — ${uni.paperCount} papers`}
-                  style={{
-                    left: `${(screenX / GLOBE_WIDTH) * 100}%`,
-                    top: `${(screenY / GLOBE_HEIGHT) * 100}%`,
-                    width: `${hitAreaSize}px`,
-                    height: `${hitAreaSize}px`,
-                  }}
-                  className={`group scroll-mt-28 absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center cursor-pointer focus:outline-none ${
-                    isSelected ? 'z-30' : 'z-20 hover:z-30'
+            {/* Non-obtrusive Active University Badge: Pinned at top-left so it NEVER covers any dots */}
+            {activeBadgeUni && (
+              <div className="pointer-events-none absolute top-3 left-3 z-30 bg-slate-900/90 backdrop-blur-xs border border-slate-700/80 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 max-w-[85%]">
+                <span
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 ring-2 ${
+                    activeBadgeUni.universityId === profile.homeUniversityId
+                      ? 'bg-amber-400 ring-amber-400/30'
+                      : 'bg-sky-400 ring-sky-400/30'
                   }`}
-                >
-                  <span
-                    style={{
-                      width: `${visualDotSize}px`,
-                      height: `${visualDotSize}px`,
-                    }}
-                    className={`block rounded-full transition-transform ${
-                      isSelected
-                        ? 'scale-125 ring-4 ring-sky-400/60'
-                        : 'group-hover:scale-125 group-hover:ring-3 group-hover:ring-sky-300/50'
-                    } ${
-                      isHome
-                        ? 'bg-amber-400 border-2 border-white shadow-sm'
-                        : isSelected
-                        ? 'bg-white border-2 border-sky-400 shadow-md'
-                        : 'bg-sky-400 border border-slate-950 shadow-xs'
-                    }`}
-                  />
-                  <span className="sr-only">
-                    {uni.universityName} ({uni.paperCount} papers)
+                />
+                <div className="truncate text-xs font-semibold">
+                  {activeBadgeUni.universityName}
+                  <span className="text-slate-300 font-normal ml-1.5 font-mono text-[11px]">
+                    · {activeBadgeUni.paperCount}{' '}
+                    {activeBadgeUni.paperCount === 1 ? 'paper' : 'papers'} ·{' '}
+                    {activeBadgeUni.coAuthors.length}{' '}
+                    {activeBadgeUni.coAuthors.length === 1
+                      ? 'co-author'
+                      : 'co-authors'}{' '}
+                    ({activeBadgeUni.city}, {activeBadgeUni.country})
                   </span>
-                </button>
-              );
-            })}
+                </div>
+              </div>
+            )}
 
-            {selectedUni &&
-              (() => {
-                const match = projectedUniversities.find(
-                  (p) => p.uni.universityId === selectedUni.universityId
-                );
-                if (!match || !match.visible) return null;
-                return (
-                  <div
-                    style={{
-                      left: `${(match.screenX / GLOBE_WIDTH) * 100}%`,
-                      top: `${Math.max(
-                        6,
-                        ((match.screenY - 18) / GLOBE_HEIGHT) * 100
-                      )}%`,
-                    }}
-                    className="pointer-events-none absolute -translate-x-1/2 -translate-y-full z-30 bg-slate-900/95 border border-slate-700 text-white px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap shadow-md"
-                  >
-                    {selectedUni.universityName} · {selectedUni.paperCount}{' '}
-                    {selectedUni.paperCount === 1 ? 'paper' : 'papers'}
-                  </div>
-                );
-              })()}
+            {/* Floating Globe Controls: Zoom In, Zoom Out, Recenter, Auto-Rotate */}
+            <div className="absolute bottom-3 right-3 z-30 flex flex-col items-center gap-1 bg-slate-900/85 backdrop-blur-xs p-1 rounded-lg border border-slate-700/80 shadow-md">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAutoRotate(false);
+                  const cur = viewStateRef.current;
+                  const nextZoom = Math.min(
+                    MAX_ZOOM,
+                    Number((cur.zoom * 1.6).toFixed(2))
+                  );
+                  scheduleViewUpdate({ ...cur, zoom: nextZoom });
+                }}
+                title="Zoom in (up to 1500x)"
+                aria-label="Zoom in"
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAutoRotate(false);
+                  const cur = viewStateRef.current;
+                  const nextZoom = Math.max(
+                    MIN_ZOOM,
+                    Number((cur.zoom / 1.6).toFixed(2))
+                  );
+                  scheduleViewUpdate({ ...cur, zoom: nextZoom });
+                }}
+                title="Zoom out"
+                aria-label="Zoom out"
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white transition-colors cursor-pointer"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+
+              <div className="w-4 h-px bg-slate-700/60 my-0.5" />
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAutoRotate(false);
+                  scheduleViewUpdate({
+                    lat: Math.max(-80, Math.min(80, profile.homeLat || 23.78)),
+                    lng: profile.homeLng || 90.4,
+                    zoom: 1,
+                  });
+                }}
+                title="Recenter to home institution"
+                aria-label="Recenter to home institution"
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAutoRotate((prev) => !prev);
+                }}
+                title={autoRotate ? 'Pause rotation' : 'Auto-rotate globe'}
+                aria-label="Toggle auto rotation"
+                className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
+                  autoRotate
+                    ? 'bg-sky-600 text-white'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5" />
+              </button>
+
+              <div className="text-[10px] font-mono text-slate-400 px-1 py-0.5 tabular-nums">
+                {zoom >= 10 ? `${Math.round(zoom)}x` : `${zoom.toFixed(1)}x`}
+              </div>
+            </div>
           </div>
         </div>
 
