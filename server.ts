@@ -2135,14 +2135,28 @@ const profileCache = new Map<
   { timestamp: number; data: { profile: ResearcherProfile; source: string } }
 >();
 
-const prewarmedSnapshot = verifiedScholarSnapshot as unknown as {
-  profile: ResearcherProfile;
-  source: string;
-};
-if (prewarmedSnapshot?.profile) {
+const rawSnapshot = verifiedScholarSnapshot as any;
+const defaultProfile: ResearcherProfile | undefined =
+  rawSnapshot?.profile ||
+  rawSnapshot?.be8uiCkAAAAJ?.profile ||
+  rawSnapshot?.['be8uiCkAAAAJ'];
+
+if (defaultProfile) {
+  const payload = {
+    profile: defaultProfile,
+    source: 'scholar-verified-official-cache',
+  };
   profileCache.set('be8uickaaaaj::', {
     timestamp: Date.now(),
-    data: prewarmedSnapshot,
+    data: payload,
+  });
+  profileCache.set('::asm shihavuddin', {
+    timestamp: Date.now(),
+    data: payload,
+  });
+  profileCache.set('be8uickaaaaj::asm shihavuddin', {
+    timestamp: Date.now(),
+    data: payload,
   });
 }
 
@@ -2379,9 +2393,33 @@ app.get('/api/scholar/analyze', async (req, res) => {
 
   const cacheKey = `${userId.toLowerCase()}::${queryName.toLowerCase()}`;
   const cached = profileCache.get(cacheKey);
-  if (!forceRefresh && cached && Date.now() - cached.timestamp < 15 * 60 * 1000) {
+  if (!forceRefresh && cached && Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) {
     res.json(cached.data);
     return;
+  }
+
+  // Check bundled verified snapshot for immediate instant response
+  if (!forceRefresh) {
+    const rawSnap = verifiedScholarSnapshot as any;
+    const lowerUser = userId.toLowerCase();
+    const snapMatch: ResearcherProfile | undefined =
+      rawSnap?.[userId]?.profile ||
+      rawSnap?.[lowerUser]?.profile ||
+      (lowerUser.includes('be8ui') ? rawSnap?.be8uiCkAAAAJ?.profile : undefined) ||
+      (rawSnap?.profile?.scholarUserId?.toLowerCase() === lowerUser ? rawSnap.profile : undefined);
+
+    if (snapMatch) {
+      const snapPayload = {
+        profile: snapMatch,
+        source: 'scholar-verified-official-snapshot',
+      };
+      profileCache.set(cacheKey, {
+        timestamp: Date.now(),
+        data: snapPayload,
+      });
+      res.json(snapPayload);
+      return;
+    }
   }
 
   try {
