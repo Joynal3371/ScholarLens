@@ -10181,6 +10181,74 @@ var verifiedScholarCache_default = {
       ]
     },
     isFallback: false
+  },
+  "3nI1dHsAAAAJ": {
+    profile: {
+      id: "scholar-3nI1dHsAAAAJ",
+      scholarUserId: "3nI1dHsAAAAJ",
+      scholarUrl: "https://scholar.google.com/citations?user=3nI1dHsAAAAJ&hl=en",
+      name: "Joynal Abadin",
+      affiliation: "Undergraduate Student, Dept. of EEE, Green University of Bangladesh",
+      homeUniversityId: "green-university-of-bangladesh",
+      homeUniversity: "Green University of Bangladesh",
+      homeCity: "Dhaka",
+      homeCountry: "Bangladesh",
+      homeLat: 23.8285,
+      homeLng: 90.5663,
+      verifiedDomain: "student.green.ac.bd",
+      fields: [
+        "Machine Learning",
+        "Electric Vehicles",
+        "Renewable Energy"
+      ],
+      officialMetrics: {
+        totalCitations: 0,
+        hIndex: 0,
+        i10Index: 0
+      },
+      publications: [
+        {
+          id: "gs-0",
+          title: "A 25-year Landsat-derived environmental observation dataset for Narayanganj, Bangladesh, 2001\u20132025",
+          year: 2026,
+          citations: 0,
+          venue: "Data in Brief",
+          quartile: "Q2",
+          type: "Journal",
+          authorshipRole: "First Author",
+          openAccess: true,
+          doi: "10.1016/j.dib.2026.113392",
+          url: "https://doi.org/10.1016/j.dib.2026.113392",
+          coAuthors: [
+            {
+              name: "ASM Shihavuddin",
+              universityId: "university-of-liberal-arts-bangladesh",
+              universityName: "University of Liberal Arts Bangladesh",
+              city: "Dhaka",
+              country: "Bangladesh",
+              countryCode: "BD",
+              continent: "Asia",
+              lat: 23.7548,
+              lng: 90.3585,
+              isHomeInstitution: false
+            },
+            {
+              name: "Aminul Islam",
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
+              isHomeInstitution: false
+            }
+          ]
+        }
+      ]
+    },
+    isFallback: false
   }
 };
 
@@ -10317,8 +10385,6 @@ function shouldExcludeNonPaperRecord(params) {
     "figshare",
     "dryad",
     "kaggle",
-    "data in brief",
-    "scientific data",
     "github",
     "gitlab",
     "bitbucket",
@@ -10353,7 +10419,7 @@ function shouldExcludeNonPaperRecord(params) {
   if (nonPaperVenuePatterns.some((pat) => vLower.includes(pat))) {
     return true;
   }
-  if (/\bversion\s+v?\d+/i.test(vLower) || /\bversion\s+v?\d+/i.test(tLower) || /\bv\d+\.\[google/i.test(vLower) || /\bdataset\b/i.test(vLower) || /^dataset\s+(for|of|on)\b/i.test(tLower) || /^data\s+for:/i.test(tLower) || /^supplementary\s+(data|material|information)/i.test(tLower) || /\b(open|raw|benchmark)\s+dataset\b/i.test(tLower) || /\bcode\s+repository\b/i.test(tLower) || /\b(phd|master'?s|doctoral)\s+(thesis|dissertation)\b/i.test(tLower)) {
+  if (/\bversion\s+v?\d+/i.test(vLower) || /\bversion\s+v?\d+/i.test(tLower) || /\bv\d+\.\[google/i.test(vLower) || /^data\s+for:/i.test(tLower) || /^supplementary\s+(data|material|information)/i.test(tLower) || /\bcode\s+repository\b/i.test(tLower) || /\b(phd|master'?s|doctoral)\s+(thesis|dissertation)\b/i.test(tLower)) {
     return true;
   }
   if ((!vLower || vLower === "academic venue") && (params.citations || 0) === 0) {
@@ -10554,28 +10620,43 @@ function decodeHtmlEntities(str) {
   return str.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&#(\d+);/g, (_m, code) => String.fromCharCode(Number(code))).trim();
 }
 async function fetchScholarPageHtml(url) {
-  if (process.env.VERCEL) {
-    return null;
-  }
   const headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Accept-Language": "en-US,en;q=0.9",
-    Accept: "text/html,application/xhtml+xml"
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
   };
   try {
     const resp = await fetch(url, {
       headers,
-      signal: AbortSignal.timeout(4500)
+      signal: AbortSignal.timeout(5e3)
     });
-    if (!resp.ok) return null;
-    const html = await resp.text();
-    if (!html.includes("gsc_prf_in") && !html.includes("gsc_a_tr")) {
-      return null;
+    if (resp.ok) {
+      const html = await resp.text();
+      if (html.includes("gsc_prf_in") || html.includes("gsc_a_tr")) {
+        return html;
+      }
     }
-    return html;
   } catch {
-    return null;
   }
+  const proxyEndpoints = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(url)}`
+  ];
+  for (const pUrl of proxyEndpoints) {
+    try {
+      const pResp = await fetch(pUrl, {
+        signal: AbortSignal.timeout(5500)
+      });
+      if (pResp.ok) {
+        const pHtml = await pResp.text();
+        if (pHtml.includes("gsc_prf_in") || pHtml.includes("gsc_a_tr")) {
+          return pHtml;
+        }
+      }
+    } catch {
+    }
+  }
+  return null;
 }
 async function scrapeGoogleScholarFullProfile(userId) {
   try {
@@ -11669,6 +11750,25 @@ if (defaultProfile) {
     data: payload
   });
 }
+var joynalProfile = rawSnapshot?.["3nI1dHsAAAAJ"]?.profile;
+if (joynalProfile) {
+  const joynalPayload = {
+    profile: joynalProfile,
+    source: "google-scholar-official"
+  };
+  profileCache.set("3ni1dhsaaaaj::", {
+    timestamp: Date.now(),
+    data: joynalPayload
+  });
+  profileCache.set("::joynal abadin", {
+    timestamp: Date.now(),
+    data: joynalPayload
+  });
+  profileCache.set("3ni1dhsaaaaj::joynal abadin", {
+    timestamp: Date.now(),
+    data: joynalPayload
+  });
+}
 var app = express();
 app.use(express.json());
 app.get("/api/health", (_req, res) => {
@@ -11768,6 +11868,9 @@ async function resolveViaScholarBridge(userId, queryName) {
       return JSON.parse(existing.payloadJson);
     } catch {
     }
+  }
+  if (process.env.VERCEL) {
+    return null;
   }
   const queued = await writeScholarBridgeDoc(
     docId,
@@ -11904,7 +12007,7 @@ app.get("/api/scholar/analyze", async (req, res) => {
       timestamp: Date.now(),
       data: result
     });
-    if (!process.env.VERCEL && userId) {
+    if (userId) {
       const docId = sanitizeBridgeDocId(userId, queryName);
       void writeScholarBridgeDoc(
         docId,
@@ -11948,6 +12051,7 @@ if (!process.env.VERCEL) {
 var server_default = app;
 export {
   app,
+  buildLiveResearcherProfile,
   cleanVenueName,
   server_default as default,
   shouldExcludeNonPaperRecord

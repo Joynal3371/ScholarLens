@@ -10161,5 +10161,73 @@
       ]
     },
     "isFallback": false
+  },
+  "3nI1dHsAAAAJ": {
+    "profile": {
+      "id": "scholar-3nI1dHsAAAAJ",
+      "scholarUserId": "3nI1dHsAAAAJ",
+      "scholarUrl": "https://scholar.google.com/citations?user=3nI1dHsAAAAJ&hl=en",
+      "name": "Joynal Abadin",
+      "affiliation": "Undergraduate Student, Dept. of EEE, Green University of Bangladesh",
+      "homeUniversityId": "green-university-of-bangladesh",
+      "homeUniversity": "Green University of Bangladesh",
+      "homeCity": "Dhaka",
+      "homeCountry": "Bangladesh",
+      "homeLat": 23.8285,
+      "homeLng": 90.5663,
+      "verifiedDomain": "student.green.ac.bd",
+      "fields": [
+        "Machine Learning",
+        "Electric Vehicles",
+        "Renewable Energy"
+      ],
+      "officialMetrics": {
+        "totalCitations": 0,
+        "hIndex": 0,
+        "i10Index": 0
+      },
+      "publications": [
+        {
+          "id": "gs-0",
+          "title": "A 25-year Landsat-derived environmental observation dataset for Narayanganj, Bangladesh, 2001–2025",
+          "year": 2026,
+          "citations": 0,
+          "venue": "Data in Brief",
+          "quartile": "Q2",
+          "type": "Journal",
+          "authorshipRole": "First Author",
+          "openAccess": true,
+          "doi": "10.1016/j.dib.2026.113392",
+          "url": "https://doi.org/10.1016/j.dib.2026.113392",
+          "coAuthors": [
+            {
+              "name": "ASM Shihavuddin",
+              "universityId": "university-of-liberal-arts-bangladesh",
+              "universityName": "University of Liberal Arts Bangladesh",
+              "city": "Dhaka",
+              "country": "Bangladesh",
+              "countryCode": "BD",
+              "continent": "Asia",
+              "lat": 23.7548,
+              "lng": 90.3585,
+              "isHomeInstitution": false
+            },
+            {
+              "name": "Aminul Islam",
+              "universityId": "technical-university-of-denmark",
+              "universityName": "Technical University of Denmark",
+              "city": "Kongens Lyngby",
+              "country": "Denmark",
+              "countryCode": "DK",
+              "continent": "Europe",
+              "lat": 55.7858,
+              "lng": 12.5218,
+              "isHomeInstitution": false
+            }
+          ]
+        }
+      ]
+    },
+    "isFallback": false
   }
 }

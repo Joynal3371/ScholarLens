@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
-  RotateCcw,
-  Pause,
-  Play,
   Filter,
   ImageDown,
-  ZoomIn,
-  ZoomOut,
   Search,
   ExternalLink,
 } from 'lucide-react';
@@ -40,12 +35,6 @@ interface GlobeCollaborationMapProps {
   ) => void;
 }
 
-const REGION_PRESETS: { label: string; lat: number; lng: number }[] = [
-  { label: 'Asia & Oceania', lat: 23.78, lng: 90.4 },
-  { label: 'Europe & Africa', lat: 48.85, lng: 2.35 },
-  { label: 'Americas', lat: 37.5, lng: -85 },
-];
-
 const worldTopology = worldAtlasData as any;
 const WORLD_COUNTRIES_COLLECTION = topojson.feature(
   worldTopology,
@@ -59,26 +48,11 @@ const WORLD_BORDERS_MESH = topojson.mesh(
 );
 const STATIC_GRATICULE = geoGraticule().step([15, 15])();
 
-// Earth radius = 6,371 km; viewport radius = 230 px -> at zoom=1, 1 px = 27.7 km.
-// At zoom = 27.7, 1 px = 1.0 km. At zoom = 250, 1 px = 0.11 km (110m).
-const EARTH_RADIUS_KM = 6371;
 const GLOBE_SIZE = 500;
 const CENTER = GLOBE_SIZE / 2;
 const VIEWPORT_RADIUS = 230;
-const ZOOM_1KM_PER_PX = Number((EARTH_RADIUS_KM / VIEWPORT_RADIUS).toFixed(1));
 const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 250;
-
-function formatResolutionLabel(zoom: number): string {
-  const kmPerPx = EARTH_RADIUS_KM / (VIEWPORT_RADIUS * zoom);
-  if (kmPerPx >= 10) {
-    return `${Math.round(kmPerPx)} km/px`;
-  }
-  if (kmPerPx >= 0.95) {
-    return `${kmPerPx.toFixed(1)} km/px`;
-  }
-  return `${Math.round(kmPerPx * 1000)} m/px`;
-}
 
 function matchesCollaboratingCountry(
   featureName: string,
@@ -608,159 +582,29 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     >
       {/* Top Header: Clean on Android/Mobile (manual zoom & surrounding buttons hidden on mobile/Android) */}
       <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <h2
-            id="globe-section-heading"
-            className="text-base font-bold text-slate-900 tracking-tight"
-          >
-            World Collaboration Map
-          </h2>
-          <span
-            data-testid="globe-resolution-badge"
-            className="px-2 py-0.5 text-[11px] font-mono font-semibold text-slate-600 bg-slate-100 rounded-md tabular-nums"
-            title={`Zoom ${zoom.toFixed(1)}x (${formatResolutionLabel(zoom)})`}
-          >
-            {formatResolutionLabel(zoom)}
-          </span>
-        </div>
+        <h2
+          id="globe-section-heading"
+          className="text-base font-bold text-slate-900 tracking-tight"
+        >
+          World Collaboration Map
+        </h2>
 
-        {/* Desktop-only Toolbar Controls (Hidden on Android / Mobile) */}
-        <div className="hidden lg:flex flex-wrap items-center gap-2">
-          <div
-            role="group"
-            aria-label="Globe region presets"
-            className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg"
-          >
-            {REGION_PRESETS.map((preset) => (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => {
-                  setAutoRotate(false);
-                  setViewState((prev) => ({
-                    ...prev,
-                    lat: preset.lat,
-                    lng: preset.lng,
-                  }));
-                }}
-                className="px-2.5 py-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap shrink-0"
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
-            <button
-              type="button"
-              onClick={() => {
-                setAutoRotate(false);
-                setViewState((prev) => ({
-                  ...prev,
-                  zoom: Math.max(
-                    MIN_ZOOM,
-                    Number((prev.zoom / 1.45).toFixed(2))
-                  ),
-                }));
-              }}
-              aria-label="Zoom out globe"
-              className="p-1 text-xs font-medium text-slate-700 hover:bg-white rounded-md transition-colors"
-              title="Zoom Out"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAutoRotate(false);
-                setViewState((prev) => ({
-                  ...prev,
-                  zoom: Math.min(
-                    MAX_ZOOM,
-                    Number((prev.zoom * 1.45).toFixed(2))
-                  ),
-                }));
-              }}
-              aria-label="Zoom in globe"
-              className="p-1 text-xs font-medium text-slate-700 hover:bg-white rounded-md transition-colors"
-              title="Zoom In"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              data-testid="zoom-1km-button"
-              onClick={() => {
-                setAutoRotate(false);
-                setViewState((prev) => ({
-                  lat: selectedUni ? selectedUni.lat : prev.lat,
-                  lng: selectedUni ? selectedUni.lng : prev.lng,
-                  zoom: ZOOM_1KM_PER_PX,
-                }));
-              }}
-              className={`px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md transition-colors whitespace-nowrap ${
-                Math.abs(zoom - ZOOM_1KM_PER_PX) < 2
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-blue-700 hover:bg-blue-50'
-              }`}
-              title="Zoom to 1 km/pixel scale centered on selected university"
-            >
-              1 km/px
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setAutoRotate((prev) => !prev)}
-            aria-label={autoRotate ? 'Pause globe rotation' : 'Auto-rotate globe'}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap shrink-0 ${
-              autoRotate
-                ? 'bg-blue-50 text-blue-700 border-blue-200'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            {autoRotate ? (
-              <Pause className="w-3.5 h-3.5" />
-            ) : (
-              <Play className="w-3.5 h-3.5" />
-            )}
-            <span>{autoRotate ? 'Pause' : 'Rotate'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setAutoRotate(false);
-              setViewState({
-                lat: Math.max(-80, Math.min(80, profile.homeLat || 23.78)),
-                lng: profile.homeLng || 90.4,
-                zoom: 1,
-              });
-            }}
-            aria-label="Reset globe orientation"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap shrink-0"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              onExportChartPng(
-                'chart-collaboration-globe',
-                `Global University Collaborations — ${profile.name}`,
-                'global_collaboration_globe.png',
-                true
-              )
-            }
-            aria-label="Export Collaboration Globe as PNG"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
-          >
-            <ImageDown className="w-3.5 h-3.5" />
-            <span>Export PNG</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() =>
+            onExportChartPng(
+              'chart-collaboration-globe',
+              `Global University Collaborations — ${profile.name}`,
+              'global_collaboration_globe.png',
+              true
+            )
+          }
+          aria-label="Export Collaboration Globe as PNG"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
+        >
+          <ImageDown className="w-3.5 h-3.5" />
+          <span>Export PNG</span>
+        </button>
       </div>
 
       {/* Main Split Grid */}

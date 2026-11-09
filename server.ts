@@ -228,8 +228,6 @@ export function shouldExcludeNonPaperRecord(params: {
     'figshare',
     'dryad',
     'kaggle',
-    'data in brief',
-    'scientific data',
     'github',
     'gitlab',
     'bitbucket',
@@ -265,16 +263,13 @@ export function shouldExcludeNonPaperRecord(params: {
     return true;
   }
 
-  // 4. Open Data / Dataset / Code / Thesis indicators in Title or Venue
+  // 4. Dataset repository versions, supplementary files, theses & dissertations
   if (
     /\bversion\s+v?\d+/i.test(vLower) ||
     /\bversion\s+v?\d+/i.test(tLower) ||
     /\bv\d+\.\[google/i.test(vLower) ||
-    /\bdataset\b/i.test(vLower) ||
-    /^dataset\s+(for|of|on)\b/i.test(tLower) ||
     /^data\s+for:/i.test(tLower) ||
     /^supplementary\s+(data|material|information)/i.test(tLower) ||
-    /\b(open|raw|benchmark)\s+dataset\b/i.test(tLower) ||
     /\bcode\s+repository\b/i.test(tLower) ||
     /\b(phd|master'?s|doctoral)\s+(thesis|dissertation)\b/i.test(tLower)
   ) {
@@ -611,30 +606,50 @@ function decodeHtmlEntities(str: string): string {
 }
 
 async function fetchScholarPageHtml(url: string): Promise<string | null> {
-  if (process.env.VERCEL) {
-    return null;
-  }
   const headers = {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US,en;q=0.9',
-    Accept: 'text/html,application/xhtml+xml',
+    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   };
 
   try {
     const resp = await fetch(url, {
       headers,
-      signal: AbortSignal.timeout(4500),
+      signal: AbortSignal.timeout(5000),
     });
-    if (!resp.ok) return null;
-    const html = await resp.text();
-    if (!html.includes('gsc_prf_in') && !html.includes('gsc_a_tr')) {
-      return null;
+    if (resp.ok) {
+      const html = await resp.text();
+      if (html.includes('gsc_prf_in') || html.includes('gsc_a_tr')) {
+        return html;
+      }
     }
-    return html;
   } catch {
-    return null;
+    // Try fallback proxy below
   }
+
+  // Fallback via high-availability CORS/web proxies if direct fetch was throttled on serverless IP
+  const proxyEndpoints = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  ];
+  for (const pUrl of proxyEndpoints) {
+    try {
+      const pResp = await fetch(pUrl, {
+        signal: AbortSignal.timeout(5500),
+      });
+      if (pResp.ok) {
+        const pHtml = await pResp.text();
+        if (pHtml.includes('gsc_prf_in') || pHtml.includes('gsc_a_tr')) {
+          return pHtml;
+        }
+      }
+    } catch {
+      // Try next proxy
+    }
+  }
+
+  return null;
 }
 
 async function scrapeGoogleScholarFullProfile(
@@ -1296,7 +1311,7 @@ async function resolveScholarIdViaWikidata(
   return null;
 }
 
-async function buildLiveResearcherProfile(
+export async function buildLiveResearcherProfile(
   userIdInput: string,
   queryNameInput: string
 ): Promise<{ profile: ResearcherProfile; source: string } | null> {
@@ -2160,6 +2175,26 @@ if (defaultProfile) {
   });
 }
 
+const joynalProfile = (rawSnapshot as any)?.['3nI1dHsAAAAJ']?.profile;
+if (joynalProfile) {
+  const joynalPayload = {
+    profile: joynalProfile,
+    source: 'google-scholar-official',
+  };
+  profileCache.set('3ni1dhsaaaaj::', {
+    timestamp: Date.now(),
+    data: joynalPayload,
+  });
+  profileCache.set('::joynal abadin', {
+    timestamp: Date.now(),
+    data: joynalPayload,
+  });
+  profileCache.set('3ni1dhsaaaaj::joynal abadin', {
+    timestamp: Date.now(),
+    data: joynalPayload,
+  });
+}
+
 export const app = express();
 app.use(express.json());
 
@@ -2291,6 +2326,11 @@ async function resolveViaScholarBridge(
     } catch {
       // Re-request below
     }
+  }
+
+  // On Vercel, don't block for worker polling if not cached; fall straight to buildLiveResearcherProfile
+  if (process.env.VERCEL) {
+    return null;
   }
 
   const queued = await writeScholarBridgeDoc(
@@ -2449,7 +2489,7 @@ app.get('/api/scholar/analyze', async (req, res) => {
       data: result,
     });
 
-    if (!process.env.VERCEL && userId) {
+    if (userId) {
       const docId = sanitizeBridgeDocId(userId, queryName);
       void writeScholarBridgeDoc(
         docId,
