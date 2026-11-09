@@ -310,6 +310,15 @@ export function shouldExcludeNonPaperRecord(params: {
     return true;
   }
 
+  // 7. Malformed Google Scholar citation fragments where the title is just a truncated author list
+  if (
+    params.title.trim().length < 40 &&
+    (/,\s*[A-Z]\.?(\s*,\s*|\s+and\s*$|$)/.test(params.title.trim()) ||
+      /\bshihavuddin\b/i.test(tLower))
+  ) {
+    return true;
+  }
+
   return false;
 }
 
@@ -1251,12 +1260,30 @@ function classifyQuartileFromOfficialMetrics(
   return 'Unranked';
 }
 
+function stripAcademicHonorifics(rawName: string): string {
+  return rawName
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(
+      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee)\b\.?/gi,
+      ' '
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function isSameResearcherName(
   candidateName: string,
   targetName: string
 ): boolean {
-  const c = candidateName.toLowerCase().replace(/[^a-z\s]/g, '').trim();
-  const t = targetName.toLowerCase().replace(/[^a-z\s]/g, '').trim();
+  const c = stripAcademicHonorifics(candidateName)
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, '')
+    .trim();
+  const t = stripAcademicHonorifics(targetName)
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, '')
+    .trim();
+  if (!c || !t) return false;
   if (c === t) return true;
 
   // Normalized phonetic comparison for common international transliteration variants (v/b, w/v)
@@ -1368,14 +1395,15 @@ export async function buildLiveResearcherProfile(
     scraped?.name || queryNameInput || resolvedWikidataName || userIdInput;
   if (!targetName) return null;
 
-  // 1. Find all matching OpenAlex author records for targetName
+  // 1. Find all matching OpenAlex author records for targetName (stripping Dr./Prof. honorifics so OpenAlex search succeeds)
   const openAlexAuthorIds: string[] = [];
   let primaryOpenAlexAuthor: any = null;
+  const cleanSearchName = stripAcademicHonorifics(targetName) || targetName;
 
   try {
     const authorRes = await fetch(
       `https://api.openalex.org/authors?search=${encodeURIComponent(
-        targetName
+        cleanSearchName
       )}&per-page=10`,
       {
         headers: {
@@ -1391,9 +1419,11 @@ export async function buildLiveResearcherProfile(
         : [];
       for (const a of results) {
         const disp = String(a.display_name || '');
-        if (isSameResearcherName(disp, targetName)) {
+        if (isSameResearcherName(disp, cleanSearchName)) {
           const cleanId = String(a.id).replace('https://openalex.org/', '');
-          openAlexAuthorIds.push(cleanId);
+          if (!openAlexAuthorIds.includes(cleanId)) {
+            openAlexAuthorIds.push(cleanId);
+          }
           if (!primaryOpenAlexAuthor) {
             primaryOpenAlexAuthor = a;
           }
@@ -1438,8 +1468,8 @@ export async function buildLiveResearcherProfile(
   // Filter out non-journal/non-conference works from OpenAlex and match to Google Scholar
   const gsMatchedOaWorkByIndex = new Map<number, any>();
   const strictScholarOaWorks: any[] = [];
+  const seenOaWorkIds = new Set<string>();
   if (scraped && scraped.publications.length > 0) {
-    const seenOaWorkIds = new Set<string>();
     for (let gIdx = 0; gIdx < scraped.publications.length; gIdx++) {
       const gsPub = scraped.publications[gIdx];
       const matchedW = matchGsTitleToOpenAlexWork(gsPub.title, rawOaWorks);
@@ -1452,23 +1482,25 @@ export async function buildLiveResearcherProfile(
         }
       }
     }
-  } else {
-    for (const w of rawOaWorks) {
-      const wTitle = String(w.title || w.display_name || '');
-      const wVenue = String(w.primary_location?.source?.display_name || '');
-      const wType = String(w.type || '');
-      const sType = String(w.primary_location?.source?.type || '');
-      if (
-        !shouldExcludeNonPaperRecord({
-          title: wTitle,
-          venue: wVenue,
-          workType: wType,
-          sourceType: sType,
-          citations: Number(w.cited_by_count || 0),
-        })
-      ) {
-        strictScholarOaWorks.push(w);
-      }
+  }
+  for (const w of rawOaWorks) {
+    const wId = String(w.id || '');
+    if (wId && seenOaWorkIds.has(wId)) continue;
+    const wTitle = String(w.title || w.display_name || '');
+    const wVenue = String(w.primary_location?.source?.display_name || '');
+    const wType = String(w.type || '');
+    const sType = String(w.primary_location?.source?.type || '');
+    if (
+      !shouldExcludeNonPaperRecord({
+        title: wTitle,
+        venue: wVenue,
+        workType: wType,
+        sourceType: sType,
+        citations: Number(w.cited_by_count || 0),
+      })
+    ) {
+      if (wId) seenOaWorkIds.add(wId);
+      strictScholarOaWorks.push(w);
     }
   }
 
@@ -1622,11 +1654,18 @@ export async function buildLiveResearcherProfile(
     );
   }
 
-  // 5. Build a verified author-to-institution lookup from the Google Scholar sidebar & OpenAlex works
-  const knownAuthorInstitution = new Map<
+  // 5. Build a verified author-to-institution lookup strictly from:
+  //    (a) Exact disambiguated OpenAlex Author ID (a.author.id) within this researcher's own works
+  //    (b) Exact normalized full name from the researcher's Google Scholar Co-Author Sidebar
+  const sidebarAuthorInstitution = new Map<
     string,
     Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>
   >();
+  const knownByOaAuthorId = new Map<
+    string,
+    Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>
+  >();
+  const oaAuthorIdInstSet = new Map<string, Set<string>>();
 
   if (scraped?.sidebarCoAuthors) {
     for (const sAuth of scraped.sidebarCoAuthors) {
@@ -1661,78 +1700,59 @@ export async function buildLiveResearcherProfile(
           geoCache
         );
         if (mapped.universityId !== 'unlisted') {
-          knownAuthorInstitution.set(sAuth.name.toLowerCase(), mapped);
+          sidebarAuthorInstitution.set(sAuth.name.toLowerCase().trim(), mapped);
         }
       }
     }
   }
 
   for (const w of strictScholarOaWorks) {
+    const hasBangladeshiAuthor = (w.authorships || []).some((au: any) =>
+      (au.institutions || []).some(
+        (ins: any) => String(ins.country_code || '').toUpperCase() === 'BD'
+      )
+    );
     for (const a of w.authorships || []) {
       const aName = String(a.author?.display_name || '').trim();
+      const aId = String(a.author?.id || '').replace(
+        'https://openalex.org/',
+        ''
+      );
       if (!aName || isSameResearcherName(aName, targetName)) continue;
-      const inst = a.institutions?.[0];
-      if (inst?.display_name) {
-        const shortId = String(inst.id || '').replace(
+      for (const inst of a.institutions || []) {
+        if (!inst?.display_name) continue;
+        let dispName = String(inst.display_name);
+        let cCode = String(inst.country_code || '');
+        let shortId = String(inst.id || '').replace(
           'https://openalex.org/',
           ''
         );
+        // Correct OpenAlex homonym where East West University (Dhaka, BD) is linked to East–West University (Chicago, US) on Bangladeshi papers
+        if (
+          (dispName === 'East–West University' || shortId === 'I4210135468') &&
+          hasBangladeshiAuthor
+        ) {
+          dispName = 'East West University';
+          cCode = 'BD';
+          shortId = 'I885507782';
+        }
         const mapped = await resolveInstitutionFromOfficialSources(
-          String(inst.display_name),
-          String(inst.country_code || ''),
+          dispName,
+          cCode,
           shortId,
           geoCache
         );
-        if (
-          mapped.universityId !== 'unlisted' &&
-          !knownAuthorInstitution.has(aName.toLowerCase())
-        ) {
-          knownAuthorInstitution.set(aName.toLowerCase(), mapped);
+        if (mapped.universityId !== 'unlisted' && aId) {
+          if (!oaAuthorIdInstSet.has(aId)) {
+            oaAuthorIdInstSet.set(aId, new Set());
+          }
+          oaAuthorIdInstSet.get(aId)!.add(mapped.universityId);
+          if (!knownByOaAuthorId.has(aId)) {
+            knownByOaAuthorId.set(aId, mapped);
+          }
         }
       }
     }
-  }
-
-  function matchKnownInstitutionByAuthorName(
-    rawName: string
-  ): {
-    matchedName: string;
-    inst: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>;
-  } | null {
-    const lower = rawName.toLowerCase().trim();
-    if (knownAuthorInstitution.has(lower)) {
-      return {
-        matchedName: rawName,
-        inst: knownAuthorInstitution.get(lower)!,
-      };
-    }
-    const rawParts = lower
-      .replace(/\./g, ' ')
-      .split(/\s+/)
-      .filter(Boolean);
-    const rawFirstInitial = rawParts[0]?.[0] || '';
-    const rawLastName = rawParts[rawParts.length - 1] || '';
-    if (!rawLastName || rawLastName.length < 3) return null;
-
-    for (const [kName, kInst] of knownAuthorInstitution.entries()) {
-      const kParts = kName
-        .replace(/\./g, ' ')
-        .split(/\s+/)
-        .filter(Boolean);
-      const kFirstInitial = kParts[0]?.[0] || '';
-      const kLastName = kParts[kParts.length - 1] || '';
-      if (
-        kLastName === rawLastName &&
-        (!rawFirstInitial || !kFirstInitial || kFirstInitial === rawFirstInitial)
-      ) {
-        const formatted = kName
-          .split(' ')
-          .map((w) => (w.length <= 3 && w === w.toLowerCase() ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
-          .join(' ');
-        return { matchedName: formatted, inst: kInst };
-      }
-    }
-    return null;
   }
 
   async function extractOaWorkDetails(w: any): Promise<{
@@ -1782,87 +1802,109 @@ export async function buildLiveResearcherProfile(
       authorshipRole = 'Corresponding Author';
     }
 
-    const paperExplicitInstitutions = new Map<
-      string,
-      Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>
-    >();
-    for (const a of authorships) {
-      for (const inst of a.institutions || []) {
-        if (inst?.display_name) {
-          const shortId = String(inst.id || '').replace(
-            'https://openalex.org/',
-            ''
-          );
-          const mapped = await resolveInstitutionFromOfficialSources(
-            String(inst.display_name),
-            String(inst.country_code || ''),
-            shortId,
-            geoCache
-          );
-          paperExplicitInstitutions.set(mapped.universityId, mapped);
-        }
-      }
-    }
-    const singlePaperInstitution =
-      paperExplicitInstitutions.size === 1
-        ? Array.from(paperExplicitInstitutions.values())[0]
-        : null;
+    const hasBangladeshiAuthor = authorships.some((au: any) =>
+      (au.institutions || []).some(
+        (ins: any) => String(ins.country_code || '').toUpperCase() === 'BD'
+      )
+    );
 
     const coAuthors: CoAuthorAffiliation[] = [];
-    const seenCoAuthorNames = new Set<string>();
+    const seenAuthorInstKeys = new Set<string>();
 
     for (const a of authorships) {
       const aName = String(a.author?.display_name || '').trim();
+      const aId = String(a.author?.id || '').replace(
+        'https://openalex.org/',
+        ''
+      );
       if (!aName || isSameResearcherName(aName, targetName)) continue;
-      const nameKey = aName.toLowerCase();
-      if (seenCoAuthorNames.has(nameKey)) continue;
-      seenCoAuthorNames.add(nameKey);
 
-      const inst = a.institutions?.[0];
-      let mapped: Omit<
-        CoAuthorAffiliation,
-        'name' | 'isHomeInstitution'
-      > | null = null;
+      const rawInsts: any[] = Array.isArray(a.institutions)
+        ? a.institutions.filter((i: any) => i?.display_name)
+        : [];
 
-      if (inst?.display_name) {
-        const shortId = String(inst.id || '').replace(
-          'https://openalex.org/',
-          ''
-        );
-        mapped = await resolveInstitutionFromOfficialSources(
-          String(inst.display_name),
-          String(inst.country_code || ''),
-          shortId,
-          geoCache
-        );
-      } else {
-        const matched = matchKnownInstitutionByAuthorName(aName);
-        if (matched) {
-          mapped = matched.inst;
-        } else if (singlePaperInstitution) {
-          mapped = singlePaperInstitution;
+      // Filter out redundant "... System" wrapper entries when the actual university is also present on the same author
+      const filteredInsts = rawInsts.filter((inst: any) => {
+        const dName = String(inst.display_name || '');
+        if (/\bsystem$/i.test(dName) && rawInsts.length > 1) {
+          return false;
         }
-      }
+        return true;
+      });
 
-      if (mapped) {
-        coAuthors.push({
-          name: aName,
-          ...mapped,
-          isHomeInstitution: mapped.universityId === homeMapped.universityId,
-        });
+      if (filteredInsts.length > 0) {
+        for (const inst of filteredInsts) {
+          let dispName = String(inst.display_name);
+          let cCode = String(inst.country_code || '');
+          let shortId = String(inst.id || '').replace(
+            'https://openalex.org/',
+            ''
+          );
+          if (
+            (dispName === 'East–West University' || shortId === 'I4210135468') &&
+            hasBangladeshiAuthor
+          ) {
+            dispName = 'East West University';
+            cCode = 'BD';
+            shortId = 'I885507782';
+          }
+          const mapped = await resolveInstitutionFromOfficialSources(
+            dispName,
+            cCode,
+            shortId,
+            geoCache
+          );
+          const dedupKey = `${aName.toLowerCase()}::${mapped.universityId}`;
+          if (seenAuthorInstKeys.has(dedupKey)) continue;
+          seenAuthorInstKeys.add(dedupKey);
+          coAuthors.push({
+            name: aName,
+            ...mapped,
+            isHomeInstitution: mapped.universityId === homeMapped.universityId,
+          });
+        }
       } else {
-        coAuthors.push({
-          name: aName,
-          universityId: 'unlisted',
-          universityName: 'Independent / Unlisted',
-          city: 'Unlisted',
-          country: 'Unlisted',
-          countryCode: 'UN',
-          continent: 'Europe',
-          lat: 0,
-          lng: 0,
-          isHomeInstitution: false,
-        });
+        // Author has no explicit affiliation on this specific work: ONLY use their disambiguated OpenAlex Author ID (if unambiguous) or exact sidebar name
+        let mapped: Omit<
+          CoAuthorAffiliation,
+          'name' | 'isHomeInstitution'
+        > | null = null;
+        if (
+          aId &&
+          knownByOaAuthorId.has(aId) &&
+          (oaAuthorIdInstSet.get(aId)?.size || 0) === 1
+        ) {
+          mapped = knownByOaAuthorId.get(aId)!;
+        } else if (sidebarAuthorInstitution.has(aName.toLowerCase())) {
+          mapped = sidebarAuthorInstitution.get(aName.toLowerCase())!;
+        }
+
+        const dedupKey = `${aName.toLowerCase()}::${
+          mapped?.universityId || 'unlisted'
+        }`;
+        if (seenAuthorInstKeys.has(dedupKey)) continue;
+        seenAuthorInstKeys.add(dedupKey);
+
+        if (mapped) {
+          coAuthors.push({
+            name: aName,
+            ...mapped,
+            isHomeInstitution: mapped.universityId === homeMapped.universityId,
+          });
+        } else {
+          coAuthors.push({
+            name: aName,
+            universityId: 'unlisted',
+            universityName: 'Independent / Unlisted',
+            city: 'Unlisted',
+            country: 'Unlisted',
+            countryCode: 'UN',
+            continent: 'Asia',
+            lat: 0,
+            lng: 0,
+            isHomeInstitution: false,
+          });
+        }
       }
     }
 
@@ -1898,17 +1940,14 @@ export async function buildLiveResearcherProfile(
     const seenCoAuthorNames = new Set<string>();
 
     for (const rawAuth of rawAuthorParts) {
-      const matched = matchKnownInstitutionByAuthorName(rawAuth);
-      const matchedKnownName = matched ? matched.matchedName : rawAuth;
-      const matchedInst = matched ? matched.inst : null;
-
-      const dedupKey = matchedKnownName.toLowerCase();
-      if (seenCoAuthorNames.has(dedupKey)) continue;
-      seenCoAuthorNames.add(dedupKey);
+      const lower = rawAuth.toLowerCase().trim();
+      const matchedInst = sidebarAuthorInstitution.get(lower) || null;
+      if (seenCoAuthorNames.has(lower)) continue;
+      seenCoAuthorNames.add(lower);
 
       if (matchedInst) {
         coAuthors.push({
-          name: matchedKnownName,
+          name: rawAuth,
           ...matchedInst,
           isHomeInstitution:
             matchedInst.universityId === homeMapped.universityId,
@@ -1985,29 +2024,6 @@ export async function buildLiveResearcherProfile(
           srcMetrics
         );
 
-        const mergedCoAuthors = [...oaDetails.coAuthors];
-        const existingFullNames = new Set(
-          mergedCoAuthors.map((ca) => ca.name.toLowerCase())
-        );
-        const existingLastNames = new Set(
-          mergedCoAuthors.map(
-            (ca) => ca.name.toLowerCase().split(/\s+/).pop() || ''
-          )
-        );
-        for (const gsCa of parseScholarCoAuthors(gsPub.authorsText)) {
-          const fullLower = gsCa.name.toLowerCase();
-          const last = fullLower.split(/\s+/).pop() || '';
-          if (
-            last &&
-            !existingLastNames.has(last) &&
-            !existingFullNames.has(fullLower)
-          ) {
-            existingLastNames.add(last);
-            existingFullNames.add(fullLower);
-            mergedCoAuthors.push(gsCa);
-          }
-        }
-
         const paperUrl =
           oaDetails.landingPageUrl ||
           gsPub.scholarUrl ||
@@ -2027,7 +2043,7 @@ export async function buildLiveResearcherProfile(
           openAccess: oaDetails.openAccess,
           doi: oaDetails.doi,
           url: paperUrl,
-          coAuthors: mergedCoAuthors,
+          coAuthors: oaDetails.coAuthors,
         });
       } else {
         // Enrich unmatched Google Scholar paper via official Crossref & OpenAlex Source APIs

@@ -55,11 +55,8 @@ const WORLD_BORDERS_MESH = topojson.mesh(
 const STATIC_GRATICULE = geoGraticule().step([15, 15])();
 
 const districtsGeo = countryDistrictsData as any;
-const BD_DISTRICT_FEATURES: any[] = districtsGeo?.bdDistricts?.features || [];
-const BD_DISTRICT_CENTROIDS: { name: string; lat: number; lng: number }[] =
-  districtsGeo?.bdCentroids || [];
-const WORLD_SUBDIVISIONS_MESH: any =
-  districtsGeo?.worldSubdivisionsMesh || null;
+const GLOBAL_DISTRICT_SEGMENTS: [number, number, [number, number][]][] =
+  districtsGeo?.segments || [];
 
 const GLOBE_WIDTH = 680;
 const GLOBE_HEIGHT = 520;
@@ -503,56 +500,31 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     return pathGenerator(WORLD_BORDERS_MESH as any) || '';
   }, [pathGenerator]);
 
-  // District & state/province internal boundaries when zoomed inside a country
+  // Global internal district / state / province boundaries for ALL countries when zoomed in (no district text labels)
   const worldSubdivisionsPath = useMemo(() => {
-    if (zoom < 1.75 || !WORLD_SUBDIVISIONS_MESH) return '';
-    return pathGenerator(WORLD_SUBDIVISIONS_MESH) || '';
-  }, [pathGenerator, zoom]);
-
-  const bdDistrictPaths = useMemo(() => {
-    if (zoom < 1.75) return [];
-    return BD_DISTRICT_FEATURES.map((feat, idx) => {
-      const d = pathGenerator(feat);
-      if (!d) return null;
-      return {
-        id: `bd-dist-${idx}-${feat.properties?.name || idx}`,
-        name: String(feat.properties?.name || 'District'),
-        d,
-      };
-    }).filter(Boolean) as { id: string; name: string; d: string }[];
-  }, [pathGenerator, zoom]);
-
-  const projectedDistrictLabels = useMemo(() => {
-    if (zoom < 3.5) return [];
+    if (zoom < 1.5 || GLOBAL_DISTRICT_SEGMENTS.length === 0) return '';
     const centerCoord: [number, number] = [centerLng, centerLat];
-    const pointProj = geoOrthographic()
-      .translate([CENTER_X, CENTER_Y])
-      .scale(projectedScale)
-      .rotate([-centerLng, -centerLat, 0])
-      .clipAngle(90);
+    const maxAngularRadius = Math.min(Math.PI / 2, 1.35 / zoom + 0.22);
+    const visibleCoords: [number, number][][] = [];
 
-    const candidateLabels: { name: string; x: number; y: number }[] = [];
-    const minLabelSep = zoom >= 12 ? 32 : 48;
-
-    for (const dist of BD_DISTRICT_CENTROIDS) {
-      const angularDist = geoDistance(centerCoord, [dist.lng, dist.lat]);
-      if (angularDist > Math.PI / 2 - 0.02) continue;
-      const pt = pointProj([dist.lng, dist.lat]);
-      if (!pt) continue;
-      const [x, y] = pt;
-      if (x < 24 || x > GLOBE_WIDTH - 24 || y < 24 || y > GLOBE_HEIGHT - 24) {
-        continue;
-      }
-      // Prevent label overlap at intermediate zooms
-      const tooClose = candidateLabels.some(
-        (existing) => Math.hypot(existing.x - x, existing.y - y) < minLabelSep
-      );
-      if (!tooClose) {
-        candidateLabels.push({ name: dist.name, x, y });
+    for (let i = 0; i < GLOBAL_DISTRICT_SEGMENTS.length; i++) {
+      const seg = GLOBAL_DISTRICT_SEGMENTS[i];
+      const d = geoDistance(centerCoord, [seg[0], seg[1]]);
+      if (d <= maxAngularRadius) {
+        visibleCoords.push(seg[2]);
       }
     }
-    return candidateLabels;
-  }, [centerLat, centerLng, projectedScale, zoom]);
+    if (visibleCoords.length === 0) return '';
+    return (
+      pathGenerator({
+        type: 'Feature',
+        geometry: {
+          type: 'MultiLineString',
+          coordinates: visibleCoords,
+        },
+      }) || ''
+    );
+  }, [pathGenerator, centerLat, centerLng, zoom]);
 
   const projectedUniversities = useMemo(() => {
     const centerCoord: [number, number] = [centerLng, centerLat];
@@ -654,7 +626,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     const homeOffsetY = homeNode ? homeNode.screenY - homeNode.exactY : 0;
     const homeCoord: [number, number] = [profile.homeLng, profile.homeLat];
 
-    const HOVER_CLEARANCE_PX = 4.5; // Keeps arc endpoints slightly above the ground
+    const HOVER_CLEARANCE_PX = 1.2; // Subtle 3D clearance just slightly above the ground
 
     return universities
       .filter((u) => u.universityId !== profile.homeUniversityId)
@@ -695,7 +667,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         const chordDy = lastPt[1] - firstPt[1];
         const chordLen = Math.hypot(chordDx, chordDy);
 
-        // Compute upward-oriented 3D camera normal so every arc rises skyward away from the ground
+        // Compute subtle upward-oriented 3D normal so every arc hovers gently above the ground
         let normX = 0;
         let normY = -1;
         if (chordLen > 1) {
@@ -705,36 +677,33 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             perpX = -perpX;
             perpY = -perpY;
           }
-          // Blend perpendicular arch with vertical skyward lift (-Y)
-          normX = perpX * 0.55;
-          normY = perpY * 0.55 - 0.45;
+          normX = perpX * 0.5;
+          normY = perpY * 0.5 - 0.5;
           const nLen = Math.hypot(normX, normY) || 1;
           normX /= nLen;
           normY /= nLen;
         }
 
+        // Low-profile 3D arch (3.5px to 11px peak lift) so arcs stay close to the globe surface without ballooning high
         const peakArchPx = Math.min(
-          68,
-          Math.max(16, chordLen * 0.28 + totalAngularSpan * 28)
+          11,
+          Math.max(3.5, chordLen * 0.05 + totalAngularSpan * 4.5)
         );
         const radialAltitudeFactor = Math.min(
-          0.22,
-          Math.max(0.05, totalAngularSpan * 0.14)
+          0.03,
+          Math.max(0.008, totalAngularSpan * 0.018)
         );
 
         const elevatedPoints: [number, number][] = groundPoints.map(
           ([gx, gy], idx) => {
             const uParam = idx / (groundPoints.length - 1);
-            // Smooth 3D parabolic arch that is 0 at endpoints and 1 at apex, plus constant HOVER_CLEARANCE_PX so it never touches the ground
-            const arch = Math.pow(Math.sin(Math.PI * uParam), 0.78);
+            const arch = Math.sin(Math.PI * uParam);
 
-            // 1. 3D spherical radial altitude (pushes arc outward from sphere center)
             const vx = gx - CENTER_X;
             const vy = gy - CENTER_Y;
             const radialLiftX = vx * radialAltitudeFactor * arch;
             const radialLiftY = vy * radialAltitudeFactor * arch;
 
-            // 2. 3D perspective skyward arch + hover clearance above the ground
             const skyLiftX = normX * peakArchPx * arch;
             const skyLiftY =
               normY * peakArchPx * arch - HOVER_CLEARANCE_PX;
@@ -762,10 +731,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           isSelected: u.universityId === selectedUni?.universityId,
           shadowD,
           elevatedD,
-          startGround: firstPt,
-          startElevated: elevatedPoints[0],
-          endGround: lastPt,
-          endElevated: elevatedPoints[elevatedPoints.length - 1],
         };
       })
       .filter(Boolean) as {
@@ -773,10 +738,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       isSelected: boolean;
       shadowD: string;
       elevatedD: string;
-      startGround: [number, number];
-      startElevated: [number, number];
-      endGround: [number, number];
-      endElevated: [number, number];
     }[];
   }, [
     universities,
@@ -829,10 +790,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       .map((n) => {
         const midX = (homePt[0] + n.x) / 2;
         const dist = Math.hypot(n.x - homePt[0], n.y - homePt[1]);
-        const archLift = Math.max(22, Math.min(85, dist * 0.24));
-        const midY = Math.max(18, (homePt[1] + n.y) / 2 - archLift);
-        const startY = homePt[1] - 4;
-        const endY = n.y - 4;
+        const archLift = Math.max(5, Math.min(18, dist * 0.06));
+        const midY = Math.max(14, (homePt[1] + n.y) / 2 - archLift);
+        const startY = homePt[1] - 1.5;
+        const endY = n.y - 1.5;
         return {
           id: `flat-arc-${n.uni.universityId}`,
           shadowD: `M ${homePt[0].toFixed(1)} ${homePt[1].toFixed(1)} L ${n.x.toFixed(1)} ${n.y.toFixed(1)}`,
@@ -1143,30 +1104,16 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   </path>
                 ))}
 
-                {/* Global state/province/division boundaries when zoomed in */}
+                {/* Global district / state / province internal boundaries across ALL countries when zoomed in */}
                 {worldSubdivisionsPath && (
                   <path
                     d={worldSubdivisionsPath}
                     fill="none"
-                    stroke="rgba(148, 163, 184, 0.36)"
-                    strokeWidth="0.65"
+                    stroke="rgba(125, 211, 252, 0.45)"
+                    strokeWidth={zoom >= 5 ? '0.85' : '0.65'}
                     strokeDasharray="2.5 2"
                   />
                 )}
-
-                {/* Detailed district boundaries inside the country when zoomed in */}
-                {bdDistrictPaths.map((dist) => (
-                  <path
-                    key={dist.id}
-                    d={dist.d}
-                    fill="none"
-                    stroke="rgba(125, 211, 252, 0.55)"
-                    strokeWidth={zoom >= 6 ? '0.95' : '0.7'}
-                    strokeDasharray="2 1.5"
-                  >
-                    <title>{dist.name} District</title>
-                  </path>
-                ))}
 
                 {bordersMeshPath && (
                   <path
@@ -1177,27 +1124,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   />
                 )}
 
-                {/* District name labels when zoomed into a country */}
-                {projectedDistrictLabels.map((lbl) => (
-                  <text
-                    key={`dist-lbl-${lbl.name}`}
-                    x={lbl.x}
-                    y={lbl.y}
-                    textAnchor="middle"
-                    fill="rgba(226, 232, 240, 0.78)"
-                    fontSize={zoom >= 10 ? '10' : '8.5'}
-                    fontWeight="500"
-                    className="pointer-events-none select-none"
-                    style={{
-                      paintOrder: 'stroke',
-                      stroke: 'rgba(15, 23, 42, 0.85)',
-                      strokeWidth: '2.4px',
-                    }}
-                  >
-                    {lbl.name}
-                  </text>
-                ))}
-
                 {/* Ground shadows cast by the 3D elevated arcs onto the globe surface */}
                 {arcPaths.map((arc) => (
                   <path
@@ -1206,62 +1132,41 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     fill="none"
                     stroke={
                       arc.isSelected
-                        ? 'rgba(2, 6, 23, 0.72)'
-                        : 'rgba(2, 6, 23, 0.48)'
+                        ? 'rgba(2, 6, 23, 0.68)'
+                        : 'rgba(2, 6, 23, 0.42)'
                     }
-                    strokeWidth={arc.isSelected ? '1.8' : '1.1'}
+                    strokeWidth={arc.isSelected ? '1.6' : '1.0'}
                     strokeDasharray="2 3"
                     className="pointer-events-none"
                   />
                 ))}
               </g>
 
-              {/* 3D Elevated Flight Arcs (rendered above the globe surface clip so high-altitude 3D arcs rise freely off the ground) */}
+              {/* Low-profile 3D Elevated Collaboration Arcs hovering subtly above the ground */}
               <g className="pointer-events-none">
                 {arcPaths.map((arc) => (
                   <g key={`arc-3d-${arc.id}`}>
-                    {/* Subtle 3D vertical light risers showing the arc floating above the ground endpoints */}
-                    <line
-                      x1={arc.startGround[0]}
-                      y1={arc.startGround[1]}
-                      x2={arc.startElevated[0]}
-                      y2={arc.startElevated[1]}
-                      stroke="rgba(251, 191, 36, 0.65)"
-                      strokeWidth="1.2"
-                    />
-                    <line
-                      x1={arc.endGround[0]}
-                      y1={arc.endGround[1]}
-                      x2={arc.endElevated[0]}
-                      y2={arc.endElevated[1]}
-                      stroke={
-                        arc.isSelected
-                          ? '#7dd3fc'
-                          : 'rgba(56, 189, 248, 0.6)'
-                      }
-                      strokeWidth="1.2"
-                    />
                     {/* 3D Outer atmospheric glow */}
                     <path
                       d={arc.elevatedD}
                       fill="none"
                       stroke={
                         arc.isSelected
-                          ? 'rgba(56, 189, 248, 0.38)'
-                          : 'rgba(56, 189, 248, 0.18)'
+                          ? 'rgba(56, 189, 248, 0.34)'
+                          : 'rgba(56, 189, 248, 0.16)'
                       }
-                      strokeWidth={arc.isSelected ? '5.2' : '3.4'}
+                      strokeWidth={arc.isSelected ? '4.4' : '2.8'}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    {/* Core elevated 3D collaboration arc floating above the ground */}
+                    {/* Core elevated 3D collaboration arc floating slightly above the ground */}
                     <path
                       d={arc.elevatedD}
                       fill="none"
                       stroke={
-                        arc.isSelected ? '#7dd3fc' : 'rgba(56, 189, 248, 0.78)'
+                        arc.isSelected ? '#7dd3fc' : 'rgba(56, 189, 248, 0.76)'
                       }
-                      strokeWidth={arc.isSelected ? '2.3' : '1.4'}
+                      strokeWidth={arc.isSelected ? '2.1' : '1.3'}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
