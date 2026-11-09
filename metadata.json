@@ -1,0 +1,6 @@
+{
+  "name": "ScholarLens — Research Profile & Global Collaboration Analytics",
+  "description": "Analyze Google Scholar profiles with Q1–Q4 journal breakdowns, interactive citation-range filtering, a 3D round-world university collaboration globe, and complete directories of co-authors, universities, countries, and journals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

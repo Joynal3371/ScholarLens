@@ -1,0 +1,1405 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  Search,
+  FileDown,
+  AlertCircle,
+  CheckCircle2,
+  Lock,
+  LayoutDashboard,
+  BarChart3,
+  Globe2,
+  BookOpen,
+  Users,
+  ArrowRight,
+  ArrowLeft,
+  ExternalLink,
+  User,
+} from 'lucide-react';
+import {
+  parseGoogleScholarInput,
+  computeProfileStatistics,
+  filterAndSortPublications,
+  aggregateUniversityCollaborations,
+  aggregateCoAuthors,
+  aggregateCountries,
+  aggregateJournals,
+  DEFAULT_FILTER_STATE,
+  PublicationFilterState,
+  Quartile,
+  PublicationType,
+  ResearcherProfile,
+  getPublicationUrl,
+  getPublicationPortfolioCategory,
+} from './utils/scholarAnalytics';
+import {
+  exportChartSvgAsPng,
+  generateResearcherPdfReport,
+} from './utils/exportReport';
+import {
+  auth,
+  onAuthStateChanged,
+  firebaseSignOut,
+  logExportToFirestore,
+  syncOrFetchGoogleUserProfile,
+} from './firebase';
+import {
+  AuthGateModal,
+  AuthenticatedResearcher,
+} from './components/AuthGateModal';
+import { UserProfileModal } from './components/UserProfileModal';
+import { PortfolioBreakdownSection } from './components/PortfolioBreakdownSection';
+import { GlobeCollaborationMap } from './components/GlobeCollaborationMap';
+import { PublicationsExplorer } from './components/PublicationsExplorer';
+import { ResearchDirectoriesSection } from './components/ResearchDirectoriesSection';
+
+export type AppPage =
+  | 'overview'
+  | 'charts'
+  | 'map'
+  | 'publications'
+  | 'directories';
+
+type PendingExportTask =
+  | { type: 'pdf' }
+  | {
+      type: 'png';
+      chartId: string;
+      title: string;
+      filename: string;
+      darkTheme?: boolean;
+    };
+
+const DEFAULT_SCHOLAR_URL =
+  'https://scholar.google.com/citations?user=be8uiCkAAAAJ&hl=en';
+const SESSION_STORAGE_KEY = 'scholarlens_active_auth_user';
+
+const PAGE_METADATA: {
+  id: AppPage;
+  label: string;
+  shortLabel: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    shortLabel: 'Overview',
+    icon: LayoutDashboard,
+  },
+  {
+    id: 'charts',
+    label: 'Statistical Charts',
+    shortLabel: 'Charts',
+    icon: BarChart3,
+  },
+  {
+    id: 'map',
+    label: 'World Collaboration Map',
+    shortLabel: 'World Map',
+    icon: Globe2,
+  },
+  {
+    id: 'publications',
+    label: 'Publications Explorer',
+    shortLabel: 'Publications',
+    icon: BookOpen,
+  },
+  {
+    id: 'directories',
+    label: 'Research Directories',
+    shortLabel: 'Directories',
+    icon: Users,
+  },
+];
+
+export default function App() {
+  const [activePage, setActivePage] = useState<AppPage>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get('page') as AppPage | null;
+    if (
+      p &&
+      ['overview', 'charts', 'map', 'publications', 'directories'].includes(p)
+    ) {
+      return p;
+    }
+    return 'overview';
+  });
+  const [activeProfile, setActiveProfile] = useState<ResearcherProfile | null>(
+    null
+  );
+  const [scholarUrlInput, setScholarUrlInput] =
+    useState<string>(DEFAULT_SCHOLAR_URL);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(true);
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const [statusBanner, setStatusBanner] = useState<string | null>(null);
+
+  const [filter, setFilter] = useState<PublicationFilterState>(
+    DEFAULT_FILTER_STATE
+  );
+
+  // Authentication & Editable User Profile State
+  const [authUser, setAuthUser] = useState<AuthenticatedResearcher | null>(
+    () => {
+      try {
+        const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+        return raw ? (JSON.parse(raw) as AuthenticatedResearcher) : null;
+      } catch {
+        return null;
+      }
+    }
+  );
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+  const [pendingExport, setPendingExport] = useState<PendingExportTask | null>(
+    null
+  );
+
+  const saveSessionUser = (user: AuthenticatedResearcher | null) => {
+    setAuthUser(user);
+    try {
+      if (user) {
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const synced = await syncOrFetchGoogleUserProfile(firebaseUser);
+        saveSessionUser({
+          uid: firebaseUser.uid,
+          name:
+            synced.displayName ||
+            firebaseUser.displayName ||
+            firebaseUser.email ||
+            'Google Researcher',
+          emailOrId: firebaseUser.email || firebaseUser.uid,
+          photoURL: synced.photoURL || firebaseUser.photoURL || '',
+          provider: 'google',
+        });
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Support browser / Android Back and Forward navigation across pages
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('page') as AppPage | null;
+      if (
+        p &&
+        ['overview', 'charts', 'map', 'publications', 'directories'].includes(p)
+      ) {
+        setActivePage(p);
+      } else {
+        setActivePage('overview');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const fetchProfileFromServer = async (
+    userId: string,
+    queryName?: string,
+    showSuccessBanner: boolean = false
+  ) => {
+    setIsAnalyzing(true);
+    setUrlError(null);
+    if (showSuccessBanner) setStatusBanner(null);
+
+    try {
+      const params = new URLSearchParams({
+        userId,
+        ...(queryName ? { queryName } : {}),
+      });
+      const res = await fetch(`/api/scholar/analyze?${params.toString()}`);
+      const data = await res.json();
+      if (!res.ok || !data.profile) {
+        setUrlError(
+          data.error ||
+            'Could not retrieve public publications for that Google Scholar profile.'
+        );
+        return;
+      }
+      const resolved: ResearcherProfile = data.profile;
+      setActiveProfile(resolved);
+      setScholarUrlInput(resolved.scholarUrl);
+      setFilter(DEFAULT_FILTER_STATE);
+
+      const nextUnis = aggregateUniversityCollaborations(resolved.publications);
+      const greenOrFirst =
+        nextUnis.find((u) =>
+          u.universityName.toLowerCase().includes('green university')
+        ) ||
+        nextUnis.find((u) => u.universityId !== resolved.homeUniversityId) ||
+        nextUnis[0];
+      if (greenOrFirst) {
+        setSelectedGlobeUniId(greenOrFirst.universityId);
+      }
+
+      if (showSuccessBanner) {
+        setStatusBanner(
+          `Analyzed ${resolved.name} (${resolved.publications.length} publications).`
+        );
+      }
+    } catch {
+      setUrlError('Network error while analyzing Google Scholar profile.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialUser = urlParams.get('user') || 'be8uiCkAAAAJ';
+    void fetchProfileFromServer(initialUser, undefined, false);
+  }, []);
+
+  const stats = useMemo(
+    () =>
+      activeProfile
+        ? computeProfileStatistics(
+            activeProfile.publications,
+            activeProfile.homeCountry,
+            2026,
+            activeProfile.officialMetrics
+          )
+        : null,
+    [activeProfile]
+  );
+
+  const universities = useMemo(
+    () =>
+      activeProfile
+        ? aggregateUniversityCollaborations(activeProfile.publications)
+        : [],
+    [activeProfile]
+  );
+
+  const coAuthors = useMemo(
+    () =>
+      activeProfile ? aggregateCoAuthors(activeProfile.publications) : [],
+    [activeProfile]
+  );
+
+  const countries = useMemo(
+    () =>
+      activeProfile ? aggregateCountries(activeProfile.publications) : [],
+    [activeProfile]
+  );
+
+  const journals = useMemo(
+    () => (activeProfile ? aggregateJournals(activeProfile.publications) : []),
+    [activeProfile]
+  );
+
+  const filteredPublications = useMemo(
+    () =>
+      activeProfile
+        ? filterAndSortPublications(activeProfile.publications, filter)
+        : [],
+    [activeProfile, filter]
+  );
+
+  const defaultPartnerUniId = useMemo(() => {
+    if (!activeProfile) return '';
+    const partner = universities.find(
+      (u) => u.universityId !== activeProfile.homeUniversityId
+    );
+    return partner ? partner.universityId : universities[0]?.universityId || '';
+  }, [universities, activeProfile]);
+
+  const [selectedGlobeUniId, setSelectedGlobeUniId] = useState<string>('');
+
+  const currentGlobeUniId = useMemo(() => {
+    if (universities.some((u) => u.universityId === selectedGlobeUniId)) {
+      return selectedGlobeUniId;
+    }
+    return defaultPartnerUniId;
+  }, [universities, selectedGlobeUniId, defaultPartnerUniId]);
+
+  const executeExportTask = async (task: PendingExportTask) => {
+    if (!activeProfile || !stats) return;
+    if (task.type === 'pdf') {
+      await generateResearcherPdfReport({
+        profile: activeProfile,
+        stats,
+        universities,
+        coAuthors,
+        countries,
+        journals,
+      });
+      await logExportToFirestore(
+        activeProfile.name,
+        'pdf',
+        `${activeProfile.scholarUserId}_report.pdf`
+      );
+      setStatusBanner(`Exported full PDF report for ${activeProfile.name}.`);
+    } else {
+      const ok = await exportChartSvgAsPng(
+        task.chartId,
+        task.title,
+        `${activeProfile.name} (${activeProfile.affiliation})`,
+        task.filename,
+        task.darkTheme
+      );
+      if (ok) {
+        await logExportToFirestore(activeProfile.name, 'png', task.filename);
+        setStatusBanner(`Exported PNG image: ${task.title}.`);
+      }
+    }
+  };
+
+  const handleRequestPdfReport = () => {
+    const task: PendingExportTask = { type: 'pdf' };
+    if (!authUser) {
+      setPendingExport(task);
+      setIsAuthModalOpen(true);
+      return;
+    }
+    void executeExportTask(task);
+  };
+
+  const handleRequestChartPng = (
+    chartId: string,
+    title: string,
+    filename: string,
+    darkTheme: boolean = false
+  ) => {
+    const task: PendingExportTask = {
+      type: 'png',
+      chartId,
+      title,
+      filename,
+      darkTheme,
+    };
+    if (!authUser) {
+      setPendingExport(task);
+      setIsAuthModalOpen(true);
+      return;
+    }
+    void executeExportTask(task);
+  };
+
+  const handleAuthenticatedSuccess = (user: AuthenticatedResearcher) => {
+    saveSessionUser(user);
+    setIsAuthModalOpen(false);
+    if (pendingExport) {
+      const task = pendingExport;
+      setPendingExport(null);
+      void executeExportTask(task);
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (authUser?.provider === 'google') {
+      await firebaseSignOut(auth);
+    }
+    saveSessionUser(null);
+    setStatusBanner('Signed out.');
+  };
+
+  const handleAnalyzeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = parseGoogleScholarInput(scholarUrlInput);
+    if (!parsed.valid || !parsed.userId) {
+      setUrlError(
+        parsed.error || 'Enter a valid Google Scholar profile link.'
+      );
+      setStatusBanner(null);
+      return;
+    }
+    await fetchProfileFromServer(parsed.userId, parsed.queryName, true);
+  };
+
+  const navigateToPage = (page: AppPage) => {
+    setActivePage(page);
+    try {
+      const url = new URL(window.location.href);
+      if (page === 'overview') {
+        url.searchParams.delete('page');
+      } else {
+        url.searchParams.set('page', page);
+      }
+      window.history.pushState({ page }, '', url.toString());
+    } catch {
+      // Ignore history errors in restricted frames
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleQuickFilterQuartile = (quartile: Quartile) => {
+    setFilter((prev) => ({
+      ...DEFAULT_FILTER_STATE,
+      quartiles:
+        prev.quartiles.length === 1 && prev.quartiles[0] === quartile
+          ? []
+          : [quartile],
+    }));
+    navigateToPage('publications');
+  };
+
+  const handleQuickFilterType = (pubType: PublicationType) => {
+    setFilter((prev) => ({
+      ...DEFAULT_FILTER_STATE,
+      types:
+        prev.types.length === 1 && prev.types[0] === pubType ? [] : [pubType],
+    }));
+    navigateToPage('publications');
+  };
+
+  const handleFilterByUniversity = (universityId: string) => {
+    setFilter({
+      ...DEFAULT_FILTER_STATE,
+      universityId,
+    });
+    navigateToPage('publications');
+  };
+
+  const handleFilterByCoAuthor = (coAuthorName: string) => {
+    setFilter({
+      ...DEFAULT_FILTER_STATE,
+      coAuthorName,
+    });
+    navigateToPage('publications');
+  };
+
+  const handleFilterByCountry = (country: string) => {
+    setFilter({
+      ...DEFAULT_FILTER_STATE,
+      country,
+    });
+    navigateToPage('publications');
+  };
+
+  const handleFilterByVenue = (venue: string) => {
+    setFilter({
+      ...DEFAULT_FILTER_STATE,
+      venue,
+    });
+    navigateToPage('publications');
+  };
+
+  const handleInspectUniversityOnGlobe = (universityId: string) => {
+    setSelectedGlobeUniId(universityId);
+    navigateToPage('map');
+  };
+
+  const currentPageIndex = PAGE_METADATA.findIndex((p) => p.id === activePage);
+  const prevPageMeta =
+    currentPageIndex > 0 ? PAGE_METADATA[currentPageIndex - 1] : null;
+  const nextPageMeta =
+    currentPageIndex < PAGE_METADATA.length - 1
+      ? PAGE_METADATA[currentPageIndex + 1]
+      : null;
+
+  const userInitials = authUser
+    ? authUser.name
+        .split(/\s+/)
+        .map((w) => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : '';
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 lg:pb-0">
+      {/* Top Bar: Clean Brand & Right Actions Only (Top center buttons removed per screenshot) */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-3">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
+          {/* Left: Brand Wordmark & Contextual Page Breadcrumb */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => navigateToPage('overview')}
+              className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 font-display cursor-pointer"
+            >
+              ScholarLens
+            </button>
+            {activePage !== 'overview' && (
+              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 truncate">
+                <span aria-hidden="true">/</span>
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('overview')}
+                  className="text-slate-500 hover:text-slate-900 font-medium cursor-pointer"
+                >
+                  Overview
+                </button>
+                <span aria-hidden="true">/</span>
+                <span className="text-slate-900 font-semibold truncate">
+                  {PAGE_METADATA.find((p) => p.id === activePage)?.label}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Right: PDF Report + Corner Login / User Profile Icon */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <button
+              type="button"
+              disabled={!activeProfile}
+              onClick={handleRequestPdfReport}
+              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer"
+            >
+              {authUser ? (
+                <FileDown className="w-3.5 h-3.5" />
+              ) : (
+                <Lock className="w-3.5 h-3.5" />
+              )}
+              <span>PDF Report</span>
+            </button>
+
+            {authUser ? (
+              <button
+                type="button"
+                onClick={() => setIsProfileModalOpen(true)}
+                data-testid="corner-profile-button"
+                aria-label="Open profile settings"
+                title="Edit your display name and profile picture"
+                className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
+              >
+                <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center overflow-hidden shrink-0">
+                  {authUser.photoURL ? (
+                    <img
+                      src={authUser.photoURL}
+                      alt={authUser.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span>{userInitials || <User className="w-3.5 h-3.5" />}</span>
+                  )}
+                </div>
+                <span
+                  data-testid="authenticated-user-badge"
+                  className="text-xs font-semibold text-slate-800 max-w-[110px] sm:max-w-[140px] truncate"
+                >
+                  {authUser.name}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingExport(null);
+                  setIsAuthModalOpen(true);
+                }}
+                data-testid="corner-login-button"
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Multi-Page Workspace with Left Sidebar on Desktop & Bottom Navigation on Android */}
+      <div className="flex-1 max-w-[1400px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-5 flex flex-col lg:flex-row gap-5 items-start">
+        {/* Desktop Left Sidebar Navigation (Clean Multi-Page Architecture) */}
+        <aside
+          aria-label="Workspace Pages"
+          className="hidden lg:block w-52 shrink-0 sticky top-20 bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs"
+        >
+          <div className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            Analytics Pages
+          </div>
+          <nav className="space-y-1 mt-1">
+            {PAGE_METADATA.map((item) => {
+              const Icon = item.icon;
+              const isActive = activePage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => navigateToPage(item.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left cursor-pointer ${
+                    isActive
+                      ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{item.shortLabel}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Active Page Content */}
+        <main className="flex-1 min-w-0 w-full space-y-5">
+          {/* Clean, Compact Search & Researcher Bar */}
+          <section
+            aria-label="Google Scholar Profile Search"
+            className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 space-y-3.5 shadow-xs"
+          >
+            <form onSubmit={handleAnalyzeSubmit} noValidate>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="relative flex-1">
+                  <label htmlFor="scholar-url-input" className="sr-only">
+                    Google Scholar Profile Link
+                  </label>
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="scholar-url-input"
+                    type="url"
+                    value={scholarUrlInput}
+                    onChange={(e) => {
+                      setScholarUrlInput(e.target.value);
+                      if (urlError) setUrlError(null);
+                    }}
+                    placeholder="Paste Google Scholar profile link (https://scholar.google.com/citations?user=...)"
+                    aria-label="Google Scholar Profile Link"
+                    className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm font-mono bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isAnalyzing}
+                  className="px-5 py-2 text-xs sm:text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer"
+                >
+                  {isAnalyzing ? 'Analyzing...' : 'Analyze Profile'}
+                </button>
+              </div>
+
+              {urlError && (
+                <div
+                  role="alert"
+                  className="mt-2 flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{urlError}</span>
+                </div>
+              )}
+
+              {statusBanner && !urlError && (
+                <div
+                  role="status"
+                  className="mt-2 flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2"
+                >
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{statusBanner}</span>
+                </div>
+              )}
+            </form>
+
+            {activeProfile && (
+              <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex flex-wrap items-baseline gap-2.5">
+                  <h1
+                    data-testid="active-researcher-name"
+                    className="text-base sm:text-lg font-bold text-slate-900"
+                  >
+                    {activeProfile.name}
+                  </h1>
+                  <span className="text-xs text-slate-500">
+                    {activeProfile.affiliation}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-slate-500 font-mono tabular-nums">
+                  <span>ID: {activeProfile.scholarUserId}</span>
+                  <a
+                    href={activeProfile.scholarUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-sans font-medium text-blue-600 hover:text-blue-800"
+                  >
+                    <span>Google Scholar</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Loading State */}
+          {isAnalyzing && !activeProfile && (
+            <div className="bg-white border border-slate-200 rounded-xl p-12 text-center space-y-2">
+              <div className="text-sm font-semibold text-slate-800">
+                Loading Google Scholar profile...
+              </div>
+            </div>
+          )}
+
+          {/* PAGE 1: OVERVIEW */}
+          {activeProfile && stats && activePage === 'overview' && (
+            <div className="space-y-5">
+              {/* Row 1: Core Scholar Profile Summary Metrics */}
+              <section
+                aria-label="Core Profile Metrics"
+                className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs"
+              >
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
+                    <div className="text-xs text-slate-500 font-medium">
+                      Total Publications
+                    </div>
+                    <div
+                      data-testid="kpi-total-papers"
+                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5"
+                    >
+                      {stats.totalPapers}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
+                      Verified on Google Scholar
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
+                    <div className="text-xs text-slate-500 font-medium">
+                      Total Citations
+                    </div>
+                    <div
+                      data-testid="kpi-total-citations"
+                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5"
+                    >
+                      {stats.totalCitations.toLocaleString()}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
+                      {stats.meanCitationsPerPaper.toLocaleString()} avg / paper
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
+                    <div className="text-xs text-slate-500 font-medium">
+                      h-index / i10-index
+                    </div>
+                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5">
+                      {stats.hIndex}{' '}
+                      <span className="text-base font-normal text-slate-400">
+                        /
+                      </span>{' '}
+                      {stats.i10Index}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
+                      g-index: {stats.gIndex}
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
+                    <div className="text-xs text-slate-500 font-medium">
+                      Global Collaboration Network
+                    </div>
+                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5">
+                      {universities.length}{' '}
+                      <span className="text-sm font-normal text-slate-500">
+                        universities
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
+                      {countries.length} countries · {coAuthors.length} co-authors
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Row 2: Separate Q1, Q2, Q3, Q4, Conference & Non-Indexed Percentage Breakdown (Total = 100%) */}
+              <section
+                aria-label="Publication Indexing and Quartile Distribution"
+                className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3.5"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900">
+                      Publication Quartile &amp; Indexing Distribution
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Separate share of Q1, Q2, Q3, Q4, Conference Papers, and Non-Indexed Papers across all {stats.totalPapers} publications
+                    </p>
+                  </div>
+                  <span
+                    data-testid="portfolio-total-percentage"
+                    className="px-2.5 py-1 text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md tabular-nums"
+                  >
+                    Total: 100% ({stats.totalPapers} papers)
+                  </span>
+                </div>
+
+                {/* 6 Separate Percentage Cards Summing to 100.0% */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {/* 1. Q1 Share */}
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFilterQuartile('Q1')}
+                    className="text-left p-3.5 bg-blue-50/50 hover:bg-blue-50 border border-blue-200/80 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-blue-900">
+                        Q1 Journals
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-blue-600" />
+                    </div>
+                    <div
+                      data-testid="kpi-q1-percentage"
+                      className="text-2xl font-bold font-mono text-blue-700 tabular-nums mt-1"
+                    >
+                      {stats.portfolioDistribution.Q1.percentage}%
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
+                      {stats.portfolioDistribution.Q1.count} papers ·{' '}
+                      {stats.portfolioDistribution.Q1.citations.toLocaleString()}{' '}
+                      cit.
+                    </div>
+                  </button>
+
+                  {/* 2. Q2 Share */}
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFilterQuartile('Q2')}
+                    className="text-left p-3.5 bg-sky-50/50 hover:bg-sky-50 border border-sky-200/80 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-sky-900">
+                        Q2 Journals
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-sky-500" />
+                    </div>
+                    <div
+                      data-testid="kpi-q2-percentage"
+                      className="text-2xl font-bold font-mono text-sky-700 tabular-nums mt-1"
+                    >
+                      {stats.portfolioDistribution.Q2.percentage}%
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
+                      {stats.portfolioDistribution.Q2.count} papers ·{' '}
+                      {stats.portfolioDistribution.Q2.citations.toLocaleString()}{' '}
+                      cit.
+                    </div>
+                  </button>
+
+                  {/* 3. Q3 Share */}
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFilterQuartile('Q3')}
+                    className="text-left p-3.5 bg-amber-50/50 hover:bg-amber-50 border border-amber-200/80 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-amber-900">
+                        Q3 Journals
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    </div>
+                    <div
+                      data-testid="kpi-q3-percentage"
+                      className="text-2xl font-bold font-mono text-amber-700 tabular-nums mt-1"
+                    >
+                      {stats.portfolioDistribution.Q3.percentage}%
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
+                      {stats.portfolioDistribution.Q3.count} papers ·{' '}
+                      {stats.portfolioDistribution.Q3.citations.toLocaleString()}{' '}
+                      cit.
+                    </div>
+                  </button>
+
+                  {/* 4. Q4 Share */}
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFilterQuartile('Q4')}
+                    className="text-left p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-700">
+                        Q4 Journals
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-slate-400" />
+                    </div>
+                    <div
+                      data-testid="kpi-q4-percentage"
+                      className="text-2xl font-bold font-mono text-slate-800 tabular-nums mt-1"
+                    >
+                      {stats.portfolioDistribution.Q4.percentage}%
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
+                      {stats.portfolioDistribution.Q4.count} papers ·{' '}
+                      {stats.portfolioDistribution.Q4.citations.toLocaleString()}{' '}
+                      cit.
+                    </div>
+                  </button>
+
+                  {/* 5. Conference Papers Share */}
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFilterType('Conference')}
+                    className="text-left p-3.5 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-200/80 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-indigo-900">
+                        Conference Papers
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                    </div>
+                    <div
+                      data-testid="kpi-conference-percentage"
+                      className="text-2xl font-bold font-mono text-indigo-700 tabular-nums mt-1"
+                    >
+                      {stats.portfolioDistribution.Conference.percentage}%
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
+                      {stats.portfolioDistribution.Conference.count} papers ·{' '}
+                      {stats.portfolioDistribution.Conference.citations.toLocaleString()}{' '}
+                      cit.
+                    </div>
+                  </button>
+
+                  {/* 6. Non-Indexed Papers Share */}
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFilterQuartile('Unranked')}
+                    className="text-left p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-700">
+                        Non-Indexed
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-slate-500" />
+                    </div>
+                    <div
+                      data-testid="kpi-nonindexed-percentage"
+                      className="text-2xl font-bold font-mono text-slate-700 tabular-nums mt-1"
+                    >
+                      {stats.portfolioDistribution['Non-Indexed'].percentage}%
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
+                      {stats.portfolioDistribution['Non-Indexed'].count} papers ·{' '}
+                      {stats.portfolioDistribution[
+                        'Non-Indexed'
+                      ].citations.toLocaleString()}{' '}
+                      cit.
+                    </div>
+                  </button>
+                </div>
+
+                {/* Stacked 100% Proportional Progress Bar */}
+                <div
+                  aria-label="100% Portfolio Distribution Bar"
+                  className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex"
+                >
+                  <div
+                    style={{
+                      width: `${stats.portfolioDistribution.Q1.percentage}%`,
+                    }}
+                    className="bg-blue-600 h-full"
+                    title={`Q1 Journals: ${stats.portfolioDistribution.Q1.percentage}%`}
+                  />
+                  <div
+                    style={{
+                      width: `${stats.portfolioDistribution.Q2.percentage}%`,
+                    }}
+                    className="bg-sky-500 h-full"
+                    title={`Q2 Journals: ${stats.portfolioDistribution.Q2.percentage}%`}
+                  />
+                  <div
+                    style={{
+                      width: `${stats.portfolioDistribution.Q3.percentage}%`,
+                    }}
+                    className="bg-amber-500 h-full"
+                    title={`Q3 Journals: ${stats.portfolioDistribution.Q3.percentage}%`}
+                  />
+                  <div
+                    style={{
+                      width: `${stats.portfolioDistribution.Q4.percentage}%`,
+                    }}
+                    className="bg-slate-400 h-full"
+                    title={`Q4 Journals: ${stats.portfolioDistribution.Q4.percentage}%`}
+                  />
+                  <div
+                    style={{
+                      width: `${stats.portfolioDistribution.Conference.percentage}%`,
+                    }}
+                    className="bg-indigo-600 h-full"
+                    title={`Conference Papers: ${stats.portfolioDistribution.Conference.percentage}%`}
+                  />
+                  <div
+                    style={{
+                      width: `${stats.portfolioDistribution['Non-Indexed'].percentage}%`,
+                    }}
+                    className="bg-slate-600 h-full"
+                    title={`Non-Indexed Papers: ${stats.portfolioDistribution['Non-Indexed'].percentage}%`}
+                  />
+                </div>
+              </section>
+
+              {/* Quick Navigation Cards to Dedicated Pages */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('charts')}
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <BarChart3 className="w-4 h-4" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-sm font-bold text-slate-900">
+                      Statistical Charts
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      Q1–Q4 quartiles, publication types &amp; yearly trends
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('map')}
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+                      <Globe2 className="w-4 h-4" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-sm font-bold text-slate-900">
+                      World Collaboration Map
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {universities.length} universities across {countries.length}{' '}
+                      countries
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('publications')}
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-sm font-bold text-slate-900">
+                      Publications ({stats.totalPapers})
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      Filter by citation range, year, quartile &amp; venue
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('directories')}
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-sm font-bold text-slate-900">
+                      Directories
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {coAuthors.length} co-authors &amp; {journals.length} venues
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {/* Overview Summary Split: Top Collaborating Universities & Top Cited Publications */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Top Collaborating Universities ({universities.length})
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => navigateToPage('map')}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
+                    >
+                      World Map →
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {universities.slice(0, 6).map((uni) => (
+                      <div
+                        key={uni.universityId}
+                        className="py-2.5 flex items-center justify-between gap-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-xs font-semibold text-slate-900 truncate">
+                            {uni.universityName}
+                          </div>
+                          <div className="text-[11px] text-slate-500">
+                            {uni.city}, {uni.country} · {uni.coAuthors.length}{' '}
+                            co-authors
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-xs font-mono font-semibold text-slate-900 tabular-nums">
+                            {uni.paperCount} papers
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleInspectUniversityOnGlobe(uni.universityId)
+                            }
+                            className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md cursor-pointer"
+                          >
+                            Inspect
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Top Cited Publications
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => navigateToPage('publications')}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
+                    >
+                      All Publications ({stats.totalPapers}) →
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {activeProfile.publications.slice(0, 5).map((pub) => {
+                      const cat = getPublicationPortfolioCategory(pub);
+                      return (
+                        <div
+                          key={pub.id}
+                          className="py-2.5 flex items-start justify-between gap-3"
+                        >
+                          <div className="min-w-0">
+                            <a
+                              href={getPublicationUrl(pub)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-semibold text-slate-900 hover:text-blue-600 hover:underline line-clamp-1 inline-flex items-center gap-1 group"
+                            >
+                              <span className="truncate">{pub.title}</span>
+                              <ExternalLink className="w-3 h-3 shrink-0 text-slate-400 group-hover:text-blue-600" />
+                            </a>
+                            <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                              {pub.venue} · {pub.year} ·{' '}
+                              <span className="font-semibold text-slate-700">
+                                {cat}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-slate-900 tabular-nums shrink-0">
+                            {pub.citations.toLocaleString()} cit.
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PAGE 2: CHARTS (Kept mounted in DOM so PDF report can serialize chart SVGs from any page) */}
+          {activeProfile && stats && (
+            <div className={activePage === 'charts' ? 'block' : 'hidden'}>
+              <PortfolioBreakdownSection
+                stats={stats}
+                countries={countries}
+                onQuickFilterQuartile={handleQuickFilterQuartile}
+                onQuickFilterType={handleQuickFilterType}
+                onExportChartPng={handleRequestChartPng}
+              />
+            </div>
+          )}
+
+          {/* PAGE 3: WORLD COLLABORATION MAP */}
+          {activeProfile && stats && (
+            <div className={activePage === 'map' ? 'block' : 'hidden'}>
+              <GlobeCollaborationMap
+                profile={activeProfile}
+                universities={universities}
+                selectedUniversityId={currentGlobeUniId}
+                onSelectUniversity={setSelectedGlobeUniId}
+                onFilterByUniversity={handleFilterByUniversity}
+                onFilterByCoAuthor={handleFilterByCoAuthor}
+                onExportChartPng={handleRequestChartPng}
+              />
+            </div>
+          )}
+
+          {/* PAGE 4: PUBLICATIONS EXPLORER */}
+          {activeProfile && stats && activePage === 'publications' && (
+            <PublicationsExplorer
+              allPublications={activeProfile.publications}
+              filteredPublications={filteredPublications}
+              filter={filter}
+              onChangeFilter={setFilter}
+              universities={universities}
+              coAuthors={coAuthors}
+              countries={countries}
+              onInspectUniversityOnGlobe={handleInspectUniversityOnGlobe}
+            />
+          )}
+
+          {/* PAGE 5: COLLABORATION DIRECTORIES */}
+          {activeProfile && stats && activePage === 'directories' && (
+            <ResearchDirectoriesSection
+              profile={activeProfile}
+              coAuthors={coAuthors}
+              universities={universities}
+              countries={countries}
+              journals={journals}
+              onFilterByCoAuthor={handleFilterByCoAuthor}
+              onFilterByUniversity={handleFilterByUniversity}
+              onFilterByCountry={handleFilterByCountry}
+              onFilterByVenue={handleFilterByVenue}
+              onInspectUniversityOnGlobe={handleInspectUniversityOnGlobe}
+            />
+          )}
+
+          {/* Multi-Page Sequential Footer Navigation (Previous / Next Page) */}
+          {activeProfile && (
+            <nav
+              aria-label="Pagination Navigation"
+              className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4 shadow-xs"
+            >
+              {prevPageMeta ? (
+                <button
+                  type="button"
+                  onClick={() => navigateToPage(prevPageMeta.id)}
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-blue-600 cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>{prevPageMeta.label}</span>
+                </button>
+              ) : (
+                <span className="text-xs text-slate-400">
+                  Page 1 of {PAGE_METADATA.length}
+                </span>
+              )}
+
+              <span className="hidden sm:inline text-xs font-mono text-slate-400">
+                Page {currentPageIndex + 1} of {PAGE_METADATA.length}
+              </span>
+
+              {nextPageMeta ? (
+                <button
+                  type="button"
+                  onClick={() => navigateToPage(nextPageMeta.id)}
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+                >
+                  <span>{nextPageMeta.label}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('overview')}
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+                >
+                  <span>Back to Overview</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </nav>
+          )}
+        </main>
+      </div>
+
+      {/* Android & Mobile Bottom Navigation Bar (48px+ ergonomic touch targets) */}
+      <nav
+        aria-label="Mobile Bottom Navigation"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xs border-t border-slate-200 px-1 py-1 grid grid-cols-5 gap-0.5 shadow-lg"
+      >
+        {PAGE_METADATA.map((item) => {
+          const Icon = item.icon;
+          const isActive = activePage === item.id;
+          return (
+            <button
+              key={`mobile-${item.id}`}
+              type="button"
+              onClick={() => navigateToPage(item.id)}
+              aria-current={isActive ? 'page' : undefined}
+              className={`min-h-[48px] flex flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-medium transition-colors cursor-pointer ${
+                isActive
+                  ? 'text-blue-600 bg-blue-50/80 font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="truncate max-w-full px-1">
+                {item.shortLabel}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Clean Desktop Footer */}
+      <footer className="hidden lg:block bg-white border-t border-slate-200 px-6 py-4 mt-8">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 text-xs text-slate-500">
+          <div>ScholarLens — Research Profile &amp; Citation Analytics</div>
+          <div className="flex items-center gap-4">
+            {PAGE_METADATA.map((item) => (
+              <button
+                key={`footer-${item.id}`}
+                type="button"
+                onClick={() => navigateToPage(item.id)}
+                className="hover:text-slate-900 cursor-pointer"
+              >
+                {item.shortLabel}
+              </button>
+            ))}
+          </div>
+        </div>
+      </footer>
+
+      {/* Gmail / ORCID Login Modal */}
+      <AuthGateModal
+        isOpen={isAuthModalOpen}
+        pendingActionLabel={
+          pendingExport?.type === 'pdf'
+            ? 'Full Profile PDF Report'
+            : pendingExport?.type === 'png'
+            ? `PNG Chart (${pendingExport.title})`
+            : null
+        }
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setPendingExport(null);
+        }}
+        onAuthenticated={handleAuthenticatedSuccess}
+      />
+
+      {/* Profile Settings Modal (Edit Display Name & Profile Picture) */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        user={authUser}
+        onClose={() => setIsProfileModalOpen(false)}
+        onUpdateUser={(updated) => {
+          saveSessionUser(updated);
+          setStatusBanner('Profile updated.');
+        }}
+        onSignOut={handleSignOut}
+      />
+    </div>
+  );
+}
