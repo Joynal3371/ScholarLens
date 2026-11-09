@@ -48,9 +48,11 @@ const WORLD_BORDERS_MESH = topojson.mesh(
 );
 const STATIC_GRATICULE = geoGraticule().step([15, 15])();
 
-const GLOBE_SIZE = 500;
-const CENTER = GLOBE_SIZE / 2;
-const VIEWPORT_RADIUS = 230;
+const GLOBE_WIDTH = 680;
+const GLOBE_HEIGHT = 520;
+const CENTER_X = GLOBE_WIDTH / 2;
+const CENTER_Y = GLOBE_HEIGHT / 2;
+const BASE_RADIUS = 210;
 const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 250;
 
@@ -183,18 +185,17 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     );
   }, [universities, selectedUniversityId]);
 
-  const projectedScale = VIEWPORT_RADIUS * zoom;
-  const sphereClipRadius = Math.min(VIEWPORT_RADIUS, projectedScale);
+  const projectedScale = BASE_RADIUS * zoom;
 
   const pathGenerator = useMemo(() => {
     const proj = geoOrthographic()
-      .translate([CENTER, CENTER])
+      .translate([CENTER_X, CENTER_Y])
       .scale(projectedScale)
       .rotate([-centerLng, -centerLat, 0])
       .clipAngle(90)
       .clipExtent([
-        [0, 0],
-        [GLOBE_SIZE, GLOBE_SIZE],
+        [-60, -60],
+        [GLOBE_WIDTH + 60, GLOBE_HEIGHT + 60],
       ])
       .precision(0.35);
     return geoPath(proj);
@@ -488,7 +489,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   const projectedUniversities = useMemo(() => {
     const centerCoord: [number, number] = [centerLng, centerLat];
     const pointProj = geoOrthographic()
-      .translate([CENTER, CENTER])
+      .translate([CENTER_X, CENTER_Y])
       .scale(projectedScale)
       .rotate([-centerLng, -centerLat, 0])
       .clipAngle(90);
@@ -497,12 +498,14 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       const angularDist = geoDistance(centerCoord, [u.lng, u.lat]);
       const visible = angularDist <= Math.PI / 2 - 0.01;
       const pt = visible ? pointProj([u.lng, u.lat]) : null;
-      const x = pt ? pt[0] : CENTER;
-      const y = pt ? pt[1] : CENTER;
-      const distFromViewportCenter = Math.hypot(x - CENTER, y - CENTER);
+      const x = pt ? pt[0] : CENTER_X;
+      const y = pt ? pt[1] : CENTER_Y;
       const inViewport =
         Boolean(visible && pt) &&
-        distFromViewportCenter <= sphereClipRadius - 4;
+        x >= -40 &&
+        x <= GLOBE_WIDTH + 40 &&
+        y >= -40 &&
+        y <= GLOBE_HEIGHT + 40;
       return {
         uni: u,
         visible: inViewport,
@@ -544,26 +547,21 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           item.screenX = item.exactX + (dx / drift) * maxDriftPx;
           item.screenY = item.exactY + (dy / drift) * maxDriftPx;
         }
-        const cx = item.screenX - CENTER;
-        const cy = item.screenY - CENTER;
-        const r = Math.hypot(cx, cy);
-        const maxR = sphereClipRadius - 10;
-        if (r > maxR) {
-          item.screenX = CENTER + (cx / r) * maxR;
-          item.screenY = CENTER + (cy / r) * maxR;
+        if (projectedScale < Math.max(GLOBE_WIDTH, GLOBE_HEIGHT)) {
+          const cx = item.screenX - CENTER_X;
+          const cy = item.screenY - CENTER_Y;
+          const r = Math.hypot(cx, cy);
+          const maxR = projectedScale - 6;
+          if (r > maxR && r > 0) {
+            item.screenX = CENTER_X + (cx / r) * maxR;
+            item.screenY = CENTER_Y + (cy / r) * maxR;
+          }
         }
       }
     }
 
     return raw;
-  }, [
-    universities,
-    centerLat,
-    centerLng,
-    projectedScale,
-    sphereClipRadius,
-    zoom,
-  ]);
+  }, [universities, centerLat, centerLng, projectedScale, zoom]);
 
   const filteredSelectedCoAuthors = useMemo(() => {
     if (!selectedUni) return [];
@@ -631,12 +629,13 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 ),
               }));
             }}
-            className={`relative mx-auto w-full max-w-[500px] aspect-square flex items-center justify-center overflow-hidden rounded-full touch-none ${
+            className={`relative w-full h-[480px] sm:h-[520px] flex items-center justify-center overflow-hidden rounded-xl border border-slate-800 bg-slate-950 touch-none ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
           >
             <svg
-              viewBox={`0 0 ${GLOBE_SIZE} ${GLOBE_SIZE}`}
+              viewBox={`0 0 ${GLOBE_WIDTH} ${GLOBE_HEIGHT}`}
+              preserveAspectRatio="xMidYMid meet"
               className="w-full h-full overflow-hidden"
               aria-label="Interactive round-world collaboration globe with country boundaries"
             >
@@ -647,17 +646,17 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   <stop offset="100%" stopColor="#050d1a" />
                 </radialGradient>
                 <clipPath id="globeCircleClip">
-                  <circle cx={CENTER} cy={CENTER} r={sphereClipRadius} />
+                  <circle cx={CENTER_X} cy={CENTER_Y} r={projectedScale} />
                 </clipPath>
               </defs>
 
               <circle
-                cx={CENTER}
-                cy={CENTER}
-                r={sphereClipRadius}
+                cx={CENTER_X}
+                cy={CENTER_Y}
+                r={projectedScale}
                 fill="url(#oceanSphereGrad)"
                 stroke="#334155"
-                strokeWidth="1.5"
+                strokeWidth={zoom > 3 ? 0 : 1.5}
               />
 
               <g clipPath="url(#globeCircleClip)">
@@ -803,8 +802,8 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   aria-label={`Inspect collaboration with ${uni.universityName} (${uni.paperCount} papers)`}
                   title={`${uni.universityName} (${uni.city}, ${uni.country}) — ${uni.lat.toFixed(4)}°N, ${uni.lng.toFixed(4)}°E — ${uni.paperCount} papers`}
                   style={{
-                    left: `${(screenX / GLOBE_SIZE) * 100}%`,
-                    top: `${(screenY / GLOBE_SIZE) * 100}%`,
+                    left: `${(screenX / GLOBE_WIDTH) * 100}%`,
+                    top: `${(screenY / GLOBE_HEIGHT) * 100}%`,
                     width: `${hitAreaSize}px`,
                     height: `${hitAreaSize}px`,
                   }}
@@ -845,10 +844,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 return (
                   <div
                     style={{
-                      left: `${(match.screenX / GLOBE_SIZE) * 100}%`,
+                      left: `${(match.screenX / GLOBE_WIDTH) * 100}%`,
                       top: `${Math.max(
-                        8,
-                        ((match.screenY - 18) / GLOBE_SIZE) * 100
+                        6,
+                        ((match.screenY - 18) / GLOBE_HEIGHT) * 100
                       )}%`,
                     }}
                     className="pointer-events-none absolute -translate-x-1/2 -translate-y-full z-30 bg-slate-900/95 border border-slate-700 text-white px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap shadow-md"

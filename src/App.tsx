@@ -257,7 +257,10 @@ export default function App() {
       setScholarUrlInput(resolved.scholarUrl);
       setFilter(DEFAULT_FILTER_STATE);
 
-      const nextUnis = aggregateUniversityCollaborations(resolved.publications);
+      const nextUnis = aggregateUniversityCollaborations(
+        resolved.publications,
+        resolved
+      );
       const greenOrFirst =
         nextUnis.find((u) =>
           u.universityName.toLowerCase().includes('green university')
@@ -302,7 +305,10 @@ export default function App() {
   const universities = useMemo(
     () =>
       activeProfile
-        ? aggregateUniversityCollaborations(activeProfile.publications)
+        ? aggregateUniversityCollaborations(
+            activeProfile.publications,
+            activeProfile
+          )
         : [],
     [activeProfile]
   );
@@ -1159,17 +1165,17 @@ export default function App() {
                         key={uni.universityId}
                         className="py-2.5 flex items-center justify-between gap-3"
                       >
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1 pr-2">
                           <div className="text-xs font-semibold text-slate-900 truncate">
                             {uni.universityName}
                           </div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-[11px] text-slate-500 truncate mt-0.5">
                             {uni.city}, {uni.country} · {uni.coAuthors.length}{' '}
                             co-authors
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-xs font-mono font-semibold text-slate-900 tabular-nums">
+                          <span className="text-xs font-mono font-semibold text-slate-900 tabular-nums whitespace-nowrap">
                             {uni.paperCount} papers
                           </span>
                           <button
@@ -1177,7 +1183,7 @@ export default function App() {
                             onClick={() =>
                               handleInspectUniversityOnGlobe(uni.universityId)
                             }
-                            className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md cursor-pointer"
+                            className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md cursor-pointer whitespace-nowrap shrink-0"
                           >
                             Locate
                           </button>
@@ -1195,7 +1201,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => navigateToPage('publications')}
-                      className="text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
+                      className="text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer whitespace-nowrap shrink-0"
                     >
                       Full Portfolio ({stats.totalPapers}) →
                     </button>
@@ -1206,16 +1212,16 @@ export default function App() {
                       return (
                         <div
                           key={pub.id}
-                          className="py-2.5 flex items-start justify-between gap-3"
+                          className="py-2.5 flex items-center justify-between gap-3"
                         >
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1 pr-3 overflow-hidden">
                             <a
                               href={getPublicationUrl(pub)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs font-semibold text-slate-900 hover:text-blue-600 hover:underline line-clamp-1 inline-flex items-center gap-1 group"
+                              className="text-xs font-semibold text-slate-900 hover:text-blue-600 hover:underline flex items-center gap-1.5 w-full min-w-0 group"
                             >
-                              <span className="truncate">{pub.title}</span>
+                              <span className="block truncate flex-1 min-w-0">{pub.title}</span>
                               <ExternalLink className="w-3 h-3 shrink-0 text-slate-400 group-hover:text-blue-600" />
                             </a>
                             <div className="text-[11px] text-slate-500 truncate mt-0.5">
@@ -1225,9 +1231,11 @@ export default function App() {
                               </span>
                             </div>
                           </div>
-                          <span className="text-xs font-mono font-bold text-slate-900 tabular-nums shrink-0">
-                            {pub.citations.toLocaleString()} cit.
-                          </span>
+                          <div className="shrink-0 text-right">
+                            <span className="text-xs font-mono font-bold text-slate-900 tabular-nums whitespace-nowrap bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
+                              {pub.citations.toLocaleString()} cit.
+                            </span>
+                          </div>
                         </div>
                       );
                     })}
@@ -1299,24 +1307,23 @@ export default function App() {
           {activeProfile && (
             <nav
               aria-label="Pagination Navigation"
-              className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4 shadow-xs"
+              className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-2 sm:gap-4 shadow-xs"
             >
               {prevPageMeta ? (
                 <button
                   type="button"
                   onClick={() => navigateToPage(prevPageMeta.id)}
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-blue-600 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-slate-700 hover:text-blue-600 cursor-pointer whitespace-nowrap shrink-0"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>{prevPageMeta.label}</span>
+                  <span className="hidden sm:inline">{prevPageMeta.label}</span>
+                  <span className="sm:hidden">{prevPageMeta.shortLabel}</span>
                 </button>
               ) : (
-                <span className="text-xs text-slate-400">
-                  Page 1 of {PAGE_METADATA.length}
-                </span>
+                <div className="w-16 sm:w-24 shrink-0" aria-hidden="true" />
               )}
 
-              <span className="hidden sm:inline text-xs font-mono text-slate-400">
+              <span className="text-xs font-mono text-slate-500 whitespace-nowrap">
                 Page {currentPageIndex + 1} of {PAGE_METADATA.length}
               </span>
 
@@ -1324,18 +1331,20 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => navigateToPage(nextPageMeta.id)}
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  <span>{nextPageMeta.label}</span>
+                  <span className="hidden sm:inline">{nextPageMeta.label}</span>
+                  <span className="sm:hidden">{nextPageMeta.shortLabel}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => navigateToPage('overview')}
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  <span>Back to Overview</span>
+                  <span className="hidden sm:inline">Back to Overview</span>
+                  <span className="sm:hidden">Overview</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               )}

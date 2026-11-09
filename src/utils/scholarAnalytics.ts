@@ -800,7 +800,8 @@ export function filterAndSortPublications(
  * Aggregates all universities with which the researcher has collaborated.
  */
 export function aggregateUniversityCollaborations(
-  publications: Publication[]
+  publications: Publication[],
+  homeProfile?: ResearcherProfile
 ): UniversityCollaboration[] {
   const uniMap = new Map<
     string,
@@ -811,7 +812,53 @@ export function aggregateUniversityCollaborations(
     }
   >();
 
+  // 1. Always include the researcher's home institution when homeProfile is provided
+  if (
+    homeProfile &&
+    homeProfile.homeUniversity &&
+    homeProfile.homeUniversityId
+  ) {
+    const homeMeta: CoAuthorAffiliation = {
+      name: homeProfile.name,
+      universityId: homeProfile.homeUniversityId,
+      universityName: homeProfile.homeUniversity,
+      city: homeProfile.homeCity || 'Dhaka',
+      country: homeProfile.homeCountry || 'Bangladesh',
+      countryCode: 'BD',
+      continent: 'Asia',
+      lat: homeProfile.homeLat || 23.7548,
+      lng: homeProfile.homeLng || 90.3585,
+      isHomeInstitution: true,
+    };
+    uniMap.set(homeProfile.homeUniversityId, {
+      meta: homeMeta,
+      papers: new Map(),
+      authorMap: new Map(),
+    });
+  }
+
   for (const pub of publications) {
+    // If researcher is affiliated with home university, attribute publication to home institution
+    if (
+      homeProfile &&
+      homeProfile.homeUniversityId &&
+      uniMap.has(homeProfile.homeUniversityId)
+    ) {
+      const homeEntry = uniMap.get(homeProfile.homeUniversityId)!;
+      homeEntry.papers.set(pub.id, pub);
+      if (!homeEntry.authorMap.has(homeProfile.name)) {
+        homeEntry.authorMap.set(homeProfile.name, {
+          paperIds: new Set(),
+          citations: 0,
+        });
+      }
+      const hAuthor = homeEntry.authorMap.get(homeProfile.name)!;
+      if (!hAuthor.paperIds.has(pub.id)) {
+        hAuthor.paperIds.add(pub.id);
+        hAuthor.citations += pub.citations;
+      }
+    }
+
     for (const ca of pub.coAuthors) {
       if (ca.universityId === 'unlisted') continue;
       if (!uniMap.has(ca.universityId)) {

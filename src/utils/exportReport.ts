@@ -7,6 +7,7 @@ import {
   CountryCollaboration,
   JournalSummary,
   getPublicationPortfolioCategory,
+  getPublicationUrl,
 } from './scholarAnalytics';
 
 /**
@@ -573,8 +574,14 @@ export async function generateResearcherPdfReport(params: {
     ...top10CoAuthors.map((a) => a.paperCount)
   );
 
-  // Left Card: Top 10 Countries
-  const listCardH = Math.max(38, Math.max(top10Countries.length, top10CoAuthors.length) * 5.8 + 8);
+  // Generous card height so country names and co-author names are completely spelled out without truncation
+  const rowItemH1 = 7.1;
+  const listCardH = Math.max(
+    38,
+    Math.max(top10Countries.length, top10CoAuthors.length) * rowItemH1 + 7.5
+  );
+
+  // Left Card: Top 10 Countries (Full names with zero slicing)
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(margin, y, halfW, listCardH, 1.5, 1.5, 'FD');
@@ -584,40 +591,44 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Collaborating Countries', margin + 3, y + 5.2);
 
   top10Countries.forEach((c, idx) => {
-    const ry = y + 7.5 + idx * 5.8;
+    const ry = y + 7.2 + idx * rowItemH1;
+
     // Rank Badge
     doc.setFillColor(239, 246, 255);
-    doc.roundedRect(margin + 3, ry, 5, 4.5, 0.8, 0.8, 'F');
+    doc.roundedRect(margin + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 5.5, ry + 3.3, { align: 'center' });
+    doc.text(`#${idx + 1}`, margin + 5, ry + 3.2, { align: 'center' });
 
+    // Full Country Name
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.8);
+    doc.setFontSize(6.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(c.country.slice(0, 22), margin + 9.5, ry + 2.7);
+    const countryFullName =
+      c.country.length > 52 ? c.country.slice(0, 51) + '…' : c.country;
+    doc.text(countryFullName, margin + 8.5, ry + 2.6);
+
+    // Row 2: Proportional Bar + Detailed Paper/Citation Metrics
+    const barMaxW = 26;
+    const barFillW =
+      Math.max(2.5, (c.paperCount / maxTopCountryPapers) * barMaxW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(margin + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
+    doc.setFillColor(14, 165, 233);
+    doc.rect(margin + 8.5, ry + 3.8, barFillW, 1.2, 'F');
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.8);
     doc.setTextColor(71, 85, 105);
     doc.text(
-      `${c.paperCount}p (${c.percentageOfTotalPapers}%) · ${c.totalCitations.toLocaleString()} cit.`,
-      margin + halfW - 3,
-      ry + 2.7,
-      { align: 'right' }
+      `${c.paperCount} papers (${c.percentageOfTotalPapers}%) · ${c.totalCitations.toLocaleString()} cit.`,
+      margin + 36.5,
+      ry + 4.9
     );
-
-    // Proportional Bar
-    const barMaxW = halfW - 12.5;
-    const barFillW = Math.max(3, (c.paperCount / maxTopCountryPapers) * barMaxW);
-    doc.setFillColor(241, 245, 249);
-    doc.rect(margin + 9.5, ry + 3.8, barMaxW, 1.2, 'F');
-    doc.setFillColor(14, 165, 233);
-    doc.rect(margin + 9.5, ry + 3.8, barFillW, 1.2, 'F');
   });
 
-  // Right Card: Top 10 Co-Authors
+  // Right Card: Top 10 Co-Authors (Full names with zero slicing)
   const rightCardX = margin + halfW + 4;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
@@ -628,42 +639,42 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Research Co-Authors', rightCardX + 3, y + 5.2);
 
   top10CoAuthors.forEach((ca, idx) => {
-    const ry = y + 7.5 + idx * 5.8;
+    const ry = y + 7.2 + idx * rowItemH1;
+
+    // Rank Badge
     doc.setFillColor(238, 242, 255);
-    doc.roundedRect(rightCardX + 3, ry, 5, 4.5, 0.8, 0.8, 'F');
+    doc.roundedRect(rightCardX + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(79, 70, 229);
-    doc.text(`#${idx + 1}`, rightCardX + 5.5, ry + 3.3, { align: 'center' });
+    doc.text(`#${idx + 1}`, rightCardX + 5, ry + 3.2, { align: 'center' });
 
+    // Full Co-Author Name & Affiliation
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.8);
+    doc.setFontSize(6.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(
-      `${ca.name.slice(0, 19)} (${ca.country.slice(0, 10)})`,
-      rightCardX + 9.5,
-      ry + 2.7
-    );
+    const authorLabel = `${ca.name} (${ca.country})`;
+    const authorFullLabel =
+      authorLabel.length > 52 ? authorLabel.slice(0, 51) + '…' : authorLabel;
+    doc.text(authorFullLabel, rightCardX + 8.5, ry + 2.6);
+
+    // Row 2: Proportional Bar + Detailed Metrics
+    const barMaxW = 26;
+    const barFillW =
+      Math.max(2.5, (ca.paperCount / maxTopAuthorPapers) * barMaxW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(rightCardX + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
+    doc.setFillColor(79, 70, 229);
+    doc.rect(rightCardX + 8.5, ry + 3.8, barFillW, 1.2, 'F');
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.8);
     doc.setTextColor(71, 85, 105);
     doc.text(
-      `${ca.paperCount}p · ${ca.totalCitations.toLocaleString()} cit.`,
-      rightCardX + halfW - 3,
-      ry + 2.7,
-      { align: 'right' }
+      `${ca.paperCount} papers · ${ca.totalCitations.toLocaleString()} cit.`,
+      rightCardX + 36.5,
+      ry + 4.9
     );
-
-    const barMaxW = halfW - 12.5;
-    const barFillW = Math.max(
-      3,
-      (ca.paperCount / maxTopAuthorPapers) * barMaxW
-    );
-    doc.setFillColor(241, 245, 249);
-    doc.rect(rightCardX + 9.5, ry + 3.8, barMaxW, 1.2, 'F');
-    doc.setFillColor(79, 70, 229);
-    doc.rect(rightCardX + 9.5, ry + 3.8, barFillW, 1.2, 'F');
   });
 
   // =========================================================================
@@ -724,10 +735,10 @@ export async function generateResearcherPdfReport(params: {
   doc.setFontSize(6.8);
   doc.setTextColor(255, 255, 255);
   doc.text('Rank', margin + 2, y + 3.8);
-  doc.text('Publication Title', margin + 11, y + 3.8);
-  doc.text('Journal / Conference Venue', margin + 104, y + 3.8);
-  doc.text('Tier', margin + 144, y + 3.8);
-  doc.text('Year', margin + 170, y + 3.8);
+  doc.text('Publication Title', margin + 10, y + 3.8);
+  doc.text('Journal / Conference Venue', margin + 100, y + 3.8);
+  doc.text('Tier', margin + 140, y + 3.8);
+  doc.text('Year', margin + 162, y + 3.8, { align: 'center' });
   doc.text('Citations', margin + contentW - 2, y + 3.8, { align: 'right' });
   y += 5.5;
 
@@ -740,31 +751,44 @@ export async function generateResearcherPdfReport(params: {
     doc.setDrawColor(226, 232, 240);
     doc.line(margin, y + rowH, margin + contentW, y + rowH);
 
+    // Rank Badge
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.8);
     doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 2.5, y + 4.2);
+    doc.text(`#${idx + 1}`, margin + 2, y + 4.2);
 
+    // Clickable Publication Title
+    const paperUrl = getPublicationUrl(pub);
+    const titleText =
+      pub.title.length > 54 ? pub.title.slice(0, 53) + '…' : pub.title;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.8);
-    doc.setTextColor(15, 23, 42);
-    doc.text(pub.title.slice(0, 56), margin + 11, y + 4.2);
+    doc.setTextColor(29, 78, 216); // High-contrast academic blue for clickable link
+    doc.textWithLink(titleText, margin + 10, y + 4.2, { url: paperUrl });
+    const titleW = (doc.getStringUnitWidth(titleText) * 6.8) / (72 / 25.4);
+    doc.link(margin + 10, y + 0.6, titleW, 5.0, { url: paperUrl });
 
+    // Journal / Conference Venue
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(71, 85, 105);
-    doc.text(pub.venue.slice(0, 22), margin + 104, y + 4.2);
+    const venueText =
+      pub.venue.length > 22 ? pub.venue.slice(0, 21) + '…' : pub.venue;
+    doc.text(venueText, margin + 100, y + 4.2);
 
+    // Tier / Category
     const cat = getPublicationPortfolioCategory(pub);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(30, 58, 138);
-    doc.text(cat, margin + 144, y + 4.2);
+    doc.text(cat, margin + 140, y + 4.2);
 
+    // Year (Centered at margin + 162 with 7mm clear margin on both sides)
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text(String(pub.year), margin + 170, y + 4.2);
+    doc.text(String(pub.year), margin + 162, y + 4.2, { align: 'center' });
 
+    // Citations (Right-aligned)
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
     doc.text(pub.citations.toLocaleString(), margin + contentW - 2, y + 4.2, {
@@ -796,8 +820,14 @@ export async function generateResearcherPdfReport(params: {
     ...top10Journals.map((j) => j.paperCount)
   );
 
-  // Left Card: Top 10 Partner Universities
-  const listCard2H = Math.max(38, Math.max(top10Unis.length, top10Journals.length) * 5.8 + 8);
+  // Generous card height so institution names are completely spelled out without truncation
+  const rowItemH = 7.1;
+  const listCard2H = Math.max(
+    38,
+    Math.max(top10Unis.length, top10Journals.length) * rowItemH + 7.5
+  );
+
+  // Left Card: Top 10 Partner Universities (Full names with zero slicing)
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(margin, y, halfW, listCard2H, 1.5, 1.5, 'FD');
@@ -807,38 +837,45 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Collaborating Institutions', margin + 3, y + 5.2);
 
   top10Unis.forEach((u, idx) => {
-    const ry = y + 7.5 + idx * 5.8;
+    const ry = y + 7.2 + idx * rowItemH;
+
+    // Rank Badge
     doc.setFillColor(239, 246, 255);
-    doc.roundedRect(margin + 3, ry, 5, 4.5, 0.8, 0.8, 'F');
+    doc.roundedRect(margin + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 5.5, ry + 3.3, { align: 'center' });
+    doc.text(`#${idx + 1}`, margin + 5, ry + 3.2, { align: 'center' });
 
+    // Full University Name (up to 55 characters displayed across full width)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.8);
+    doc.setFontSize(6.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(u.universityName.slice(0, 27), margin + 9.5, ry + 2.7);
+    const uniFullName =
+      u.universityName.length > 52
+        ? u.universityName.slice(0, 51) + '…'
+        : u.universityName;
+    doc.text(uniFullName, margin + 8.5, ry + 2.6);
+
+    // Row 2: Proportional Bar + Detailed Paper/Citation Metrics
+    const barMaxW = 26;
+    const barFillW = Math.max(2.5, (u.paperCount / maxUniPapers) * barMaxW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(margin + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
+    doc.setFillColor(37, 99, 235);
+    doc.rect(margin + 8.5, ry + 3.8, barFillW, 1.2, 'F');
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.8);
     doc.setTextColor(71, 85, 105);
     doc.text(
-      `${u.paperCount}p · ${u.totalCitations.toLocaleString()} cit.`,
-      margin + halfW - 3,
-      ry + 2.7,
-      { align: 'right' }
+      `${u.paperCount} papers (${u.country}) · ${u.totalCitations.toLocaleString()} cit.`,
+      margin + 36.5,
+      ry + 4.9
     );
-
-    const barMaxW = halfW - 12.5;
-    const barFillW = Math.max(3, (u.paperCount / maxUniPapers) * barMaxW);
-    doc.setFillColor(241, 245, 249);
-    doc.rect(margin + 9.5, ry + 3.8, barMaxW, 1.2, 'F');
-    doc.setFillColor(37, 99, 235);
-    doc.rect(margin + 9.5, ry + 3.8, barFillW, 1.2, 'F');
   });
 
-  // Right Card: Top 10 Journals / Venues
+  // Right Card: Top 10 Journals / Venues (Full venue names with zero slicing)
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(rightCardX, y, halfW, listCard2H, 1.5, 1.5, 'FD');
@@ -848,35 +885,40 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Journals & Conference Venues', rightCardX + 3, y + 5.2);
 
   top10Journals.forEach((j, idx) => {
-    const ry = y + 7.5 + idx * 5.8;
+    const ry = y + 7.2 + idx * rowItemH;
+
+    // Rank Badge
     doc.setFillColor(240, 253, 244);
-    doc.roundedRect(rightCardX + 3, ry, 5, 4.5, 0.8, 0.8, 'F');
+    doc.roundedRect(rightCardX + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(5, 150, 105);
-    doc.text(`#${idx + 1}`, rightCardX + 5.5, ry + 3.3, { align: 'center' });
+    doc.text(`#${idx + 1}`, rightCardX + 5, ry + 3.2, { align: 'center' });
 
+    // Full Venue Name
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.8);
+    doc.setFontSize(6.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(j.venue.slice(0, 26), rightCardX + 9.5, ry + 2.7);
+    const venueFullName =
+      j.venue.length > 52 ? j.venue.slice(0, 51) + '…' : j.venue;
+    doc.text(venueFullName, rightCardX + 8.5, ry + 2.6);
+
+    // Row 2: Proportional Bar + Detailed Metrics
+    const barMaxW = 26;
+    const barFillW = Math.max(2.5, (j.paperCount / maxJournalPapers) * barMaxW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(rightCardX + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
+    doc.setFillColor(16, 185, 129);
+    doc.rect(rightCardX + 8.5, ry + 3.8, barFillW, 1.2, 'F');
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.8);
     doc.setTextColor(71, 85, 105);
     doc.text(
-      `${j.paperCount}p · ${j.totalCitations.toLocaleString()} cit.`,
-      rightCardX + halfW - 3,
-      ry + 2.7,
-      { align: 'right' }
+      `${j.paperCount} papers (${j.quartile}) · ${j.totalCitations.toLocaleString()} cit.`,
+      rightCardX + 36.5,
+      ry + 4.9
     );
-
-    const barMaxW = halfW - 12.5;
-    const barFillW = Math.max(3, (j.paperCount / maxJournalPapers) * barMaxW);
-    doc.setFillColor(241, 245, 249);
-    doc.rect(rightCardX + 9.5, ry + 3.8, barMaxW, 1.2, 'F');
-    doc.setFillColor(16, 185, 129);
-    doc.rect(rightCardX + 9.5, ry + 3.8, barFillW, 1.2, 'F');
   });
 
   // =========================================================================
@@ -900,10 +942,10 @@ export async function generateResearcherPdfReport(params: {
     doc.setFontSize(7.2);
     doc.setTextColor(255, 255, 255);
     doc.text('#', margin + 2, topY + 4.4);
-    doc.text('Publication Title', margin + 11, topY + 4.4);
-    doc.text('Journal / Conference Venue', margin + 104, topY + 4.4);
-    doc.text('Category', margin + 144, topY + 4.4);
-    doc.text('Year', margin + 170, topY + 4.4);
+    doc.text('Publication Title', margin + 10, topY + 4.4);
+    doc.text('Journal / Conference Venue', margin + 100, topY + 4.4);
+    doc.text('Category', margin + 140, topY + 4.4);
+    doc.text('Year', margin + 162, topY + 4.4, { align: 'center' });
     doc.text('Citations', margin + contentW - 2, topY + 4.4, { align: 'right' });
     return topY + 6.5;
   };
@@ -924,27 +966,40 @@ export async function generateResearcherPdfReport(params: {
     doc.setDrawColor(241, 245, 249);
     doc.line(margin, y + rowH, margin + contentW, y + rowH);
 
+    // Publication Number
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.8);
     doc.setTextColor(100, 116, 139);
     doc.text(String(idx + 1), margin + 2, y + 4.3);
 
+    // Clickable Publication Title
+    const paperUrl = getPublicationUrl(p);
+    const titleText =
+      p.title.length > 54 ? p.title.slice(0, 53) + '…' : p.title;
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(15, 23, 42);
-    doc.text(p.title.slice(0, 56), margin + 11, y + 4.3);
+    doc.setTextColor(29, 78, 216); // High-contrast academic blue for clickable link
+    doc.textWithLink(titleText, margin + 10, y + 4.3, { url: paperUrl });
+    const titleW = (doc.getStringUnitWidth(titleText) * 6.8) / (72 / 25.4);
+    doc.link(margin + 10, y + 0.6, titleW, 5.0, { url: paperUrl });
 
+    // Journal / Conference Venue
     doc.setTextColor(71, 85, 105);
-    doc.text(p.venue.slice(0, 22), margin + 104, y + 4.3);
+    const venueText =
+      p.venue.length > 22 ? p.venue.slice(0, 21) + '…' : p.venue;
+    doc.text(venueText, margin + 100, y + 4.3);
 
+    // Category
     const cat = getPublicationPortfolioCategory(p);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(37, 99, 235);
-    doc.text(cat, margin + 144, y + 4.3);
+    doc.text(cat, margin + 140, y + 4.3);
 
+    // Year (Centered at margin + 162 with clear spacing)
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text(String(p.year), margin + 170, y + 4.3);
+    doc.text(String(p.year), margin + 162, y + 4.3, { align: 'center' });
 
+    // Citations (Right-aligned)
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
     doc.text(p.citations.toLocaleString(), margin + contentW - 2, y + 4.3, {
