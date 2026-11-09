@@ -15,6 +15,7 @@ import {
   geoPath,
   geoGraticule,
   geoDistance,
+  geoInterpolate,
 } from 'd3-geo';
 import * as topojson from 'topojson-client';
 import worldAtlasData from 'world-atlas/countries-110m.json';
@@ -221,7 +222,15 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         [GLOBE_WIDTH + 60, GLOBE_HEIGHT + 60],
       ])
       .precision(0.35);
-    return geoPath(proj);
+    const rawPath = geoPath(proj);
+    return (geom: any): string => {
+      if (!geom) return '';
+      try {
+        return rawPath(geom) || '';
+      } catch {
+        return '';
+      }
+    };
   }, [centerLat, centerLng, projectedScale]);
 
   // Native wheel + Android multi-touch pinch-to-zoom and single-finger pan
@@ -545,30 +554,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     return candidateLabels;
   }, [centerLat, centerLng, projectedScale, zoom]);
 
-  const arcPaths = useMemo(() => {
-    return universities
-      .filter((u) => u.universityId !== profile.homeUniversityId)
-      .map((u) => {
-        const lineFeature: any = {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: [
-              [profile.homeLng, profile.homeLat],
-              [u.lng, u.lat],
-            ],
-          },
-        };
-        const d = pathGenerator(lineFeature) || '';
-        return {
-          id: u.universityId,
-          isSelected: u.universityId === selectedUni?.universityId,
-          d,
-        };
-      })
-      .filter((a) => a.d.length > 0);
-  }, [universities, profile, pathGenerator, selectedUni]);
-
   const projectedUniversities = useMemo(() => {
     const centerCoord: [number, number] = [centerLng, centerLat];
     const pointProj = geoOrthographic()
@@ -647,6 +632,162 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     return raw;
   }, [universities, centerLat, centerLng, projectedScale, zoom]);
 
+  // 3D Elevated Collaboration Arcs (floating above the globe surface with ground shadow traces)
+  const arcPaths = useMemo(() => {
+    const centerCoord: [number, number] = [centerLng, centerLat];
+    const surfaceProj = geoOrthographic()
+      .translate([CENTER_X, CENTER_Y])
+      .scale(projectedScale)
+      .rotate([-centerLng, -centerLat, 0])
+      .clipAngle(90);
+
+    const nodeLookup = new Map<
+      string,
+      { exactX: number; exactY: number; screenX: number; screenY: number; visible: boolean }
+    >();
+    for (const item of projectedUniversities) {
+      nodeLookup.set(item.uni.universityId, item);
+    }
+
+    const homeNode = nodeLookup.get(profile.homeUniversityId);
+    const homeOffsetX = homeNode ? homeNode.screenX - homeNode.exactX : 0;
+    const homeOffsetY = homeNode ? homeNode.screenY - homeNode.exactY : 0;
+    const homeCoord: [number, number] = [profile.homeLng, profile.homeLat];
+
+    const HOVER_CLEARANCE_PX = 4.5; // Keeps arc endpoints slightly above the ground
+
+    return universities
+      .filter((u) => u.universityId !== profile.homeUniversityId)
+      .map((u) => {
+        const targetCoord: [number, number] = [u.lng, u.lat];
+        const targetNode = nodeLookup.get(u.universityId);
+        const targetOffsetX = targetNode
+          ? targetNode.screenX - targetNode.exactX
+          : 0;
+        const targetOffsetY = targetNode
+          ? targetNode.screenY - targetNode.exactY
+          : 0;
+
+        const totalAngularSpan = geoDistance(homeCoord, targetCoord);
+        const interpolator = geoInterpolate(homeCoord, targetCoord);
+        const STEPS = 32;
+
+        const groundPoints: [number, number][] = [];
+        for (let i = 0; i <= STEPS; i++) {
+          const t = i / STEPS;
+          const coord = interpolator(t) as [number, number];
+          const distFromCenter = geoDistance(centerCoord, coord);
+          if (distFromCenter > Math.PI / 2 - 0.008) continue;
+          const pt = surfaceProj(coord);
+          if (!pt) continue;
+          const gx = pt[0] + (1 - t) * homeOffsetX + t * targetOffsetX;
+          const gy = pt[1] + (1 - t) * homeOffsetY + t * targetOffsetY;
+          groundPoints.push([gx, gy]);
+        }
+
+        if (groundPoints.length < 2) {
+          return null;
+        }
+
+        const firstPt = groundPoints[0];
+        const lastPt = groundPoints[groundPoints.length - 1];
+        const chordDx = lastPt[0] - firstPt[0];
+        const chordDy = lastPt[1] - firstPt[1];
+        const chordLen = Math.hypot(chordDx, chordDy);
+
+        // Compute upward-oriented 3D camera normal so every arc rises skyward away from the ground
+        let normX = 0;
+        let normY = -1;
+        if (chordLen > 1) {
+          let perpX = -chordDy / chordLen;
+          let perpY = chordDx / chordLen;
+          if (perpY > 0) {
+            perpX = -perpX;
+            perpY = -perpY;
+          }
+          // Blend perpendicular arch with vertical skyward lift (-Y)
+          normX = perpX * 0.55;
+          normY = perpY * 0.55 - 0.45;
+          const nLen = Math.hypot(normX, normY) || 1;
+          normX /= nLen;
+          normY /= nLen;
+        }
+
+        const peakArchPx = Math.min(
+          68,
+          Math.max(16, chordLen * 0.28 + totalAngularSpan * 28)
+        );
+        const radialAltitudeFactor = Math.min(
+          0.22,
+          Math.max(0.05, totalAngularSpan * 0.14)
+        );
+
+        const elevatedPoints: [number, number][] = groundPoints.map(
+          ([gx, gy], idx) => {
+            const uParam = idx / (groundPoints.length - 1);
+            // Smooth 3D parabolic arch that is 0 at endpoints and 1 at apex, plus constant HOVER_CLEARANCE_PX so it never touches the ground
+            const arch = Math.pow(Math.sin(Math.PI * uParam), 0.78);
+
+            // 1. 3D spherical radial altitude (pushes arc outward from sphere center)
+            const vx = gx - CENTER_X;
+            const vy = gy - CENTER_Y;
+            const radialLiftX = vx * radialAltitudeFactor * arch;
+            const radialLiftY = vy * radialAltitudeFactor * arch;
+
+            // 2. 3D perspective skyward arch + hover clearance above the ground
+            const skyLiftX = normX * peakArchPx * arch;
+            const skyLiftY =
+              normY * peakArchPx * arch - HOVER_CLEARANCE_PX;
+
+            return [gx + radialLiftX + skyLiftX, gy + radialLiftY + skyLiftY];
+          }
+        );
+
+        const shadowD = groundPoints
+          .map(
+            (p, idx) =>
+              `${idx === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`
+          )
+          .join(' ');
+
+        const elevatedD = elevatedPoints
+          .map(
+            (p, idx) =>
+              `${idx === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`
+          )
+          .join(' ');
+
+        return {
+          id: u.universityId,
+          isSelected: u.universityId === selectedUni?.universityId,
+          shadowD,
+          elevatedD,
+          startGround: firstPt,
+          startElevated: elevatedPoints[0],
+          endGround: lastPt,
+          endElevated: elevatedPoints[elevatedPoints.length - 1],
+        };
+      })
+      .filter(Boolean) as {
+      id: string;
+      isSelected: boolean;
+      shadowD: string;
+      elevatedD: string;
+      startGround: [number, number];
+      startElevated: [number, number];
+      endGround: [number, number];
+      endElevated: [number, number];
+    }[];
+  }, [
+    universities,
+    profile,
+    projectedUniversities,
+    centerLat,
+    centerLng,
+    projectedScale,
+    selectedUni,
+  ]);
+
   // Precomputed flattened world map data for PNG & PDF exports
   const flatMapData = useMemo(() => {
     const countries = WORLD_COUNTRY_FEATURES.map((feat, idx) => {
@@ -688,10 +829,14 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       .map((n) => {
         const midX = (homePt[0] + n.x) / 2;
         const dist = Math.hypot(n.x - homePt[0], n.y - homePt[1]);
-        const midY = Math.max(24, (homePt[1] + n.y) / 2 - dist * 0.18);
+        const archLift = Math.max(22, Math.min(85, dist * 0.24));
+        const midY = Math.max(18, (homePt[1] + n.y) / 2 - archLift);
+        const startY = homePt[1] - 4;
+        const endY = n.y - 4;
         return {
           id: `flat-arc-${n.uni.universityId}`,
-          d: `M ${homePt[0].toFixed(1)} ${homePt[1].toFixed(1)} Q ${midX.toFixed(1)} ${midY.toFixed(1)} ${n.x.toFixed(1)} ${n.y.toFixed(1)}`,
+          shadowD: `M ${homePt[0].toFixed(1)} ${homePt[1].toFixed(1)} L ${n.x.toFixed(1)} ${n.y.toFixed(1)}`,
+          d: `M ${homePt[0].toFixed(1)} ${startY.toFixed(1)} Q ${midX.toFixed(1)} ${midY.toFixed(1)} ${n.x.toFixed(1)} ${endY.toFixed(1)}`,
         };
       });
 
@@ -810,14 +955,32 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             />
           )}
           {flatMapData.arcs.map((arc) => (
-            <path
-              key={arc.id}
-              d={arc.d}
-              fill="none"
-              stroke="rgba(56, 189, 248, 0.65)"
-              strokeWidth="1.4"
-              strokeDasharray="4 3"
-            />
+            <g key={arc.id}>
+              {/* Ground shadow on flat world map */}
+              <path
+                d={arc.shadowD}
+                fill="none"
+                stroke="rgba(2, 6, 23, 0.55)"
+                strokeWidth="1.2"
+                strokeDasharray="2 3"
+              />
+              {/* 3D elevated glow */}
+              <path
+                d={arc.d}
+                fill="none"
+                stroke="rgba(56, 189, 248, 0.22)"
+                strokeWidth="3.6"
+                strokeLinecap="round"
+              />
+              {/* 3D elevated arc line */}
+              <path
+                d={arc.d}
+                fill="none"
+                stroke="rgba(125, 211, 252, 0.82)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </g>
           ))}
           {flatMapData.nodes.map((n) => (
             <g key={`flat-node-${n.uni.universityId}`}>
@@ -996,9 +1159,9 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   <path
                     key={dist.id}
                     d={dist.d}
-                    fill="rgba(14, 116, 144, 0.12)"
-                    stroke="rgba(125, 211, 252, 0.52)"
-                    strokeWidth={zoom >= 6 ? '0.9' : '0.65'}
+                    fill="none"
+                    stroke="rgba(125, 211, 252, 0.55)"
+                    strokeWidth={zoom >= 6 ? '0.95' : '0.7'}
                     strokeDasharray="2 1.5"
                   >
                     <title>{dist.name} District</title>
@@ -1035,18 +1198,78 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   </text>
                 ))}
 
+                {/* Ground shadows cast by the 3D elevated arcs onto the globe surface */}
                 {arcPaths.map((arc) => (
                   <path
-                    key={`arc-${arc.id}`}
-                    d={arc.d}
+                    key={`arc-shadow-${arc.id}`}
+                    d={arc.shadowD}
                     fill="none"
                     stroke={
-                      arc.isSelected ? '#38bdf8' : 'rgba(56, 189, 248, 0.45)'
+                      arc.isSelected
+                        ? 'rgba(2, 6, 23, 0.72)'
+                        : 'rgba(2, 6, 23, 0.48)'
                     }
-                    strokeWidth={arc.isSelected ? '2.2' : '1.15'}
-                    strokeDasharray={arc.isSelected ? undefined : '3 3'}
+                    strokeWidth={arc.isSelected ? '1.8' : '1.1'}
+                    strokeDasharray="2 3"
+                    className="pointer-events-none"
                   />
                 ))}
+              </g>
+
+              {/* 3D Elevated Flight Arcs (rendered above the globe surface clip so high-altitude 3D arcs rise freely off the ground) */}
+              <g className="pointer-events-none">
+                {arcPaths.map((arc) => (
+                  <g key={`arc-3d-${arc.id}`}>
+                    {/* Subtle 3D vertical light risers showing the arc floating above the ground endpoints */}
+                    <line
+                      x1={arc.startGround[0]}
+                      y1={arc.startGround[1]}
+                      x2={arc.startElevated[0]}
+                      y2={arc.startElevated[1]}
+                      stroke="rgba(251, 191, 36, 0.65)"
+                      strokeWidth="1.2"
+                    />
+                    <line
+                      x1={arc.endGround[0]}
+                      y1={arc.endGround[1]}
+                      x2={arc.endElevated[0]}
+                      y2={arc.endElevated[1]}
+                      stroke={
+                        arc.isSelected
+                          ? '#7dd3fc'
+                          : 'rgba(56, 189, 248, 0.6)'
+                      }
+                      strokeWidth="1.2"
+                    />
+                    {/* 3D Outer atmospheric glow */}
+                    <path
+                      d={arc.elevatedD}
+                      fill="none"
+                      stroke={
+                        arc.isSelected
+                          ? 'rgba(56, 189, 248, 0.38)'
+                          : 'rgba(56, 189, 248, 0.18)'
+                      }
+                      strokeWidth={arc.isSelected ? '5.2' : '3.4'}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    {/* Core elevated 3D collaboration arc floating above the ground */}
+                    <path
+                      d={arc.elevatedD}
+                      fill="none"
+                      stroke={
+                        arc.isSelected ? '#7dd3fc' : 'rgba(56, 189, 248, 0.78)'
+                      }
+                      strokeWidth={arc.isSelected ? '2.3' : '1.4'}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                ))}
+              </g>
+
+              <g clipPath="url(#globeCircleClip)">
 
                 {/* Single, clear, easily clickable university dot directly on the round globe (zero duplicate floating dots) */}
                 {projectedUniversities.map(
