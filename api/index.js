@@ -10205,7 +10205,10 @@ function shouldExcludeNonPaperRecord(params) {
   const sType = (params.sourceType || "").toLowerCase();
   if (!title || title.length < 10) return true;
   if (/,\s*0(\s|$)/.test(title) || /,\s*0(\s|$)/.test(rawVenue)) return true;
-  if (tLower.includes("the author (s)") || tLower.includes("the author(s)") || /^[a-z]{1,3}\d{4,}$/i.test(title) || /^[a-z]{1,3}\d{4,}\b/i.test(tLower) || /^[^\w]*\d+\s+[A-Z]/.test(title) || /\bpp\.\s*\d+/i.test(title) || /\bvol\.\s*\d+/i.test(title) || /\bet\s+al\b/i.test(vLower) || /shihavuddin/i.test(vLower) || /faucourt|genovesio|spassky/i.test(vLower) || /^seta-d-\d+/i.test(vLower) || (rawVenue.includes("\u2026") || rawVenue.includes("...")) && !/conference|symposium|workshop|proceedings|journal|ieee|international|lecture|transactions/i.test(
+  if (tLower.includes("the author (s)") || tLower.includes("the author(s)") || /^[a-z]{1,3}\d{4,}$/i.test(title) || /^[a-z]{1,3}\d{4,}\b/i.test(tLower) || /^[^\w]*\d+\s+[A-Z]/.test(title) || /\bpp\.\s*\d+/i.test(title) || /\bet\s+al\b/i.test(vLower) || // Venues that are actually author citation headers (e.g., "Surname, F, 2020", "Surname A, Surname B", etc.) without any publication venue keywords
+  !/journal|conf|proc|trans|ieee|lett|rev|symp|ann|bull|arch|commun|adv|res|rep|chem|phys|eng|med|sci/i.test(
+    vLower
+  ) && (/^[a-z]+,\s*[a-z](\.[a-z])?/i.test(vLower) || /^[a-z\s]+,\s*(?:19|20)\d{2}\b/i.test(vLower)) || /^seta-d-\d+/i.test(vLower) || (rawVenue.includes("\u2026") || rawVenue.includes("...")) && !/conference|symposium|workshop|proceedings|journal|ieee|international|lecture|transactions/i.test(
     vLower
   )) {
     return true;
@@ -10916,10 +10919,14 @@ function isSameResearcherName(candidateName, targetName) {
   const c = candidateName.toLowerCase().replace(/[^a-z\s]/g, "").trim();
   const t = targetName.toLowerCase().replace(/[^a-z\s]/g, "").trim();
   if (c === t) return true;
+  const cNorm = c.replace(/v|w/g, "b");
+  const tNorm = t.replace(/v|w/g, "b");
+  if (cNorm === tNorm) return true;
   const tParts = t.split(/\s+/).filter((p) => p.length >= 4);
   if (tParts.length > 0) {
     const lastPart = tParts[tParts.length - 1];
-    if (c.includes(lastPart) || lastPart === "shihavuddin" && c.includes("shihabuddin")) {
+    const lastPartNorm = lastPart.replace(/v|w/g, "b");
+    if (c.includes(lastPart) || cNorm.includes(lastPartNorm)) {
       return true;
     }
   }
@@ -11617,43 +11624,35 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
 }
 var profileCache = /* @__PURE__ */ new Map();
 var rawSnapshot = verifiedScholarCache_default;
-var defaultProfile = rawSnapshot?.profile || rawSnapshot?.be8uiCkAAAAJ?.profile || rawSnapshot?.["be8uiCkAAAAJ"];
-if (defaultProfile) {
-  const payload = {
-    profile: defaultProfile,
-    source: "scholar-verified-official-cache"
-  };
-  profileCache.set("be8uickaaaaj::", {
-    timestamp: Date.now(),
-    data: payload
-  });
-  profileCache.set("::asm shihavuddin", {
-    timestamp: Date.now(),
-    data: payload
-  });
-  profileCache.set("be8uickaaaaj::asm shihavuddin", {
-    timestamp: Date.now(),
-    data: payload
-  });
-}
-var joynalProfile = rawSnapshot?.["3nI1dHsAAAAJ"]?.profile;
-if (joynalProfile) {
-  const joynalPayload = {
-    profile: joynalProfile,
-    source: "google-scholar-official"
-  };
-  profileCache.set("3ni1dhsaaaaj::", {
-    timestamp: Date.now(),
-    data: joynalPayload
-  });
-  profileCache.set("::joynal abadin", {
-    timestamp: Date.now(),
-    data: joynalPayload
-  });
-  profileCache.set("3ni1dhsaaaaj::joynal abadin", {
-    timestamp: Date.now(),
-    data: joynalPayload
-  });
+if (rawSnapshot && typeof rawSnapshot === "object") {
+  for (const [snapKey, snapVal] of Object.entries(rawSnapshot)) {
+    const prof = snapVal?.profile || (snapVal?.publications ? snapVal : void 0);
+    if (!prof || !prof.name) continue;
+    const payload = {
+      profile: prof,
+      source: "scholar-verified-official-cache"
+    };
+    const uId = (prof.scholarUserId || snapKey).toLowerCase().trim();
+    const pName = prof.name.toLowerCase().trim();
+    if (uId) {
+      profileCache.set(`${uId}::`, {
+        timestamp: Date.now(),
+        data: payload
+      });
+    }
+    if (pName) {
+      profileCache.set(`::${pName}`, {
+        timestamp: Date.now(),
+        data: payload
+      });
+    }
+    if (uId && pName) {
+      profileCache.set(`${uId}::${pName}`, {
+        timestamp: Date.now(),
+        data: payload
+      });
+    }
+  }
 }
 var app = express();
 app.use(express.json());
@@ -11855,8 +11854,21 @@ app.get("/api/scholar/analyze", async (req, res) => {
   }
   if (!forceRefresh) {
     const rawSnap = verifiedScholarCache_default;
-    const lowerUser = userId.toLowerCase();
-    const snapMatch = rawSnap?.[userId]?.profile || rawSnap?.[lowerUser]?.profile || (lowerUser.includes("be8ui") ? rawSnap?.be8uiCkAAAAJ?.profile : void 0) || (rawSnap?.profile?.scholarUserId?.toLowerCase() === lowerUser ? rawSnap.profile : void 0);
+    const lowerUser = userId.toLowerCase().trim();
+    const lowerQuery = queryName.toLowerCase().trim();
+    let snapMatch;
+    if (rawSnap && typeof rawSnap === "object") {
+      for (const [snapKey, snapVal] of Object.entries(rawSnap)) {
+        const prof = snapVal?.profile || (snapVal?.publications ? snapVal : void 0);
+        if (!prof) continue;
+        const candidateId = (prof.scholarUserId || snapKey).toLowerCase().trim();
+        const candidateName = prof.name ? prof.name.toLowerCase().trim() : "";
+        if (lowerUser && (candidateId === lowerUser || candidateId.includes(lowerUser) || lowerUser.includes(candidateId)) || lowerQuery && candidateName && (candidateName === lowerQuery || candidateName.includes(lowerQuery) || lowerQuery.includes(candidateName))) {
+          snapMatch = prof;
+          break;
+        }
+      }
+    }
     if (snapMatch) {
       const snapPayload = {
         profile: snapMatch,
