@@ -263,7 +263,30 @@ export function shouldExcludeNonPaperRecord(params: {
     return true;
   }
 
-  // 4. Dataset repository versions, supplementary files, theses & dissertations
+  // 4. Open data repositories, Zenodo, Dataverse, Figshare, Dryad, Replication Data in Title or Venue
+  const repositoryPatterns = [
+    'zenodo',
+    'dataverse',
+    'figshare',
+    'dryad',
+    'mendeley data',
+    'kaggle',
+    'github.com',
+    'code ocean',
+    '[data set]',
+    '[dataset]',
+    'replication data',
+    'open data repository',
+  ];
+  if (
+    repositoryPatterns.some(
+      (pat) => tLower.includes(pat) || vLower.includes(pat)
+    )
+  ) {
+    return true;
+  }
+
+  // 5. Dataset repository versions, supplementary files, theses & dissertations
   if (
     /\bversion\s+v?\d+/i.test(vLower) ||
     /\bversion\s+v?\d+/i.test(tLower) ||
@@ -276,7 +299,7 @@ export function shouldExcludeNonPaperRecord(params: {
     return true;
   }
 
-  // 5. Unverified entries with no venue ("Academic Venue" or empty) that are not real papers
+  // 6. Unverified entries with no venue ("Academic Venue" or empty) that are not real papers
   if (
     (!vLower || vLower === 'academic venue') &&
     (params.citations || 0) === 0
@@ -1187,29 +1210,39 @@ function classifyQuartileFromOfficialMetrics(
 
   // If computed via Crossref 3-year volume-normalized citation distribution
   if (normScore !== undefined) {
-    if (!hasIssn || worksCount < 40) return 'Unranked';
-    if (normScore >= 18.0 || (normScore >= 10.5 && worksCount < 8000)) return 'Q1';
-    if (normScore >= 6.8 || (normScore >= 4.5 && worksCount >= 1000)) return 'Q2';
-    if (normScore >= 2.3) return 'Q3';
-    if (normScore >= 1.0) return 'Q4';
+    if (!hasIssn || worksCount < 30) return 'Unranked';
+    if (
+      normScore >= 12.0 ||
+      (normScore >= 4.8 && worksCount >= 800) ||
+      (normScore >= 8.0 && worksCount < 8000)
+    ) {
+      return 'Q1';
+    }
+    if (normScore >= 4.2 || (normScore >= 2.8 && worksCount >= 500)) return 'Q2';
+    if (normScore >= 1.6) return 'Q3';
+    if (normScore >= 0.5 || hasIssn) return 'Q4';
     return 'Unranked';
   }
 
-  if (!hasIssn && hIdx < 15 && impact2Yr < 0.5) {
+  if (!hasIssn && hIdx < 12 && impact2Yr < 0.4) {
     return 'Unranked';
   }
 
-  // If computed via OpenAlex 2-year mean citedness & h-index
-  if (impact2Yr >= 3.2 || hIdx >= 85) {
+  // If computed via OpenAlex / Scopus 2-year mean citedness & h-index
+  if (
+    impact2Yr >= 2.5 ||
+    hIdx >= 55 ||
+    (worksCount >= 1000 && impact2Yr >= 2.0)
+  ) {
     return 'Q1';
   }
-  if (impact2Yr >= 1.8 || hIdx >= 40) {
+  if (impact2Yr >= 1.4 || hIdx >= 28) {
     return 'Q2';
   }
-  if (impact2Yr >= 0.8 || hIdx >= 16) {
+  if (impact2Yr >= 0.7 || hIdx >= 14) {
     return 'Q3';
   }
-  if (hasIssn && (impact2Yr >= 0.25 || hIdx >= 6 || sourceMetrics.is_core)) {
+  if (hasIssn || impact2Yr >= 0.2 || hIdx >= 5 || sourceMetrics.is_core) {
     return 'Q4';
   }
   return 'Unranked';

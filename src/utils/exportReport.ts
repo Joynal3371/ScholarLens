@@ -192,56 +192,62 @@ export async function generateResearcherPdfReport(params: {
   // PAGE 1: EXECUTIVE SUMMARY, VECTOR ANALYTICS CHARTS & TOP 5 HIGHLIGHTS
   // =========================================================================
 
-  // Executive Navy Banner
-  doc.setFillColor(15, 23, 42);
+  // Executive Light Header Banner (Matches the clean light theme of the platform)
+  doc.setFillColor(248, 250, 252);
   doc.rect(0, 0, pageW, 34, 'F');
+  doc.setDrawColor(226, 232, 240);
+  doc.line(0, 33.8, pageW, 33.8);
   doc.setFillColor(37, 99, 235);
   doc.rect(0, 33, pageW, 1.2, 'F');
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text(profile.name, margin, 13);
+  const maxLeftTextW = pageW - margin - 58 - margin; // 128mm bound so text never touches the right badge
 
+  doc.setTextColor(15, 23, 42);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.text(profile.name, margin, 12.5);
+
+  const affilStr = profile.affiliation
+    ? `${profile.affiliation}  |  Scholar ID: ${profile.scholarUserId}`
+    : `Scholar ID: ${profile.scholarUserId}`;
+  const affilLines = doc.splitTextToSize(affilStr, maxLeftTextW);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(203, 213, 225);
-  doc.text(
-    `${profile.affiliation}  |  Scholar ID: ${profile.scholarUserId}`,
-    margin,
-    20
-  );
   doc.setFontSize(8.2);
-  doc.setTextColor(148, 163, 184);
-  doc.text(
-    `Research Domains: ${profile.fields.join(' · ')}`,
-    margin,
-    26.5
-  );
+  doc.setTextColor(71, 85, 105);
+  doc.text(affilLines[0], margin, 18.5);
 
-  // Right-side Banner Badge
-  doc.setFillColor(30, 41, 59);
-  doc.setDrawColor(51, 65, 85);
-  doc.roundedRect(pageW - margin - 54, 7.5, 54, 18, 2, 2, 'FD');
+  const domainStr = `Research Domains: ${profile.fields.slice(0, 5).join(' · ')}`;
+  const domainLines = doc.splitTextToSize(domainStr, maxLeftTextW);
+  doc.setFontSize(7.6);
+  doc.setTextColor(100, 116, 139);
+  doc.text(domainLines[0], margin, 24.5);
+
+  // Right-side Banner Badge (Light Refined Card)
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(203, 213, 225);
+  doc.roundedRect(pageW - margin - 56, 6.5, 56, 20.5, 1.8, 1.8, 'FD');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(56, 189, 248);
-  doc.text('BIBLIOMETRIC DOSSIER', pageW - margin - 27, 13.5, {
+  doc.setFontSize(7.2);
+  doc.setTextColor(37, 99, 235);
+  doc.text('BIBLIOMETRIC DOSSIER', pageW - margin - 28, 12, {
     align: 'center',
   });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(226, 232, 240);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.6);
+  doc.setTextColor(15, 23, 42);
   doc.text(
     `${stats.totalPapers} Papers · ${stats.totalCitations.toLocaleString()} Cit.`,
-    pageW - margin - 27,
-    19,
+    pageW - margin - 28,
+    17.2,
     { align: 'center' }
   );
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.2);
+  doc.setTextColor(71, 85, 105);
   doc.text(
     `h-index: ${stats.hIndex} · i10-index: ${stats.i10Index}`,
-    pageW - margin - 27,
-    23.5,
+    pageW - margin - 28,
+    22.2,
     { align: 'center' }
   );
 
@@ -718,10 +724,10 @@ export async function generateResearcherPdfReport(params: {
   doc.setFontSize(6.8);
   doc.setTextColor(255, 255, 255);
   doc.text('Rank', margin + 2, y + 3.8);
-  doc.text('Publication Title', margin + 13, y + 3.8);
-  doc.text('Journal / Conference Venue', margin + 112, y + 3.8);
-  doc.text('Tier', margin + 154, y + 3.8);
-  doc.text('Year', margin + 166, y + 3.8);
+  doc.text('Publication Title', margin + 11, y + 3.8);
+  doc.text('Journal / Conference Venue', margin + 104, y + 3.8);
+  doc.text('Tier', margin + 144, y + 3.8);
+  doc.text('Year', margin + 170, y + 3.8);
   doc.text('Citations', margin + contentW - 2, y + 3.8, { align: 'right' });
   y += 5.5;
 
@@ -742,22 +748,22 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.8);
     doc.setTextColor(15, 23, 42);
-    doc.text(pub.title.slice(0, 60), margin + 13, y + 4.2);
+    doc.text(pub.title.slice(0, 56), margin + 11, y + 4.2);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(71, 85, 105);
-    doc.text(pub.venue.slice(0, 25), margin + 112, y + 4.2);
+    doc.text(pub.venue.slice(0, 22), margin + 104, y + 4.2);
 
     const cat = getPublicationPortfolioCategory(pub);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(30, 58, 138);
-    doc.text(cat, margin + 154, y + 4.2);
+    doc.text(cat, margin + 144, y + 4.2);
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text(String(pub.year), margin + 166, y + 4.2);
+    doc.text(String(pub.year), margin + 170, y + 4.2);
 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
@@ -894,10 +900,10 @@ export async function generateResearcherPdfReport(params: {
     doc.setFontSize(7.2);
     doc.setTextColor(255, 255, 255);
     doc.text('#', margin + 2, topY + 4.4);
-    doc.text('Publication Title', margin + 10, topY + 4.4);
-    doc.text('Journal / Conference Venue', margin + 112, topY + 4.4);
-    doc.text('Category', margin + 153, topY + 4.4);
-    doc.text('Year', margin + 167, topY + 4.4);
+    doc.text('Publication Title', margin + 11, topY + 4.4);
+    doc.text('Journal / Conference Venue', margin + 104, topY + 4.4);
+    doc.text('Category', margin + 144, topY + 4.4);
+    doc.text('Year', margin + 170, topY + 4.4);
     doc.text('Citations', margin + contentW - 2, topY + 4.4, { align: 'right' });
     return topY + 6.5;
   };
@@ -925,19 +931,19 @@ export async function generateResearcherPdfReport(params: {
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(15, 23, 42);
-    doc.text(p.title.slice(0, 60), margin + 10, y + 4.3);
+    doc.text(p.title.slice(0, 56), margin + 11, y + 4.3);
 
     doc.setTextColor(71, 85, 105);
-    doc.text(p.venue.slice(0, 24), margin + 112, y + 4.3);
+    doc.text(p.venue.slice(0, 22), margin + 104, y + 4.3);
 
     const cat = getPublicationPortfolioCategory(p);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(37, 99, 235);
-    doc.text(cat, margin + 153, y + 4.3);
+    doc.text(cat, margin + 144, y + 4.3);
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text(String(p.year), margin + 167, y + 4.3);
+    doc.text(String(p.year), margin + 170, y + 4.3);
 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);

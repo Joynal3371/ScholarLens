@@ -52,7 +52,7 @@ var verifiedScholarCache_default = {
           year: 2019,
           citations: 352,
           venue: "Energies",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -238,7 +238,7 @@ var verifiedScholarCache_default = {
           year: 2022,
           citations: 182,
           venue: "IEEE Access",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -300,7 +300,7 @@ var verifiedScholarCache_default = {
           year: 2013,
           citations: 171,
           venue: "Remote Sensing",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -722,7 +722,7 @@ var verifiedScholarCache_default = {
           year: 2017,
           citations: 104,
           venue: "Development",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -808,7 +808,7 @@ var verifiedScholarCache_default = {
           year: 2017,
           citations: 103,
           venue: "ScienceAsia",
-          quartile: "Unranked",
+          quartile: "Q3",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -870,7 +870,7 @@ var verifiedScholarCache_default = {
           year: 2024,
           citations: 81,
           venue: "Energy Conversion and Management: X",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -944,7 +944,7 @@ var verifiedScholarCache_default = {
           year: 2023,
           citations: 80,
           venue: "Energies",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1216,7 +1216,7 @@ var verifiedScholarCache_default = {
           year: 2023,
           citations: 64,
           venue: "Sustainable Energy Technologies and Assessments",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1290,7 +1290,7 @@ var verifiedScholarCache_default = {
           year: 2019,
           citations: 63,
           venue: "Knowledge-Based Systems",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1352,7 +1352,7 @@ var verifiedScholarCache_default = {
           year: 2020,
           citations: 59,
           venue: "Frontiers in Plant Science",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1452,7 +1452,7 @@ var verifiedScholarCache_default = {
           year: 2024,
           citations: 50,
           venue: "Heliyon",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1538,7 +1538,7 @@ var verifiedScholarCache_default = {
           year: 2022,
           citations: 46,
           venue: "Applied Sciences",
-          quartile: "Unranked",
+          quartile: "Q2",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1600,7 +1600,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 45,
           venue: "Wind Energy",
-          quartile: "Q3",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1724,7 +1724,7 @@ var verifiedScholarCache_default = {
           year: 2022,
           citations: 36,
           venue: "Physica Scripta",
-          quartile: "Unranked",
+          quartile: "Q2",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1810,7 +1810,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 35,
           venue: "Scientific Reports",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -1848,7 +1848,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 33,
           venue: "Case Studies in Thermal Engineering",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -2108,7 +2108,7 @@ var verifiedScholarCache_default = {
           year: 2023,
           citations: 26,
           venue: "Composite Structures",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -2146,7 +2146,7 @@ var verifiedScholarCache_default = {
           year: 2022,
           citations: 26,
           venue: "Electronics",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -2208,7 +2208,7 @@ var verifiedScholarCache_default = {
           year: 2024,
           citations: 25,
           venue: "Energy Conversion and Management: X",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -2516,7 +2516,7 @@ var verifiedScholarCache_default = {
           year: 2008,
           citations: 21,
           venue: "International Journal of Computer Science and Network Security",
-          quartile: "Unranked",
+          quartile: "Q4",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -2776,7 +2776,7 @@ var verifiedScholarCache_default = {
           year: 2022,
           citations: 18,
           venue: "International Journal of Electronics",
-          quartile: "Q3",
+          quartile: "Q2",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -2826,7 +2826,7 @@ var verifiedScholarCache_default = {
           year: 2008,
           citations: 17,
           venue: "International Journal of Computer Science and Network Security",
-          quartile: "Unranked",
+          quartile: "Q4",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -2950,7 +2950,7 @@ var verifiedScholarCache_default = {
           year: 2022,
           citations: 15,
           venue: "BioMed Research International",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -3282,7 +3282,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 13,
           venue: "Electronics",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -3442,7 +3442,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 12,
           venue: "Applied Sciences",
-          quartile: "Unranked",
+          quartile: "Q2",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -3492,7 +3492,7 @@ var verifiedScholarCache_default = {
           year: 2010,
           citations: 12,
           venue: "International Journal of Computer Science and Network Security",
-          quartile: "Unranked",
+          quartile: "Q4",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4024,7 +4024,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 8,
           venue: "Electronics",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4110,7 +4110,7 @@ var verifiedScholarCache_default = {
           year: 2020,
           citations: 8,
           venue: "Symmetry",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4184,7 +4184,7 @@ var verifiedScholarCache_default = {
           year: 2014,
           citations: 8,
           venue: "Marine Technology Society Journal",
-          quartile: "Q4",
+          quartile: "Q2",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4246,7 +4246,7 @@ var verifiedScholarCache_default = {
           year: 2024,
           citations: 7,
           venue: "International Journal of Electronics Letters",
-          quartile: "Unranked",
+          quartile: "Q2",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4296,7 +4296,7 @@ var verifiedScholarCache_default = {
           year: 2022,
           citations: 7,
           venue: "International Journal of Thermofluids",
-          quartile: "Q1",
+          quartile: "Q2",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4668,7 +4668,7 @@ var verifiedScholarCache_default = {
           year: 2019,
           citations: 6,
           venue: "GUB Journal of Science and Engineering",
-          quartile: "Unranked",
+          quartile: "Q3",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4730,7 +4730,7 @@ var verifiedScholarCache_default = {
           year: 2024,
           citations: 5,
           venue: "Energy Conversion and Management: X",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -4878,7 +4878,7 @@ var verifiedScholarCache_default = {
           year: 2023,
           citations: 5,
           venue: "Sustainable Energy Technologies and Assessments",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -5262,7 +5262,7 @@ var verifiedScholarCache_default = {
           year: 2025,
           citations: 4,
           venue: "EMBO Reports",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -5510,7 +5510,7 @@ var verifiedScholarCache_default = {
           year: 2023,
           citations: 4,
           venue: "GUB Journal of Science and Engineering",
-          quartile: "Unranked",
+          quartile: "Q3",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -5646,7 +5646,7 @@ var verifiedScholarCache_default = {
           year: 2019,
           citations: 4,
           venue: "SpringerPlus",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -5915,43 +5915,20 @@ var verifiedScholarCache_default = {
           ]
         },
         {
-          id: "gs-109",
-          title: "Replication data for remote damage detection of power plants using deep learning based drone image analysis. Dataverse, 590",
-          year: 2020,
-          citations: 3,
-          venue: "Academic Venue",
-          quartile: "Unranked",
-          type: "Preprint",
+          id: "gs-landsat-dib",
+          title: "A 25-year Landsat-derived environmental observation dataset for Narayanganj, Bangladesh, 2001\u20132025",
+          year: 2026,
+          citations: 0,
+          venue: "Data in Brief",
+          quartile: "Q1",
+          type: "Journal",
           authorshipRole: "Co-Author",
-          openAccess: false,
-          url: "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=be8uiCkAAAAJ&cstart=100&pagesize=100&citation_for_view=be8uiCkAAAAJ:W2uZP3ddy8sC",
+          openAccess: true,
+          doi: "10.1016/j.dib.2026.113392",
+          url: "https://doi.org/10.1016/j.dib.2026.113392",
           coAuthors: [
             {
-              name: "MRA Rashid",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "X Chen",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
+              name: "Joynal Abadin",
               universityId: "green-university-of-bangladesh",
               universityName: "Green University of Bangladesh",
               city: "Dhaka",
@@ -5963,65 +5940,15 @@ var verifiedScholarCache_default = {
               isHomeInstitution: false
             },
             {
-              name: "MAU Haq",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Muhammad Abul Hasan",
-              universityId: "aiub-dhaka",
-              universityName: "American International University-Bangladesh",
-              city: "Dhaka",
-              country: "Bangladesh",
-              countryCode: "BD",
-              continent: "Asia",
-              lat: 23.8221,
-              lng: 90.4274,
-              isHomeInstitution: false
-            }
-          ]
-        },
-        {
-          id: "gs-118",
-          title: "A 25-year Landsat-derived environmental observation dataset for Narayanganj, Bangladesh, 2001\u20132025 [Data set]. Zenodo",
-          year: 2026,
-          citations: 2,
-          venue: "Academic Venue",
-          quartile: "Unranked",
-          type: "Preprint",
-          authorshipRole: "Co-Author",
-          openAccess: false,
-          url: "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=be8uiCkAAAAJ&cstart=100&pagesize=100&citation_for_view=be8uiCkAAAAJ:GYcXSSpN504C",
-          coAuthors: [
-            {
-              name: "J Abadin",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "A Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
+              name: "Aminul Islam",
+              universityId: "technical-university-of-denmark",
+              universityName: "Technical University of Denmark",
+              city: "Kongens Lyngby",
+              country: "Denmark",
+              countryCode: "DK",
+              continent: "Europe",
+              lat: 55.7858,
+              lng: 12.5218,
               isHomeInstitution: false
             }
           ]
@@ -6168,7 +6095,7 @@ var verifiedScholarCache_default = {
           year: 2024,
           citations: 2,
           venue: "Energy Conversion and Management: X",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -7332,7 +7259,7 @@ var verifiedScholarCache_default = {
           year: 2023,
           citations: 1,
           venue: "Electronics",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -7654,7 +7581,7 @@ var verifiedScholarCache_default = {
           year: 2019,
           citations: 1,
           venue: "GUB Journal of Science and Engineering",
-          quartile: "Unranked",
+          quartile: "Q3",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -7730,7 +7657,7 @@ var verifiedScholarCache_default = {
           year: 2011,
           citations: 1,
           venue: "Journal of Engineering and Technology",
-          quartile: "Unranked",
+          quartile: "Q4",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -7830,7 +7757,7 @@ var verifiedScholarCache_default = {
           year: 2026,
           citations: 0,
           venue: "Heliyon",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -8436,7 +8363,7 @@ var verifiedScholarCache_default = {
           year: 2026,
           citations: 0,
           venue: "Results in Engineering, 109021",
-          quartile: "Unranked",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -8992,7 +8919,7 @@ var verifiedScholarCache_default = {
           year: 2025,
           citations: 0,
           venue: "Journal of Electronic Voltage and Application",
-          quartile: "Unranked",
+          quartile: "Q4",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -9421,68 +9348,6 @@ var verifiedScholarCache_default = {
           ]
         },
         {
-          id: "gs-194",
-          title: "ul Haq, MA, Shihavuddin, ASM and Jadin, MS, 2023",
-          year: 2023,
-          citations: 0,
-          venue: "Feasibility analysis of floating photovoltaic power plant in Bangladesh: A \u2026",
-          quartile: "Unranked",
-          type: "Journal",
-          authorshipRole: "Co-Author",
-          openAccess: false,
-          url: "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=be8uiCkAAAAJ&cstart=100&pagesize=100&citation_for_view=be8uiCkAAAAJ:orDZ08hpP44C",
-          coAuthors: [
-            {
-              name: "MI Islam",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "Md. Hasan Maruf",
-              universityId: "green-university-of-bangladesh",
-              universityName: "Green University of Bangladesh",
-              city: "Dhaka",
-              country: "Bangladesh",
-              countryCode: "BD",
-              continent: "Asia",
-              lat: 23.8285,
-              lng: 90.5663,
-              isHomeInstitution: false
-            },
-            {
-              name: "A Al Mansur",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            },
-            {
-              name: "RH Ashique",
-              universityId: "unlisted",
-              universityName: "Independent / Unlisted",
-              city: "Unlisted",
-              country: "Unlisted",
-              countryCode: "UN",
-              continent: "Asia",
-              lat: 0,
-              lng: 0,
-              isHomeInstitution: false
-            }
-          ]
-        },
-        {
           id: "gs-197",
           title: "An eight point model for addressing challenges of online education at tertiary level",
           year: 2022,
@@ -9774,7 +9639,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 0,
           venue: "GUB Journal of Science and Engineering",
-          quartile: "Unranked",
+          quartile: "Q3",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -9824,7 +9689,7 @@ var verifiedScholarCache_default = {
           year: 2021,
           citations: 0,
           venue: "Case Studies in Thermal Engineering",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -10010,7 +9875,7 @@ var verifiedScholarCache_default = {
           year: 2010,
           citations: 0,
           venue: "Journal of Engineering and Technology",
-          quartile: "Unranked",
+          quartile: "Q4",
           type: "Journal",
           authorshipRole: "Co-Author",
           openAccess: false,
@@ -10213,7 +10078,7 @@ var verifiedScholarCache_default = {
           year: 2026,
           citations: 0,
           venue: "Data in Brief",
-          quartile: "Q2",
+          quartile: "Q1",
           type: "Journal",
           authorshipRole: "First Author",
           openAccess: true,
@@ -10417,6 +10282,25 @@ function shouldExcludeNonPaperRecord(params) {
     "us patent"
   ];
   if (nonPaperVenuePatterns.some((pat) => vLower.includes(pat))) {
+    return true;
+  }
+  const repositoryPatterns = [
+    "zenodo",
+    "dataverse",
+    "figshare",
+    "dryad",
+    "mendeley data",
+    "kaggle",
+    "github.com",
+    "code ocean",
+    "[data set]",
+    "[dataset]",
+    "replication data",
+    "open data repository"
+  ];
+  if (repositoryPatterns.some(
+    (pat) => tLower.includes(pat) || vLower.includes(pat)
+  )) {
     return true;
   }
   if (/\bversion\s+v?\d+/i.test(vLower) || /\bversion\s+v?\d+/i.test(tLower) || /\bv\d+\.\[google/i.test(vLower) || /^data\s+for:/i.test(tLower) || /^supplementary\s+(data|material|information)/i.test(tLower) || /\bcode\s+repository\b/i.test(tLower) || /\b(phd|master'?s|doctoral)\s+(thesis|dissertation)\b/i.test(tLower)) {
@@ -11002,26 +10886,28 @@ function classifyQuartileFromOfficialMetrics(type, venue, sourceMetrics) {
     sourceMetrics.issn_l || sourceMetrics.issns && sourceMetrics.issns.length > 0
   );
   if (normScore !== void 0) {
-    if (!hasIssn || worksCount < 40) return "Unranked";
-    if (normScore >= 18 || normScore >= 10.5 && worksCount < 8e3) return "Q1";
-    if (normScore >= 6.8 || normScore >= 4.5 && worksCount >= 1e3) return "Q2";
-    if (normScore >= 2.3) return "Q3";
-    if (normScore >= 1) return "Q4";
+    if (!hasIssn || worksCount < 30) return "Unranked";
+    if (normScore >= 12 || normScore >= 4.8 && worksCount >= 800 || normScore >= 8 && worksCount < 8e3) {
+      return "Q1";
+    }
+    if (normScore >= 4.2 || normScore >= 2.8 && worksCount >= 500) return "Q2";
+    if (normScore >= 1.6) return "Q3";
+    if (normScore >= 0.5 || hasIssn) return "Q4";
     return "Unranked";
   }
-  if (!hasIssn && hIdx < 15 && impact2Yr < 0.5) {
+  if (!hasIssn && hIdx < 12 && impact2Yr < 0.4) {
     return "Unranked";
   }
-  if (impact2Yr >= 3.2 || hIdx >= 85) {
+  if (impact2Yr >= 2.5 || hIdx >= 55 || worksCount >= 1e3 && impact2Yr >= 2) {
     return "Q1";
   }
-  if (impact2Yr >= 1.8 || hIdx >= 40) {
+  if (impact2Yr >= 1.4 || hIdx >= 28) {
     return "Q2";
   }
-  if (impact2Yr >= 0.8 || hIdx >= 16) {
+  if (impact2Yr >= 0.7 || hIdx >= 14) {
     return "Q3";
   }
-  if (hasIssn && (impact2Yr >= 0.25 || hIdx >= 6 || sourceMetrics.is_core)) {
+  if (hasIssn || impact2Yr >= 0.2 || hIdx >= 5 || sourceMetrics.is_core) {
     return "Q4";
   }
   return "Unranked";
