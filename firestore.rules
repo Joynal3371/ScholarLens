@@ -93,5 +93,30 @@ service cloud.firestore {
         && incoming().createdAt == request.time;
       allow update, delete: if false;
     }
+    function isBridgeWorker() {
+      return isSignedIn() && request.auth.uid == 'WtRvyLbLwPgzKj6ZIAGbxHoM0bJ2';
+    }
+
+    function isValidScholarBridgeDoc(data) {
+      return data.keys().hasAll(['userId', 'status', 'payloadJson', 'updatedAtMs'])
+        && data.keys().hasOnly(['userId', 'queryName', 'status', 'payloadJson', 'updatedAtMs'])
+        && data.userId is string
+        && data.userId.size() >= 1
+        && data.userId.size() <= 128
+        && data.status is string
+        && (data.status == 'pending' || data.status == 'ready' || data.status == 'error')
+        && (!('queryName' in data) || (data.queryName is string && data.queryName.size() <= 160))
+        && data.payloadJson is string
+        && data.payloadJson.size() <= 900000
+        && data.updatedAtMs is int;
+    }
+
+    match /scholarBridge/{scholarId} {
+      allow get, list: if isBridgeWorker();
+      allow create, update: if isBridgeWorker()
+        && isValidId(scholarId)
+        && isValidScholarBridgeDoc(incoming());
+      allow delete: if false;
+    }
   }
 }
