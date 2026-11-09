@@ -81,32 +81,32 @@ const PAGE_METADATA: {
 }[] = [
   {
     id: 'overview',
-    label: 'Overview',
+    label: 'Executive Overview',
     shortLabel: 'Overview',
     icon: LayoutDashboard,
   },
   {
     id: 'charts',
-    label: 'Statistical Charts',
-    shortLabel: 'Charts',
+    label: 'Bibliometric Analytics',
+    shortLabel: 'Analytics',
     icon: BarChart3,
   },
   {
     id: 'map',
-    label: 'World Collaboration Map',
-    shortLabel: 'World Map',
+    label: 'Global Collaboration Network',
+    shortLabel: 'Network Map',
     icon: Globe2,
   },
   {
     id: 'publications',
-    label: 'Publications Explorer',
+    label: 'Publication Portfolio',
     shortLabel: 'Publications',
     icon: BookOpen,
   },
   {
     id: 'directories',
-    label: 'Research Directories',
-    shortLabel: 'Directories',
+    label: 'Institutional & Co-Author Registry',
+    shortLabel: 'Registry',
     icon: Users,
   },
 ];
@@ -167,6 +167,31 @@ export default function App() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('googleAuthBridge') === '1' && window.opener) {
+      import('./firebase').then(async ({ signInWithGoogleAccount }) => {
+        try {
+          const { user, profile, idToken } = await signInWithGoogleAccount();
+          window.opener.postMessage(
+            {
+              type: 'GOOGLE_BRIDGE_AUTH_SUCCESS',
+              idToken,
+              uid: user.uid,
+              name: profile.displayName || user.displayName || user.email,
+              email: user.email,
+              photoURL: profile.photoURL || user.photoURL || '',
+            },
+            '*'
+          );
+          window.close();
+        } catch {
+          window.close();
+        }
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const synced = await syncOrFetchGoogleUserProfile(firebaseUser);
@@ -176,7 +201,7 @@ export default function App() {
             synced.displayName ||
             firebaseUser.displayName ||
             firebaseUser.email ||
-            'Google Researcher',
+            'Authenticated Researcher',
           emailOrId: firebaseUser.email || firebaseUser.uid,
           photoURL: synced.photoURL || firebaseUser.photoURL || '',
           provider: 'google',
@@ -742,7 +767,7 @@ export default function App() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
                     <div className="text-xs text-slate-500 font-medium">
-                      Total Publications
+                      Verified Publications
                     </div>
                     <div
                       data-testid="kpi-total-papers"
@@ -751,13 +776,13 @@ export default function App() {
                       {stats.totalPapers}
                     </div>
                     <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      Verified on Google Scholar
+                      Peer-Reviewed Portfolio
                     </div>
                   </div>
 
                   <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
                     <div className="text-xs text-slate-500 font-medium">
-                      Total Citations
+                      Cumulative Citations
                     </div>
                     <div
                       data-testid="kpi-total-citations"
@@ -766,7 +791,7 @@ export default function App() {
                       {stats.totalCitations.toLocaleString()}
                     </div>
                     <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      {stats.meanCitationsPerPaper.toLocaleString()} avg / paper
+                      {stats.meanCitationsPerPaper.toLocaleString()} mean / paper
                     </div>
                   </div>
 
@@ -788,12 +813,12 @@ export default function App() {
 
                   <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
                     <div className="text-xs text-slate-500 font-medium">
-                      Global Collaboration Network
+                      Institutional Network
                     </div>
                     <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5">
                       {universities.length}{' '}
                       <span className="text-sm font-normal text-slate-500">
-                        universities
+                        institutions
                       </span>
                     </div>
                     <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
@@ -803,25 +828,20 @@ export default function App() {
                 </div>
               </section>
 
-              {/* Row 2: Separate Q1, Q2, Q3, Q4, Conference & Non-Indexed Percentage Breakdown (Total = 100%) */}
+              {/* Row 2: Separate Q1, Q2, Q3, Q4, Conference & Emerging Percentage Breakdown (Total = 100%) */}
               <section
                 aria-label="Publication Indexing and Quartile Distribution"
                 className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3.5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900">
-                      Publication Quartile &amp; Indexing Distribution
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      Separate share of Q1, Q2, Q3, Q4, Conference Papers, and Non-Indexed Papers across all {stats.totalPapers} publications
-                    </p>
-                  </div>
+                  <h2 className="text-sm font-bold text-slate-900">
+                    Journal Quartile &amp; Indexing Distribution
+                  </h2>
                   <span
                     data-testid="portfolio-total-percentage"
                     className="px-2.5 py-1 text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md tabular-nums"
                   >
-                    Total: 100% ({stats.totalPapers} papers)
+                    100% ({stats.totalPapers} Publications)
                   </span>
                 </div>
 
@@ -927,7 +947,7 @@ export default function App() {
                     </div>
                   </button>
 
-                  {/* 5. Conference Papers Share */}
+                  {/* 5. Conference Proceedings Share */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterType('Conference')}
@@ -935,7 +955,7 @@ export default function App() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-indigo-900">
-                        Conference Papers
+                        Proceedings
                       </span>
                       <span className="w-2 h-2 rounded-full bg-indigo-600" />
                     </div>
@@ -952,7 +972,7 @@ export default function App() {
                     </div>
                   </button>
 
-                  {/* 6. Non-Indexed Papers Share */}
+                  {/* 6. Emerging / Other Venues Share */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Unranked')}
@@ -960,7 +980,7 @@ export default function App() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-700">
-                        Non-Indexed
+                        Emerging Venues
                       </span>
                       <span className="w-2 h-2 rounded-full bg-slate-500" />
                     </div>
@@ -1018,14 +1038,14 @@ export default function App() {
                       width: `${stats.portfolioDistribution.Conference.percentage}%`,
                     }}
                     className="bg-indigo-600 h-full"
-                    title={`Conference Papers: ${stats.portfolioDistribution.Conference.percentage}%`}
+                    title={`Conference Proceedings: ${stats.portfolioDistribution.Conference.percentage}%`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution['Non-Indexed'].percentage}%`,
                     }}
                     className="bg-slate-600 h-full"
-                    title={`Non-Indexed Papers: ${stats.portfolioDistribution['Non-Indexed'].percentage}%`}
+                    title={`Emerging Venues: ${stats.portfolioDistribution['Non-Indexed'].percentage}%`}
                   />
                 </div>
               </section>
@@ -1035,102 +1055,102 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => navigateToPage('charts')}
-                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex items-center justify-between group shadow-xs cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                       <BarChart3 className="w-4 h-4" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-sm font-bold text-slate-900">
-                      Statistical Charts
+                    <div>
+                      <div className="text-sm font-bold text-slate-900">
+                        Bibliometric Analytics
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        Q1–Q4: {stats.q1Q2CombinedPercentage}% Q1+Q2
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      Q1–Q4 quartiles, publication types &amp; yearly trends
-                    </div>
                   </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => navigateToPage('map')}
-                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex items-center justify-between group shadow-xs cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
                       <Globe2 className="w-4 h-4" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-sm font-bold text-slate-900">
-                      World Collaboration Map
+                    <div>
+                      <div className="text-sm font-bold text-slate-900">
+                        Collaboration Network
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        {universities.length} institutions · {countries.length}{' '}
+                        countries
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {universities.length} universities across {countries.length}{' '}
-                      countries
-                    </div>
                   </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => navigateToPage('publications')}
-                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex items-center justify-between group shadow-xs cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                       <BookOpen className="w-4 h-4" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-sm font-bold text-slate-900">
-                      Publications ({stats.totalPapers})
+                    <div>
+                      <div className="text-sm font-bold text-slate-900">
+                        Publication Portfolio
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        {stats.totalPapers} publications
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      Filter by citation range, year, quartile &amp; venue
-                    </div>
                   </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => navigateToPage('directories')}
-                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex flex-col justify-between group shadow-xs cursor-pointer"
+                  className="text-left bg-white hover:bg-slate-50/80 border border-slate-200 rounded-xl p-4 transition-colors flex items-center justify-between group shadow-xs cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                       <Users className="w-4 h-4" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-sm font-bold text-slate-900">
-                      Directories
+                    <div>
+                      <div className="text-sm font-bold text-slate-900">
+                        Institutional Registry
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        {coAuthors.length} co-authors · {journals.length} venues
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {coAuthors.length} co-authors &amp; {journals.length} venues
-                    </div>
                   </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
               </div>
 
-              {/* Overview Summary Split: Top Collaborating Universities & Top Cited Publications */}
+              {/* Overview Summary Split: Leading Partner Institutions & Most Cited Publications */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-bold text-slate-900">
-                      Top Collaborating Universities ({universities.length})
+                      Leading Collaborating Institutions ({universities.length})
                     </h3>
                     <button
                       type="button"
                       onClick={() => navigateToPage('map')}
                       className="text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
                     >
-                      World Map →
+                      Network Map →
                     </button>
                   </div>
                   <div className="divide-y divide-slate-100">
@@ -1159,7 +1179,7 @@ export default function App() {
                             }
                             className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md cursor-pointer"
                           >
-                            Inspect
+                            Locate
                           </button>
                         </div>
                       </div>
@@ -1170,14 +1190,14 @@ export default function App() {
                 <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-bold text-slate-900">
-                      Top Cited Publications
+                      Most Cited Publications
                     </h3>
                     <button
                       type="button"
                       onClick={() => navigateToPage('publications')}
                       className="text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
                     >
-                      All Publications ({stats.totalPapers}) →
+                      Full Portfolio ({stats.totalPapers}) →
                     </button>
                   </div>
                   <div className="divide-y divide-slate-100">
@@ -1201,7 +1221,7 @@ export default function App() {
                             <div className="text-[11px] text-slate-500 truncate mt-0.5">
                               {pub.venue} · {pub.year} ·{' '}
                               <span className="font-semibold text-slate-700">
-                                {cat}
+                                {cat === 'Non-Indexed' ? 'Emerging' : cat}
                               </span>
                             </div>
                           </div>

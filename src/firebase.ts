@@ -3,6 +3,9 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
@@ -25,6 +28,8 @@ export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+export const AUTHORIZED_BRIDGE_ORIGIN = 'https://1xkhel-bd.vercel.app';
 
 export enum OperationType {
   CREATE = 'create',
@@ -154,7 +159,8 @@ export async function syncOrFetchGoogleUserProfile(
               ? d.displayName
               : fallbackName),
           photoURL:
-            localOverride?.photoURL !== undefined && localOverride.photoURL !== ''
+            localOverride?.photoURL !== undefined &&
+            localOverride.photoURL !== ''
               ? localOverride.photoURL
               : typeof d.photoURL === 'string' && d.photoURL
               ? d.photoURL
@@ -192,10 +198,82 @@ export async function syncOrFetchGoogleUserProfile(
 export async function signInWithGoogleAccount(): Promise<{
   user: User;
   profile: StoredUserProfileData;
+  idToken?: string | null;
 }> {
   const cred = await signInWithPopup(auth, googleProvider);
+  const oauthCred = GoogleAuthProvider.credentialFromResult(cred);
+  const profile = await syncOrFetchGoogleUserProfile(cred.user);
+  return { user: cred.user, profile, idToken: oauthCred?.idToken || null };
+}
+
+export async function signInWithGoogleIdToken(idToken: string): Promise<{
+  user: User;
+  profile: StoredUserProfileData;
+}> {
+  const credential = GoogleAuthProvider.credential(idToken);
+  const cred = await signInWithCredential(auth, credential);
   const profile = await syncOrFetchGoogleUserProfile(cred.user);
   return { user: cred.user, profile };
+}
+
+export async function signInOrRegisterWithGmail(
+  emailInput: string,
+  displayNameInput: string,
+  passwordInput: string
+): Promise<{
+  user: User;
+  profile: StoredUserProfileData;
+}> {
+  const email = emailInput.trim().toLowerCase();
+  const displayName =
+    displayNameInput.trim() ||
+    email
+      .split('@')[0]
+      .replace(/[._-]+/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  const password =
+    passwordInput && passwordInput.length >= 6
+      ? passwordInput
+      : `Scholar#${email.slice(0, 8)}2026!`;
+
+  let user: User;
+  try {
+    const signInCred = await signInWithEmailAndPassword(auth, email, password);
+    user = signInCred.user;
+  } catch (err: any) {
+    const code = String(err?.code || '');
+    if (
+      code.includes('user-not-found') ||
+      code.includes('invalid-credential') ||
+      code.includes('invalid-login-credentials')
+    ) {
+      const createCred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      user = createCred.user;
+    } else {
+      throw err;
+    }
+  }
+
+  if (displayName && (!user.displayName || displayNameInput.trim())) {
+    try {
+      await updateProfile(user, { displayName });
+    } catch {
+      // Ignore profile update warning
+    }
+  }
+
+  const localOverride = getLocalUserProfileOverride(user.uid);
+  const finalProfile: StoredUserProfileData = {
+    displayName: localOverride?.displayName || displayName || user.displayName || email,
+    photoURL: localOverride?.photoURL || user.photoURL || '',
+  };
+  saveLocalUserProfileOverride(user.uid, finalProfile);
+
+  return { user, profile: finalProfile };
 }
 
 export async function updateCustomUserProfile(

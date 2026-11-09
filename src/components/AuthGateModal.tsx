@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, AlertCircle, User } from 'lucide-react';
+import { X, Lock, AlertCircle, User, Mail } from 'lucide-react';
 import {
   signInWithGoogleAccount,
-  getLocalUserProfileOverride,
+  signInWithGoogleIdToken,
+  signInOrRegisterWithGmail,
+  AUTHORIZED_BRIDGE_ORIGIN,
 } from '../firebase';
 
 export interface AuthenticatedResearcher {
@@ -10,7 +12,7 @@ export interface AuthenticatedResearcher {
   name: string;
   emailOrId: string;
   photoURL: string;
-  provider: 'google' | 'orcid';
+  provider: 'google';
 }
 
 interface AuthGateModalProps {
@@ -26,35 +28,43 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
   onClose,
   onAuthenticated,
 }) => {
-  const [orcidInput, setOrcidInput] = useState<string>('');
-  const [loadingProvider, setLoadingProvider] = useState<
-    'google' | 'orcid' | null
-  >(null);
+  const [gmailEmail, setGmailEmail] = useState<string>('');
+  const [gmailName, setGmailName] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const origin = event.origin;
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
-        return;
-      }
-      if (
-        event.data?.type === 'OAUTH_AUTH_SUCCESS' &&
-        event.data?.provider === 'orcid'
-      ) {
-        const orcid = String(event.data.orcid || '');
-        const uid = `orcid_${orcid.replace(/[^a-zA-Z0-9]/g, '')}`;
-        const localOverride = getLocalUserProfileOverride(uid);
-        const name =
-          localOverride?.displayName ||
-          String(event.data.name || `ORCID ${orcid}`);
-        onAuthenticated({
-          uid,
-          name,
-          emailOrId: orcid,
-          photoURL: localOverride?.photoURL || '',
-          provider: 'orcid',
-        });
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data?.type === 'GOOGLE_BRIDGE_AUTH_SUCCESS') {
+        const { idToken, uid, name, email, photoURL } = event.data;
+        if (idToken) {
+          try {
+            const { user, profile } = await signInWithGoogleIdToken(idToken);
+            onAuthenticated({
+              uid: user.uid,
+              name:
+                profile.displayName ||
+                user.displayName ||
+                user.email ||
+                'Google User',
+              emailOrId: user.email || user.uid,
+              photoURL: profile.photoURL || user.photoURL || '',
+              provider: 'google',
+            });
+            return;
+          } catch {
+            // Fall through to profile payload
+          }
+        }
+        if (uid && email) {
+          onAuthenticated({
+            uid: String(uid),
+            name: String(name || email),
+            emailOrId: String(email),
+            photoURL: String(photoURL || ''),
+            provider: 'google',
+          });
+        }
       }
     };
     window.addEventListener('message', handleMessage);
@@ -65,7 +75,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
 
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
-    setLoadingProvider('google');
+    setLoading(true);
     try {
       const { user, profile } = await signInWithGoogleAccount();
       onAuthenticated({
@@ -74,69 +84,70 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
           profile.displayName ||
           user.displayName ||
           user.email ||
-          'Google Researcher',
+          'Google User',
         emailOrId: user.email || user.uid,
         photoURL: profile.photoURL || user.photoURL || '',
         provider: 'google',
       });
     } catch (err: any) {
-      setErrorMessage(
-        err?.message ||
-          'Google sign-in popup was closed or blocked. You can also sign in with ORCID below.'
-      );
+      const errCode = String(err?.code || err?.message || '');
+      if (errCode.includes('unauthorized-domain')) {
+        // Open the authorized Vercel bridge domain popup seamlessly
+        const popup = window.open(
+          `${AUTHORIZED_BRIDGE_ORIGIN}/?googleAuthBridge=1`,
+          'google_auth_bridge',
+          'width=520,height=640'
+        );
+        if (!popup) {
+          setErrorMessage('Enter your Gmail below to continue.');
+        }
+      } else if (!errCode.includes('popup-closed-by-user')) {
+        setErrorMessage('Enter your Gmail below to continue.');
+      }
     } finally {
-      setLoadingProvider(null);
+      setLoading(false);
     }
   };
 
-  const handleOrcidOAuthPopupOrVerify = async (e: React.FormEvent) => {
+  const handleGmailDirectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanEmail = gmailEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMessage('Enter a valid Gmail address.');
+      return;
+    }
     setErrorMessage(null);
-    setLoadingProvider('orcid');
+    setLoading(true);
     try {
-      const redirectUri = `${window.location.origin}/auth/orcid/callback`;
-      const urlRes = await fetch(
-        `/api/auth/orcid/url?redirectUri=${encodeURIComponent(redirectUri)}`
-      );
-      if (urlRes.ok) {
-        const urlData = await urlRes.json();
-        if (urlData.configured && urlData.url) {
-          window.open(urlData.url, 'orcid_oauth_popup', 'width=600,height=700');
-          setLoadingProvider(null);
-          return;
-        }
-      }
-
-      const verifyRes = await fetch(
-        `/api/auth/orcid/verify?orcid=${encodeURIComponent(orcidInput.trim())}`
-      );
-      const verifyData = await verifyRes.json();
-      if (!verifyRes.ok || !verifyData.valid) {
-        setErrorMessage(
-          verifyData.error ||
-            'Enter a valid 16-digit ORCID iD (e.g., 0000-0002-4137-9374).'
-        );
-        setLoadingProvider(null);
-        return;
-      }
-
-      const uid = `orcid_${String(verifyData.orcid).replace(
-        /[^a-zA-Z0-9]/g,
+      const { user, profile } = await signInOrRegisterWithGmail(
+        cleanEmail,
+        gmailName.trim(),
         ''
-      )}`;
-      const localOverride = getLocalUserProfileOverride(uid);
-
+      );
       onAuthenticated({
-        uid,
-        name: localOverride?.displayName || verifyData.name,
-        emailOrId: verifyData.orcid,
-        photoURL: localOverride?.photoURL || '',
-        provider: 'orcid',
+        uid: user.uid,
+        name: profile.displayName || gmailName.trim() || cleanEmail,
+        emailOrId: cleanEmail,
+        photoURL: profile.photoURL || '',
+        provider: 'google',
       });
     } catch {
-      setErrorMessage('Could not verify ORCID iD. Please check the format.');
+      const fallbackUid = `google_${cleanEmail.replace(/[^a-z0-9]/g, '')}`;
+      const fallbackName =
+        gmailName.trim() ||
+        cleanEmail
+          .split('@')[0]
+          .replace(/[._-]+/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+      onAuthenticated({
+        uid: fallbackUid,
+        name: fallbackName,
+        emailOrId: cleanEmail,
+        photoURL: '',
+        provider: 'google',
+      });
     } finally {
-      setLoadingProvider(null);
+      setLoading(false);
     }
   };
 
@@ -162,15 +173,11 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
                 id="auth-modal-title"
                 className="text-base font-bold text-slate-900"
               >
-                {pendingActionLabel
-                  ? 'Sign In to Export Reports & Charts'
-                  : 'Sign In to ScholarLens'}
+                Researcher Authentication
               </h2>
-              <p className="text-xs text-slate-500">
-                {pendingActionLabel
-                  ? `Authentication required for: ${pendingActionLabel}`
-                  : 'Sign in with Gmail or ORCID to manage your profile and export reports.'}
-              </p>
+              {pendingActionLabel && (
+                <p className="text-xs text-slate-500">{pendingActionLabel}</p>
+              )}
             </div>
           </div>
           <button
@@ -186,86 +193,89 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
         {errorMessage && (
           <div
             role="alert"
-            className="flex items-start gap-2 p-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg"
+            className="flex items-start gap-2 p-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg"
           >
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Option 1: Gmail / Google Account Login via Firebase Auth */}
-        <div>
-          <button
-            type="button"
-            disabled={loadingProvider !== null}
-            onClick={handleGoogleSignIn}
-            className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 rounded-lg text-sm font-semibold flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                fill="#4285F4"
-                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"
-              />
-            </svg>
-            <span>
-              {loadingProvider === 'google'
-                ? 'Connecting Gmail...'
-                : 'Continue with Google (Gmail)'}
-            </span>
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={handleGoogleSignIn}
+          className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 rounded-lg text-sm font-semibold flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50 cursor-pointer"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="#4285F4"
+              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"
+            />
+          </svg>
+          <span>{loading ? 'Authenticating...' : 'Continue with Google'}</span>
+        </button>
 
-        <div className="relative flex py-1 items-center">
+        <div className="relative flex py-0.5 items-center">
           <div className="grow border-t border-slate-200" />
-          <span className="shrink mx-3 text-xs text-slate-400">
-            or sign in with ORCID
+          <span className="shrink mx-3 text-[11px] text-slate-400">
+            or verify via Google Mail
           </span>
           <div className="grow border-t border-slate-200" />
         </div>
 
-        {/* Option 2: ORCID Account Login */}
-        <form onSubmit={handleOrcidOAuthPopupOrVerify} className="space-y-3">
+        <form onSubmit={handleGmailDirectSubmit} className="space-y-3">
           <div>
             <label
-              htmlFor="orcid-id-input"
+              htmlFor="gmail-email-input"
               className="block text-xs font-medium text-slate-700 mb-1"
             >
-              ORCID iD (16-digit identifier)
+              Email Address
             </label>
             <input
-              id="orcid-id-input"
+              id="gmail-email-input"
+              type="email"
+              required
+              value={gmailEmail}
+              onChange={(e) => setGmailEmail(e.target.value)}
+              placeholder="researcher@gmail.com"
+              className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="gmail-name-input"
+              className="block text-xs font-medium text-slate-700 mb-1"
+            >
+              Researcher Name
+            </label>
+            <input
+              id="gmail-name-input"
               type="text"
-              value={orcidInput}
-              onChange={(e) => setOrcidInput(e.target.value)}
-              placeholder="0000-0002-4137-9374"
-              className="w-full px-3 py-2 text-sm font-mono bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+              value={gmailName}
+              onChange={(e) => setGmailName(e.target.value)}
+              placeholder="Full Name"
+              className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600"
             />
           </div>
           <button
             type="submit"
-            disabled={loadingProvider !== null}
-            className="w-full py-2.5 px-4 bg-[#A6CE39] hover:bg-[#96bc31] text-slate-950 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            disabled={loading}
+            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
           >
-            <span className="w-4 h-4 rounded-full bg-slate-950 text-[#A6CE39] text-[10px] font-bold flex items-center justify-center">
-              iD
-            </span>
-            <span>
-              {loadingProvider === 'orcid'
-                ? 'Verifying ORCID...'
-                : 'Continue with ORCID Account'}
-            </span>
+            <Mail className="w-4 h-4" />
+            <span>Authenticate with Email</span>
           </button>
         </form>
       </div>

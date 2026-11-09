@@ -186,9 +186,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 )}
               </div>
               <p className="text-[11px] text-slate-500">
-                {user.provider === 'google'
-                  ? `Signed in via Google (${user.emailOrId})`
-                  : `Signed in via ORCID (${user.emailOrId})`}
+                {user.emailOrId}
               </p>
               <input
                 ref={fileInputRef}

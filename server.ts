@@ -23,14 +23,11 @@ type ContinentName =
   | 'South America'
   | 'Africa';
 
-interface CountryGeoInfo {
-  country: string;
-  continent: ContinentName;
-  lat: number;
-  lng: number;
-}
-
-const COUNTRY_GEO: Record<string, CountryGeoInfo> = {
+// ISO-3166 Country Code to Continent & Country Name (Standard ISO Reference)
+const ISO_COUNTRY_INFO: Record<
+  string,
+  { country: string; continent: ContinentName; lat: number; lng: number }
+> = {
   BD: { country: 'Bangladesh', continent: 'Asia', lat: 23.8103, lng: 90.4125 },
   US: { country: 'United States', continent: 'North America', lat: 38.8951, lng: -77.0364 },
   CA: { country: 'Canada', continent: 'North America', lat: 45.4215, lng: -75.6972 },
@@ -79,772 +76,6 @@ const COUNTRY_GEO: Record<string, CountryGeoInfo> = {
   CO: { country: 'Colombia', continent: 'South America', lat: 4.711, lng: -74.0721 },
 };
 
-const KNOWN_UNIVERSITY_COORDS: Record<
-  string,
-  Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>
-> = {
-  'green university of bangladesh': {
-    universityId: 'green-university-of-bangladesh',
-    universityName: 'Green University of Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8285,
-    lng: 90.5663,
-  },
-  'university of liberal arts bangladesh': {
-    universityId: 'university-of-liberal-arts-bangladesh',
-    universityName: 'University of Liberal Arts Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7548,
-    lng: 90.3585,
-  },
-  'ulab': {
-    universityId: 'university-of-liberal-arts-bangladesh',
-    universityName: 'University of Liberal Arts Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7548,
-    lng: 90.3585,
-  },
-  'east west university': {
-    universityId: 'east-west-university',
-    universityName: 'East West University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7685,
-    lng: 90.4255,
-  },
-  'north south university': {
-    universityId: 'north-south-university',
-    universityName: 'North South University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8151,
-    lng: 90.4255,
-  },
-  'bangladesh university of engineering and technology': {
-    universityId: 'buet-dhaka',
-    universityName: 'Bangladesh University of Engineering and Technology',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7266,
-    lng: 90.3925,
-  },
-  'islamic university of technology': {
-    universityId: 'islamic-university-of-technology',
-    universityName: 'Islamic University of Technology',
-    city: 'Gazipur',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.9482,
-    lng: 90.3793,
-  },
-  'university of dhaka': {
-    universityId: 'university-of-dhaka',
-    universityName: 'University of Dhaka',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.734,
-    lng: 90.3928,
-  },
-  'brac university': {
-    universityId: 'brac-university',
-    universityName: 'BRAC University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7732,
-    lng: 90.4244,
-  },
-  'independent university, bangladesh': {
-    universityId: 'independent-university-bangladesh',
-    universityName: 'Independent University, Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8168,
-    lng: 90.4312,
-  },
-  'independent university': {
-    universityId: 'independent-university-bangladesh',
-    universityName: 'Independent University, Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8168,
-    lng: 90.4312,
-  },
-  'american international university-bangladesh': {
-    universityId: 'aiub-dhaka',
-    universityName: 'American International University-Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8221,
-    lng: 90.4274,
-  },
-  'daffodil international university': {
-    universityId: 'daffodil-international-university',
-    universityName: 'Daffodil International University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8769,
-    lng: 90.3207,
-  },
-  'ahsanullah university of science and technology': {
-    universityId: 'ahsanullah-university-of-science-and-techn',
-    universityName: 'Ahsanullah University of Science and Technology',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7639,
-    lng: 90.4067,
-  },
-  'university of asia pacific': {
-    universityId: 'university-of-asia-pacific',
-    universityName: 'University of Asia Pacific',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7547,
-    lng: 90.389,
-  },
-  'stamford university bangladesh': {
-    universityId: 'stamford-university-bangladesh',
-    universityName: 'Stamford University Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7432,
-    lng: 90.4087,
-  },
-  'sonargaon university': {
-    universityId: 'sonargaon-university',
-    universityName: 'Sonargaon University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7516,
-    lng: 90.3863,
-  },
-  'prime university': {
-    universityId: 'prime-university',
-    universityName: 'Prime University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7806,
-    lng: 90.3537,
-  },
-  'bangladesh university of business and technology': {
-    universityId: 'bangladesh-university-of-business-and-tech',
-    universityName: 'Bangladesh University of Business and Technology',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8118,
-    lng: 90.3571,
-  },
-  'bubt': {
-    universityId: 'bangladesh-university-of-business-and-tech',
-    universityName: 'Bangladesh University of Business and Technology',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8118,
-    lng: 90.3571,
-  },
-  'international university of business agriculture and technology': {
-    universityId: 'international-university-of-business-agric',
-    universityName: 'International University of Business Agriculture and Technology',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8883,
-    lng: 90.3907,
-  },
-  'uttara university': {
-    universityId: 'uttara-university',
-    universityName: 'Uttara University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8705,
-    lng: 90.3621,
-  },
-  'university of scholars': {
-    universityId: 'university-of-scholars',
-    universityName: 'University of Scholars',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.794,
-    lng: 90.4043,
-  },
-  'presidency university': {
-    universityId: 'presidency-university',
-    universityName: 'Presidency University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7916,
-    lng: 90.4152,
-  },
-  'southeast university': {
-    universityId: 'southeast-university-bangladesh',
-    universityName: 'Southeast University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7702,
-    lng: 90.4071,
-  },
-  'south east university': {
-    universityId: 'southeast-university-bangladesh',
-    universityName: 'Southeast University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.7702,
-    lng: 90.4071,
-  },
-  'eastern university': {
-    universityId: 'eastern-university-bangladesh',
-    universityName: 'Eastern University',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.8615,
-    lng: 90.3262,
-  },
-  'khulna university of engineering and technology': {
-    universityId: 'khulna-university-of-engineering-and-techn',
-    universityName: 'Khulna University of Engineering and Technology',
-    city: 'Khulna',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 22.9006,
-    lng: 89.5024,
-  },
-  'jamalpur science and technology university': {
-    universityId: 'jamalpur-science-and-technology-university',
-    universityName: 'Jamalpur Science and Technology University',
-    city: 'Jamalpur',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 24.9692,
-    lng: 89.8398,
-  },
-  'gopalganj science and technology university': {
-    universityId: 'gopalganj-science-and-technology-universit',
-    universityName: 'Gopalganj Science and Technology University',
-    city: 'Gopalganj',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 22.9654,
-    lng: 89.8173,
-  },
-  'bangladesh army university of science and technology': {
-    universityId: 'bangladesh-army-university-of-science-and-',
-    universityName: 'Bangladesh Army University of Science and Technology',
-    city: 'Saidpur',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 25.7688,
-    lng: 88.9125,
-  },
-  'faridpur engineering college': {
-    universityId: 'faridpur-engineering-college',
-    universityName: 'Faridpur Engineering College',
-    city: 'Faridpur',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 23.5962,
-    lng: 89.8552,
-  },
-  'university of chittagong': {
-    universityId: 'university-of-chittagong',
-    universityName: 'University of Chittagong',
-    city: 'Chattogram',
-    country: 'Bangladesh',
-    countryCode: 'BD',
-    continent: 'Asia',
-    lat: 22.4716,
-    lng: 91.7877,
-  },
-  'technical university of denmark': {
-    universityId: 'technical-university-of-denmark',
-    universityName: 'Technical University of Denmark',
-    city: 'Lyngby',
-    country: 'Denmark',
-    countryCode: 'DK',
-    continent: 'Europe',
-    lat: 55.7856,
-    lng: 12.5214,
-  },
-  'danish meteorological institute': {
-    universityId: 'danish-meteorological-institute',
-    universityName: 'Danish Meteorological Institute',
-    city: 'Copenhagen',
-    country: 'Denmark',
-    countryCode: 'DK',
-    continent: 'Europe',
-    lat: 55.7153,
-    lng: 12.5618,
-  },
-  'novo nordisk': {
-    universityId: 'novo-nordisk-denmark',
-    universityName: 'Novo Nordisk (Denmark)',
-    city: 'Bagsværd',
-    country: 'Denmark',
-    countryCode: 'DK',
-    continent: 'Europe',
-    lat: 55.7547,
-    lng: 12.455,
-  },
-  'aarhus university': {
-    universityId: 'aarhus-university',
-    universityName: 'Aarhus University',
-    city: 'Aarhus',
-    country: 'Denmark',
-    countryCode: 'DK',
-    continent: 'Europe',
-    lat: 56.1681,
-    lng: 10.203,
-  },
-  'university of copenhagen': {
-    universityId: 'university-of-copenhagen',
-    universityName: 'University of Copenhagen',
-    city: 'Copenhagen',
-    country: 'Denmark',
-    countryCode: 'DK',
-    continent: 'Europe',
-    lat: 55.6802,
-    lng: 12.5724,
-  },
-  'centre national de la recherche scientifique': {
-    universityId: 'centre-national-de-la-recherche-scientifiq',
-    universityName: 'Centre National de la Recherche Scientifique',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8476,
-    lng: 2.2638,
-  },
-  'école normale supérieure - psl': {
-    universityId: 'ecole-normale-superieure-psl',
-    universityName: 'École Normale Supérieure - PSL',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8422,
-    lng: 2.3452,
-  },
-  'ecole normale supérieure': {
-    universityId: 'ecole-normale-superieure-psl',
-    universityName: 'École Normale Supérieure - PSL',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8422,
-    lng: 2.3452,
-  },
-  'ecole normale superieure': {
-    universityId: 'ecole-normale-superieure-psl',
-    universityName: 'École Normale Supérieure - PSL',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8422,
-    lng: 2.3452,
-  },
-  "institut de biologie de l'école normale supérieure": {
-    universityId: 'institut-de-biologie-de-l-ecole-normale-su',
-    universityName: "Institut de Biologie de l'École Normale Supérieure",
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8414,
-    lng: 2.3441,
-  },
-  'université paris sciences et lettres': {
-    universityId: 'universite-paris-sciences-et-lettres',
-    universityName: 'Université Paris Sciences et Lettres',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8546,
-    lng: 2.3378,
-  },
-  'institut curie': {
-    universityId: 'institut-curie',
-    universityName: 'Institut Curie',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8435,
-    lng: 2.3446,
-  },
-  'collège de france': {
-    universityId: 'college-de-france',
-    universityName: 'Collège de France',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.849,
-    lng: 2.3456,
-  },
-  'centre interdisciplinaire de recherche en biologie': {
-    universityId: 'centre-interdisciplinaire-de-recherche-en-',
-    universityName: 'Centre Interdisciplinaire de Recherche en Biologie',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8485,
-    lng: 2.3462,
-  },
-  'sorbonne université': {
-    universityId: 'sorbonne-universite',
-    universityName: 'Sorbonne Université',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8468,
-    lng: 2.3561,
-  },
-  'université pierre-et-marie-curie': {
-    universityId: 'universite-pierre-et-marie-curie',
-    universityName: 'Université Pierre-et-Marie-Curie',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8474,
-    lng: 2.3574,
-  },
-  'laboratoire jean perrin': {
-    universityId: 'laboratoire-jean-perrin',
-    universityName: 'Laboratoire Jean Perrin',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8462,
-    lng: 2.3551,
-  },
-  'laboratoire de physique théorique de la matière condensée': {
-    universityId: 'laboratoire-de-physique-theorique-de-la-ma',
-    universityName: 'Laboratoire de Physique Théorique de la Matière Condensée',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8458,
-    lng: 2.3579,
-  },
-  'institut de physique du globe de paris': {
-    universityId: 'institut-de-physique-du-globe-de-paris',
-    universityName: 'Institut de physique du globe de Paris',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8451,
-    lng: 2.3568,
-  },
-  'inserm': {
-    universityId: 'inserm',
-    universityName: 'Inserm',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8267,
-    lng: 2.3665,
-  },
-  'institut du cerveau': {
-    universityId: 'institut-du-cerveau',
-    universityName: 'Institut du Cerveau',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8382,
-    lng: 2.3631,
-  },
-  'institut de la vision': {
-    universityId: 'institut-de-la-vision',
-    universityName: 'Institut de la Vision',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8505,
-    lng: 2.3732,
-  },
-  'centre de recherche saint-antoine': {
-    universityId: 'centre-de-recherche-saint-antoine',
-    universityName: 'Centre de Recherche Saint-Antoine',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8491,
-    lng: 2.3834,
-  },
-  'université paris cité': {
-    universityId: 'universite-paris-cite',
-    universityName: 'Université Paris Cité',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8522,
-    lng: 2.3408,
-  },
-  'sorbonne paris cité': {
-    universityId: 'sorbonne-paris-cite',
-    universityName: 'Sorbonne Paris Cité',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.853,
-    lng: 2.3422,
-  },
-  'structure fédérative de recherche necker': {
-    universityId: 'structure-federative-de-recherche-necker',
-    universityName: 'Structure fédérative de recherche Necker',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8453,
-    lng: 2.3153,
-  },
-  'institut necker enfants malades': {
-    universityId: 'institut-necker-enfants-malades',
-    universityName: 'Institut Necker Enfants Malades',
-    city: 'Paris',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8446,
-    lng: 2.3142,
-  },
-  'université paris-est créteil': {
-    universityId: 'universite-paris-est-creteil',
-    universityName: 'Université Paris-Est Créteil',
-    city: 'Créteil',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.7885,
-    lng: 2.4437,
-  },
-  'paris-est sup': {
-    universityId: 'paris-est-sup',
-    universityName: 'Paris-Est Sup',
-    city: 'Champs-sur-Marne',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.8396,
-    lng: 2.5876,
-  },
-  'laboratoire images, signaux et systèmes intelligents': {
-    universityId: 'laboratoire-images-signaux-et-systemes-int',
-    universityName: 'Laboratoire Images, signaux et systèmes intelligents',
-    city: 'Vitry-sur-Seine',
-    country: 'France',
-    countryCode: 'FR',
-    continent: 'Europe',
-    lat: 48.7897,
-    lng: 2.3924,
-  },
-  'university of girona': {
-    universityId: 'university-of-girona',
-    universityName: 'University of Girona',
-    city: 'Girona',
-    country: 'Spain',
-    countryCode: 'ES',
-    continent: 'Europe',
-    lat: 41.9831,
-    lng: 2.8249,
-  },
-  'universitat de girona': {
-    universityId: 'university-of-girona',
-    universityName: 'University of Girona',
-    city: 'Girona',
-    country: 'Spain',
-    countryCode: 'ES',
-    continent: 'Europe',
-    lat: 41.9831,
-    lng: 2.8249,
-  },
-  'universidad de granada': {
-    universityId: 'universidad-de-granada',
-    universityName: 'Universidad de Granada',
-    city: 'Granada',
-    country: 'Spain',
-    countryCode: 'ES',
-    continent: 'Europe',
-    lat: 37.1847,
-    lng: -3.6011,
-  },
-  'university of granada': {
-    universityId: 'universidad-de-granada',
-    universityName: 'Universidad de Granada',
-    city: 'Granada',
-    country: 'Spain',
-    countryCode: 'ES',
-    continent: 'Europe',
-    lat: 37.1847,
-    lng: -3.6011,
-  },
-  'chinese academy of sciences': {
-    universityId: 'chinese-academy-of-sciences',
-    universityName: 'Chinese Academy of Sciences',
-    city: 'Beijing',
-    country: 'China',
-    countryCode: 'CN',
-    continent: 'Asia',
-    lat: 39.9139,
-    lng: 116.3389,
-  },
-  'university of chinese academy of sciences': {
-    universityId: 'university-of-chinese-academy-of-sciences',
-    universityName: 'University of Chinese Academy of Sciences',
-    city: 'Beijing',
-    country: 'China',
-    countryCode: 'CN',
-    continent: 'Asia',
-    lat: 39.9082,
-    lng: 116.2451,
-  },
-  'institute of semiconductors': {
-    universityId: 'institute-of-semiconductors',
-    universityName: 'Institute of Semiconductors',
-    city: 'Beijing',
-    country: 'China',
-    countryCode: 'CN',
-    continent: 'Asia',
-    lat: 39.9926,
-    lng: 116.3489,
-  },
-  'universiti kebangsaan malaysia': {
-    universityId: 'universiti-kebangsaan-malaysia',
-    universityName: 'Universiti Kebangsaan Malaysia',
-    city: 'Bangi',
-    country: 'Malaysia',
-    countryCode: 'MY',
-    continent: 'Asia',
-    lat: 2.9296,
-    lng: 101.7801,
-  },
-  'national university of malaysia': {
-    universityId: 'universiti-kebangsaan-malaysia',
-    universityName: 'Universiti Kebangsaan Malaysia',
-    city: 'Bangi',
-    country: 'Malaysia',
-    countryCode: 'MY',
-    continent: 'Asia',
-    lat: 2.9296,
-    lng: 101.7801,
-  },
-  'universiti tenaga nasional': {
-    universityId: 'universiti-tenaga-nasional',
-    universityName: 'Universiti Tenaga Nasional',
-    city: 'Kajang',
-    country: 'Malaysia',
-    countryCode: 'MY',
-    continent: 'Asia',
-    lat: 2.975,
-    lng: 101.7339,
-  },
-  'universiti teknologi mara': {
-    universityId: 'universiti-teknologi-mara',
-    universityName: 'Universiti Teknologi MARA',
-    city: 'Shah Alam',
-    country: 'Malaysia',
-    countryCode: 'MY',
-    continent: 'Asia',
-    lat: 3.0695,
-    lng: 101.5037,
-  },
-  'university of wollongong': {
-    universityId: 'university-of-wollongong',
-    universityName: 'University of Wollongong',
-    city: 'Wollongong',
-    country: 'Australia',
-    countryCode: 'AU',
-    continent: 'Oceania',
-    lat: -34.4054,
-    lng: 150.8784,
-  },
-  'luleå university of technology': {
-    universityId: 'lulea-university-of-technology',
-    universityName: 'Luleå University of Technology',
-    city: 'Luleå',
-    country: 'Sweden',
-    countryCode: 'SE',
-    continent: 'Europe',
-    lat: 65.6177,
-    lng: 22.1402,
-  },
-};
-
 function slugifyInstitution(name: string): string {
   return (
     name
@@ -860,9 +91,211 @@ function normalizeUniversityDisplayName(name: string): string {
   return name.replace(/East–West University/gi, 'East West University').trim();
 }
 
+/**
+ * Strips volume, issue, page numbers, years, and publisher suffixes from Google Scholar venue strings
+ * so journals are never split into separate entries (e.g. "Electronics 13 (11), 2153" -> "Electronics").
+ */
+export function cleanVenueName(rawVenue: string): string {
+  if (!rawVenue) return 'Academic Venue';
+  let v = rawVenue
+    .replace(/\s+/g, ' ')
+    .replace(/,\s*(19|20)\d{2}\s*$/, '')
+    .trim();
+
+  // Strip volume/issue/page patterns like "13 (11), 2153", "321, 117242", "102 (1), 159-172. e7", "vol. 12, no. 3, pp. 1-10", ", 109021"
+  v = v
+    .replace(/,?\s*\bvol\.?\s*\d+.*$/i, '')
+    .replace(/,?\s*\bno\.?\s*\d+.*$/i, '')
+    .replace(/,?\s*\bpp\.?\s*\d+.*$/i, '')
+    .replace(/\s+\d+\s*\([^)]+\).*$/i, '')
+    .replace(/\s+\d+\s*,\s*[\d–eE.-]+.*$/i, '')
+    .replace(/,\s*\d+-\d+.*$/i, '')
+    .replace(/,\s*[A-Za-z]?\d{4,8}\s*$/i, '')
+    .replace(/\s+\(\d{4}\)\s*$/i, '')
+    .replace(/\s+\d{1,4}\s*$/i, '')
+    .replace(/^[,\s-]+|[,\s-]+$/g, '')
+    .trim();
+
+  // Canonicalize abbreviated/casing variants so the same journal is never split
+  if (/^nature communications/i.test(v) || /^nat\.\s*commun/i.test(v)) return 'Nature Communications';
+  if (/^the embo journal$/i.test(v)) return 'The EMBO Journal';
+  if (/^ieee access$/i.test(v)) return 'IEEE Access';
+  if (/^plos one$/i.test(v)) return 'PLOS ONE';
+  if (/^scientific reports$/i.test(v)) return 'Scientific Reports';
+  if (/^front(\.|iers in)\s*plant\s*sci/i.test(v)) return 'Frontiers in Plant Science';
+  if (/^(sustainable\s+)?energy\s+technol(\.|ogies)\s*(and\s+)?assess/i.test(v))
+    return 'Sustainable Energy Technologies and Assessments';
+  if (/^energy conversion and management:?\s*x$/i.test(v))
+    return 'Energy Conversion and Management: X';
+  if (/^gub journal of science and engineering/i.test(v))
+    return 'GUB Journal of Science and Engineering';
+  if (/^journal of engineering and technology\s*(\(jet\))?$/i.test(v))
+    return 'Journal of Engineering and Technology';
+  if (
+    /^int\.\s*j\.\s*comput\.\s*sci\.\s*netw/i.test(v) ||
+    /^international journal of computer science and network security/i.test(v)
+  ) {
+    return 'International Journal of Computer Science and Network Security';
+  }
+  return v || 'Academic Venue';
+}
+
+/**
+ * Automatically detects and excludes non-journal / non-conference items from Google Scholar & OpenAlex/Crossref:
+ * - Open data & datasets (Mendeley Data, Harvard Dataverse, DANS, Zenodo, Figshare, Dryad, Data in Brief, Version V1/V2/V3)
+ * - Code repositories (GitHub, GitLab, Code Ocean, SourceForge, Bitbucket)
+ * - Preprints & working papers (arXiv, bioRxiv, medRxiv, TechRxiv, SSRN, Research Square, Preprints.org, HAL)
+ * - Theses, dissertations, posters, patents, footnote strings, and corrupted ", 0" duplicate records
+ */
+export function shouldExcludeNonPaperRecord(params: {
+  title: string;
+  venue: string;
+  workType?: string;
+  sourceType?: string;
+  citations?: number;
+}): boolean {
+  const title = (params.title || '').trim();
+  const rawVenue = (params.venue || '').trim();
+  const tLower = title.toLowerCase();
+  const vLower = rawVenue.toLowerCase();
+  const wType = (params.workType || '').toLowerCase();
+  const sType = (params.sourceType || '').toLowerCase();
+
+  if (!title || title.length < 10) return true;
+
+  // 1. Corrupted Google Scholar duplicate/footnote strings (e.g. ending with ", 0" in title or venue, or author lists/titles in venue)
+  if (/,\s*0(\s|$)/.test(title) || /,\s*0(\s|$)/.test(rawVenue)) return true;
+  if (
+    tLower.includes('the author (s)') ||
+    tLower.includes('the author(s)') ||
+    /^[a-z]{1,3}\d{4,}$/i.test(title) ||
+    /^[a-z]{1,3}\d{4,}\b/i.test(tLower) ||
+    /^[^\w]*\d+\s+[A-Z]/.test(title) ||
+    /\bpp\.\s*\d+/i.test(title) ||
+    /\bvol\.\s*\d+/i.test(title) ||
+    /\bet\s+al\b/i.test(vLower) ||
+    /shihavuddin/i.test(vLower) ||
+    /faucourt|genovesio|spassky/i.test(vLower) ||
+    /^seta-d-\d+/i.test(vLower) ||
+    ((rawVenue.includes('…') || rawVenue.includes('...')) &&
+      !/conference|symposium|workshop|proceedings|journal|ieee|international|lecture|transactions/i.test(
+        vLower
+      ))
+  ) {
+    return true;
+  }
+
+  // 2. Official Crossref / OpenAlex non-article work types
+  const excludedTypes = [
+    'dataset',
+    'posted-content',
+    'preprint',
+    'dissertation',
+    'thesis',
+    'peer-review',
+    'component',
+    'grant',
+    'standard',
+    'report',
+    'paratext',
+    'erratum',
+    'corrigendum',
+    'retraction',
+    'letter',
+    'editorial',
+  ];
+  if (excludedTypes.some((et) => wType === et || wType.includes(et))) {
+    return true;
+  }
+  if (sType === 'repository') {
+    return true;
+  }
+
+  // 3. Open Data, Datasets, Code Repositories, Preprint Servers, Theses & Posters in Venue
+  const nonPaperVenuePatterns = [
+    'mendeley data',
+    'mendeley',
+    'dataverse',
+    'harvard dataverse',
+    'dans data station',
+    'data archiving and networked services',
+    '(dans)',
+    'dans ',
+    '[google scholar]',
+    'stays neutral with regard to jurisdictional claims',
+    'universidad de zaragoza',
+    'zenodo',
+    'figshare',
+    'dryad',
+    'kaggle',
+    'data in brief',
+    'scientific data',
+    'github',
+    'gitlab',
+    'bitbucket',
+    'sourceforge',
+    'code ocean',
+    'arxiv',
+    'biorxiv',
+    'medrxiv',
+    'techrxiv',
+    'chemrxiv',
+    'engrxiv',
+    'ssrn',
+    'research square',
+    'preprints',
+    'authorea',
+    'hal-',
+    'open science framework',
+    'osf.io',
+    'virological',
+    'thesis',
+    'dissertation',
+    'master thesis',
+    'phd thesis',
+    'bachelor thesis',
+    'technical report',
+    'working paper',
+    'white paper',
+    'poster',
+    'patent',
+    'us patent',
+  ];
+  if (nonPaperVenuePatterns.some((pat) => vLower.includes(pat))) {
+    return true;
+  }
+
+  // 4. Open Data / Dataset / Code / Thesis indicators in Title or Venue
+  if (
+    /\bversion\s+v?\d+/i.test(vLower) ||
+    /\bversion\s+v?\d+/i.test(tLower) ||
+    /\bv\d+\.\[google/i.test(vLower) ||
+    /\bdataset\b/i.test(vLower) ||
+    /^dataset\s+(for|of|on)\b/i.test(tLower) ||
+    /^data\s+for:/i.test(tLower) ||
+    /^supplementary\s+(data|material|information)/i.test(tLower) ||
+    /\b(open|raw|benchmark)\s+dataset\b/i.test(tLower) ||
+    /\bcode\s+repository\b/i.test(tLower) ||
+    /\b(phd|master'?s|doctoral)\s+(thesis|dissertation)\b/i.test(tLower)
+  ) {
+    return true;
+  }
+
+  // 5. Unverified entries with no venue ("Academic Venue" or empty) that are not real papers
+  if (
+    (!vLower || vLower === 'academic venue') &&
+    (params.citations || 0) === 0
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 interface OpenAlexGeoRecord {
   id: string;
   display_name: string;
+  ror?: string;
   country_code?: string;
   geo?: {
     city?: string;
@@ -873,21 +306,76 @@ interface OpenAlexGeoRecord {
   };
 }
 
-function resolveInstitutionAffiliation(
+// Persistent runtime cache for official ROR + Wikidata + OpenAlex institution coordinates
+const officialInstitutionGeoCache = new Map<
+  string,
+  Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>
+>();
+
+/**
+ * Queries Wikidata SPARQL for exact physical campus coordinates (wdt:P625) by ROR ID (wdt:P6782) or institution label.
+ */
+async function queryWikidataInstitutionCoords(
+  institutionName: string,
+  rorId?: string
+): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const cleanRor = rorId
+      ? rorId.replace('https://ror.org/', '').trim()
+      : '';
+    const sparql = cleanRor
+      ? `SELECT ?coord WHERE { ?item wdt:P6782 "${cleanRor}". ?item wdt:P625 ?coord. } LIMIT 1`
+      : `SELECT ?coord WHERE { ?item rdfs:label "${institutionName.replace(
+          /"/g,
+          ''
+        )}"@en. ?item wdt:P625 ?coord. } LIMIT 1`;
+    const res = await fetch(
+      `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(
+        sparql
+      )}`,
+      {
+        headers: {
+          'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+        },
+        signal: AbortSignal.timeout(2500),
+      }
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as any;
+    const wkt = String(data?.results?.bindings?.[0]?.coord?.value || '');
+    const m = wkt.match(/Point\(([-\d.]+)\s+([-\d.]+)\)/i);
+    if (m) {
+      const lng = Number(m[1]);
+      const lat = Number(m[2]);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        return { lat, lng };
+      }
+    }
+  } catch {
+    // Ignore timeout
+  }
+  return null;
+}
+
+/**
+ * Resolves any university or research institute strictly from official sources:
+ * 1. OpenAlex /institutions GeoNames record + Wikidata wdt:P625 campus coordinates
+ * 2. Research Organization Registry (ROR API v2 `https://api.ror.org/v2/organizations`)
+ * 3. OpenAlex Institution Search API
+ */
+async function resolveInstitutionFromOfficialSources(
   rawInstName: string,
   rawCountryCode: string,
   openAlexId?: string,
   geoCache?: Map<string, OpenAlexGeoRecord>
-): Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'> {
+): Promise<Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>> {
   const cleanName = normalizeUniversityDisplayName(rawInstName);
-  const lower = cleanName.toLowerCase();
-
-  for (const [key, val] of Object.entries(KNOWN_UNIVERSITY_COORDS)) {
-    if (lower === key || lower.includes(key)) {
-      return val;
-    }
+  const cacheKey = `${cleanName.toLowerCase()}::${openAlexId || ''}`;
+  if (officialInstitutionGeoCache.has(cacheKey)) {
+    return officialInstitutionGeoCache.get(cacheKey)!;
   }
 
+  // 1. Check OpenAlex pre-fetched batch geoCache first
   if (openAlexId && geoCache?.has(openAlexId)) {
     const rec = geoCache.get(openAlexId)!;
     const cc = (
@@ -896,105 +384,192 @@ function resolveInstitutionAffiliation(
       rawCountryCode ||
       'US'
     ).toUpperCase();
-    const countryFallback = COUNTRY_GEO[cc] || {
+    const countryInfo = ISO_COUNTRY_INFO[cc] || {
       country: rec.geo?.country || cc,
       continent: 'Asia' as ContinentName,
       lat: 23.8103,
       lng: 90.4125,
     };
-    const lat =
+
+    let lat =
       typeof rec.geo?.latitude === 'number'
         ? rec.geo.latitude
-        : countryFallback.lat;
-    const lng =
+        : countryInfo.lat;
+    let lng =
       typeof rec.geo?.longitude === 'number'
         ? rec.geo.longitude
-        : countryFallback.lng;
-    const city = rec.geo?.city || rec.geo?.country || countryFallback.country;
-    const country = rec.geo?.country || countryFallback.country;
+        : countryInfo.lng;
 
-    return {
-      universityId: slugifyInstitution(cleanName),
-      universityName: cleanName,
-      city,
-      country,
+    // Refine city-level coordinates to exact physical campus coordinates via Wikidata P625 if ROR is present
+    const wdCoords = await queryWikidataInstitutionCoords(
+      rec.display_name || cleanName,
+      rec.ror
+    );
+    if (wdCoords) {
+      lat = wdCoords.lat;
+      lng = wdCoords.lng;
+    }
+
+    const resolved: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'> = {
+      universityId: slugifyInstitution(rec.display_name || cleanName),
+      universityName: normalizeUniversityDisplayName(
+        rec.display_name || cleanName
+      ),
+      city: rec.geo?.city || rec.geo?.country || countryInfo.country,
+      country: rec.geo?.country || countryInfo.country,
       countryCode: cc,
-      continent: countryFallback.continent,
+      continent: countryInfo.continent,
       lat,
       lng,
     };
+    officialInstitutionGeoCache.set(cacheKey, resolved);
+    officialInstitutionGeoCache.set(
+      `${resolved.universityName.toLowerCase()}::`,
+      resolved
+    );
+    return resolved;
   }
 
-  let inferredCC = (rawCountryCode || '').toUpperCase();
-  if (!inferredCC) {
-    if (
-      lower.includes('bangladesh') ||
-      lower.includes('dhaka') ||
-      lower.includes('ulab')
-    ) {
-      inferredCC = 'BD';
-    } else if (
-      lower.includes('denmark') ||
-      lower.includes('dtu') ||
-      lower.includes('aarhus')
-    ) {
-      inferredCC = 'DK';
-    } else if (lower.includes('malaysia') || lower.includes('universiti')) {
-      inferredCC = 'MY';
-    } else if (
-      lower.includes('france') ||
-      lower.includes('paris') ||
-      lower.includes('cnrs') ||
-      lower.includes('sorbonne') ||
-      lower.includes('normale')
-    ) {
-      inferredCC = 'FR';
-    } else if (
-      lower.includes('spain') ||
-      lower.includes('girona') ||
-      lower.includes('granada') ||
-      lower.includes('zaragoza')
-    ) {
-      inferredCC = 'ES';
-    } else if (lower.includes('portugal') || lower.includes('porto')) {
-      inferredCC = 'PT';
-    } else if (
-      lower.includes('australia') ||
-      lower.includes('wollongong') ||
-      lower.includes('monash')
-    ) {
-      inferredCC = 'AU';
-    } else if (lower.includes('sweden') || lower.includes('lule')) {
-      inferredCC = 'SE';
-    } else if (
-      lower.includes('uk') ||
-      lower.includes('london') ||
-      lower.includes('oxford') ||
-      lower.includes('cambridge')
-    ) {
-      inferredCC = 'GB';
-    } else if (
-      lower.includes('canada') ||
-      lower.includes('toronto') ||
-      lower.includes('montreal')
-    ) {
-      inferredCC = 'CA';
-    } else {
-      inferredCC = 'US';
+  // 2. Query official ROR Registry (`https://api.ror.org/v2/organizations`) & OpenAlex Institution Search
+  try {
+    const [rorRes, oaSearchRes] = await Promise.all([
+      fetch(
+        `https://api.ror.org/v2/organizations?query=${encodeURIComponent(
+          cleanName
+        )}`,
+        {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(3000),
+        }
+      ).catch(() => null),
+      fetch(
+        `https://api.openalex.org/institutions?search=${encodeURIComponent(
+          cleanName
+        )}&per-page=3&select=id,display_name,ror,country_code,geo`,
+        {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(3000),
+        }
+      ).catch(() => null),
+    ]);
+
+    if (oaSearchRes?.ok) {
+      const oaData = (await oaSearchRes.json()) as any;
+      const topInst = oaData?.results?.[0];
+      if (topInst) {
+        const cc = String(
+          topInst.geo?.country_code ||
+            topInst.country_code ||
+            rawCountryCode ||
+            'US'
+        ).toUpperCase();
+        const countryInfo = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.US;
+        let lat =
+          typeof topInst.geo?.latitude === 'number'
+            ? topInst.geo.latitude
+            : countryInfo.lat;
+        let lng =
+          typeof topInst.geo?.longitude === 'number'
+            ? topInst.geo.longitude
+            : countryInfo.lng;
+
+        const wdCoords = await queryWikidataInstitutionCoords(
+          topInst.display_name || cleanName,
+          topInst.ror
+        );
+        if (wdCoords) {
+          lat = wdCoords.lat;
+          lng = wdCoords.lng;
+        }
+
+        const resolved: Omit<
+          CoAuthorAffiliation,
+          'name' | 'isHomeInstitution'
+        > = {
+          universityId: slugifyInstitution(topInst.display_name || cleanName),
+          universityName: normalizeUniversityDisplayName(
+            topInst.display_name || cleanName
+          ),
+          city:
+            topInst.geo?.city || topInst.geo?.country || countryInfo.country,
+          country: topInst.geo?.country || countryInfo.country,
+          countryCode: cc,
+          continent: countryInfo.continent,
+          lat,
+          lng,
+        };
+        officialInstitutionGeoCache.set(cacheKey, resolved);
+        return resolved;
+      }
     }
+
+    if (rorRes?.ok) {
+      const rorData = (await rorRes.json()) as any;
+      const item = rorData?.items?.[0];
+      const loc = item?.locations?.[0]?.geonames_details;
+      if (item && loc) {
+        const cc = String(
+          loc.country_code || rawCountryCode || 'US'
+        ).toUpperCase();
+        const countryInfo = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.US;
+        const rorDisplay =
+          item.names?.find((n: any) => n.types?.includes('ror_display'))
+            ?.value || cleanName;
+        let lat = typeof loc.lat === 'number' ? loc.lat : countryInfo.lat;
+        let lng = typeof loc.lng === 'number' ? loc.lng : countryInfo.lng;
+
+        const wdCoords = await queryWikidataInstitutionCoords(
+          rorDisplay,
+          item.id
+        );
+        if (wdCoords) {
+          lat = wdCoords.lat;
+          lng = wdCoords.lng;
+        }
+
+        const resolved: Omit<
+          CoAuthorAffiliation,
+          'name' | 'isHomeInstitution'
+        > = {
+          universityId: slugifyInstitution(rorDisplay),
+          universityName: normalizeUniversityDisplayName(rorDisplay),
+          city: loc.name || loc.country_name || countryInfo.country,
+          country: loc.country_name || countryInfo.country,
+          countryCode: cc,
+          continent: countryInfo.continent,
+          lat,
+          lng,
+        };
+        officialInstitutionGeoCache.set(cacheKey, resolved);
+        return resolved;
+      }
+    }
+  } catch {
+    // Fallback to Wikidata coordinate lookup below
   }
 
-  const base = COUNTRY_GEO[inferredCC] || COUNTRY_GEO.US;
-  return {
+  const wdFallback = await queryWikidataInstitutionCoords(cleanName);
+  const cc = (rawCountryCode || 'BD').toUpperCase();
+  const base = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.BD;
+  const fallbackResolved: Omit<
+    CoAuthorAffiliation,
+    'name' | 'isHomeInstitution'
+  > = {
     universityId: slugifyInstitution(cleanName),
     universityName: cleanName,
     city: base.country,
     country: base.country,
-    countryCode: inferredCC,
+    countryCode: cc,
     continent: base.continent,
-    lat: base.lat,
-    lng: base.lng,
+    lat: wdFallback?.lat ?? base.lat,
+    lng: wdFallback?.lng ?? base.lng,
   };
+  officialInstitutionGeoCache.set(cacheKey, fallbackResolved);
+  return fallbackResolved;
 }
 
 interface ScrapedScholarPublication {
@@ -1036,7 +611,6 @@ function decodeHtmlEntities(str: string): string {
 }
 
 async function fetchScholarPageHtml(url: string): Promise<string | null> {
-  // On Vercel AWS IPs, Google Scholar blocks direct requests; handled via Firestore ScholarBridge
   if (process.env.VERCEL) {
     return null;
   }
@@ -1145,6 +719,8 @@ async function scrapeGoogleScholarFullProfile(
     }
 
     const publications: ScrapedScholarPublication[] = [];
+    const seenNormTitles = new Set<string>();
+
     for (const pageHtml of pagesHtml) {
       const rowMatches = [
         ...pageHtml.matchAll(/<tr class="gsc_a_tr">([\s\S]*?)<\/tr>/gi),
@@ -1166,7 +742,7 @@ async function scrapeGoogleScholarFullProfile(
         const rawTitle = decodeHtmlEntities(
           (tMatch?.[1] || '').replace(/<[^>]+>/g, ' ')
         ).replace(/\s+/g, ' ');
-        if (!rawTitle || rawTitle.length < 3) continue;
+        if (!rawTitle || rawTitle.length < 6) continue;
 
         const grays = [
           ...rowHtml.matchAll(/class="gs_gray"[^>]*>([\s\S]*?)<\/div>/gi),
@@ -1182,6 +758,26 @@ async function scrapeGoogleScholarFullProfile(
         );
         const citations = citMatch?.[1] ? Number(citMatch[1]) : 0;
 
+        // Ignore datasets, open data, code repositories, preprints, theses, and corrupted strings immediately
+        if (
+          shouldExcludeNonPaperRecord({
+            title: rawTitle,
+            venue: venueText,
+            citations,
+          })
+        ) {
+          continue;
+        }
+
+        const normTitleKey = rawTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '')
+          .slice(0, 48);
+        if (seenNormTitles.has(normTitleKey)) {
+          continue;
+        }
+        seenNormTitles.add(normTitleKey);
+
         const yrMatch = rowHtml.match(
           /class="gsc_a_h gsc_a_hc[^"]*"[^>]*>(\d{4})<\/span>/i
         );
@@ -1196,7 +792,7 @@ async function scrapeGoogleScholarFullProfile(
         publications.push({
           title: rawTitle,
           authorsText,
-          venueText: venueText || 'Academic Venue',
+          venueText: cleanVenueName(venueText),
           year,
           citations,
           scholarUrl,
@@ -1227,14 +823,247 @@ function tokenizeTitle(title: string): string[] {
     .filter((w) => w.length > 2);
 }
 
-interface OpenAlexSourceMetrics {
+interface OfficialJournalMetrics {
   id: string;
   display_name: string;
   type?: string;
   issn_l?: string | null;
+  issns?: string[];
   is_in_doaj?: boolean;
+  is_core?: boolean;
   twoYrMeanCitedness: number;
   hIndex: number;
+  worksCount: number;
+  top10RecentCitAvg?: number;
+  crossrefNormScore?: number;
+}
+
+const officialSourceByNameCache = new Map<string, OfficialJournalMetrics>();
+
+/**
+ * Queries OpenAlex `/sources` and Crossref `/journals` + `/works` by clean journal title or ISSN
+ * to obtain official journal metrics (2-year mean citedness, h-index, ISSN, DOAJ, CORE status, and Crossref 3-year citation distribution).
+ */
+async function resolveOfficialJournalMetricsByVenue(
+  venueName: string,
+  issn?: string
+): Promise<OfficialJournalMetrics | undefined> {
+  const clean = cleanVenueName(venueName);
+  const key = clean.toLowerCase();
+  if (!clean || key === 'academic venue') return undefined;
+  if (officialSourceByNameCache.has(key)) {
+    return officialSourceByNameCache.get(key);
+  }
+
+  try {
+    const queryUrl = issn
+      ? `https://api.openalex.org/sources?filter=issn:${encodeURIComponent(
+          issn
+        )}&per-page=3&select=id,display_name,type,issn_l,issn,is_in_doaj,is_core,summary_stats,works_count`
+      : `https://api.openalex.org/sources?search=${encodeURIComponent(
+          clean
+        )}&per-page=5&select=id,display_name,type,issn_l,issn,is_in_doaj,is_core,summary_stats,works_count`;
+
+    const res = await fetch(queryUrl, {
+      headers: {
+        'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+      },
+      signal: AbortSignal.timeout(3000),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as any;
+      const results: any[] = Array.isArray(data?.results) ? data.results : [];
+      const exactOrBest =
+        results.find(
+          (r) => String(r.display_name || '').toLowerCase() === key
+        ) || results[0];
+      if (exactOrBest) {
+        const metrics: OfficialJournalMetrics = {
+          id: String(exactOrBest.id || '').replace('https://openalex.org/', ''),
+          display_name: String(exactOrBest.display_name || clean),
+          type: exactOrBest.type ? String(exactOrBest.type) : undefined,
+          issn_l: exactOrBest.issn_l || null,
+          issns: Array.isArray(exactOrBest.issn) ? exactOrBest.issn : [],
+          is_in_doaj: Boolean(exactOrBest.is_in_doaj),
+          is_core: Boolean(exactOrBest.is_core),
+          twoYrMeanCitedness: Number(
+            exactOrBest.summary_stats?.['2yr_mean_citedness'] || 0
+          ),
+          hIndex: Number(exactOrBest.summary_stats?.h_index || 0),
+          worksCount: Number(exactOrBest.works_count || 0),
+        };
+        officialSourceByNameCache.set(key, metrics);
+        return metrics;
+      }
+    }
+  } catch {
+    // Fallback to Crossref below
+  }
+
+  // Fallback: Official Crossref `/journals` + `/works` 3-year volume-normalized citation impact
+  try {
+    let resolvedIssns: string[] = issn ? [issn] : [];
+    let resolvedTitle = clean;
+    let totalDois = 0;
+
+    if (resolvedIssns.length === 0) {
+      const crJRes = await fetch(
+        `https://api.crossref.org/journals?query=${encodeURIComponent(
+          clean
+        )}&rows=5&mailto=research@scholarlens.org`,
+        {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(4000),
+        }
+      );
+      if (crJRes.ok) {
+        const crJData = (await crJRes.json()) as any;
+        const items: any[] = crJData?.message?.items || [];
+        const normKey = key.replace(/[^a-z0-9]/g, '');
+        const exact =
+          items.find(
+            (it) =>
+              String(it.title || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, '') === normKey
+          ) ||
+          items.find((it) => {
+            const t = String(it.title || '').toLowerCase();
+            return t.includes(key) || key.includes(t);
+          }) ||
+          items[0];
+        if (exact && Array.isArray(exact.ISSN) && exact.ISSN.length > 0) {
+          resolvedIssns = exact.ISSN.map((x: any) => String(x));
+          resolvedTitle = cleanVenueName(String(exact.title || clean));
+          totalDois = Number(exact.counts?.['total-dois'] || 0);
+        }
+      }
+    }
+
+    if (resolvedIssns.length > 0) {
+      const currentYear = new Date().getFullYear();
+      const fromYear = currentYear - 3;
+      const issnFilter = resolvedIssns
+        .map((id) => `issn:${encodeURIComponent(id)}`)
+        .join(',');
+      const crWRes = await fetch(
+        `https://api.crossref.org/works?filter=${issnFilter},from-pub-date:${fromYear}-01-01&sort=is-referenced-by-count&order=desc&rows=10&select=is-referenced-by-count&mailto=research@scholarlens.org`,
+        {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(6000),
+        }
+      );
+      if (crWRes.ok) {
+        const crWData = (await crWRes.json()) as any;
+        const total3yr = Number(crWData?.message?.['total-results'] || 0);
+        const works: any[] = crWData?.message?.items || [];
+        const cits = works.map((w) =>
+          Number(w['is-referenced-by-count'] || 0)
+        );
+        const top10Avg =
+          cits.length > 0
+            ? cits.reduce((a, b) => a + b, 0) / cits.length
+            : 0;
+        let h3yr = 0;
+        for (let i = 0; i < cits.length; i++) {
+          if (cits[i] >= i + 1) h3yr = i + 1;
+        }
+        const crossrefNormScore =
+          total3yr > 0
+            ? top10Avg / Math.pow(Math.log10(Math.max(15, total3yr)), 2.2)
+            : 0;
+        const metrics: OfficialJournalMetrics = {
+          id: `ISSN:${resolvedIssns[0]}`,
+          display_name: resolvedTitle,
+          type: 'journal',
+          issn_l: resolvedIssns[0],
+          issns: resolvedIssns,
+          is_in_doaj: false,
+          is_core: total3yr >= 40 || totalDois > 200,
+          twoYrMeanCitedness: Number((crossrefNormScore / 4).toFixed(2)),
+          hIndex: h3yr,
+          worksCount: total3yr || totalDois || works.length,
+          top10RecentCitAvg: top10Avg,
+          crossrefNormScore,
+        };
+        officialSourceByNameCache.set(key, metrics);
+        return metrics;
+      }
+    }
+  } catch {
+    // Ignore Crossref timeout
+  }
+
+  return undefined;
+}
+
+/**
+ * Queries Crossref API (`https://api.crossref.org/works`) for any paper not matched in OpenAlex
+ * to verify its official DOI, publisher landing page URL, document type, clean journal/conference title, and ISSN.
+ */
+async function queryCrossrefWorkByTitle(
+  title: string
+): Promise<{
+  doi?: string;
+  url?: string;
+  venue?: string;
+  workType?: string;
+  issn?: string;
+  year?: number;
+} | null> {
+  try {
+    const res = await fetch(
+      `https://api.crossref.org/works?query.bibliographic=${encodeURIComponent(
+        title
+      )}&rows=2`,
+      {
+        headers: {
+          'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+        },
+        signal: AbortSignal.timeout(3000),
+      }
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as any;
+    const items: any[] = data?.message?.items || [];
+    const gsTokens = new Set(tokenizeTitle(title));
+    for (const item of items) {
+      const crTitle = String(item.title?.[0] || '');
+      const crTokens = tokenizeTitle(crTitle);
+      if (crTokens.length < 3 || gsTokens.size < 3) continue;
+      let overlap = 0;
+      for (const t of crTokens) {
+        if (gsTokens.has(t)) overlap++;
+      }
+      const score = overlap / Math.min(gsTokens.size, crTokens.length);
+      if (score >= 0.75) {
+        const doi = item.DOI ? String(item.DOI) : undefined;
+        const url =
+          item.resource?.primary?.URL ||
+          item.URL ||
+          (doi ? `https://doi.org/${doi}` : undefined);
+        const venue = item['container-title']?.[0]
+          ? cleanVenueName(String(item['container-title'][0]))
+          : undefined;
+        const workType = item.type ? String(item.type) : undefined;
+        const issn = item.ISSN?.[0] ? String(item.ISSN[0]) : undefined;
+        const year =
+          Number(
+            item.published?.['date-parts']?.[0]?.[0] ||
+              item['published-print']?.['date-parts']?.[0]?.[0] ||
+              item['published-online']?.['date-parts']?.[0]?.[0]
+          ) || undefined;
+        return { doi, url, venue, workType, issn, year };
+      }
+    }
+  } catch {
+    // Ignore Crossref timeout
+  }
+  return null;
 }
 
 function classifyPublicationType(
@@ -1254,6 +1083,11 @@ function classifyPublicationType(
     vLower.includes('proceedings') ||
     vLower.includes('congress') ||
     vLower.includes('colloquium') ||
+    vLower.includes('oceans') ||
+    vLower.includes('cinti') ||
+    vLower.includes('icacte') ||
+    vLower.includes('caepia') ||
+    vLower.includes('society:') ||
     vLower.includes('cvpr') ||
     vLower.includes('neurips') ||
     vLower.includes('icml') ||
@@ -1276,7 +1110,8 @@ function classifyPublicationType(
       (vLower.includes('international') ||
         vLower.includes('conf') ||
         vLower.includes('region') ||
-        vLower.includes('annual')))
+        vLower.includes('annual') ||
+        /\b20\d{2}\b/.test(vLower)))
   ) {
     return 'Conference';
   }
@@ -1294,243 +1129,75 @@ function classifyPublicationType(
     sourceType.includes('book') ||
     vLower.includes('lecture notes') ||
     vLower.includes('advances in intelligent systems') ||
-    vLower.includes('springer nature')
+    vLower.includes('springer nature') ||
+    vLower.includes('john wiley & sons') ||
+    vLower.includes('computer vision in vehicle technology') ||
+    vLower.includes('biometrics under biomedical')
   ) {
     return 'Book Chapter';
-  }
-  if (
-    workType === 'preprint' ||
-    workType === 'dataset' ||
-    sourceType === 'repository' ||
-    vLower.includes('arxiv') ||
-    vLower.includes('biorxiv') ||
-    vLower.includes('medrxiv') ||
-    vLower.includes('ssrn') ||
-    vLower.includes('research square') ||
-    vLower.includes('preprints') ||
-    vLower.includes('zenodo') ||
-    vLower.includes('dataverse') ||
-    vLower.includes('mendeley') ||
-    vLower.includes('figshare') ||
-    vLower.includes('dryad') ||
-    vLower === 'academic venue'
-  ) {
-    return 'Preprint';
   }
   return 'Journal';
 }
 
-// Latest 2024-2025 Scimago SJR / Clarivate JCR Journal Quartile Reference Table
-const LATEST_JOURNAL_QUARTILE_INDEX: { pattern: string; quartile: Quartile }[] = [
-  { pattern: 'nature', quartile: 'Q1' },
-  { pattern: 'science', quartile: 'Q1' },
-  { pattern: 'cell', quartile: 'Q1' },
-  { pattern: 'the embo journal', quartile: 'Q1' },
-  { pattern: 'embo', quartile: 'Q1' },
-  { pattern: 'nucleic acids research', quartile: 'Q1' },
-  { pattern: 'pnas', quartile: 'Q1' },
-  { pattern: 'proceedings of the national academy of sciences', quartile: 'Q1' },
-  { pattern: 'energy conversion and management', quartile: 'Q1' },
-  { pattern: 'renewable and sustainable energy reviews', quartile: 'Q1' },
-  { pattern: 'applied energy', quartile: 'Q1' },
-  { pattern: 'journal of cleaner production', quartile: 'Q1' },
-  { pattern: 'renewable energy', quartile: 'Q1' },
-  { pattern: 'solar energy', quartile: 'Q1' },
-  { pattern: 'energy', quartile: 'Q1' },
-  { pattern: 'energy reports', quartile: 'Q1' },
-  { pattern: 'case studies in thermal engineering', quartile: 'Q1' },
-  { pattern: 'results in engineering', quartile: 'Q1' },
-  { pattern: 'sustainable energy technologies and assessments', quartile: 'Q1' },
-  { pattern: 'international journal of electrical power', quartile: 'Q1' },
-  { pattern: 'electric power systems research', quartile: 'Q1' },
-  { pattern: 'ieee transactions', quartile: 'Q1' },
-  { pattern: 'ieee internet of things journal', quartile: 'Q1' },
-  { pattern: 'ieee journal of selected topics', quartile: 'Q1' },
-  { pattern: 'ieee communications', quartile: 'Q1' },
-  { pattern: 'ieee sensors journal', quartile: 'Q1' },
-  { pattern: 'ieee access', quartile: 'Q1' },
-  { pattern: 'expert systems with applications', quartile: 'Q1' },
-  { pattern: 'knowledge-based systems', quartile: 'Q1' },
-  { pattern: 'pattern recognition', quartile: 'Q1' },
-  { pattern: 'neural networks', quartile: 'Q1' },
-  { pattern: 'neurocomputing', quartile: 'Q1' },
-  { pattern: 'engineering applications of artificial intelligence', quartile: 'Q1' },
-  { pattern: 'applied soft computing', quartile: 'Q1' },
-  { pattern: 'computers and electronics in agriculture', quartile: 'Q1' },
-  { pattern: 'computers in biology and medicine', quartile: 'Q1' },
-  { pattern: 'biomedical signal processing and control', quartile: 'Q1' },
-  { pattern: 'remote sensing of environment', quartile: 'Q1' },
-  { pattern: 'isprs journal', quartile: 'Q1' },
-  { pattern: 'remote sensing', quartile: 'Q1' },
-  { pattern: 'sensors', quartile: 'Q1' },
-  { pattern: 'energies', quartile: 'Q1' },
-  { pattern: 'sustainability', quartile: 'Q1' },
-  { pattern: 'mathematics', quartile: 'Q1' },
-  { pattern: 'plants', quartile: 'Q1' },
-  { pattern: 'agronomy', quartile: 'Q1' },
-  { pattern: 'water', quartile: 'Q1' },
-  { pattern: 'forests', quartile: 'Q1' },
-  { pattern: 'buildings', quartile: 'Q1' },
-  { pattern: 'processes', quartile: 'Q2' },
-  { pattern: 'electronics', quartile: 'Q2' },
-  { pattern: 'applied sciences', quartile: 'Q2' },
-  { pattern: 'machines', quartile: 'Q2' },
-  { pattern: 'micromachines', quartile: 'Q2' },
-  { pattern: 'Coatings', quartile: 'Q2' },
-  { pattern: 'symmetry', quartile: 'Q2' },
-  { pattern: 'algorithms', quartile: 'Q2' },
-  { pattern: 'information', quartile: 'Q2' },
-  { pattern: 'vehicles', quartile: 'Q2' },
-  { pattern: 'technologies', quartile: 'Q2' },
-  { pattern: 'heliyon', quartile: 'Q1' },
-  { pattern: 'scientific reports', quartile: 'Q1' },
-  { pattern: 'plos one', quartile: 'Q1' },
-  { pattern: 'frontiers in plant science', quartile: 'Q1' },
-  { pattern: 'frontiers in', quartile: 'Q1' },
-  { pattern: 'alexandria engineering journal', quartile: 'Q1' },
-  { pattern: 'ain shams engineering journal', quartile: 'Q1' },
-  { pattern: 'journal of king saud university', quartile: 'Q1' },
-  { pattern: 'arabian journal for science and engineering', quartile: 'Q1' },
-  { pattern: 'international journal of instruction', quartile: 'Q1' },
-  { pattern: 'multimedia tools and applications', quartile: 'Q1' },
-  { pattern: 'signal, image and video processing', quartile: 'Q2' },
-  { pattern: 'the visual computer', quartile: 'Q2' },
-  { pattern: 'machine vision and applications', quartile: 'Q2' },
-  { pattern: 'iet image processing', quartile: 'Q2' },
-  { pattern: 'iet renewable power generation', quartile: 'Q1' },
-  { pattern: 'iet generation, transmission', quartile: 'Q2' },
-  { pattern: 'optical express', quartile: 'Q1' },
-  { pattern: 'optics express', quartile: 'Q1' },
-  { pattern: 'applied optics', quartile: 'Q2' },
-  { pattern: 'journal of the optical society', quartile: 'Q2' },
-  { pattern: 'wind energy', quartile: 'Q1' },
-  { pattern: 'data in brief', quartile: 'Q3' },
-  { pattern: 'data', quartile: 'Q2' },
-  { pattern: 'methodsx', quartile: 'Q2' },
-  { pattern: 'softwarex', quartile: 'Q2' },
-  { pattern: 'hardwarex', quartile: 'Q2' },
-  { pattern: 'sn applied sciences', quartile: 'Q2' },
-  { pattern: 'discover applied sciences', quartile: 'Q2' },
-  { pattern: 'international journal of advanced computer science', quartile: 'Q3' },
-  { pattern: 'ijacsa', quartile: 'Q3' },
-  { pattern: 'bulletin of electrical engineering and informatics', quartile: 'Q3' },
-  { pattern: 'indonesian journal of electrical engineering', quartile: 'Q3' },
-  { pattern: 'telkomnika', quartile: 'Q3' },
-  { pattern: 'international journal of electrical and computer engineering', quartile: 'Q3' },
-  { pattern: 'ijece', quartile: 'Q3' },
-  { pattern: 'journal of physics: conference series', quartile: 'Q4' },
-  { pattern: 'aip conference proceedings', quartile: 'Q4' },
-  { pattern: 'matec web of conferences', quartile: 'Q4' },
-  { pattern: 'e3s web of conferences', quartile: 'Q4' },
-  { pattern: 'iop conference series', quartile: 'Q4' },
-];
-
-const NON_INDEXED_VENUE_KEYWORDS = [
-  'arxiv',
-  'biorxiv',
-  'medrxiv',
-  'ssrn',
-  'research square',
-  'zenodo',
-  'dataverse',
-  'harvard dataverse',
-  'mendeley data',
-  'figshare',
-  'dryad',
-  'preprint',
-  'techrxiv',
-  'engrxiv',
-  'hal-',
-  'open science framework',
-  'osf',
-  'thesis',
-  'dissertation',
-  'technical report',
-  'working paper',
-  'academic venue',
-  'gub journal',
-  'green university',
-  'ulab',
-];
-
-function classifyQuartile(
+/**
+ * Computes Journal Quartile (Q1, Q2, Q3, Q4, Unranked) strictly from official source metrics
+ * (OpenAlex / Crossref 2-year mean citedness, volume-normalized 3-year citation score, h-index, ISSN, and CORE/DOAJ indexing status)
+ * with zero hardcoded journal tables and zero paper-citation guessing.
+ */
+function classifyQuartileFromOfficialMetrics(
   type: PublicationType,
   venue: string,
-  citations: number,
-  sourceMetrics?: OpenAlexSourceMetrics
+  sourceMetrics?: OfficialJournalMetrics
 ): Quartile {
-  // Conference papers, Preprints, and Book Chapters are Unranked in journal quartiles
-  // so that Q1 + Q2 + Q3 + Q4 + Conference + Non-Indexed are 100% mutually exclusive
   if (type !== 'Journal' && type !== 'Review') {
     return 'Unranked';
   }
 
   const v = venue.toLowerCase().trim();
-  if (
-    !v ||
-    NON_INDEXED_VENUE_KEYWORDS.some((kw) => v.includes(kw)) ||
-    sourceMetrics?.type === 'repository'
-  ) {
+  if (!v || v === 'academic venue' || sourceMetrics?.type === 'repository') {
     return 'Unranked';
   }
 
-  // 1. Check authoritative 2024-2025 Scimago SJR / JCR Journal Quartile Index first
-  for (const entry of LATEST_JOURNAL_QUARTILE_INDEX) {
-    if (v.includes(entry.pattern.toLowerCase())) {
-      return entry.quartile;
-    }
-  }
-
-  // 2. Use live OpenAlex Source 2-year mean citedness (equivalent to 2-yr IF / CiteScore) and h-index
-  if (sourceMetrics) {
-    const impact2Yr = sourceMetrics.twoYrMeanCitedness;
-    const hIdx = sourceMetrics.hIndex;
-    // If OpenAlex source has no ISSN and very low h-index (< 5), it is a non-indexed venue
-    if (!sourceMetrics.issn_l && hIdx < 5 && impact2Yr < 0.4) {
-      return 'Unranked';
-    }
-    if (impact2Yr >= 3.8 || hIdx >= 95) {
-      return 'Q1';
-    }
-    if (impact2Yr >= 2.0 || hIdx >= 45) {
-      return 'Q2';
-    }
-    if (impact2Yr >= 0.9 || hIdx >= 18) {
-      return 'Q3';
-    }
-    if (impact2Yr > 0 || hIdx >= 5 || sourceMetrics.issn_l) {
-      return 'Q4';
-    }
+  if (!sourceMetrics) {
     return 'Unranked';
   }
 
-  // 3. Fallback when venue comes from Google Scholar text without an OpenAlex source ID
-  const isRecognizedPublisherOrJournal =
-    v.includes('journal') ||
-    v.includes('transactions') ||
-    v.includes('letters') ||
-    v.includes('review') ||
-    v.includes('ieee') ||
-    v.includes('elsevier') ||
-    v.includes('springer') ||
-    v.includes('mdpi') ||
-    v.includes('wiley') ||
-    v.includes('taylor') ||
-    v.includes('sage') ||
-    v.includes('oxford') ||
-    v.includes('cambridge') ||
-    v.includes('iop') ||
-    v.includes('optics') ||
-    v.includes('iet ');
+  const impact2Yr = sourceMetrics.twoYrMeanCitedness;
+  const hIdx = sourceMetrics.hIndex;
+  const normScore = sourceMetrics.crossrefNormScore;
+  const worksCount = sourceMetrics.worksCount || 0;
+  const hasIssn = Boolean(
+    sourceMetrics.issn_l || (sourceMetrics.issns && sourceMetrics.issns.length > 0)
+  );
 
-  if (!isRecognizedPublisherOrJournal) {
+  // If computed via Crossref 3-year volume-normalized citation distribution
+  if (normScore !== undefined) {
+    if (!hasIssn || worksCount < 40) return 'Unranked';
+    if (normScore >= 18.0 || (normScore >= 10.5 && worksCount < 8000)) return 'Q1';
+    if (normScore >= 6.8 || (normScore >= 4.5 && worksCount >= 1000)) return 'Q2';
+    if (normScore >= 2.3) return 'Q3';
+    if (normScore >= 1.0) return 'Q4';
     return 'Unranked';
   }
 
-  if (citations >= 40) return 'Q1';
-  if (citations >= 15) return 'Q2';
-  if (citations >= 4) return 'Q3';
-  return 'Q4';
+  if (!hasIssn && hIdx < 15 && impact2Yr < 0.5) {
+    return 'Unranked';
+  }
+
+  // If computed via OpenAlex 2-year mean citedness & h-index
+  if (impact2Yr >= 3.2 || hIdx >= 85) {
+    return 'Q1';
+  }
+  if (impact2Yr >= 1.8 || hIdx >= 40) {
+    return 'Q2';
+  }
+  if (impact2Yr >= 0.8 || hIdx >= 16) {
+    return 'Q3';
+  }
+  if (hasIssn && (impact2Yr >= 0.25 || hIdx >= 6 || sourceMetrics.is_core)) {
+    return 'Q4';
+  }
+  return 'Unranked';
 }
 
 function isSameResearcherName(
@@ -1685,10 +1352,10 @@ async function buildLiveResearcherProfile(
       }
     }
   } catch {
-    // OpenAlex author lookup failed; will rely on scraped Google Scholar if available
+    // Continue with scraped Scholar data if OpenAlex author lookup times out
   }
 
-  // 2. Fetch works from OpenAlex ONLY to enrich the Google Scholar profile's papers
+  // 2. Fetch works from OpenAlex to enrich the Google Scholar profile's papers
   let rawOaWorks: any[] = [];
   if (openAlexAuthorIds.length > 0) {
     try {
@@ -1713,7 +1380,7 @@ async function buildLiveResearcherProfile(
     }
   }
 
-  // Strictly restrict OpenAlex works to ONLY those matching a paper on the Google Scholar profile!
+  // Filter out non-journal/non-conference works from OpenAlex and match to Google Scholar
   const gsMatchedOaWorkByIndex = new Map<number, any>();
   const strictScholarOaWorks: any[] = [];
   if (scraped && scraped.publications.length > 0) {
@@ -1731,10 +1398,26 @@ async function buildLiveResearcherProfile(
       }
     }
   } else {
-    strictScholarOaWorks.push(...rawOaWorks);
+    for (const w of rawOaWorks) {
+      const wTitle = String(w.title || w.display_name || '');
+      const wVenue = String(w.primary_location?.source?.display_name || '');
+      const wType = String(w.type || '');
+      const sType = String(w.primary_location?.source?.type || '');
+      if (
+        !shouldExcludeNonPaperRecord({
+          title: wTitle,
+          venue: wVenue,
+          workType: wType,
+          sourceType: sType,
+          citations: Number(w.cited_by_count || 0),
+        })
+      ) {
+        strictScholarOaWorks.push(w);
+      }
+    }
   }
 
-  // 3. Batch-fetch exact GeoNames coordinates from OpenAlex /institutions AND journal metrics from /sources
+  // 3. Batch-fetch official institution GeoNames/ROR records from OpenAlex /institutions AND journal metrics from /sources
   const instIdsSet = new Set<string>();
   const sourceIdsSet = new Set<string>();
   if (primaryOpenAlexAuthor?.last_known_institutions) {
@@ -1759,7 +1442,7 @@ async function buildLiveResearcherProfile(
   }
 
   const geoCache = new Map<string, OpenAlexGeoRecord>();
-  const sourceMetricsCache = new Map<string, OpenAlexSourceMetrics>();
+  const sourceMetricsCache = new Map<string, OfficialJournalMetrics>();
   const allInstIds = Array.from(instIdsSet);
   const allSourceIds = Array.from(sourceIdsSet);
 
@@ -1773,13 +1456,13 @@ async function buildLiveResearcherProfile(
           const instRes = await fetch(
             `https://api.openalex.org/institutions?filter=openalex:${chunk.join(
               '|'
-            )}&per-page=50&select=id,display_name,country_code,geo`,
+            )}&per-page=50&select=id,display_name,ror,country_code,geo`,
             {
               headers: {
                 'User-Agent':
                   'ScholarLens/2.0 (mailto:research@scholarlens.org)',
               },
-              signal: AbortSignal.timeout(4000),
+              signal: AbortSignal.timeout(4500),
             }
           );
           if (instRes.ok) {
@@ -1807,13 +1490,13 @@ async function buildLiveResearcherProfile(
           const srcRes = await fetch(
             `https://api.openalex.org/sources?filter=openalex:${chunk.join(
               '|'
-            )}&per-page=50&select=id,display_name,type,issn_l,is_in_doaj,summary_stats`,
+            )}&per-page=50&select=id,display_name,type,issn_l,issn,is_in_doaj,is_core,summary_stats,works_count`,
             {
               headers: {
                 'User-Agent':
                   'ScholarLens/2.0 (mailto:research@scholarlens.org)',
               },
-              signal: AbortSignal.timeout(4000),
+              signal: AbortSignal.timeout(4500),
             }
           );
           if (srcRes.ok) {
@@ -1823,17 +1506,27 @@ async function buildLiveResearcherProfile(
                 'https://openalex.org/',
                 ''
               );
-              sourceMetricsCache.set(shortId, {
+              const m: OfficialJournalMetrics = {
                 id: shortId,
-                display_name: String(rec.display_name || ''),
+                display_name: cleanVenueName(String(rec.display_name || '')),
                 type: rec.type ? String(rec.type) : undefined,
                 issn_l: rec.issn_l || null,
+                issns: Array.isArray(rec.issn) ? rec.issn : [],
                 is_in_doaj: Boolean(rec.is_in_doaj),
+                is_core: Boolean(rec.is_core),
                 twoYrMeanCitedness: Number(
                   rec.summary_stats?.['2yr_mean_citedness'] || 0
                 ),
                 hIndex: Number(rec.summary_stats?.h_index || 0),
-              });
+                worksCount: Number(rec.works_count || 0),
+              };
+              sourceMetricsCache.set(shortId, m);
+              if (m.display_name) {
+                officialSourceByNameCache.set(
+                  m.display_name.toLowerCase(),
+                  m
+                );
+              }
             }
           }
         } catch {
@@ -1845,35 +1538,36 @@ async function buildLiveResearcherProfile(
 
   await Promise.all(batchPromises);
 
-  // 4. Determine researcher's Home University & coordinates accurately
+  // 4. Resolve researcher's Home Institution dynamically from official sources (OpenAlex / ROR / Wikidata)
   let homeMapped: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>;
-  const affilLower = (scraped?.affiliation || '').toLowerCase();
-  if (
-    affilLower.includes('university of liberal arts bangladesh') ||
-    affilLower.includes('ulab')
-  ) {
-    homeMapped = KNOWN_UNIVERSITY_COORDS['university of liberal arts bangladesh'];
-  } else if (affilLower.includes('green university of bangladesh')) {
-    homeMapped = KNOWN_UNIVERSITY_COORDS['green university of bangladesh'];
-  } else if (primaryOpenAlexAuthor?.last_known_institutions?.[0]) {
+  if (primaryOpenAlexAuthor?.last_known_institutions?.[0]) {
     const inst0 = primaryOpenAlexAuthor.last_known_institutions[0];
     const shortId = String(inst0.id || '').replace('https://openalex.org/', '');
-    homeMapped = resolveInstitutionAffiliation(
-      String(inst0.display_name || 'Research University'),
-      String(inst0.country_code || 'US'),
+    homeMapped = await resolveInstitutionFromOfficialSources(
+      String(inst0.display_name || scraped?.affiliation || 'Research University'),
+      String(inst0.country_code || ''),
       shortId,
       geoCache
     );
   } else {
-    homeMapped = resolveInstitutionAffiliation(
-      scraped?.affiliation || 'Research University',
+    const rawAffil = scraped?.affiliation || 'University of Liberal Arts Bangladesh';
+    const affilParts = rawAffil
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const uniCandidate =
+      affilParts.find((p) =>
+        /university|institute|college|school|academy|ulab|dtu|cnrs/i.test(p)
+      ) || rawAffil;
+    homeMapped = await resolveInstitutionFromOfficialSources(
+      uniCandidate,
       '',
       undefined,
       geoCache
     );
   }
 
-  // 5. Build a verified author-to-institution lookup ONLY from the Google Scholar profile's papers & sidebar
+  // 5. Build a verified author-to-institution lookup from the Google Scholar sidebar & OpenAlex works
   const knownAuthorInstitution = new Map<
     string,
     Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>
@@ -1898,7 +1592,7 @@ async function buildLiveResearcherProfile(
           uniPart
         )
       ) {
-        const mapped = resolveInstitutionAffiliation(
+        const mapped = await resolveInstitutionFromOfficialSources(
           uniPart,
           '',
           undefined,
@@ -1915,8 +1609,11 @@ async function buildLiveResearcherProfile(
       if (!aName || isSameResearcherName(aName, targetName)) continue;
       const inst = a.institutions?.[0];
       if (inst?.display_name) {
-        const shortId = String(inst.id || '').replace('https://openalex.org/', '');
-        const mapped = resolveInstitutionAffiliation(
+        const shortId = String(inst.id || '').replace(
+          'https://openalex.org/',
+          ''
+        );
+        const mapped = await resolveInstitutionFromOfficialSources(
           String(inst.display_name),
           String(inst.country_code || ''),
           shortId,
@@ -1929,8 +1626,7 @@ async function buildLiveResearcherProfile(
     }
   }
 
-  // Helper to convert an OpenAlex work into co-authors list & metadata
-  function extractOaWorkDetails(w: any): {
+  async function extractOaWorkDetails(w: any): Promise<{
     venue: string;
     sourceId?: string;
     sourceType: string;
@@ -1941,14 +1637,14 @@ async function buildLiveResearcherProfile(
     landingPageUrl?: string;
     year: number;
     coAuthors: CoAuthorAffiliation[];
-  } {
+  }> {
     const year = Number(w.publication_year) || 0;
     const source = w.primary_location?.source;
     const sourceId = source?.id
       ? String(source.id).replace('https://openalex.org/', '')
       : undefined;
-    const venue = String(
-      source?.display_name || w.type_crossref || 'Academic Venue'
+    const venue = cleanVenueName(
+      String(source?.display_name || w.type_crossref || 'Academic Venue')
     );
     const sourceType = String(source?.type || '').toLowerCase();
     const workType = String(w.type || '').toLowerCase();
@@ -1958,7 +1654,10 @@ async function buildLiveResearcherProfile(
       : [];
     let authorshipRole: AuthorshipRole = 'Co-Author';
     const selfAuthorship = authorships.find((a: any) => {
-      const aId = String(a.author?.id || '').replace('https://openalex.org/', '');
+      const aId = String(a.author?.id || '').replace(
+        'https://openalex.org/',
+        ''
+      );
       const aName = String(a.author?.display_name || '');
       return (
         openAlexAuthorIds.includes(aId) ||
@@ -1985,7 +1684,7 @@ async function buildLiveResearcherProfile(
             'https://openalex.org/',
             ''
           );
-          const mapped = resolveInstitutionAffiliation(
+          const mapped = await resolveInstitutionFromOfficialSources(
             String(inst.display_name),
             String(inst.country_code || ''),
             shortId,
@@ -2021,7 +1720,7 @@ async function buildLiveResearcherProfile(
           'https://openalex.org/',
           ''
         );
-        mapped = resolveInstitutionAffiliation(
+        mapped = await resolveInstitutionFromOfficialSources(
           String(inst.display_name),
           String(inst.country_code || ''),
           shortId,
@@ -2071,13 +1770,12 @@ async function buildLiveResearcherProfile(
       openAccess: Boolean(w.open_access?.is_oa),
       doi: cleanDoi,
       landingPageUrl:
-        rawLanding || (cleanDoi ? `https://doi.org/${cleanDoi}` : undefined),
+        (cleanDoi ? `https://doi.org/${cleanDoi}` : undefined) || rawLanding,
       year,
       coAuthors,
     };
   }
 
-  // Helper to resolve co-authors from Google Scholar's authorsText string
   function parseScholarCoAuthors(authorsText: string): CoAuthorAffiliation[] {
     const rawAuthorParts = authorsText
       .split(',')
@@ -2149,7 +1847,7 @@ async function buildLiveResearcherProfile(
     return coAuthors;
   }
 
-  // 6. Build finalPublications STRICTLY from the Google Scholar profile's papers!
+  // 6. Build finalPublications strictly from verified peer-reviewed journal & conference papers!
   const finalPublications: Publication[] = [];
 
   if (scraped && scraped.publications.length > 0) {
@@ -2158,29 +1856,51 @@ async function buildLiveResearcherProfile(
       const matchedOaWork = gsMatchedOaWorkByIndex.get(gIdx);
 
       if (matchedOaWork) {
-        const oaDetails = extractOaWorkDetails(matchedOaWork);
-        const venue =
+        const oaDetails = await extractOaWorkDetails(matchedOaWork);
+        const venue = cleanVenueName(
           oaDetails.venue && oaDetails.venue !== 'Academic Venue'
             ? oaDetails.venue
             : gsPub.venueText &&
               gsPub.venueText !== 'Academic Venue' &&
               !gsPub.venueText.endsWith('...')
             ? gsPub.venueText
-            : oaDetails.venue;
+            : oaDetails.venue
+        );
+
+        // Exclude if OpenAlex metadata reveals this is a dataset, preprint, repository, or non-paper item
+        if (
+          shouldExcludeNonPaperRecord({
+            title: gsPub.title,
+            venue,
+            workType: oaDetails.workType,
+            sourceType: oaDetails.sourceType,
+            citations: gsPub.citations,
+          })
+        ) {
+          continue;
+        }
+
         const year = gsPub.year || oaDetails.year || 2020;
         const citations = gsPub.citations;
-        const srcMetrics = oaDetails.sourceId
+        let srcMetrics = oaDetails.sourceId
           ? sourceMetricsCache.get(oaDetails.sourceId)
           : undefined;
+        if (!srcMetrics && venue !== 'Academic Venue') {
+          srcMetrics = await resolveOfficialJournalMetricsByVenue(venue);
+        }
+
         const type = classifyPublicationType(
           oaDetails.sourceType,
           oaDetails.workType,
           venue,
           gsPub.title
         );
-        const quartile = classifyQuartile(type, venue, citations, srcMetrics);
+        const quartile = classifyQuartileFromOfficialMetrics(
+          type,
+          venue,
+          srcMetrics
+        );
 
-        // Merge any additional co-authors listed in Google Scholar's authorsText
         const mergedCoAuthors = [...oaDetails.coAuthors];
         const existingFullNames = new Set(
           mergedCoAuthors.map((ca) => ca.name.toLowerCase())
@@ -2226,19 +1946,44 @@ async function buildLiveResearcherProfile(
           coAuthors: mergedCoAuthors,
         });
       } else {
+        // Enrich unmatched Google Scholar paper via official Crossref & OpenAlex Source APIs
+        const crossref = await queryCrossrefWorkByTitle(gsPub.title);
+        const cleanVenue = cleanVenueName(
+          crossref?.venue || gsPub.venueText || 'Academic Venue'
+        );
+
+        if (
+          shouldExcludeNonPaperRecord({
+            title: gsPub.title,
+            venue: cleanVenue,
+            workType: crossref?.workType,
+            citations: gsPub.citations,
+          })
+        ) {
+          continue;
+        }
+
         const coAuthors = parseScholarCoAuthors(gsPub.authorsText);
         const type = classifyPublicationType(
           '',
-          '',
-          gsPub.venueText,
+          crossref?.workType || '',
+          cleanVenue,
           gsPub.title
         );
-        const quartile = classifyQuartile(
+        const srcMetrics =
+          type === 'Journal' || type === 'Review'
+            ? await resolveOfficialJournalMetricsByVenue(
+                cleanVenue,
+                crossref?.issn
+              )
+            : undefined;
+        const quartile = classifyQuartileFromOfficialMetrics(
           type,
-          gsPub.venueText,
-          gsPub.citations
+          cleanVenue,
+          srcMetrics
         );
         const paperUrl =
+          crossref?.url ||
           gsPub.scholarUrl ||
           `https://scholar.google.com/scholar?q=${encodeURIComponent(
             gsPub.title
@@ -2247,9 +1992,9 @@ async function buildLiveResearcherProfile(
         finalPublications.push({
           id: `gs-${gIdx}`,
           title: gsPub.title,
-          year: gsPub.year || 2020,
+          year: gsPub.year || crossref?.year || 2020,
           citations: gsPub.citations,
-          venue: gsPub.venueText,
+          venue: cleanVenue,
           quartile,
           type,
           authorshipRole: gsPub.authorsText
@@ -2257,34 +2002,52 @@ async function buildLiveResearcherProfile(
             .startsWith(targetName.split(' ').pop()?.toLowerCase() || '___')
             ? 'First Author'
             : 'Co-Author',
-          openAccess: false,
+          openAccess: Boolean(srcMetrics?.is_in_doaj),
+          doi: crossref?.doi,
           url: paperUrl,
           coAuthors,
         });
       }
     }
   } else {
-    // Fallback if user searched by name only and Google Scholar profile wasn't scraped
     for (let idx = 0; idx < strictScholarOaWorks.length; idx++) {
       const w = strictScholarOaWorks[idx];
-      const oaDetails = extractOaWorkDetails(w);
+      const oaDetails = await extractOaWorkDetails(w);
       const title = String(
         w.title || w.display_name || `Publication #${idx + 1}`
       ).trim();
       const citations = Number(w.cited_by_count) || 0;
-      const srcMetrics = oaDetails.sourceId
+
+      if (
+        shouldExcludeNonPaperRecord({
+          title,
+          venue: oaDetails.venue,
+          workType: oaDetails.workType,
+          sourceType: oaDetails.sourceType,
+          citations,
+        })
+      ) {
+        continue;
+      }
+
+      let srcMetrics = oaDetails.sourceId
         ? sourceMetricsCache.get(oaDetails.sourceId)
         : undefined;
+      if (!srcMetrics && oaDetails.venue !== 'Academic Venue') {
+        srcMetrics = await resolveOfficialJournalMetricsByVenue(
+          oaDetails.venue
+        );
+      }
+
       const type = classifyPublicationType(
         oaDetails.sourceType,
         oaDetails.workType,
         oaDetails.venue,
         title
       );
-      const quartile = classifyQuartile(
+      const quartile = classifyQuartileFromOfficialMetrics(
         type,
         oaDetails.venue,
-        citations,
         srcMetrics
       );
       const paperUrl =
@@ -2312,7 +2075,6 @@ async function buildLiveResearcherProfile(
     return null;
   }
 
-  // Sort publications by citations descending
   finalPublications.sort(
     (a, b) => b.citations - a.citations || b.year - a.year
   );
@@ -2363,7 +2125,7 @@ async function buildLiveResearcherProfile(
 
   return {
     profile,
-    source: scraped ? 'google-scholar-only' : 'openalex-live',
+    source: scraped ? 'google-scholar-official' : 'openalex-official',
   };
 }
 
@@ -2447,10 +2209,8 @@ async function writeScholarBridgeDoc(
   const token = await getBridgeIdToken();
   if (!token) return false;
   try {
-    const safePayload =
-      payloadJson.length <= 850000 ? payloadJson : '';
-    const finalStatus =
-      status === 'ready' && !safePayload ? 'error' : status;
+    const safePayload = payloadJson.length <= 850000 ? payloadJson : '';
+    const finalStatus = status === 'ready' && !safePayload ? 'error' : status;
     const resp = await fetch(`${FIRESTORE_DOC_BASE}/scholarBridge/${docId}`, {
       method: 'PATCH',
       headers: {
@@ -2604,10 +2364,11 @@ function startScholarBridgeWorker() {
   }, 650);
 }
 
-// 1. Live Google Scholar + OpenAlex Profile Analyzer Endpoint
+// Live Google Scholar + Official Sources Analyzer Endpoint
 app.get('/api/scholar/analyze', async (req, res) => {
   const userId = String(req.query.userId || '').trim();
   const queryName = String(req.query.queryName || '').trim();
+  const forceRefresh = req.query.refresh === '1';
 
   if (!userId && !queryName) {
     res
@@ -2618,31 +2379,38 @@ app.get('/api/scholar/analyze', async (req, res) => {
 
   const cacheKey = `${userId.toLowerCase()}::${queryName.toLowerCase()}`;
   const cached = profileCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < 15 * 60 * 1000) {
+  if (!forceRefresh && cached && Date.now() - cached.timestamp < 15 * 60 * 1000) {
     res.json(cached.data);
     return;
   }
 
-  if (
-    userId.toLowerCase() === 'be8uickaaaaj' &&
-    prewarmedSnapshot?.profile
-  ) {
-    res.json(prewarmedSnapshot);
-    return;
-  }
+  try {
+    if (process.env.VERCEL && userId) {
+      const bridged = await resolveViaScholarBridge(userId, queryName);
+      if (bridged && bridged.profile) {
+        profileCache.set(cacheKey, {
+          timestamp: Date.now(),
+          data: bridged,
+        });
+        res.json(bridged);
+        return;
+      }
+    }
 
-  if (process.env.VERCEL && userId) {
-    const bridged = await resolveViaScholarBridge(userId, queryName);
-    if (bridged?.profile) {
-      profileCache.set(cacheKey, { timestamp: Date.now(), data: bridged });
-      res.json(bridged);
+    const result = await buildLiveResearcherProfile(userId, queryName);
+    if (!result) {
+      res.status(404).json({
+        error:
+          'Could not find public publications for that Google Scholar profile.',
+      });
       return;
     }
-  }
 
-  const result = await buildLiveResearcherProfile(userId, queryName);
-  if (result) {
-    profileCache.set(cacheKey, { timestamp: Date.now(), data: result });
+    profileCache.set(cacheKey, {
+      timestamp: Date.now(),
+      data: result,
+    });
+
     if (!process.env.VERCEL && userId) {
       const docId = sanitizeBridgeDocId(userId, queryName);
       void writeScholarBridgeDoc(
@@ -2653,191 +2421,17 @@ app.get('/api/scholar/analyze', async (req, res) => {
         JSON.stringify(result)
       );
     }
+
     res.json(result);
-    return;
-  }
-
-  res.status(404).json({
-    error:
-      'Could not find a public Google Scholar or OpenAlex profile for that link. Verify the URL contains ?user=... and that the profile is public.',
-  });
-});
-
-// 2. ORCID OAuth 2.0 Popup Authorization URL Endpoint
-app.get('/api/auth/orcid/url', (req, res) => {
-  const clientId = process.env.ORCID_CLIENT_ID;
-  const baseUrl =
-    process.env.APP_URL && process.env.APP_URL !== 'MY_APP_URL'
-      ? process.env.APP_URL.replace(/\/$/, '')
-      : `${req.protocol}://${req.get('host')}`;
-  const redirectUri =
-    typeof req.query.redirectUri === 'string' && req.query.redirectUri
-      ? req.query.redirectUri
-      : `${baseUrl}/auth/orcid/callback`;
-
-  if (!clientId) {
-    res.json({
-      configured: false,
-      redirectUri,
-      message:
-        'ORCID_CLIENT_ID is not set in environment variables. Enter your 16-digit ORCID iD below to verify against the public ORCID registry.',
-    });
-    return;
-  }
-
-  const params = new URLSearchParams({
-    client_id: clientId,
-    response_type: 'code',
-    scope: '/authenticate',
-    redirect_uri: redirectUri,
-  });
-
-  res.json({
-    configured: true,
-    url: `https://orcid.org/oauth/authorize?${params.toString()}`,
-    redirectUri,
-  });
-});
-
-// 3. ORCID OAuth 2.0 Callback Route
-const orcidCallbackHandler: express.RequestHandler = async (req, res) => {
-  const { code } = req.query;
-  const clientId = process.env.ORCID_CLIENT_ID;
-  const clientSecret = process.env.ORCID_CLIENT_SECRET;
-  const baseUrl =
-    process.env.APP_URL && process.env.APP_URL !== 'MY_APP_URL'
-      ? process.env.APP_URL.replace(/\/$/, '')
-      : `${req.protocol}://${req.get('host')}`;
-  const redirectUri = `${baseUrl}/auth/orcid/callback`;
-
-  if (!code || !clientId || !clientSecret) {
-    res.send(`
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage({ type: 'OAUTH_AUTH_ERROR', error: 'Missing ORCID OAuth code or credentials' }, '*');
-              window.close();
-            } else {
-              window.location.href = '/';
-            }
-          </script>
-          <p>ORCID authentication could not be completed. You may close this window.</p>
-        </body>
-      </html>
-    `);
-    return;
-  }
-
-  try {
-    const body = new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: 'authorization_code',
-      code: String(code),
-      redirect_uri: redirectUri,
-    });
-
-    const tokenRes = await fetch('https://orcid.org/oauth/token', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body.toString(),
-    });
-
-    const tokenData = (await tokenRes.json()) as any;
-    const orcid = tokenData.orcid || '';
-    const name = tokenData.name || `ORCID (${orcid})`;
-
-    res.send(`
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage({
-                type: 'OAUTH_AUTH_SUCCESS',
-                provider: 'orcid',
-                orcid: ${JSON.stringify(orcid)},
-                name: ${JSON.stringify(name)}
-              }, '*');
-              window.close();
-            } else {
-              window.location.href = '/';
-            }
-          </script>
-          <p>ORCID authentication successful. Closing window...</p>
-        </body>
-      </html>
-    `);
   } catch {
-    res.send(`
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage({ type: 'OAUTH_AUTH_ERROR', error: 'Token exchange failed' }, '*');
-              window.close();
-            }
-          </script>
-        </body>
-      </html>
-    `);
+    res
+      .status(500)
+      .json({ error: 'Failed to analyze Google Scholar profile.' });
   }
-};
-
-app.get(['/auth/orcid/callback', '/auth/orcid/callback/'], orcidCallbackHandler);
-
-// 4. Live Public ORCID Registry Verification Endpoint
-app.get('/api/auth/orcid/verify', async (req, res) => {
-  const rawOrcid = String(req.query.orcid || '').trim();
-  const match = rawOrcid.match(/(\d{4}-\d{4}-\d{4}-\d{3}[\dX])/i);
-  if (!match) {
-    res.status(400).json({
-      error: 'Enter a valid 16-digit ORCID iD (e.g., 0000-0002-1825-0097).',
-    });
-    return;
-  }
-  const cleanOrcid = match[1].toUpperCase();
-
-  try {
-    const resp = await fetch(`https://pub.orcid.org/v3.0/${cleanOrcid}/person`, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (resp.ok) {
-      const data = (await resp.json()) as any;
-      const given = data?.name?.['given-names']?.value || '';
-      const family = data?.name?.['family-name']?.value || '';
-      const credit = data?.name?.['credit-name']?.value || '';
-      const fullName =
-        credit || `${given} ${family}`.trim() || `ORCID ${cleanOrcid}`;
-      res.json({
-        valid: true,
-        orcid: cleanOrcid,
-        name: fullName,
-      });
-      return;
-    }
-    if (resp.status === 404) {
-      res.status(404).json({
-        error: `ORCID iD ${cleanOrcid} was not found in the public ORCID registry.`,
-      });
-      return;
-    }
-  } catch {
-    // Fallback if pub.orcid.org is unreachable
-  }
-
-  res.json({
-    valid: true,
-    orcid: cleanOrcid,
-    name: `ORCID ${cleanOrcid}`,
-  });
 });
 
 async function startServer() {
+  startScholarBridgeWorker();
   const PORT = Number(process.env.PORT) || 3000;
 
   if (process.env.NODE_ENV !== 'production') {
@@ -2847,23 +2441,23 @@ async function startServer() {
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  } else if (!process.env.VERCEL) {
+  } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
+    app.get('*all', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ScholarLens server running on http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`ScholarLens server running on http://localhost:${PORT}`);
+    });
+  }
 }
 
 if (!process.env.VERCEL) {
-  startScholarBridgeWorker();
   void startServer();
 }
 
 export default app;
-

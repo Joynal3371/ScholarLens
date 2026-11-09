@@ -24,8 +24,8 @@ const PORTFOLIO_CATEGORY_COLORS: Record<
   Q2: { hex: '#0ea5e9', label: 'Q2 Journals' },
   Q3: { hex: '#f59e0b', label: 'Q3 Journals' },
   Q4: { hex: '#94a3b8', label: 'Q4 Journals' },
-  Conference: { hex: '#4f46e5', label: 'Conference Papers' },
-  'Non-Indexed': { hex: '#64748b', label: 'Non-Indexed Papers' },
+  Conference: { hex: '#4f46e5', label: 'Proceedings' },
+  'Non-Indexed': { hex: '#64748b', label: 'Emerging Venues' },
 };
 
 const TYPE_COLORS: Record<PublicationType, string> = {
@@ -58,7 +58,6 @@ export const PortfolioBreakdownSection: React.FC<
     'Conference',
     'Review',
     'Book Chapter',
-    'Preprint',
   ];
 
   // Donut Chart Geometry (6 categories summing to 100.0%)
@@ -102,10 +101,10 @@ export const PortfolioBreakdownSection: React.FC<
   return (
     <section
       id="charts"
-      aria-label="Visual Statistical Charts"
+      aria-label="Bibliometric Analytics Charts"
       className="scroll-mt-20 space-y-6"
     >
-      {/* Row 1: Quartile & Indexing Donut Chart + Publication Types Bar Chart + Citation Brackets Histogram */}
+      {/* Row 1: Quartile & Indexing Donut Chart + Document Type Classification + Citation Impact Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Chart 1: 6-Category Portfolio Distribution Donut Chart (100% Total) */}
         <div
@@ -113,20 +112,15 @@ export const PortfolioBreakdownSection: React.FC<
           className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Quartile &amp; Indexing Distribution (100%)
-              </h2>
-              <p className="text-xs text-slate-500">
-                Q1, Q2, Q3, Q4, Conferences &amp; Non-Indexed ({stats.totalPapers} papers)
-              </p>
-            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Quartile &amp; Indexing Distribution
+            </h2>
             <button
               type="button"
               onClick={() =>
                 onExportChartPng(
                   'chart-quartile-donut',
-                  'Quartile & Indexing Distribution (100%)',
+                  'Quartile & Indexing Distribution',
                   'quartile_distribution_chart.png'
                 )
               }
@@ -245,37 +239,32 @@ export const PortfolioBreakdownSection: React.FC<
           </div>
 
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Total Portfolio Coverage</span>
+            <span>Portfolio Coverage</span>
             <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              100.0% ({stats.totalPapers} papers)
+              100.0% ({stats.totalPapers} publications)
             </span>
           </div>
         </div>
 
-        {/* Chart 2: Publication Types Horizontal Bar Graph */}
+        {/* Chart 2: Document Type Classification */}
         <div
           id="chart-pub-types"
           className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Publication Types Breakdown
-              </h2>
-              <p className="text-xs text-slate-500">
-                Journals, conferences, reviews &amp; preprints
-              </p>
-            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Document Type Classification
+            </h2>
             <button
               type="button"
               onClick={() =>
                 onExportChartPng(
                   'chart-pub-types',
-                  'Publication Types Breakdown',
-                  'publication_types_chart.png'
+                  'Document Type Classification',
+                  'document_type_classification.png'
                 )
               }
-              aria-label="Export Publication Types chart as PNG"
+              aria-label="Export Document Type Classification chart as PNG"
               className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0"
             >
               <ImageDown className="w-3.5 h-3.5" />
@@ -288,11 +277,11 @@ export const PortfolioBreakdownSection: React.FC<
               viewBox="0 0 360 210"
               className="w-full h-auto max-h-[210px]"
               role="img"
-              aria-label="Publication types horizontal bar chart"
+              aria-label="Document type classification horizontal bar chart"
             >
               {pubTypes.map((t, idx) => {
                 const d = stats.typeBreakdown[t];
-                const y = 14 + idx * 39;
+                const y = 18 + idx * 46;
                 const barW = Math.max(
                   d.count > 0 ? 6 : 0,
                   (d.percentageOfTotal / 100) * 190
@@ -311,7 +300,7 @@ export const PortfolioBreakdownSection: React.FC<
                       fontSize="11.5"
                       fontWeight="600"
                     >
-                      {t}
+                      {t === 'Conference' ? 'Conference Proceedings' : t}
                     </text>
                     <text
                       x="354"
@@ -327,7 +316,7 @@ export const PortfolioBreakdownSection: React.FC<
                       x="4"
                       y="18"
                       width="350"
-                      height="10"
+                      height="11"
                       rx="4"
                       fill="#f1f5f9"
                     />
@@ -336,7 +325,7 @@ export const PortfolioBreakdownSection: React.FC<
                         x="4"
                         y="18"
                         width={barW * (350 / 190)}
-                        height="10"
+                        height="11"
                         rx="4"
                         fill={TYPE_COLORS[t]}
                       />
@@ -348,37 +337,32 @@ export const PortfolioBreakdownSection: React.FC<
           </div>
 
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Lead / Corresponding Author</span>
+            <span>First / Corresponding Authorship</span>
             <span className="font-mono font-semibold text-slate-900 tabular-nums">
               {stats.firstOrCorrespondingPercentage}% ({stats.firstOrCorrespondingCount}/{stats.totalPapers})
             </span>
           </div>
         </div>
 
-        {/* Chart 3: Citation Range Brackets Column Chart */}
+        {/* Chart 3: Citation Impact Distribution */}
         <div
           id="chart-citation-brackets"
           className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Citation Distribution Histogram
-              </h2>
-              <p className="text-xs text-slate-500">
-                Papers grouped by citation-count range
-              </p>
-            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Citation Impact Distribution
+            </h2>
             <button
               type="button"
               onClick={() =>
                 onExportChartPng(
                   'chart-citation-brackets',
-                  'Citation Distribution Histogram',
-                  'citation_distribution_histogram.png'
+                  'Citation Impact Distribution',
+                  'citation_impact_distribution.png'
                 )
               }
-              aria-label="Export Citation Distribution chart as PNG"
+              aria-label="Export Citation Impact Distribution chart as PNG"
               className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0"
             >
               <ImageDown className="w-3.5 h-3.5" />
@@ -391,7 +375,7 @@ export const PortfolioBreakdownSection: React.FC<
               viewBox="0 0 360 210"
               className="w-full h-auto max-h-[210px]"
               role="img"
-              aria-label="Citation distribution column chart"
+              aria-label="Citation impact distribution column chart"
             >
               {/* Baseline */}
               <line
@@ -458,32 +442,27 @@ export const PortfolioBreakdownSection: React.FC<
         </div>
       </div>
 
-      {/* Row 2: Annual Citations & Publications Trend Graph + Yearly Quartile Stacked Bar Chart + Top Countries Bar Chart */}
+      {/* Row 2: Annual Citation & Publication Trajectory + Quartile Composition by Year + Leading Collaborating Nations */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Chart 4: Annual Citations & Output Trend Graph (Area + Bar) */}
+        {/* Chart 4: Annual Citation & Publication Trajectory */}
         <div
           id="chart-yearly-trend"
           className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Yearly Citations &amp; Publication Trend
-              </h2>
-              <p className="text-xs text-slate-500">
-                Line shows total citations; bars show papers published per year
-              </p>
-            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Annual Citation &amp; Publication Trajectory
+            </h2>
             <button
               type="button"
               onClick={() =>
                 onExportChartPng(
                   'chart-yearly-trend',
-                  'Yearly Citations & Publication Trend',
-                  'yearly_citation_trend.png'
+                  'Annual Citation & Publication Trajectory',
+                  'annual_citation_trajectory.png'
                 )
               }
-              aria-label="Export Yearly Trend chart as PNG"
+              aria-label="Export Annual Trajectory chart as PNG"
               className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0"
             >
               <ImageDown className="w-3.5 h-3.5" />
@@ -496,7 +475,7 @@ export const PortfolioBreakdownSection: React.FC<
               viewBox="0 0 440 200"
               className="w-full h-auto max-h-[200px]"
               role="img"
-              aria-label="Yearly citations and publications trend chart"
+              aria-label="Annual citation and publication trajectory chart"
             >
               {/* Grid lines */}
               {[40, 85, 130, 168].map((gy) => (
@@ -604,30 +583,25 @@ export const PortfolioBreakdownSection: React.FC<
           </div>
         </div>
 
-        {/* Chart 5: Yearly Quartile & Conference Stacked Bar Chart */}
+        {/* Chart 5: Quartile Composition by Year */}
         <div
           id="chart-quartile-yearly"
           className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Quartile Mix by Year
-              </h2>
-              <p className="text-xs text-slate-500">
-                Stacked composition of Q1–Q4 &amp; conferences
-              </p>
-            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Quartile Composition by Year
+            </h2>
             <button
               type="button"
               onClick={() =>
                 onExportChartPng(
                   'chart-quartile-yearly',
-                  'Quartile Mix by Year',
-                  'quartile_mix_by_year.png'
+                  'Quartile Composition by Year',
+                  'quartile_composition_by_year.png'
                 )
               }
-              aria-label="Export Quartile Mix by Year chart as PNG"
+              aria-label="Export Quartile Composition by Year chart as PNG"
               className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0"
             >
               <ImageDown className="w-3.5 h-3.5" />
@@ -640,7 +614,7 @@ export const PortfolioBreakdownSection: React.FC<
               viewBox="0 0 360 200"
               className="w-full h-auto max-h-[200px]"
               role="img"
-              aria-label="Quartile mix by year stacked bar chart"
+              aria-label="Quartile composition by year stacked bar chart"
             >
               <line
                 x1="18"
@@ -721,7 +695,7 @@ export const PortfolioBreakdownSection: React.FC<
               </span>
               <span className="inline-flex items-center gap-1">
                 <span className="w-2 h-2 rounded-xs bg-indigo-500 inline-block" />
-                Conf
+                Proc.
               </span>
             </div>
             <span className="font-mono font-semibold text-slate-900 tabular-nums">
@@ -730,30 +704,25 @@ export const PortfolioBreakdownSection: React.FC<
           </div>
         </div>
 
-        {/* Chart 6: Top Collaborating Countries Bar Chart */}
+        {/* Chart 6: Leading Collaborating Nations */}
         <div
           id="chart-top-countries"
           className="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Top Partner Countries
-              </h2>
-              <p className="text-xs text-slate-500">
-                By collaborative paper count
-              </p>
-            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Leading Collaborating Nations
+            </h2>
             <button
               type="button"
               onClick={() =>
                 onExportChartPng(
                   'chart-top-countries',
-                  'Top Collaborating Countries',
-                  'top_collaborating_countries.png'
+                  'Leading Collaborating Nations',
+                  'leading_collaborating_nations.png'
                 )
               }
-              aria-label="Export Top Partner Countries chart as PNG"
+              aria-label="Export Leading Collaborating Nations chart as PNG"
               className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0"
             >
               <ImageDown className="w-3.5 h-3.5" />
@@ -766,7 +735,7 @@ export const PortfolioBreakdownSection: React.FC<
               viewBox="0 0 280 200"
               className="w-full h-auto max-h-[200px]"
               role="img"
-              aria-label="Top collaborating countries bar chart"
+              aria-label="Leading collaborating nations bar chart"
             >
               {topCountries.map((c, idx) => {
                 const y = 8 + idx * 32;
@@ -818,7 +787,7 @@ export const PortfolioBreakdownSection: React.FC<
           </div>
 
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>International Share</span>
+            <span>International Collaboration</span>
             <span className="font-mono font-semibold text-slate-900 tabular-nums">
               {stats.internationalCollabPercentage}%
             </span>

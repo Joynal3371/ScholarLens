@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import {
   geoOrthographic,
+  geoEquirectangular,
   geoPath,
   geoGraticule,
   geoDistance,
@@ -56,6 +57,7 @@ const WORLD_BORDERS_MESH = topojson.mesh(
   worldTopology.objects.countries,
   (a: any, b: any) => a !== b
 );
+const STATIC_GRATICULE = geoGraticule().step([15, 15])();
 
 // Earth radius = 6,371 km; viewport radius = 230 px -> at zoom=1, 1 px = 27.7 km.
 // At zoom = 27.7, 1 px = 1.0 km. At zoom = 250, 1 px = 0.11 km (110m).
@@ -63,7 +65,7 @@ const EARTH_RADIUS_KM = 6371;
 const GLOBE_SIZE = 500;
 const CENTER = GLOBE_SIZE / 2;
 const VIEWPORT_RADIUS = 230;
-const ZOOM_1KM_PER_PX = Number((EARTH_RADIUS_KM / VIEWPORT_RADIUS).toFixed(1)); // 27.7x = 1.0 km/px
+const ZOOM_1KM_PER_PX = Number((EARTH_RADIUS_KM / VIEWPORT_RADIUS).toFixed(1));
 const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 250;
 
@@ -108,25 +110,94 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   onFilterByCoAuthor,
   onExportChartPng,
 }) => {
-  const [centerLat, setCenterLat] = useState<number>(profile.homeLat || 23.78);
-  const [centerLng, setCenterLng] = useState<number>(profile.homeLng || 90.4);
-  const [zoom, setZoom] = useState<number>(1);
+  const [viewState, setViewState] = useState<{
+    lat: number;
+    lng: number;
+    zoom: number;
+  }>({
+    lat: Math.max(-80, Math.min(80, profile.homeLat || 23.78)),
+    lng: profile.homeLng || 90.4,
+    zoom: 1,
+  });
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [coAuthorQuery, setCoAuthorQuery] = useState<string>('');
 
+  const centerLat = viewState.lat;
+  const centerLng = viewState.lng;
+  const zoom = viewState.zoom;
+
+  const viewStateRef = useRef(viewState);
+  viewStateRef.current = viewState;
+
   const globeContainerRef = useRef<HTMLDivElement | null>(null);
-  const dragStartRef = useRef<{
+  const rafIdRef = useRef<number | null>(null);
+  const pendingViewRef = useRef<{
+    lat: number;
+    lng: number;
+    zoom: number;
+  } | null>(null);
+
+  const mouseDragRef = useRef<{
     x: number;
     y: number;
     lat: number;
     lng: number;
   } | null>(null);
 
+  const touchGestureRef = useRef<{
+    mode: 'none' | 'pan' | 'pinch';
+    startX: number;
+    startY: number;
+    startLat: number;
+    startLng: number;
+    startDist: number;
+    startZoom: number;
+    lastTapTime: number;
+    lastTapX: number;
+    lastTapY: number;
+  }>({
+    mode: 'none',
+    startX: 0,
+    startY: 0,
+    startLat: 0,
+    startLng: 0,
+    startDist: 1,
+    startZoom: 1,
+    lastTapTime: 0,
+    lastTapX: 0,
+    lastTapY: 0,
+  });
+
+  const scheduleViewUpdate = (next: {
+    lat: number;
+    lng: number;
+    zoom: number;
+  }) => {
+    pendingViewRef.current = next;
+    if (rafIdRef.current !== null) return;
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (pendingViewRef.current) {
+        setViewState(pendingViewRef.current);
+      }
+    });
+  };
+
   useEffect(() => {
-    setCenterLat(Math.max(-80, Math.min(80, profile.homeLat || 23.78)));
-    setCenterLng(profile.homeLng || 90.4);
-    setZoom(1);
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setViewState({
+      lat: Math.max(-80, Math.min(80, profile.homeLat || 23.78)),
+      lng: profile.homeLng || 90.4,
+      zoom: 1,
+    });
     setCoAuthorQuery('');
   }, [profile.id, profile.homeLat, profile.homeLng]);
 
@@ -141,7 +212,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   const projectedScale = VIEWPORT_RADIUS * zoom;
   const sphereClipRadius = Math.min(VIEWPORT_RADIUS, projectedScale);
 
-  const { projection, pathGenerator } = useMemo(() => {
+  const pathGenerator = useMemo(() => {
     const proj = geoOrthographic()
       .translate([CENTER, CENTER])
       .scale(projectedScale)
@@ -151,26 +222,172 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         [0, 0],
         [GLOBE_SIZE, GLOBE_SIZE],
       ])
-      .precision(0.2);
-    const gen = geoPath(proj);
-    return { projection: proj, pathGenerator: gen };
+      .precision(0.35);
+    return geoPath(proj);
   }, [centerLat, centerLng, projectedScale]);
 
-  // Attach non-passive wheel listener so scrolling over the globe zooms smoothly all the way to 1km/px & 100m/px
+  // Native wheel + Android multi-touch pinch-to-zoom and single-finger pan
   useEffect(() => {
     const el = globeContainerRef.current;
     if (!el) return;
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       setAutoRotate(false);
-      const factor = e.deltaY < 0 ? 1.35 : 1 / 1.35;
-      setZoom((prev) => {
-        const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev * factor));
-        return Number(next.toFixed(2));
-      });
+      const factor = e.deltaY < 0 ? 1.32 : 1 / 1.32;
+      const cur = viewStateRef.current;
+      const nextZoom = Number(
+        Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, cur.zoom * factor)).toFixed(2)
+      );
+      scheduleViewUpdate({ ...cur, zoom: nextZoom });
     };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('button')) {
+        return;
+      }
+      setAutoRotate(false);
+      const cur = viewStateRef.current;
+      const g = touchGestureRef.current;
+
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        const dist = Math.max(
+          10,
+          Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY)
+        );
+        const midX = (t0.clientX + t1.clientX) / 2;
+        const midY = (t0.clientY + t1.clientY) / 2;
+        g.mode = 'pinch';
+        g.startDist = dist;
+        g.startZoom = cur.zoom;
+        g.startX = midX;
+        g.startY = midY;
+        g.startLat = cur.lat;
+        g.startLng = cur.lng;
+        setIsDragging(true);
+      } else if (e.touches.length === 1) {
+        const t0 = e.touches[0];
+        const now = Date.now();
+        if (
+          now - g.lastTapTime < 280 &&
+          Math.hypot(t0.clientX - g.lastTapX, t0.clientY - g.lastTapY) < 28
+        ) {
+          e.preventDefault();
+          g.lastTapTime = 0;
+          const nextZoom =
+            cur.zoom >= 20
+              ? 1
+              : Number(Math.min(MAX_ZOOM, cur.zoom * 2.1).toFixed(2));
+          scheduleViewUpdate({ ...cur, zoom: nextZoom });
+          return;
+        }
+        g.lastTapTime = now;
+        g.lastTapX = t0.clientX;
+        g.lastTapY = t0.clientY;
+        g.mode = 'pan';
+        g.startX = t0.clientX;
+        g.startY = t0.clientY;
+        g.startLat = cur.lat;
+        g.startLng = cur.lng;
+        setIsDragging(true);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const g = touchGestureRef.current;
+      if (g.mode === 'none') return;
+      e.preventDefault();
+
+      if (e.touches.length === 2) {
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        const dist = Math.max(
+          10,
+          Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY)
+        );
+        const midX = (t0.clientX + t1.clientX) / 2;
+        const midY = (t0.clientY + t1.clientY) / 2;
+
+        if (g.mode !== 'pinch') {
+          const cur = viewStateRef.current;
+          g.mode = 'pinch';
+          g.startDist = dist;
+          g.startZoom = cur.zoom;
+          g.startX = midX;
+          g.startY = midY;
+          g.startLat = cur.lat;
+          g.startLng = cur.lng;
+          return;
+        }
+
+        const scaleRatio = dist / g.startDist;
+        const nextZoom = Number(
+          Math.min(
+            MAX_ZOOM,
+            Math.max(MIN_ZOOM, g.startZoom * scaleRatio)
+          ).toFixed(2)
+        );
+        const dx = midX - g.startX;
+        const dy = midY - g.startY;
+        const sensitivity = 0.42 / nextZoom;
+        const nextLng = ((g.startLng - dx * sensitivity + 540) % 360) - 180;
+        const nextLat = Math.max(
+          -85,
+          Math.min(85, g.startLat + dy * sensitivity)
+        );
+        scheduleViewUpdate({ lat: nextLat, lng: nextLng, zoom: nextZoom });
+      } else if (e.touches.length === 1 && g.mode === 'pan') {
+        const t0 = e.touches[0];
+        const curZoom = viewStateRef.current.zoom;
+        const dx = t0.clientX - g.startX;
+        const dy = t0.clientY - g.startY;
+        const sensitivity = 0.42 / curZoom;
+        const nextLng = ((g.startLng - dx * sensitivity + 540) % 360) - 180;
+        const nextLat = Math.max(
+          -85,
+          Math.min(85, g.startLat + dy * sensitivity)
+        );
+        scheduleViewUpdate({
+          lat: nextLat,
+          lng: nextLng,
+          zoom: curZoom,
+        });
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const g = touchGestureRef.current;
+      if (e.touches.length === 0) {
+        g.mode = 'none';
+        setIsDragging(false);
+      } else if (e.touches.length === 1) {
+        const t0 = e.touches[0];
+        const cur = viewStateRef.current;
+        g.mode = 'pan';
+        g.startX = t0.clientX;
+        g.startY = t0.clientY;
+        g.startLat = cur.lat;
+        g.startLng = cur.lng;
+      }
+    };
+
     el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd);
+    el.addEventListener('touchcancel', handleTouchEnd);
+
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+      el.removeEventListener('touchcancel', handleTouchEnd);
+    };
   }, []);
 
   const collaboratingCountryNames = useMemo(() => {
@@ -184,9 +401,12 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   useEffect(() => {
     if (!autoRotate || isDragging) return;
     const interval = setInterval(() => {
-      setCenterLng((prev) => {
-        const next = prev + 1.2;
-        return next > 180 ? next - 360 : next;
+      setViewState((prev) => {
+        const nextLng = prev.lng + 1.2;
+        return {
+          ...prev,
+          lng: nextLng > 180 ? nextLng - 360 : nextLng,
+        };
       });
     }, 60);
     return () => clearInterval(interval);
@@ -194,16 +414,20 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
 
   const focusOnUniversity = (uni: UniversityCollaboration) => {
     setAutoRotate(false);
-    setCenterLat(Math.max(-82, Math.min(82, uni.lat)));
-    setCenterLng(uni.lng);
+    setViewState((prev) => ({
+      ...prev,
+      lat: Math.max(-82, Math.min(82, uni.lat)),
+      lng: uni.lng,
+    }));
     onSelectUniversity(uni.universityId);
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'touch') return;
     if ((e.target as HTMLElement).closest('button')) return;
     setIsDragging(true);
     setAutoRotate(false);
-    dragStartRef.current = {
+    mouseDragRef.current = {
       x: e.clientX,
       y: e.clientY,
       lat: centerLat,
@@ -212,33 +436,29 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging || !dragStartRef.current) return;
-    const dx = e.clientX - dragStartRef.current.x;
-    const dy = e.clientY - dragStartRef.current.y;
+    if (e.pointerType === 'touch') return;
+    if (!isDragging || !mouseDragRef.current) return;
+    const dx = e.clientX - mouseDragRef.current.x;
+    const dy = e.clientY - mouseDragRef.current.y;
     const sensitivity = 0.42 / zoom;
-    const nextLng = dragStartRef.current.lng - dx * sensitivity;
+    const nextLng =
+      ((mouseDragRef.current.lng - dx * sensitivity + 540) % 360) - 180;
     const nextLat = Math.max(
       -85,
-      Math.min(85, dragStartRef.current.lat + dy * sensitivity)
+      Math.min(85, mouseDragRef.current.lat + dy * sensitivity)
     );
-    setCenterLng(((nextLng + 540) % 360) - 180);
-    setCenterLat(nextLat);
+    scheduleViewUpdate({ lat: nextLat, lng: nextLng, zoom });
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'touch') return;
     setIsDragging(false);
-    dragStartRef.current = null;
+    mouseDragRef.current = null;
   };
 
   const graticulePath = useMemo(() => {
-    let stepDeg = 10;
-    if (zoom >= 60) stepDeg = 0.1;
-    else if (zoom >= 20) stepDeg = 0.25;
-    else if (zoom >= 6) stepDeg = 1;
-    else if (zoom >= 2.5) stepDeg = 2.5;
-    const grat = geoGraticule().step([stepDeg, stepDeg])();
-    return pathGenerator(grat as any) || '';
-  }, [pathGenerator, zoom]);
+    return pathGenerator(STATIC_GRATICULE as any) || '';
+  }, [pathGenerator]);
 
   const countryPaths = useMemo(() => {
     return WORLD_COUNTRY_FEATURES.map((feat, idx) => {
@@ -293,7 +513,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
 
   const projectedUniversities = useMemo(() => {
     const centerCoord: [number, number] = [centerLng, centerLat];
-    // Orthographic projection without clipExtent to get exact projected point coordinates
     const pointProj = geoOrthographic()
       .translate([CENTER, CENTER])
       .scale(projectedScale)
@@ -320,34 +539,30 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       };
     });
 
-    // Ensure visible university dots never overlap on screen when zoomed in
+    const visibleItems = raw.filter((item) => item.visible);
     const minSepPx = zoom >= 6 ? 20 : zoom >= 2 ? 15 : 11;
     const maxDriftPx = zoom >= 10 ? 110 : zoom >= 3 ? 75 : 32;
-    const iterations = zoom >= 3 ? 24 : 10;
+    const iterations = zoom >= 3 ? 10 : 6;
 
     for (let iter = 0; iter < iterations; iter++) {
-      for (let i = 0; i < raw.length; i++) {
-        if (!raw[i].visible) continue;
-        for (let j = i + 1; j < raw.length; j++) {
-          if (!raw[j].visible) continue;
-          const dx = raw[j].screenX - raw[i].screenX;
-          const dy = raw[j].screenY - raw[i].screenY;
+      for (let i = 0; i < visibleItems.length; i++) {
+        for (let j = i + 1; j < visibleItems.length; j++) {
+          const dx = visibleItems[j].screenX - visibleItems[i].screenX;
+          const dy = visibleItems[j].screenY - visibleItems[i].screenY;
           const dist = Math.hypot(dx, dy);
           if (dist < minSepPx) {
             const angle =
               dist > 0.05 ? Math.atan2(dy, dx) : ((i * 7 + j * 13) % 12) * 0.52;
             const push = (minSepPx - dist) * 0.45;
-            raw[i].screenX -= Math.cos(angle) * push;
-            raw[i].screenY -= Math.sin(angle) * push;
-            raw[j].screenX += Math.cos(angle) * push;
-            raw[j].screenY += Math.sin(angle) * push;
+            visibleItems[i].screenX -= Math.cos(angle) * push;
+            visibleItems[i].screenY -= Math.sin(angle) * push;
+            visibleItems[j].screenX += Math.cos(angle) * push;
+            visibleItems[j].screenY += Math.sin(angle) * push;
           }
         }
       }
 
-      // Keep all separated dots inside the circular globe viewport and within maxDriftPx
-      for (const item of raw) {
-        if (!item.visible) continue;
+      for (const item of visibleItems) {
         const dx = item.screenX - item.exactX;
         const dy = item.screenY - item.exactY;
         const drift = Math.hypot(dx, dy);
@@ -391,18 +606,26 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       aria-labelledby="globe-section-heading"
       className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs"
     >
-      {/* Top Toolbar */}
-      <div className="px-6 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
-        <div>
+      {/* Top Header: Clean on Android/Mobile (manual zoom & surrounding buttons hidden on mobile/Android) */}
+      <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           <h2
             id="globe-section-heading"
             className="text-base font-bold text-slate-900 tracking-tight"
           >
             World Collaboration Map
           </h2>
+          <span
+            data-testid="globe-resolution-badge"
+            className="px-2 py-0.5 text-[11px] font-mono font-semibold text-slate-600 bg-slate-100 rounded-md tabular-nums"
+            title={`Zoom ${zoom.toFixed(1)}x (${formatResolutionLabel(zoom)})`}
+          >
+            {formatResolutionLabel(zoom)}
+          </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Desktop-only Toolbar Controls (Hidden on Android / Mobile) */}
+        <div className="hidden lg:flex flex-wrap items-center gap-2">
           <div
             role="group"
             aria-label="Globe region presets"
@@ -414,8 +637,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 type="button"
                 onClick={() => {
                   setAutoRotate(false);
-                  setCenterLat(preset.lat);
-                  setCenterLng(preset.lng);
+                  setViewState((prev) => ({
+                    ...prev,
+                    lat: preset.lat,
+                    lng: preset.lng,
+                  }));
                 }}
                 className="px-2.5 py-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap shrink-0"
               >
@@ -424,15 +650,18 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             ))}
           </div>
 
-          {/* Zoom Controls with 1 km/px Deep Zoom Preset */}
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
             <button
               type="button"
               onClick={() => {
                 setAutoRotate(false);
-                setZoom((z) =>
-                  Math.max(MIN_ZOOM, Number((z / 1.45).toFixed(2)))
-                );
+                setViewState((prev) => ({
+                  ...prev,
+                  zoom: Math.max(
+                    MIN_ZOOM,
+                    Number((prev.zoom / 1.45).toFixed(2))
+                  ),
+                }));
               }}
               aria-label="Zoom out globe"
               className="p-1 text-xs font-medium text-slate-700 hover:bg-white rounded-md transition-colors"
@@ -440,20 +669,17 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <span
-              data-testid="globe-resolution-badge"
-              className="px-1.5 text-[11px] font-mono font-semibold text-slate-700 tabular-nums whitespace-nowrap"
-              title={`Zoom ${zoom.toFixed(1)}x (${formatResolutionLabel(zoom)})`}
-            >
-              {formatResolutionLabel(zoom)}
-            </span>
             <button
               type="button"
               onClick={() => {
                 setAutoRotate(false);
-                setZoom((z) =>
-                  Math.min(MAX_ZOOM, Number((z * 1.45).toFixed(2)))
-                );
+                setViewState((prev) => ({
+                  ...prev,
+                  zoom: Math.min(
+                    MAX_ZOOM,
+                    Number((prev.zoom * 1.45).toFixed(2))
+                  ),
+                }));
               }}
               aria-label="Zoom in globe"
               className="p-1 text-xs font-medium text-slate-700 hover:bg-white rounded-md transition-colors"
@@ -466,11 +692,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               data-testid="zoom-1km-button"
               onClick={() => {
                 setAutoRotate(false);
-                if (selectedUni) {
-                  setCenterLat(selectedUni.lat);
-                  setCenterLng(selectedUni.lng);
-                }
-                setZoom(ZOOM_1KM_PER_PX);
+                setViewState((prev) => ({
+                  lat: selectedUni ? selectedUni.lat : prev.lat,
+                  lng: selectedUni ? selectedUni.lng : prev.lng,
+                  zoom: ZOOM_1KM_PER_PX,
+                }));
               }}
               className={`px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md transition-colors whitespace-nowrap ${
                 Math.abs(zoom - ZOOM_1KM_PER_PX) < 2
@@ -505,9 +731,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             type="button"
             onClick={() => {
               setAutoRotate(false);
-              setCenterLat(profile.homeLat || 23.78);
-              setCenterLng(profile.homeLng || 90.4);
-              setZoom(1);
+              setViewState({
+                lat: Math.max(-80, Math.min(80, profile.homeLat || 23.78)),
+                lng: profile.homeLng || 90.4,
+                zoom: 1,
+              });
             }}
             aria-label="Reset globe orientation"
             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap shrink-0"
@@ -537,10 +765,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
 
       {/* Main Split Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
-        {/* Left 7 Columns: Clean, Uncluttered Zoomable Globe Viewport */}
+        {/* Left 7 Columns: Clean, Uncluttered Pinch-Zoomable Globe Viewport */}
         <div
           id="chart-collaboration-globe"
-          className="lg:col-span-7 p-4 sm:p-6 bg-slate-950 text-slate-100 flex items-center justify-center relative select-none"
+          className="lg:col-span-7 p-3 sm:p-6 bg-slate-950 text-slate-100 flex items-center justify-center relative select-none"
         >
           <div
             ref={globeContainerRef}
@@ -551,9 +779,13 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             onPointerLeave={handlePointerUp}
             onDoubleClick={() => {
               setAutoRotate(false);
-              setZoom((z) =>
-                Math.min(MAX_ZOOM, Number((z * 1.8).toFixed(2)))
-              );
+              setViewState((prev) => ({
+                ...prev,
+                zoom: Math.min(
+                  MAX_ZOOM,
+                  Number((prev.zoom * 1.8).toFixed(2))
+                ),
+              }));
             }}
             className={`relative mx-auto w-full max-w-[500px] aspect-square flex items-center justify-center overflow-hidden rounded-full touch-none ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
@@ -585,7 +817,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               />
 
               <g clipPath="url(#globeCircleClip)">
-                {/* Graticule lines */}
                 {graticulePath && (
                   <path
                     d={graticulePath}
@@ -595,7 +826,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   />
                 )}
 
-                {/* Individual Country Polygons */}
                 {countryPaths.map((country) => (
                   <path
                     key={country.id}
@@ -616,7 +846,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   </path>
                 ))}
 
-                {/* International Political Boundary Mesh */}
                 {bordersMeshPath && (
                   <path
                     d={bordersMeshPath}
@@ -626,7 +855,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   />
                 )}
 
-                {/* Great-Circle Collaboration Arcs */}
                 {arcPaths.map((arc) => (
                   <path
                     key={`arc-${arc.id}`}
@@ -640,7 +868,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   />
                 ))}
 
-                {/* Leader lines from exact GPS campus coordinates to non-overlapping dot positions */}
                 {projectedUniversities.map(
                   ({ uni, visible, exactX, exactY, screenX, screenY }) => {
                     if (!visible) return null;
@@ -670,7 +897,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   }
                 )}
 
-                {/* Embedded SVG dots for PNG/PDF exports */}
                 {projectedUniversities.map(
                   ({ uni, visible, screenX, screenY }) => {
                     if (!visible) return null;
@@ -705,7 +931,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               </g>
             </svg>
 
-            {/* Easily Clickable University Dots (Generous hit area + crisp visual marker) */}
+            {/* Easily Clickable University Dots */}
             {projectedUniversities.map(({ uni, visible, screenX, screenY }) => {
               if (!visible) return null;
 
@@ -718,7 +944,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       18,
                       Math.max(11, 9 + Math.log2(uni.paperCount + 1) * 2.2)
                     );
-              const hitAreaSize = Math.max(26, visualDotSize + 12);
+              const hitAreaSize = Math.max(28, visualDotSize + 14);
 
               return (
                 <button
@@ -795,7 +1021,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         <div className="lg:col-span-5 p-4 sm:p-5 bg-white flex flex-col justify-between">
           {selectedUni ? (
             <div className="space-y-4">
-              {/* Clean University Selector Dropdown */}
               <div>
                 <label
                   htmlFor="inspector-university-select"
@@ -880,7 +1105,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              {/* Co-Authors at Selected University */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <h4 className="text-xs font-semibold text-slate-700">
@@ -931,7 +1155,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              {/* Collaborative Papers with Clickable Paper Titles */}
               <div>
                 <h4 className="text-xs font-semibold text-slate-700 mb-2">
                   Collaborative Papers ({selectedUni.papers.length})

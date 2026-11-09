@@ -33,15 +33,14 @@ const TYPE_OPTIONS: PublicationType[] = [
   'Conference',
   'Review',
   'Book Chapter',
-  'Preprint',
 ];
 
 const CITATION_PRESETS: { label: string; min: string; max: string }[] = [
   { label: 'All', min: '', max: '' },
-  { label: '0–100', min: '0', max: '100' },
-  { label: '100–5,000', min: '100', max: '5000' },
-  { label: '5,000–25,000', min: '5000', max: '25000' },
-  { label: '25,000+', min: '25000', max: '' },
+  { label: '0–25', min: '0', max: '25' },
+  { label: '25–100', min: '25', max: '100' },
+  { label: '100–500', min: '100', max: '500' },
+  { label: '500+', min: '500', max: '' },
 ];
 
 export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
@@ -111,19 +110,18 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
           id="publications-explorer-heading"
           className="text-base font-bold text-slate-900 tracking-tight"
         >
-          Publications Filter ({filteredPublications.length} / {allPublications.length})
+          Publication Portfolio ({filteredPublications.length} / {allPublications.length})
         </h2>
 
         <div className="flex flex-wrap items-center gap-4 text-xs">
           <div className="font-mono tabular-nums text-slate-600">
-            Showing{' '}
+            Publications:{' '}
             <strong
               data-testid="filtered-publications-count"
               className="text-slate-900 font-bold"
             >
               {filteredPublications.length}
-            </strong>{' '}
-            papers
+            </strong>
           </div>
           <span aria-hidden="true" className="text-slate-300">
             ·
@@ -138,7 +136,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
             ·
           </span>
           <div className="font-mono tabular-nums text-slate-600">
-            Subset h-index:{' '}
+            Portfolio h-index:{' '}
             <strong className="text-slate-900 font-bold">
               {filteredHIndex}
             </strong>
@@ -151,7 +149,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors whitespace-nowrap shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Filters</span>
+              <span>Reset Criteria</span>
             </button>
           )}
         </div>

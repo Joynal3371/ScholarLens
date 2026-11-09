@@ -81,7 +81,7 @@ export const ResearchDirectoriesSection: React.FC<
       <div className="px-6 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-1.5">
           <h2 id="directories-heading" className="sr-only">
-            Collaboration Directories
+            Institutional &amp; Co-Author Registry
           </h2>
           <button
             type="button"
@@ -106,7 +106,7 @@ export const ResearchDirectoriesSection: React.FC<
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span>Universities ({universities.length})</span>
+            <span>Partner Institutions ({universities.length})</span>
           </button>
 
           <button
@@ -119,7 +119,7 @@ export const ResearchDirectoriesSection: React.FC<
             }`}
           >
             <Globe2 className="w-3.5 h-3.5" />
-            <span>Countries ({countries.length})</span>
+            <span>Collaborating Nations ({countries.length})</span>
           </button>
 
           <button
@@ -132,7 +132,7 @@ export const ResearchDirectoriesSection: React.FC<
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Journals &amp; Venues ({journals.length})</span>
+            <span>Publication Venues ({journals.length})</span>
           </button>
         </div>
 
