@@ -405,9 +405,12 @@ export default function App() {
     }
   };
 
+  // Restriction for exporting PDF/PNG dossiers (set to false for now per user request; change to true later to re-activate)
+  const REQUIRE_AUTH_FOR_EXPORT = false;
+
   const handleRequestPdfReport = () => {
     const task: PendingExportTask = { type: 'pdf' };
-    if (!authUser) {
+    if (REQUIRE_AUTH_FOR_EXPORT && !authUser) {
       setPendingExport(task);
       setIsAuthModalOpen(true);
       return;
@@ -428,7 +431,7 @@ export default function App() {
       filename,
       darkTheme,
     };
-    if (!authUser) {
+    if (REQUIRE_AUTH_FOR_EXPORT && !authUser) {
       setPendingExport(task);
       setIsAuthModalOpen(true);
       return;
@@ -635,7 +638,7 @@ export default function App() {
               onClick={handleRequestPdfReport}
               className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer"
             >
-              {authUser ? (
+              {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
                 <FileDown className="w-3.5 h-3.5" />
               ) : (
                 <Lock className="w-3.5 h-3.5" />
