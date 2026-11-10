@@ -58,12 +58,14 @@ export interface OfficialScholarMetrics {
   totalCitations: number;
   hIndex: number;
   i10Index: number;
+  citationsByYear?: Record<number, number>;
 }
 
 export interface ResearcherProfile {
   id: string;
   scholarUserId: string;
   scholarUrl: string;
+  avatarUrl?: string;
   name: string;
   affiliation: string;
   homeUniversityId: string;
@@ -77,6 +79,79 @@ export interface ResearcherProfile {
   fields: string[];
   officialMetrics?: OfficialScholarMetrics;
   publications: Publication[];
+}
+
+const QUARTILE_PRIORITY_RANK: Record<Quartile, number> = {
+  Q1: 1,
+  Q2: 2,
+  Q3: 3,
+  Q4: 4,
+  Unranked: 5,
+};
+
+/**
+ * Guarantees that every publication in the same journal/venue shares a single consistent
+ * canonical quartile and publication type across the entire profile.
+ */
+export function normalizePublicationsVenueConsistency(
+  publications: Publication[]
+): Publication[] {
+  const byVenue = new Map<string, Publication[]>();
+  for (const p of publications) {
+    const key = (p.venue || '').toLowerCase().trim();
+    if (!key) continue;
+    if (!byVenue.has(key)) byVenue.set(key, []);
+    byVenue.get(key)!.push(p);
+  }
+
+  const canonicalMap = new Map<
+    string,
+    { venue: string; quartile: Quartile; type: PublicationType }
+  >();
+
+  for (const [key, pubs] of byVenue.entries()) {
+    const qCounts = new Map<Quartile, number>();
+    const tCounts = new Map<PublicationType, number>();
+    for (const p of pubs) {
+      qCounts.set(p.quartile, (qCounts.get(p.quartile) || 0) + 1);
+      tCounts.set(p.type, (tCounts.get(p.type) || 0) + 1);
+    }
+
+    const bestQuartile = [...qCounts.entries()].sort((a, b) => {
+      if (a[0] === 'Unranked' && b[0] !== 'Unranked') return 1;
+      if (b[0] === 'Unranked' && a[0] !== 'Unranked') return -1;
+      return (
+        b[1] - a[1] ||
+        QUARTILE_PRIORITY_RANK[a[0]] - QUARTILE_PRIORITY_RANK[b[0]]
+      );
+    })[0][0];
+
+    const bestType = [...tCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    canonicalMap.set(key, {
+      venue: pubs[0].venue,
+      quartile: bestQuartile,
+      type: bestType,
+    });
+  }
+
+  return publications.map((p) => {
+    const key = (p.venue || '').toLowerCase().trim();
+    const canon = canonicalMap.get(key);
+    if (!canon) return p;
+    if (
+      p.venue === canon.venue &&
+      p.quartile === canon.quartile &&
+      p.type === canon.type
+    ) {
+      return p;
+    }
+    return {
+      ...p,
+      venue: canon.venue,
+      quartile: canon.quartile,
+      type: canon.type,
+    };
+  });
 }
 
 export interface CategoryStat {
@@ -595,6 +670,30 @@ export function computeProfileStatistics(
   }
 
   const yearMap = new Map<number, YearlyStat>();
+  const hasOfficialYearlyCitations =
+    Boolean(officialMetrics?.citationsByYear) &&
+    Object.keys(officialMetrics!.citationsByYear!).length > 0;
+
+  if (hasOfficialYearlyCitations && officialMetrics?.citationsByYear) {
+    for (const [yrStr, citCount] of Object.entries(
+      officialMetrics.citationsByYear
+    )) {
+      const yrNum = Number(yrStr);
+      if (!Number.isFinite(yrNum) || yrNum < 1950) continue;
+      yearMap.set(yrNum, {
+        year: yrNum,
+        papers: 0,
+        citations: Number(citCount) || 0,
+        q1Count: 0,
+        q2Count: 0,
+        q3Count: 0,
+        q4Count: 0,
+        conferenceCount: 0,
+        otherCount: 0,
+      });
+    }
+  }
+
   for (const p of publications) {
     if (!yearMap.has(p.year)) {
       yearMap.set(p.year, {
@@ -611,7 +710,9 @@ export function computeProfileStatistics(
     }
     const entry = yearMap.get(p.year)!;
     entry.papers += 1;
-    entry.citations += p.citations;
+    if (!hasOfficialYearlyCitations) {
+      entry.citations += p.citations;
+    }
     const cat = getPublicationPortfolioCategory(p);
     if (cat === 'Q1') entry.q1Count += 1;
     else if (cat === 'Q2') entry.q2Count += 1;
@@ -1074,12 +1175,14 @@ export function aggregateCountries(
  * Aggregates complete list of journals and venues.
  */
 export function aggregateJournals(publications: Publication[]): JournalSummary[] {
+  const normalizedPubs = normalizePublicationsVenueConsistency(publications);
   const venueMap = new Map<string, Publication[]>();
-  for (const pub of publications) {
-    if (!venueMap.has(pub.venue)) {
-      venueMap.set(pub.venue, []);
+  for (const pub of normalizedPubs) {
+    const cleanKey = pub.venue.trim();
+    if (!venueMap.has(cleanKey)) {
+      venueMap.set(cleanKey, []);
     }
-    venueMap.get(pub.venue)!.push(pub);
+    venueMap.get(cleanKey)!.push(pub);
   }
 
   return Array.from(venueMap.entries())

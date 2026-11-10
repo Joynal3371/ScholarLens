@@ -18,7 +18,7 @@ import {
   geoInterpolate,
 } from 'd3-geo';
 import * as topojson from 'topojson-client';
-import worldAtlasData from 'world-atlas/countries-110m.json';
+import worldAtlasData from 'world-atlas/countries-50m.json';
 import countryDistrictsData from '../data/countryDistrictsGeo.json';
 import {
   UniversityCollaboration,
@@ -62,7 +62,7 @@ const GLOBE_WIDTH = 680;
 const GLOBE_HEIGHT = 520;
 const CENTER_X = GLOBE_WIDTH / 2;
 const CENTER_Y = GLOBE_HEIGHT / 2;
-const BASE_RADIUS = 210;
+const BASE_RADIUS = 236;
 const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 1500;
 
@@ -71,7 +71,8 @@ const FLAT_WIDTH = 1100;
 const FLAT_HEIGHT = 540;
 const FLAT_PROJECTION = geoEquirectangular()
   .scale(172)
-  .translate([FLAT_WIDTH / 2, FLAT_HEIGHT / 2 + 18]);
+  .translate([FLAT_WIDTH / 2, FLAT_HEIGHT / 2 + 18])
+  .precision(0.1);
 const FLAT_PATH_GENERATOR = geoPath(FLAT_PROJECTION);
 const FLAT_GRATICULE_PATH = FLAT_PATH_GENERATOR(STATIC_GRATICULE as any) || '';
 const FLAT_BORDERS_PATH = FLAT_PATH_GENERATOR(WORLD_BORDERS_MESH as any) || '';
@@ -80,19 +81,34 @@ function matchesCollaboratingCountry(
   featureName: string,
   collabCountries: Set<string>
 ): boolean {
-  const f = (featureName || '').toLowerCase();
+  const f = (featureName || '').toLowerCase().trim();
   if (!f) return false;
   if (collabCountries.has(f)) return true;
-  if (f === 'united states of america' && collabCountries.has('united states')) {
+  if (
+    (f === 'united states of america' || f === 'united states') &&
+    (collabCountries.has('united states') ||
+      collabCountries.has('united states of america'))
+  ) {
     return true;
   }
-  if (f === 'czechia' && collabCountries.has('czech republic')) {
+  if (
+    (f === 'czechia' || f === 'czech republic') &&
+    (collabCountries.has('czech republic') || collabCountries.has('czechia'))
+  ) {
     return true;
   }
-  for (const c of collabCountries) {
-    if (c.length >= 5 && (f.includes(c) || c.includes(f))) {
-      return true;
-    }
+  if (
+    (f === 'south korea' || f === 'republic of korea') &&
+    (collabCountries.has('south korea') ||
+      collabCountries.has('republic of korea'))
+  ) {
+    return true;
+  }
+  if (
+    (f === 'china' || f === 'hong kong') &&
+    collabCountries.has('china (hong kong)')
+  ) {
+    return true;
   }
   return false;
 }
@@ -218,7 +234,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         [-60, -60],
         [GLOBE_WIDTH + 60, GLOBE_HEIGHT + 60],
       ])
-      .precision(0.35);
+      .precision(0.1);
     const rawPath = geoPath(proj);
     return (geom: any): string => {
       if (!geom) return '';
@@ -400,9 +416,19 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   const collaboratingCountryNames = useMemo(() => {
     const s = new Set<string>();
     for (const u of universities) {
-      if (u.country) s.add(u.country.toLowerCase());
+      if (u.country) s.add(u.country.toLowerCase().trim());
     }
     return s;
+  }, [universities]);
+
+  const uniqueCoAuthorCount = useMemo(() => {
+    const names = new Set<string>();
+    for (const u of universities) {
+      for (const ca of u.coAuthors) {
+        names.add(ca.name.toLowerCase().trim());
+      }
+    }
+    return names.size;
   }, [universities]);
 
   useEffect(() => {
@@ -604,7 +630,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     return raw;
   }, [universities, centerLat, centerLng, projectedScale, zoom]);
 
-  // 3D Elevated Collaboration Arcs (floating above the globe surface with ground shadow traces)
+  // 3D Elevated Blue Collaboration Arcs (floating slightly above the globe surface, no black dashed shadow lines)
   const arcPaths = useMemo(() => {
     const centerCoord: [number, number] = [centerLng, centerLat];
     const surfaceProj = geoOrthographic()
@@ -626,7 +652,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     const homeOffsetY = homeNode ? homeNode.screenY - homeNode.exactY : 0;
     const homeCoord: [number, number] = [profile.homeLng, profile.homeLat];
 
-    const HOVER_CLEARANCE_PX = 1.2; // Subtle 3D clearance just slightly above the ground
+    const HOVER_CLEARANCE_PX = 1.2;
 
     return universities
       .filter((u) => u.universityId !== profile.homeUniversityId)
@@ -667,7 +693,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         const chordDy = lastPt[1] - firstPt[1];
         const chordLen = Math.hypot(chordDx, chordDy);
 
-        // Compute subtle upward-oriented 3D normal so every arc hovers gently above the ground
         let normX = 0;
         let normY = -1;
         if (chordLen > 1) {
@@ -684,7 +709,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           normY /= nLen;
         }
 
-        // Low-profile 3D arch (3.5px to 11px peak lift) so arcs stay close to the globe surface without ballooning high
         const peakArchPx = Math.min(
           11,
           Math.max(3.5, chordLen * 0.05 + totalAngularSpan * 4.5)
@@ -712,13 +736,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           }
         );
 
-        const shadowD = groundPoints
-          .map(
-            (p, idx) =>
-              `${idx === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`
-          )
-          .join(' ');
-
         const elevatedD = elevatedPoints
           .map(
             (p, idx) =>
@@ -729,14 +746,12 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         return {
           id: u.universityId,
           isSelected: u.universityId === selectedUni?.universityId,
-          shadowD,
           elevatedD,
         };
       })
       .filter(Boolean) as {
       id: string;
       isSelected: boolean;
-      shadowD: string;
       elevatedD: string;
     }[];
   }, [
@@ -749,7 +764,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     selectedUni,
   ]);
 
-  // Precomputed flattened world map data for PNG & PDF exports
+  // Precomputed flattened world map data for PNG & PDF exports (no institution name labels, clean bottom-left overview)
   const flatMapData = useMemo(() => {
     const countries = WORLD_COUNTRY_FEATURES.map((feat, idx) => {
       const d = FLAT_PATH_GENERATOR(feat);
@@ -772,18 +787,22 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       profile.homeLat || 23.78,
     ]) || [FLAT_WIDTH / 2, FLAT_HEIGHT / 2];
 
-    const nodes = universities.map((u) => {
-      const pt = FLAT_PROJECTION([u.lng, u.lat]) || [
-        FLAT_WIDTH / 2,
-        FLAT_HEIGHT / 2,
-      ];
-      return {
-        uni: u,
-        x: pt[0],
-        y: pt[1],
-        isHome: u.universityId === profile.homeUniversityId,
-      };
-    });
+    const nodes = universities
+      .map((u) => {
+        const pt = FLAT_PROJECTION([u.lng, u.lat]) || [
+          FLAT_WIDTH / 2,
+          FLAT_HEIGHT / 2,
+        ];
+        return {
+          uni: u,
+          x: pt[0],
+          y: pt[1],
+          isHome:
+            u.universityId === profile.homeUniversityId || u.isHomeInstitution,
+        };
+      })
+      // Render partner markers first and Home Institution orange marker LAST so it is never hidden by nearby dots
+      .sort((a, b) => Number(a.isHome) - Number(b.isHome));
 
     const arcs = nodes
       .filter((n) => !n.isHome)
@@ -796,40 +815,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         const endY = n.y - 1.5;
         return {
           id: `flat-arc-${n.uni.universityId}`,
-          shadowD: `M ${homePt[0].toFixed(1)} ${homePt[1].toFixed(1)} L ${n.x.toFixed(1)} ${n.y.toFixed(1)}`,
           d: `M ${homePt[0].toFixed(1)} ${startY.toFixed(1)} Q ${midX.toFixed(1)} ${midY.toFixed(1)} ${n.x.toFixed(1)} ${endY.toFixed(1)}`,
         };
       });
 
-    // Place non-overlapping labels for top institutions on the flat map
-    const labelNodes: {
-      id: string;
-      text: string;
-      x: number;
-      y: number;
-      isHome: boolean;
-    }[] = [];
-    for (const n of nodes.slice(0, 12)) {
-      const labelY = n.y - 11;
-      const overlaps = labelNodes.some(
-        (l) => Math.abs(l.x - n.x) < 95 && Math.abs(l.y - labelY) < 16
-      );
-      if (!overlaps) {
-        const shortName =
-          n.uni.universityName.length > 28
-            ? `${n.uni.universityName.slice(0, 26)}…`
-            : n.uni.universityName;
-        labelNodes.push({
-          id: n.uni.universityId,
-          text: `${shortName} (${n.uni.paperCount})`,
-          x: Math.max(70, Math.min(FLAT_WIDTH - 70, n.x)),
-          y: Math.max(18, labelY),
-          isHome: n.isHome,
-        });
-      }
-    }
-
-    return { countries, nodes, arcs, labelNodes };
+    return { countries, nodes, arcs };
   }, [universities, profile, collaboratingCountryNames]);
 
   const filteredSelectedCoAuthors = useMemo(() => {
@@ -901,7 +891,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               }
               stroke={
                 c.isCollab
-                  ? 'rgba(56, 189, 248, 0.75)'
+                  ? 'rgba(56, 189, 248, 0.78)'
                   : 'rgba(100, 116, 139, 0.4)'
               }
               strokeWidth={c.isCollab ? '0.9' : '0.5'}
@@ -917,27 +907,19 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           )}
           {flatMapData.arcs.map((arc) => (
             <g key={arc.id}>
-              {/* Ground shadow on flat world map */}
-              <path
-                d={arc.shadowD}
-                fill="none"
-                stroke="rgba(2, 6, 23, 0.55)"
-                strokeWidth="1.2"
-                strokeDasharray="2 3"
-              />
-              {/* 3D elevated glow */}
+              {/* 3D elevated blue glow */}
               <path
                 d={arc.d}
                 fill="none"
                 stroke="rgba(56, 189, 248, 0.22)"
-                strokeWidth="3.6"
+                strokeWidth="3.4"
                 strokeLinecap="round"
               />
-              {/* 3D elevated arc line */}
+              {/* 3D elevated blue arc line */}
               <path
                 d={arc.d}
                 fill="none"
-                stroke="rgba(125, 211, 252, 0.82)"
+                stroke="rgba(125, 211, 252, 0.85)"
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
@@ -948,48 +930,80 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               <circle
                 cx={n.x}
                 cy={n.y}
-                r={n.isHome ? 8.5 : 6.5}
+                r={n.isHome ? 11 : 6.2}
                 fill={
                   n.isHome
-                    ? 'rgba(251, 191, 36, 0.28)'
-                    : 'rgba(56, 189, 248, 0.25)'
+                    ? 'rgba(249, 115, 22, 0.36)'
+                    : 'rgba(56, 189, 248, 0.24)'
                 }
+                stroke={n.isHome ? 'rgba(251, 191, 36, 0.85)' : 'none'}
+                strokeWidth={n.isHome ? '1.2' : '0'}
               />
               <circle
                 cx={n.x}
                 cy={n.y}
-                r={n.isHome ? 5.5 : 4.2}
-                fill={n.isHome ? '#fbbf24' : '#38bdf8'}
-                stroke="#0f172a"
-                strokeWidth="1.4"
+                r={n.isHome ? 6.5 : 4.2}
+                fill={n.isHome ? '#f97316' : '#38bdf8'}
+                stroke={n.isHome ? '#ffffff' : '#0f172a'}
+                strokeWidth={n.isHome ? '1.8' : '1.4'}
               />
             </g>
           ))}
-          {flatMapData.labelNodes.map((lbl) => (
-            <g key={`flat-lbl-${lbl.id}`}>
-              <rect
-                x={lbl.x - lbl.text.length * 3.1 - 6}
-                y={lbl.y - 10}
-                width={lbl.text.length * 6.2 + 12}
-                height={15}
-                rx={4}
-                fill="rgba(15, 23, 42, 0.88)"
-                stroke={lbl.isHome ? '#fbbf24' : 'rgba(56, 189, 248, 0.5)'}
-                strokeWidth="0.8"
-              />
-              <text
-                x={lbl.x}
-                y={lbl.y + 0.5}
-                textAnchor="middle"
-                fill="#f8fafc"
-                fontSize="9.5"
-                fontWeight="600"
-                fontFamily="Inter, system-ui, sans-serif"
-              >
-                {lbl.text}
-              </text>
-            </g>
-          ))}
+
+          {/* Compact Short Overview at the Bottom-Left Corner of the Exported World Map (No Institution Name Labels) */}
+          <g transform={`translate(18, ${FLAT_HEIGHT - 84})`}>
+            <rect
+              x={0}
+              y={0}
+              width={255}
+              height={68}
+              rx={8}
+              fill="rgba(15, 23, 42, 0.9)"
+              stroke="rgba(56, 189, 248, 0.35)"
+              strokeWidth="1"
+            />
+            <text
+              x={14}
+              y={19}
+              fill="#38bdf8"
+              fontSize="9.5"
+              fontWeight="700"
+              fontFamily="Inter, system-ui, sans-serif"
+              letterSpacing="0.5"
+            >
+              GLOBAL COLLABORATION OVERVIEW
+            </text>
+            <text
+              x={14}
+              y={36}
+              fill="#f8fafc"
+              fontSize="11.5"
+              fontWeight="700"
+              fontFamily="JetBrains Mono, monospace"
+            >
+              {`${universities.length} Institutions · ${collaboratingCountryNames.size} Countries`}
+            </text>
+            <circle cx={19} cy={52} r={4} fill="#fbbf24" />
+            <text
+              x={28}
+              y={55}
+              fill="#cbd5e1"
+              fontSize="9.5"
+              fontFamily="Inter, system-ui, sans-serif"
+            >
+              Home Institute
+            </text>
+            <circle cx={116} cy={52} r={4} fill="#38bdf8" />
+            <text
+              x={125}
+              y={55}
+              fill="#cbd5e1"
+              fontSize="9.5"
+              fontFamily="Inter, system-ui, sans-serif"
+            >
+              {`Partner (${uniqueCoAuthorCount} Co-Authors)`}
+            </text>
+          </g>
         </svg>
       </div>
 
@@ -1007,7 +1021,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           onClick={() =>
             onExportChartPng(
               'chart-collaboration-globe',
-              `Global University Collaborations — ${profile.name}`,
+              `Global Research Collaboration Network — ${profile.name}`,
               'global_collaboration_world_map.png',
               true
             )
@@ -1022,10 +1036,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
 
       {/* Main Split Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
-        {/* Left 7 Columns: Clean, Uncluttered Pinch-Zoomable Globe Viewport */}
+        {/* Left 7 Columns: Full-Window Edge-to-Edge Globe Viewport (No inner bounding box) */}
         <div
           id="chart-collaboration-globe"
-          className="lg:col-span-7 p-3 sm:p-6 bg-slate-950 text-slate-100 flex items-center justify-center relative select-none"
+          className="lg:col-span-7 bg-slate-950 text-slate-100 flex items-center justify-center relative select-none overflow-hidden"
         >
           <div
             ref={globeContainerRef}
@@ -1044,7 +1058,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 ),
               }));
             }}
-            className={`relative w-full h-[480px] sm:h-[520px] flex items-center justify-center overflow-hidden rounded-xl border border-slate-800 bg-slate-950 touch-none ${
+            className={`relative w-full h-full min-h-[520px] sm:min-h-[580px] flex items-center justify-center overflow-hidden bg-slate-950 touch-none ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
           >
@@ -1090,15 +1104,16 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     d={country.d}
                     fill={
                       country.isCollab
-                        ? 'rgba(14, 116, 144, 0.42)'
+                        ? 'rgba(14, 116, 144, 0.44)'
                         : 'rgba(30, 41, 59, 0.88)'
                     }
                     stroke={
                       country.isCollab
-                        ? 'rgba(56, 189, 248, 0.65)'
+                        ? 'rgba(56, 189, 248, 0.75)'
                         : 'rgba(100, 116, 139, 0.45)'
                     }
-                    strokeWidth={country.isCollab ? '0.9' : '0.6'}
+                    strokeWidth={country.isCollab ? '0.95' : '0.6'}
+                    strokeLinejoin="round"
                   >
                     <title>{country.name}</title>
                   </path>
@@ -1121,32 +1136,16 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     fill="none"
                     stroke="rgba(148, 163, 184, 0.55)"
                     strokeWidth="0.65"
+                    strokeLinejoin="round"
                   />
                 )}
-
-                {/* Ground shadows cast by the 3D elevated arcs onto the globe surface */}
-                {arcPaths.map((arc) => (
-                  <path
-                    key={`arc-shadow-${arc.id}`}
-                    d={arc.shadowD}
-                    fill="none"
-                    stroke={
-                      arc.isSelected
-                        ? 'rgba(2, 6, 23, 0.68)'
-                        : 'rgba(2, 6, 23, 0.42)'
-                    }
-                    strokeWidth={arc.isSelected ? '1.6' : '1.0'}
-                    strokeDasharray="2 3"
-                    className="pointer-events-none"
-                  />
-                ))}
               </g>
 
-              {/* Low-profile 3D Elevated Collaboration Arcs hovering subtly above the ground */}
+              {/* Low-profile 3D Elevated Blue Collaboration Arcs hovering subtly above the ground (no black dashed shadow lines) */}
               <g className="pointer-events-none">
                 {arcPaths.map((arc) => (
                   <g key={`arc-3d-${arc.id}`}>
-                    {/* 3D Outer atmospheric glow */}
+                    {/* 3D Outer atmospheric blue glow */}
                     <path
                       d={arc.elevatedD}
                       fill="none"
@@ -1159,14 +1158,14 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    {/* Core elevated 3D collaboration arc floating slightly above the ground */}
+                    {/* Core elevated 3D blue collaboration arc floating slightly above the ground */}
                     <path
                       d={arc.elevatedD}
                       fill="none"
                       stroke={
-                        arc.isSelected ? '#7dd3fc' : 'rgba(56, 189, 248, 0.76)'
+                        arc.isSelected ? '#7dd3fc' : 'rgba(56, 189, 248, 0.78)'
                       }
-                      strokeWidth={arc.isSelected ? '2.1' : '1.3'}
+                      strokeWidth={arc.isSelected ? '2.1' : '1.35'}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -1176,21 +1175,37 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
 
               <g clipPath="url(#globeCircleClip)">
 
-                {/* Single, clear, easily clickable university dot directly on the round globe (zero duplicate floating dots) */}
-                {projectedUniversities.map(
-                  ({ uni, visible, screenX, screenY }) => {
+                {/* Single, clear, easily clickable university dot directly on the round globe, sorted so Home Institution orange dot is ALWAYS rendered on top */}
+                {[...projectedUniversities]
+                  .sort((a, b) => {
+                    const aHome =
+                      a.uni.universityId === profile.homeUniversityId ||
+                      a.uni.isHomeInstitution;
+                    const bHome =
+                      b.uni.universityId === profile.homeUniversityId ||
+                      b.uni.isHomeInstitution;
+                    if (aHome !== bHome) return aHome ? 1 : -1;
+                    const aSel =
+                      selectedUni?.universityId === a.uni.universityId;
+                    const bSel =
+                      selectedUni?.universityId === b.uni.universityId;
+                    if (aSel !== bSel) return aSel ? 1 : -1;
+                    return 0;
+                  })
+                  .map(({ uni, visible, screenX, screenY }) => {
                     if (!visible) return null;
                     const isHome =
-                      uni.universityId === profile.homeUniversityId;
+                      uni.universityId === profile.homeUniversityId ||
+                      uni.isHomeInstitution;
                     const isSelected =
                       selectedUni?.universityId === uni.universityId;
                     const isHovered = hoveredUniId === uni.universityId;
-                    const dotRadius = isSelected
+                    const dotRadius = isHome
+                      ? 8.5
+                      : isSelected
                       ? 8.5
                       : isHovered
                       ? 8
-                      : isHome
-                      ? 7.5
                       : 6.5;
 
                     return (
@@ -1234,41 +1249,46 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                           <circle
                             cx={screenX}
                             cy={screenY}
-                            r={dotRadius + 4.5}
+                            r={isHome ? dotRadius + 5.5 : dotRadius + 4.5}
                             fill={
                               isHome
-                                ? 'rgba(251, 191, 36, 0.28)'
+                                ? 'rgba(249, 115, 22, 0.36)'
                                 : 'rgba(56, 189, 248, 0.35)'
                             }
                             stroke={
-                              isSelected
+                              isHome
+                                ? '#fbbf24'
+                                : isSelected
                                 ? '#38bdf8'
-                                : isHome
-                                ? 'rgba(251, 191, 36, 0.65)'
                                 : 'rgba(56, 189, 248, 0.6)'
                             }
-                            strokeWidth={isSelected ? '1.6' : '1'}
+                            strokeWidth={isHome || isSelected ? '1.6' : '1'}
                           />
                         )}
-                        {/* Primary on-globe university marker */}
+                        {/* Primary on-globe university marker (Home institution orange dot is always top-most and distinct) */}
                         <circle
                           cx={screenX}
                           cy={screenY}
                           r={dotRadius}
                           fill={
                             isHome
-                              ? '#fbbf24'
+                              ? '#f97316'
                               : isSelected
                               ? '#ffffff'
                               : '#38bdf8'
                           }
-                          stroke={isSelected ? '#0284c7' : '#0f172a'}
-                          strokeWidth={isSelected ? '2.4' : '1.8'}
+                          stroke={
+                            isHome
+                              ? '#ffffff'
+                              : isSelected
+                              ? '#0284c7'
+                              : '#0f172a'
+                          }
+                          strokeWidth={isHome || isSelected ? '2.2' : '1.8'}
                         />
                       </g>
                     );
-                  }
-                )}
+                  })}
               </g>
             </svg>
 

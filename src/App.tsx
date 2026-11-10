@@ -3,7 +3,6 @@ import {
   Search,
   FileDown,
   AlertCircle,
-  CheckCircle2,
   Lock,
   LayoutDashboard,
   BarChart3,
@@ -11,7 +10,6 @@ import {
   BookOpen,
   Users,
   ArrowRight,
-  ArrowLeft,
   ExternalLink,
   User,
 } from 'lucide-react';
@@ -23,6 +21,7 @@ import {
   aggregateCoAuthors,
   aggregateCountries,
   aggregateJournals,
+  normalizePublicationsVenueConsistency,
   DEFAULT_FILTER_STATE,
   PublicationFilterState,
   Quartile,
@@ -130,7 +129,6 @@ export default function App() {
     useState<string>(DEFAULT_SCHOLAR_URL);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(true);
   const [urlError, setUrlError] = useState<string | null>(null);
-  const [statusBanner, setStatusBanner] = useState<string | null>(null);
 
   const [filter, setFilter] = useState<PublicationFilterState>(
     DEFAULT_FILTER_STATE
@@ -231,12 +229,10 @@ export default function App() {
 
   const fetchProfileFromServer = async (
     userId: string,
-    queryName?: string,
-    showSuccessBanner: boolean = false
+    queryName?: string
   ) => {
     setIsAnalyzing(true);
     setUrlError(null);
-    if (showSuccessBanner) setStatusBanner(null);
 
     try {
       const params = new URLSearchParams({
@@ -252,7 +248,18 @@ export default function App() {
         );
         return;
       }
-      const resolved: ResearcherProfile = data.profile;
+      const rawProfile: ResearcherProfile = data.profile;
+      const resolved: ResearcherProfile = {
+        ...rawProfile,
+        avatarUrl:
+          rawProfile.avatarUrl ||
+          `/api/scholar/avatar?userId=${encodeURIComponent(
+            rawProfile.scholarUserId
+          )}&name=${encodeURIComponent(rawProfile.name)}`,
+        publications: normalizePublicationsVenueConsistency(
+          rawProfile.publications || []
+        ),
+      };
       setActiveProfile(resolved);
       setScholarUrlInput(resolved.scholarUrl);
       setFilter(DEFAULT_FILTER_STATE);
@@ -261,20 +268,11 @@ export default function App() {
         resolved.publications,
         resolved
       );
-      const greenOrFirst =
-        nextUnis.find((u) =>
-          u.universityName.toLowerCase().includes('green university')
-        ) ||
+      const firstPartner =
         nextUnis.find((u) => u.universityId !== resolved.homeUniversityId) ||
         nextUnis[0];
-      if (greenOrFirst) {
-        setSelectedGlobeUniId(greenOrFirst.universityId);
-      }
-
-      if (showSuccessBanner) {
-        setStatusBanner(
-          `Analyzed ${resolved.name} (${resolved.publications.length} publications).`
-        );
+      if (firstPartner) {
+        setSelectedGlobeUniId(firstPartner.universityId);
       }
     } catch {
       setUrlError('Network error while analyzing Google Scholar profile.');
@@ -286,7 +284,7 @@ export default function App() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const initialUser = urlParams.get('user') || 'be8uiCkAAAAJ';
-    void fetchProfileFromServer(initialUser, undefined, false);
+    void fetchProfileFromServer(initialUser, undefined);
   }, []);
 
   const stats = useMemo(
@@ -371,7 +369,6 @@ export default function App() {
         'pdf',
         `${activeProfile.scholarUserId}_report.pdf`
       );
-      setStatusBanner(`Exported full PDF report for ${activeProfile.name}.`);
     } else {
       const ok = await exportChartSvgAsPng(
         task.chartId,
@@ -382,7 +379,6 @@ export default function App() {
       );
       if (ok) {
         await logExportToFirestore(activeProfile.name, 'png', task.filename);
-        setStatusBanner(`Exported PNG image: ${task.title}.`);
       }
     }
   };
@@ -433,7 +429,6 @@ export default function App() {
       await firebaseSignOut(auth);
     }
     saveSessionUser(null);
-    setStatusBanner('Signed out.');
   };
 
   const handleAnalyzeSubmit = async (e: React.FormEvent) => {
@@ -443,10 +438,9 @@ export default function App() {
       setUrlError(
         parsed.error || 'Enter a valid Google Scholar profile link.'
       );
-      setStatusBanner(null);
       return;
     }
-    await fetchProfileFromServer(parsed.userId, parsed.queryName, true);
+    await fetchProfileFromServer(parsed.userId, parsed.queryName);
   };
 
   const navigateToPage = (page: AppPage) => {
@@ -522,14 +516,6 @@ export default function App() {
     navigateToPage('map');
   };
 
-  const currentPageIndex = PAGE_METADATA.findIndex((p) => p.id === activePage);
-  const prevPageMeta =
-    currentPageIndex > 0 ? PAGE_METADATA[currentPageIndex - 1] : null;
-  const nextPageMeta =
-    currentPageIndex < PAGE_METADATA.length - 1
-      ? PAGE_METADATA[currentPageIndex + 1]
-      : null;
-
   const userInitials = authUser
     ? authUser.name
         .split(/\s+/)
@@ -540,11 +526,11 @@ export default function App() {
     : '';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 lg:pb-0">
-      {/* Top Bar: Clean Brand & Right Actions Only (Top center buttons removed per screenshot) */}
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 lg:pb-6">
+      {/* Top Bar: Clean Brand & Right Actions Only */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-3">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
-          {/* Left: Brand Wordmark & Contextual Page Breadcrumb */}
+          {/* Left: Brand Wordmark Only */}
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               type="button"
@@ -553,22 +539,6 @@ export default function App() {
             >
               ScholarLens
             </button>
-            {activePage !== 'overview' && (
-              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 truncate">
-                <span aria-hidden="true">/</span>
-                <button
-                  type="button"
-                  onClick={() => navigateToPage('overview')}
-                  className="text-slate-500 hover:text-slate-900 font-medium cursor-pointer"
-                >
-                  Overview
-                </button>
-                <span aria-hidden="true">/</span>
-                <span className="text-slate-900 font-semibold truncate">
-                  {PAGE_METADATA.find((p) => p.id === activePage)?.label}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Right: PDF Report + Corner Login / User Profile Icon */}
@@ -712,32 +682,52 @@ export default function App() {
                   <span>{urlError}</span>
                 </div>
               )}
-
-              {statusBanner && !urlError && (
-                <div
-                  role="status"
-                  className="mt-2 flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2"
-                >
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{statusBanner}</span>
-                </div>
-              )}
             </form>
 
             {activeProfile && (
-              <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex flex-wrap items-baseline gap-2.5">
-                  <h1
-                    data-testid="active-researcher-name"
-                    className="text-base sm:text-lg font-bold text-slate-900"
-                  >
-                    {activeProfile.name}
-                  </h1>
-                  <span className="text-xs text-slate-500">
-                    {activeProfile.affiliation}
-                  </span>
+              <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={
+                      activeProfile.avatarUrl &&
+                      activeProfile.avatarUrl.startsWith('data:image/')
+                        ? activeProfile.avatarUrl
+                        : `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+                            activeProfile.scholarUserId
+                          )}`
+                    }
+                    alt={activeProfile.name}
+                    referrerPolicy="no-referrer"
+                    data-testid="active-researcher-avatar"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (!img.dataset.fallbackStep) {
+                        img.dataset.fallbackStep = '1';
+                        img.src = `/api/scholar/avatar?userId=${encodeURIComponent(
+                          activeProfile.scholarUserId
+                        )}&name=${encodeURIComponent(activeProfile.name)}`;
+                      } else if (img.dataset.fallbackStep === '1') {
+                        img.dataset.fallbackStep = '2';
+                        img.src = `/api/scholar/avatar?name=${encodeURIComponent(
+                          activeProfile.name
+                        )}`;
+                      }
+                    }}
+                    className="w-11 h-11 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs"
+                  />
+                  <div className="min-w-0">
+                    <h1
+                      data-testid="active-researcher-name"
+                      className="text-base sm:text-lg font-bold text-slate-900 leading-tight truncate"
+                    >
+                      {activeProfile.name}
+                    </h1>
+                    <div className="text-xs text-slate-500 truncate mt-0.5">
+                      {activeProfile.affiliation}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-slate-500 font-mono tabular-nums">
+                <div className="flex items-center gap-3 text-xs text-slate-500 font-mono tabular-nums shrink-0">
                   <span>ID: {activeProfile.scholarUserId}</span>
                   <a
                     href={activeProfile.scholarUrl}
@@ -777,12 +767,9 @@ export default function App() {
                     </div>
                     <div
                       data-testid="kpi-total-papers"
-                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5"
+                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1"
                     >
                       {stats.totalPapers}
-                    </div>
-                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      Peer-Reviewed Portfolio
                     </div>
                   </div>
 
@@ -792,12 +779,9 @@ export default function App() {
                     </div>
                     <div
                       data-testid="kpi-total-citations"
-                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5"
+                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1"
                     >
                       {stats.totalCitations.toLocaleString()}
-                    </div>
-                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      {stats.meanCitationsPerPaper.toLocaleString()} mean / paper
                     </div>
                   </div>
 
@@ -805,15 +789,12 @@ export default function App() {
                     <div className="text-xs text-slate-500 font-medium">
                       h-index / i10-index
                     </div>
-                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5">
+                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1">
                       {stats.hIndex}{' '}
                       <span className="text-base font-normal text-slate-400">
                         /
                       </span>{' '}
                       {stats.i10Index}
-                    </div>
-                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      g-index: {stats.gIndex}
                     </div>
                   </div>
 
@@ -821,14 +802,11 @@ export default function App() {
                     <div className="text-xs text-slate-500 font-medium">
                       Institutional Network
                     </div>
-                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-0.5">
+                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1">
                       {universities.length}{' '}
                       <span className="text-sm font-normal text-slate-500">
                         institutions
                       </span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      {countries.length} countries · {coAuthors.length} co-authors
                     </div>
                   </div>
                 </div>
@@ -847,12 +825,12 @@ export default function App() {
                     data-testid="portfolio-total-percentage"
                     className="px-2.5 py-1 text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md tabular-nums"
                   >
-                    100% ({stats.totalPapers} Publications)
+                    100%
                   </span>
                 </div>
 
-                {/* 6 Separate Percentage Cards Summing to 100.0% */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {/* 5 Percentage Cards: Q1, Q2, Q3, Q4, Conference */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {/* 1. Q1 Share */}
                   <button
                     type="button"
@@ -870,11 +848,6 @@ export default function App() {
                       className="text-2xl font-bold font-mono text-blue-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q1.percentage}%
-                    </div>
-                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
-                      {stats.portfolioDistribution.Q1.count} papers ·{' '}
-                      {stats.portfolioDistribution.Q1.citations.toLocaleString()}{' '}
-                      cit.
                     </div>
                   </button>
 
@@ -896,11 +869,6 @@ export default function App() {
                     >
                       {stats.portfolioDistribution.Q2.percentage}%
                     </div>
-                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
-                      {stats.portfolioDistribution.Q2.count} papers ·{' '}
-                      {stats.portfolioDistribution.Q2.citations.toLocaleString()}{' '}
-                      cit.
-                    </div>
                   </button>
 
                   {/* 3. Q3 Share */}
@@ -920,11 +888,6 @@ export default function App() {
                       className="text-2xl font-bold font-mono text-amber-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q3.percentage}%
-                    </div>
-                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
-                      {stats.portfolioDistribution.Q3.count} papers ·{' '}
-                      {stats.portfolioDistribution.Q3.citations.toLocaleString()}{' '}
-                      cit.
                     </div>
                   </button>
 
@@ -946,14 +909,9 @@ export default function App() {
                     >
                       {stats.portfolioDistribution.Q4.percentage}%
                     </div>
-                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      {stats.portfolioDistribution.Q4.count} papers ·{' '}
-                      {stats.portfolioDistribution.Q4.citations.toLocaleString()}{' '}
-                      cit.
-                    </div>
                   </button>
 
-                  {/* 5. Conference Proceedings Share */}
+                  {/* 5. Conference Share */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterType('Conference')}
@@ -961,7 +919,7 @@ export default function App() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-indigo-900">
-                        Proceedings
+                        Conference
                       </span>
                       <span className="w-2 h-2 rounded-full bg-indigo-600" />
                     </div>
@@ -971,42 +929,10 @@ export default function App() {
                     >
                       {stats.portfolioDistribution.Conference.percentage}%
                     </div>
-                    <div className="text-[11px] text-slate-600 font-mono tabular-nums mt-0.5">
-                      {stats.portfolioDistribution.Conference.count} papers ·{' '}
-                      {stats.portfolioDistribution.Conference.citations.toLocaleString()}{' '}
-                      cit.
-                    </div>
-                  </button>
-
-                  {/* 6. Emerging / Other Venues Share */}
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFilterQuartile('Unranked')}
-                    className="text-left p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-700">
-                        Emerging Venues
-                      </span>
-                      <span className="w-2 h-2 rounded-full bg-slate-500" />
-                    </div>
-                    <div
-                      data-testid="kpi-nonindexed-percentage"
-                      className="text-2xl font-bold font-mono text-slate-700 tabular-nums mt-1"
-                    >
-                      {stats.portfolioDistribution['Non-Indexed'].percentage}%
-                    </div>
-                    <div className="text-[11px] text-slate-500 font-mono tabular-nums mt-0.5">
-                      {stats.portfolioDistribution['Non-Indexed'].count} papers ·{' '}
-                      {stats.portfolioDistribution[
-                        'Non-Indexed'
-                      ].citations.toLocaleString()}{' '}
-                      cit.
-                    </div>
                   </button>
                 </div>
 
-                {/* Stacked 100% Proportional Progress Bar */}
+                {/* Stacked Proportional Progress Bar */}
                 <div
                   aria-label="100% Portfolio Distribution Bar"
                   className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex"
@@ -1044,19 +970,19 @@ export default function App() {
                       width: `${stats.portfolioDistribution.Conference.percentage}%`,
                     }}
                     className="bg-indigo-600 h-full"
-                    title={`Conference Proceedings: ${stats.portfolioDistribution.Conference.percentage}%`}
+                    title={`Conference: ${stats.portfolioDistribution.Conference.percentage}%`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution['Non-Indexed'].percentage}%`,
                     }}
                     className="bg-slate-600 h-full"
-                    title={`Emerging Venues: ${stats.portfolioDistribution['Non-Indexed'].percentage}%`}
+                    title={`Others: ${stats.portfolioDistribution['Non-Indexed'].percentage}%`}
                   />
                 </div>
               </section>
 
-              {/* Quick Navigation Cards to Dedicated Pages */}
+              {/* Quick Navigation Cards to Dedicated Pages (No subtext) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button
                   type="button"
@@ -1067,13 +993,8 @@ export default function App() {
                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                       <BarChart3 className="w-4 h-4" />
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-slate-900">
-                        Bibliometric Analytics
-                      </div>
-                      <div className="text-xs text-slate-500 font-mono">
-                        Q1–Q4: {stats.q1Q2CombinedPercentage}% Q1+Q2
-                      </div>
+                    <div className="text-sm font-bold text-slate-900">
+                      Bibliometric Analytics
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -1088,14 +1009,8 @@ export default function App() {
                     <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
                       <Globe2 className="w-4 h-4" />
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-slate-900">
-                        Collaboration Network
-                      </div>
-                      <div className="text-xs text-slate-500 font-mono">
-                        {universities.length} institutions · {countries.length}{' '}
-                        countries
-                      </div>
+                    <div className="text-sm font-bold text-slate-900">
+                      Collaboration Network
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -1110,13 +1025,8 @@ export default function App() {
                     <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                       <BookOpen className="w-4 h-4" />
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-slate-900">
-                        Publication Portfolio
-                      </div>
-                      <div className="text-xs text-slate-500 font-mono">
-                        {stats.totalPapers} publications
-                      </div>
+                    <div className="text-sm font-bold text-slate-900">
+                      Publication Portfolio
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -1131,13 +1041,8 @@ export default function App() {
                     <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                       <Users className="w-4 h-4" />
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-slate-900">
-                        Institutional Registry
-                      </div>
-                      <div className="text-xs text-slate-500 font-mono">
-                        {coAuthors.length} co-authors · {journals.length} venues
-                      </div>
+                    <div className="text-sm font-bold text-slate-900">
+                      Institutional Registry
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -1302,54 +1207,6 @@ export default function App() {
               onInspectUniversityOnGlobe={handleInspectUniversityOnGlobe}
             />
           )}
-
-          {/* Multi-Page Sequential Footer Navigation (Previous / Next Page) */}
-          {activeProfile && (
-            <nav
-              aria-label="Pagination Navigation"
-              className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-2 sm:gap-4 shadow-xs"
-            >
-              {prevPageMeta ? (
-                <button
-                  type="button"
-                  onClick={() => navigateToPage(prevPageMeta.id)}
-                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-slate-700 hover:text-blue-600 cursor-pointer whitespace-nowrap shrink-0"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{prevPageMeta.label}</span>
-                  <span className="sm:hidden">{prevPageMeta.shortLabel}</span>
-                </button>
-              ) : (
-                <div className="w-16 sm:w-24 shrink-0" aria-hidden="true" />
-              )}
-
-              <span className="text-xs font-mono text-slate-500 whitespace-nowrap">
-                Page {currentPageIndex + 1} of {PAGE_METADATA.length}
-              </span>
-
-              {nextPageMeta ? (
-                <button
-                  type="button"
-                  onClick={() => navigateToPage(nextPageMeta.id)}
-                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer whitespace-nowrap shrink-0"
-                >
-                  <span className="hidden sm:inline">{nextPageMeta.label}</span>
-                  <span className="sm:hidden">{nextPageMeta.shortLabel}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => navigateToPage('overview')}
-                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer whitespace-nowrap shrink-0"
-                >
-                  <span className="hidden sm:inline">Back to Overview</span>
-                  <span className="sm:hidden">Overview</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </nav>
-          )}
         </main>
       </div>
 
@@ -1382,25 +1239,6 @@ export default function App() {
         })}
       </nav>
 
-      {/* Clean Desktop Footer */}
-      <footer className="hidden lg:block bg-white border-t border-slate-200 px-6 py-4 mt-8">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 text-xs text-slate-500">
-          <div>ScholarLens — Research Profile &amp; Citation Analytics</div>
-          <div className="flex items-center gap-4">
-            {PAGE_METADATA.map((item) => (
-              <button
-                key={`footer-${item.id}`}
-                type="button"
-                onClick={() => navigateToPage(item.id)}
-                className="hover:text-slate-900 cursor-pointer"
-              >
-                {item.shortLabel}
-              </button>
-            ))}
-          </div>
-        </div>
-      </footer>
-
       {/* Gmail / ORCID Login Modal */}
       <AuthGateModal
         isOpen={isAuthModalOpen}
@@ -1425,7 +1263,6 @@ export default function App() {
         onClose={() => setIsProfileModalOpen(false)}
         onUpdateUser={(updated) => {
           saveSessionUser(updated);
-          setStatusBanner('Profile updated.');
         }}
         onSignOut={handleSignOut}
       />

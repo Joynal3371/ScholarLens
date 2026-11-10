@@ -161,7 +161,6 @@ export const ResearchDirectoriesSection: React.FC<
                 <th className="py-2.5 px-3">University</th>
                 <th className="py-2.5 px-3">Country</th>
                 <th className="py-2.5 px-3 text-right">Papers</th>
-                <th className="py-2.5 px-3 text-right">Q1</th>
                 <th className="py-2.5 px-3 text-right">Citations</th>
                 <th className="py-2.5 pl-3 pr-6 text-right">Action</th>
               </tr>
@@ -181,9 +180,6 @@ export const ResearchDirectoriesSection: React.FC<
                   <td className="py-2.5 px-3 text-slate-600">{ca.country}</td>
                   <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900 tabular-nums">
                     {ca.paperCount}
-                  </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-blue-700 tabular-nums">
-                    {ca.q1Papers}
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono text-slate-900 tabular-nums">
                     {ca.totalCitations.toLocaleString()}
@@ -216,7 +212,7 @@ export const ResearchDirectoriesSection: React.FC<
                 <th className="py-2.5 px-3 text-right">Papers</th>
                 <th className="py-2.5 px-3 text-right">Q1</th>
                 <th className="py-2.5 px-3 text-right">Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right">Actions</th>
+                <th className="py-2.5 pl-3 pr-6 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
@@ -241,16 +237,7 @@ export const ResearchDirectoriesSection: React.FC<
                   <td className="py-2.5 px-3 text-right font-mono text-slate-900 tabular-nums">
                     {u.totalCitations.toLocaleString()}
                   </td>
-                  <td className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap space-x-1.5">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onInspectUniversityOnGlobe(u.universityId)
-                      }
-                      className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors whitespace-nowrap"
-                    >
-                      Globe
-                    </button>
+                  <td className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => onFilterByUniversity(u.universityId)}
@@ -331,7 +318,6 @@ export const ResearchDirectoriesSection: React.FC<
                 <th className="py-2.5 px-3">Type</th>
                 <th className="py-2.5 px-3">Quartile</th>
                 <th className="py-2.5 px-3 text-right">Papers</th>
-                <th className="py-2.5 px-3 text-right">Avg Citations</th>
                 <th className="py-2.5 px-3 text-right">Total Citations</th>
                 <th className="py-2.5 pl-3 pr-6 text-right">Action</th>
               </tr>
@@ -351,9 +337,6 @@ export const ResearchDirectoriesSection: React.FC<
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900 tabular-nums">
                     {j.paperCount}
-                  </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-slate-600 tabular-nums">
-                    {j.avgCitations.toLocaleString()}
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono text-slate-900 tabular-nums">
                     {j.totalCitations.toLocaleString()}

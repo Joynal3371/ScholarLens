@@ -20,12 +20,12 @@ const PORTFOLIO_CATEGORY_COLORS: Record<
   PortfolioCategory,
   { hex: string; label: string }
 > = {
-  Q1: { hex: '#2563eb', label: 'Q1 Journals' },
-  Q2: { hex: '#0ea5e9', label: 'Q2 Journals' },
-  Q3: { hex: '#f59e0b', label: 'Q3 Journals' },
-  Q4: { hex: '#94a3b8', label: 'Q4 Journals' },
-  Conference: { hex: '#4f46e5', label: 'Proceedings' },
-  'Non-Indexed': { hex: '#64748b', label: 'Emerging Venues' },
+  Q1: { hex: '#1e3a8a', label: 'Q1 Journals' },
+  Q2: { hex: '#0284c7', label: 'Q2 Journals' },
+  Q3: { hex: '#0d9488', label: 'Q3 Journals' },
+  Q4: { hex: '#d97706', label: 'Q4 Journals' },
+  Conference: { hex: '#4f46e5', label: 'Conference' },
+  'Non-Indexed': { hex: '#64748b', label: 'Others' },
 };
 
 const TYPE_COLORS: Record<PublicationType, string> = {
@@ -80,10 +80,14 @@ export const PortfolioBreakdownSection: React.FC<
     };
   });
 
-  // Yearly trend geometry
+  // Yearly trend geometry (matched to Google Scholar yearly citation bar chart)
   const trendYears = stats.yearlyTrend.slice(-10);
+  const pubTrendYears = (() => {
+    const withPapers = stats.yearlyTrend.filter((y) => y.papers > 0);
+    return (withPapers.length > 0 ? withPapers : stats.yearlyTrend).slice(-10);
+  })();
   const maxYearCit = Math.max(1, ...trendYears.map((y) => y.citations));
-  const maxYearPapers = Math.max(1, ...trendYears.map((y) => y.papers));
+  const maxYearPapers = Math.max(1, ...pubTrendYears.map((y) => y.papers));
 
   // Citation bracket max
   const maxBracketCount = Math.max(
@@ -230,7 +234,7 @@ export const PortfolioBreakdownSection: React.FC<
                       fontSize="10"
                       fontFamily="JetBrains Mono, monospace"
                     >
-                      {seg.pct}% ({seg.count} papers)
+                      {seg.pct}%
                     </text>
                   </g>
                 ))}
@@ -241,7 +245,7 @@ export const PortfolioBreakdownSection: React.FC<
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Portfolio Coverage</span>
             <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              100.0% ({stats.totalPapers} publications)
+              100.0%
             </span>
           </div>
         </div>
@@ -490,24 +494,55 @@ export const PortfolioBreakdownSection: React.FC<
                 />
               ))}
 
-              {/* Publication Bars */}
+              {/* Baseline */}
+              <line
+                x1="20"
+                y1="168"
+                x2="424"
+                y2="168"
+                stroke="#cbd5e1"
+                strokeWidth="1"
+              />
+
+              {/* Google Scholar Matched Annual Citation Bar Chart */}
               {trendYears.map((yr, idx) => {
-                const step =
-                  trendYears.length > 1
-                    ? 360 / (trendYears.length - 1)
-                    : 180;
-                const cx = 42 + idx * step;
-                const barH = (yr.papers / maxYearPapers) * 75;
+                const count = trendYears.length;
+                const plotW = 392;
+                const slotW = plotW / Math.max(1, count);
+                const barW = Math.min(24, Math.max(12, slotW * 0.62));
+                const cx = 24 + idx * slotW + slotW / 2;
+                const barH = Math.max(
+                  yr.citations > 0 ? 4 : 0,
+                  (yr.citations / maxYearCit) * 128
+                );
+                const topY = 168 - barH;
+                const labelVal =
+                  yr.citations >= 10000
+                    ? `${(yr.citations / 1000).toFixed(0)}k`
+                    : yr.citations >= 1000
+                    ? `${(yr.citations / 1000).toFixed(1)}k`
+                    : String(yr.citations);
                 return (
                   <g key={`bar-${yr.year}`}>
                     <rect
-                      x={cx - 10}
-                      y={168 - barH}
-                      width="20"
+                      x={cx - barW / 2}
+                      y={topY}
+                      width={barW}
                       height={barH}
-                      rx="3"
-                      fill="#cbd5e1"
+                      rx="2.5"
+                      fill="#1e40af"
                     />
+                    <text
+                      x={cx}
+                      y={Math.max(14, topY - 6)}
+                      textAnchor="middle"
+                      fill="#0f172a"
+                      fontSize="9.5"
+                      fontWeight="700"
+                      fontFamily="JetBrains Mono, monospace"
+                    >
+                      {labelVal}
+                    </text>
                     <text
                       x={cx}
                       y="186"
@@ -517,57 +552,6 @@ export const PortfolioBreakdownSection: React.FC<
                       fontFamily="JetBrains Mono, monospace"
                     >
                       {yr.year}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* Citation Line & Points */}
-              {trendYears.length > 1 && (
-                <polyline
-                  fill="none"
-                  stroke="#2563eb"
-                  strokeWidth="2.5"
-                  points={trendYears
-                    .map((yr, idx) => {
-                      const step = 360 / (trendYears.length - 1);
-                      const cx = 42 + idx * step;
-                      const cy = 162 - (yr.citations / maxYearCit) * 124;
-                      return `${cx},${cy}`;
-                    })
-                    .join(' ')}
-                />
-              )}
-
-              {trendYears.map((yr, idx) => {
-                const step =
-                  trendYears.length > 1
-                    ? 360 / (trendYears.length - 1)
-                    : 180;
-                const cx = 42 + idx * step;
-                const cy = 162 - (yr.citations / maxYearCit) * 124;
-                return (
-                  <g key={`pt-${yr.year}`}>
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r="4"
-                      fill="#ffffff"
-                      stroke="#2563eb"
-                      strokeWidth="2.5"
-                    />
-                    <text
-                      x={cx}
-                      y={cy - 8}
-                      textAnchor="middle"
-                      fill="#1e3a8a"
-                      fontSize="9.5"
-                      fontWeight="600"
-                      fontFamily="JetBrains Mono, monospace"
-                    >
-                      {yr.citations >= 1000
-                        ? `${(yr.citations / 1000).toFixed(1)}k`
-                        : yr.citations}
                     </text>
                   </g>
                 );
@@ -583,7 +567,7 @@ export const PortfolioBreakdownSection: React.FC<
           </div>
         </div>
 
-        {/* Chart 5: Quartile Composition by Year */}
+        {/* Chart 5: Quartile Composition by Year (Q1, Q2, Q3, Q4, Conference, Others) */}
         <div
           id="chart-quartile-yearly"
           className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between"
@@ -624,24 +608,26 @@ export const PortfolioBreakdownSection: React.FC<
                 stroke="#cbd5e1"
                 strokeWidth="1"
               />
-              {trendYears.map((yr, idx) => {
+              {pubTrendYears.map((yr, idx) => {
                 const colW = Math.min(
                   26,
-                  Math.floor(290 / Math.max(1, trendYears.length)) - 6
+                  Math.floor(290 / Math.max(1, pubTrendYears.length)) - 6
                 );
-                const step = 310 / Math.max(1, trendYears.length);
+                const step = 310 / Math.max(1, pubTrendYears.length);
                 const x = 26 + idx * step;
                 const scaleH = 130 / maxYearPapers;
 
                 const segments = [
-                  { count: yr.q1Count, color: '#2563eb' },
-                  { count: yr.q2Count, color: '#0ea5e9' },
-                  { count: yr.q3Count, color: '#f59e0b' },
-                  { count: yr.q4Count, color: '#94a3b8' },
+                  { count: yr.q1Count, color: '#1e3a8a', label: 'Q1' },
+                  { count: yr.q2Count, color: '#0284c7', label: 'Q2' },
+                  { count: yr.q3Count, color: '#0d9488', label: 'Q3' },
+                  { count: yr.q4Count, color: '#d97706', label: 'Q4' },
                   {
-                    count: yr.conferenceCount + yr.otherCount,
-                    color: '#6366f1',
+                    count: yr.conferenceCount,
+                    color: '#4f46e5',
+                    label: 'Conference',
                   },
+                  { count: yr.otherCount, color: '#64748b', label: 'Others' },
                 ];
 
                 let curY = 168;
@@ -660,7 +646,9 @@ export const PortfolioBreakdownSection: React.FC<
                           height={Math.max(2, h - 1)}
                           rx="1.5"
                           fill={s.color}
-                        />
+                        >
+                          <title>{`${yr.year} — ${s.label}: ${s.count}`}</title>
+                        </rect>
                       );
                     })}
                     <text
@@ -679,28 +667,51 @@ export const PortfolioBreakdownSection: React.FC<
             </svg>
           </div>
 
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-xs bg-blue-600 inline-block" />
+          <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <span className="inline-flex items-center gap-1 font-medium">
+                <span
+                  className="w-2.5 h-2.5 rounded-xs inline-block"
+                  style={{ backgroundColor: '#1e3a8a' }}
+                />
                 Q1
               </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-xs bg-sky-500 inline-block" />
+              <span className="inline-flex items-center gap-1 font-medium">
+                <span
+                  className="w-2.5 h-2.5 rounded-xs inline-block"
+                  style={{ backgroundColor: '#0284c7' }}
+                />
                 Q2
               </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-xs bg-amber-500 inline-block" />
+              <span className="inline-flex items-center gap-1 font-medium">
+                <span
+                  className="w-2.5 h-2.5 rounded-xs inline-block"
+                  style={{ backgroundColor: '#0d9488' }}
+                />
                 Q3
               </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-xs bg-indigo-500 inline-block" />
-                Proc.
+              <span className="inline-flex items-center gap-1 font-medium">
+                <span
+                  className="w-2.5 h-2.5 rounded-xs inline-block"
+                  style={{ backgroundColor: '#d97706' }}
+                />
+                Q4
+              </span>
+              <span className="inline-flex items-center gap-1 font-medium">
+                <span
+                  className="w-2.5 h-2.5 rounded-xs inline-block"
+                  style={{ backgroundColor: '#4f46e5' }}
+                />
+                Conference
+              </span>
+              <span className="inline-flex items-center gap-1 font-medium">
+                <span
+                  className="w-2.5 h-2.5 rounded-xs inline-block"
+                  style={{ backgroundColor: '#64748b' }}
+                />
+                Others
               </span>
             </div>
-            <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              {trendYears.length} yrs
-            </span>
           </div>
         </div>
 

@@ -11,6 +11,7 @@ import {
   AuthorshipRole,
   ResearcherProfile,
   OfficialScholarMetrics,
+  normalizePublicationsVenueConsistency,
 } from './src/utils/scholarAnalytics';
 
 dotenv.config();
@@ -430,14 +431,19 @@ async function resolveInstitutionFromOfficialSources(
         ? rec.geo.longitude
         : countryInfo.lng;
 
-    // Refine city-level coordinates to exact physical campus coordinates via Wikidata P625 if ROR is present
-    const wdCoords = await queryWikidataInstitutionCoords(
-      rec.display_name || cleanName,
-      rec.ror
-    );
-    if (wdCoords) {
-      lat = wdCoords.lat;
-      lng = wdCoords.lng;
+    // Only query Wikidata P625 if OpenAlex geo coordinates are missing
+    if (
+      typeof rec.geo?.latitude !== 'number' ||
+      typeof rec.geo?.longitude !== 'number'
+    ) {
+      const wdCoords = await queryWikidataInstitutionCoords(
+        rec.display_name || cleanName,
+        rec.ror
+      );
+      if (wdCoords) {
+        lat = wdCoords.lat;
+        lng = wdCoords.lng;
+      }
     }
 
     const resolved: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'> = {
@@ -622,6 +628,7 @@ interface ScrapedScholarProfile {
   affiliation: string;
   verifiedDomain: string;
   fields: string[];
+  avatarDataUrl?: string;
   officialMetrics: OfficialScholarMetrics;
   sidebarCoAuthors: ScrapedScholarSidebarAuthor[];
   publications: ScrapedScholarPublication[];
@@ -740,14 +747,100 @@ async function scrapeGoogleScholarFullProfile(
       .filter(Boolean);
 
     const stdCells = [
-      ...firstPage.matchAll(/class="gsc_rsb_std"[^>]*>(\d+)<\/td>/gi),
-    ].map((m) => Number(m[1]));
+      ...firstPage.matchAll(/class="gsc_rsb_std"[^>]*>([\d,]+)<\/td>/gi),
+    ].map((m) => Number(String(m[1]).replace(/,/g, '')));
+
+    // Extract Google Scholar's official "Citations per year" bar chart histogram (.gsc_md_hist_b)
+    const citationsByYear: Record<number, number> = {};
+    const histBlockMatch = firstPage.match(
+      /class="gsc_md_hist_b"[^>]*>([\s\S]*?)<\/div>/i
+    );
+    if (histBlockMatch?.[1]) {
+      const histHtml = histBlockMatch[1];
+      const histYears = [
+        ...histHtml.matchAll(/class="gsc_g_t"[^>]*>(\d{4})<\/span>/gi),
+      ].map((m) => Number(m[1]));
+      for (const y of histYears) {
+        if (y >= 1950) citationsByYear[y] = 0;
+      }
+      const barAnchors = [
+        ...histHtml.matchAll(
+          /<a[^>]*class="gsc_g_a"[^>]*style="[^"]*z-index:\s*(\d+)[^"]*"[^>]*>\s*<span[^>]*class="gsc_g_al"[^>]*>([\d,]+)<\/span>\s*<\/a>/gi
+        ),
+      ];
+      if (barAnchors.length > 0 && histYears.length > 0) {
+        for (const aMatch of barAnchors) {
+          const zIdx = Number(aMatch[1]);
+          const citVal = Number(String(aMatch[2]).replace(/,/g, ''));
+          const yrIdx = histYears.length - zIdx;
+          if (yrIdx >= 0 && yrIdx < histYears.length) {
+            citationsByYear[histYears[yrIdx]] = citVal;
+          }
+        }
+      } else {
+        const rawCits = [
+          ...histHtml.matchAll(/class="gsc_g_al"[^>]*>([\d,]+)<\/span>/gi),
+        ].map((m) => Number(String(m[1]).replace(/,/g, '')));
+        if (rawCits.length === histYears.length) {
+          for (let i = 0; i < histYears.length; i++) {
+            citationsByYear[histYears[i]] = rawCits[i];
+          }
+        }
+      }
+    }
 
     const officialMetrics: OfficialScholarMetrics = {
       totalCitations: stdCells[0] || 0,
       hIndex: stdCells[2] || 0,
       i10Index: stdCells[4] || 0,
+      ...(Object.keys(citationsByYear).length > 0 ? { citationsByYear } : {}),
     };
+
+    // Extract and fetch the researcher's real Google Scholar profile photo (#gsc_prf_pup-img)
+    let avatarDataUrl: string | undefined;
+    const imgTagMatch = firstPage.match(/<img[^>]*id="gsc_prf_pup-img"[^>]*>/i);
+    const rawImgSrcMatch = imgTagMatch?.[0]?.match(/src="([^"]+)"/i);
+    const extractedPhotoUrl = rawImgSrcMatch?.[1]
+      ? decodeHtmlEntities(rawImgSrcMatch[1])
+      : '';
+    const photoCandidateUrls = [
+      extractedPhotoUrl
+        ? extractedPhotoUrl.startsWith('http')
+          ? extractedPhotoUrl.replace('view_op=view_photo', 'view_op=medium_photo')
+          : `https://scholar.google.com${extractedPhotoUrl}`
+        : '',
+      `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+        userId
+      )}`,
+      `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
+        userId
+      )}`,
+    ].filter(Boolean);
+
+    for (const pUrl of photoCandidateUrls) {
+      try {
+        const pResp = await fetch(pUrl, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          },
+          signal: AbortSignal.timeout(3000),
+        });
+        const ct = String(pResp.headers.get('content-type') || '');
+        if (pResp.ok && ct.startsWith('image/')) {
+          const buf = Buffer.from(await pResp.arrayBuffer());
+          if (buf.length > 200) {
+            avatarDataUrl = `data:${ct.split(';')[0]};base64,${buf.toString(
+              'base64'
+            )}`;
+            break;
+          }
+        }
+      } catch {
+        // Try next candidate URL
+      }
+    }
 
     const sidebarCoAuthors: ScrapedScholarSidebarAuthor[] = [];
     const coDescBlocks = [
@@ -856,6 +949,7 @@ async function scrapeGoogleScholarFullProfile(
       affiliation,
       verifiedDomain,
       fields: fields.length > 0 ? fields : ['Research', 'Engineering'],
+      avatarDataUrl,
       officialMetrics,
       sidebarCoAuthors,
       publications,
@@ -1378,17 +1472,114 @@ async function resolveScholarIdViaWikidata(
   return null;
 }
 
+async function resolveGoogleScholarIdByName(
+  researcherName: string
+): Promise<string | null> {
+  const clean = stripAcademicHonorifics(researcherName).trim();
+  if (!clean || clean.length < 3) return null;
+  try {
+    const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(
+      clean
+    )}&language=en&format=json&limit=3`;
+    const searchRes = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+      },
+      signal: AbortSignal.timeout(2200),
+    });
+    if (searchRes.ok) {
+      const searchData = (await searchRes.json()) as any;
+      const entities: any[] = searchData?.search || [];
+      for (const ent of entities) {
+        const qid = ent?.id;
+        if (!qid) continue;
+        const claimsUrl = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${encodeURIComponent(
+          qid
+        )}&property=P1960&format=json`;
+        const claimsRes = await fetch(claimsUrl, {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(2000),
+        });
+        if (!claimsRes.ok) continue;
+        const claimsData = (await claimsRes.json()) as any;
+        const scholarId =
+          claimsData?.claims?.P1960?.[0]?.mainsnak?.datavalue?.value;
+        if (
+          scholarId &&
+          typeof scholarId === 'string' &&
+          scholarId.length >= 8
+        ) {
+          return scholarId.trim();
+        }
+      }
+    }
+  } catch {
+    // Ignore Wikidata lookup timeout
+  }
+
+  // Fallback for researchers not in Wikidata P1960: discover their Google Scholar citation user ID via web index
+  try {
+    const yahooUrl = `https://search.yahoo.com/search?p=${encodeURIComponent(
+      `${clean} scholar.google.com/citations`
+    )}`;
+    const yRes = await fetch(yahooUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      },
+      signal: AbortSignal.timeout(2800),
+    });
+    if (yRes.ok) {
+      const html = await yRes.text();
+      const matches = [
+        ...html.matchAll(/user(?:=|%3D|%253D)([a-zA-Z0-9_-]{12})/gi),
+      ].map((m) => m[1]);
+      const uniqueIds = [...new Set(matches)];
+      if (uniqueIds.length > 0) {
+        return uniqueIds[0];
+      }
+    }
+  } catch {
+    // Ignore web index lookup timeout
+  }
+
+  return null;
+}
+
 export async function buildLiveResearcherProfile(
   userIdInput: string,
   queryNameInput: string
 ): Promise<{ profile: ResearcherProfile; source: string } | null> {
-  const scraped = userIdInput
-    ? await scrapeGoogleScholarFullProfile(userIdInput)
+  let effectiveUserId = userIdInput;
+
+  // If the user searched by researcher name (e.g. "Geoffrey Hinton"), resolve their official Google Scholar ID first
+  if (queryNameInput) {
+    const resolvedScholarId = await resolveGoogleScholarIdByName(
+      queryNameInput
+    );
+    if (resolvedScholarId) {
+      effectiveUserId = resolvedScholarId;
+    }
+  }
+
+  let scraped = effectiveUserId
+    ? await scrapeGoogleScholarFullProfile(effectiveUserId)
     : null;
 
-  let resolvedWikidataName: string | null = null;
+  // If direct userIdInput failed and looks like a typed name, try resolving via Wikidata P1960 / web index
   if (!scraped && !queryNameInput && userIdInput) {
-    resolvedWikidataName = await resolveScholarIdViaWikidata(userIdInput);
+    const byNameId = await resolveGoogleScholarIdByName(userIdInput);
+    if (byNameId && byNameId !== effectiveUserId) {
+      effectiveUserId = byNameId;
+      scraped = await scrapeGoogleScholarFullProfile(effectiveUserId);
+    }
+  }
+
+  let resolvedWikidataName: string | null = null;
+  if (!scraped && !queryNameInput && effectiveUserId) {
+    resolvedWikidataName = await resolveScholarIdViaWikidata(effectiveUserId);
   }
 
   const targetName =
@@ -1404,7 +1595,7 @@ export async function buildLiveResearcherProfile(
     const authorRes = await fetch(
       `https://api.openalex.org/authors?search=${encodeURIComponent(
         cleanSearchName
-      )}&per-page=10`,
+      )}&per-page=10&mailto=research@scholarlens.org`,
       {
         headers: {
           'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
@@ -1440,26 +1631,46 @@ export async function buildLiveResearcherProfile(
     // Continue with scraped Scholar data if OpenAlex author lookup times out
   }
 
-  // 2. Fetch works from OpenAlex to enrich the Google Scholar profile's papers
+  // 2. Fetch works from OpenAlex (sorted by citations descending in the polite pool) to enrich the Google Scholar profile's papers
   let rawOaWorks: any[] = [];
   if (openAlexAuthorIds.length > 0) {
     try {
       const filterIds = openAlexAuthorIds.slice(0, 5).join('|');
-      const worksRes = await fetch(
-        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
-          filterIds
-        )}&per-page=200`,
-        {
-          headers: {
-            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
-          },
-          signal: AbortSignal.timeout(8000),
-        }
+      const pagesToFetch =
+        scraped && scraped.publications.length > 140 ? [1, 2] : [1];
+      const pageResults = await Promise.all(
+        pagesToFetch.map(async (pageNum) => {
+          const url = `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
+            filterIds
+          )}&sort=cited_by_count:desc&per-page=200&page=${pageNum}&mailto=research@scholarlens.org`;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              const worksRes = await fetch(url, {
+                headers: {
+                  'User-Agent':
+                    'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+                },
+                signal: AbortSignal.timeout(7500),
+              });
+              if (worksRes.ok) {
+                const worksData = (await worksRes.json()) as any;
+                return Array.isArray(worksData?.results)
+                  ? worksData.results
+                  : [];
+              }
+              if (worksRes.status === 429) {
+                await new Promise((r) => setTimeout(r, 350));
+                continue;
+              }
+              break;
+            } catch {
+              break;
+            }
+          }
+          return [];
+        })
       );
-      if (worksRes.ok) {
-        const worksData = (await worksRes.json()) as any;
-        rawOaWorks = Array.isArray(worksData?.results) ? worksData.results : [];
-      }
+      rawOaWorks = pageResults.flat();
     } catch {
       rawOaWorks = [];
     }
@@ -1637,7 +1848,7 @@ export async function buildLiveResearcherProfile(
       geoCache
     );
   } else {
-    const rawAffil = scraped?.affiliation || 'University of Liberal Arts Bangladesh';
+    const rawAffil = scraped?.affiliation || 'Academic Research University';
     const affilParts = rawAffil
       .split(',')
       .map((s) => s.trim())
@@ -1974,6 +2185,30 @@ export async function buildLiveResearcherProfile(
   const finalPublications: Publication[] = [];
 
   if (scraped && scraped.publications.length > 0) {
+    // Pre-warm unique journal venues in parallel (capped to 12 uncached venues) so large profiles (e.g. 300 papers) complete in <2.5s
+    const candidateVenues = new Set<string>();
+    for (let gIdx = 0; gIdx < scraped.publications.length; gIdx++) {
+      const gsPub = scraped.publications[gIdx];
+      const v = cleanVenueName(gsPub.venueText || '');
+      if (
+        v &&
+        v !== 'Academic Venue' &&
+        !officialSourceByNameCache.has(v.toLowerCase())
+      ) {
+        candidateVenues.add(v);
+        if (candidateVenues.size >= 12) break;
+      }
+    }
+    if (candidateVenues.size > 0) {
+      await Promise.all(
+        Array.from(candidateVenues).map((v) =>
+          resolveOfficialJournalMetricsByVenue(v).catch(() => undefined)
+        )
+      );
+    }
+
+    const allowPerPaperCrossref = scraped.publications.length <= 15;
+
     for (let gIdx = 0; gIdx < scraped.publications.length; gIdx++) {
       const gsPub = scraped.publications[gIdx];
       const matchedOaWork = gsMatchedOaWorkByIndex.get(gIdx);
@@ -2005,12 +2240,10 @@ export async function buildLiveResearcherProfile(
 
         const year = gsPub.year || oaDetails.year || 2020;
         const citations = gsPub.citations;
-        let srcMetrics = oaDetails.sourceId
-          ? sourceMetricsCache.get(oaDetails.sourceId)
-          : undefined;
-        if (!srcMetrics && venue !== 'Academic Venue') {
-          srcMetrics = await resolveOfficialJournalMetricsByVenue(venue);
-        }
+        const srcMetrics =
+          (oaDetails.sourceId
+            ? sourceMetricsCache.get(oaDetails.sourceId)
+            : undefined) || officialSourceByNameCache.get(venue.toLowerCase());
 
         const type = classifyPublicationType(
           oaDetails.sourceType,
@@ -2046,8 +2279,9 @@ export async function buildLiveResearcherProfile(
           coAuthors: oaDetails.coAuthors,
         });
       } else {
-        // Enrich unmatched Google Scholar paper via official Crossref & OpenAlex Source APIs
-        const crossref = await queryCrossrefWorkByTitle(gsPub.title);
+        const crossref = allowPerPaperCrossref
+          ? await queryCrossrefWorkByTitle(gsPub.title)
+          : null;
         const cleanVenue = cleanVenueName(
           crossref?.venue || gsPub.venueText || 'Academic Venue'
         );
@@ -2071,12 +2305,13 @@ export async function buildLiveResearcherProfile(
           gsPub.title
         );
         const srcMetrics =
-          type === 'Journal' || type === 'Review'
+          officialSourceByNameCache.get(cleanVenue.toLowerCase()) ||
+          (allowPerPaperCrossref && (type === 'Journal' || type === 'Review')
             ? await resolveOfficialJournalMetricsByVenue(
                 cleanVenue,
                 crossref?.issn
               )
-            : undefined;
+            : undefined);
         const quartile = classifyQuartileFromOfficialMetrics(
           type,
           cleanVenue,
@@ -2194,12 +2429,48 @@ export async function buildLiveResearcherProfile(
     userIdInput ||
     slugifyInstitution(targetName).slice(0, 12);
 
+  // Fallback per-year citation histogram from OpenAlex author counts_by_year if Google Scholar histogram was not available
+  let finalOfficialMetrics = scraped?.officialMetrics;
+  if (
+    (!finalOfficialMetrics || !finalOfficialMetrics.citationsByYear) &&
+    Array.isArray(primaryOpenAlexAuthor?.counts_by_year)
+  ) {
+    const oaCitByYr: Record<number, number> = {};
+    for (const row of primaryOpenAlexAuthor.counts_by_year) {
+      const y = Number(row?.year);
+      const c = Number(row?.cited_by_count || 0);
+      if (y >= 1980 && c >= 0) {
+        oaCitByYr[y] = c;
+      }
+    }
+    if (Object.keys(oaCitByYr).length > 0) {
+      finalOfficialMetrics = {
+        totalCitations:
+          finalOfficialMetrics?.totalCitations ||
+          Number(primaryOpenAlexAuthor?.cited_by_count || 0),
+        hIndex:
+          finalOfficialMetrics?.hIndex ||
+          Number(primaryOpenAlexAuthor?.summary_stats?.h_index || 0),
+        i10Index:
+          finalOfficialMetrics?.i10Index ||
+          Number(primaryOpenAlexAuthor?.summary_stats?.i10_index || 0),
+        citationsByYear: oaCitByYr,
+      };
+    }
+  }
+
+  const normalizedPublications =
+    normalizePublicationsVenueConsistency(finalPublications);
+
   const profile: ResearcherProfile = {
     id: `scholar-${cleanScholarId}`,
     scholarUserId: cleanScholarId,
     scholarUrl: `https://scholar.google.com/citations?user=${encodeURIComponent(
       cleanScholarId
     )}&hl=en`,
+    avatarUrl:
+      scraped?.avatarDataUrl ||
+      `/api/scholar/avatar?userId=${encodeURIComponent(cleanScholarId)}`,
     name: scraped?.name || primaryOpenAlexAuthor?.display_name || targetName,
     affiliation:
       scraped?.affiliation ||
@@ -2219,8 +2490,8 @@ export async function buildLiveResearcherProfile(
         : openAlexTopics.length > 0
         ? openAlexTopics
         : ['Engineering', 'Computer Science'],
-    officialMetrics: scraped?.officialMetrics,
-    publications: finalPublications,
+    officialMetrics: finalOfficialMetrics,
+    publications: normalizedPublications,
   };
 
   return {
@@ -2274,6 +2545,119 @@ app.use(express.json());
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', service: 'ScholarLens Analytics API' });
+});
+
+const avatarBufferCache = new Map<
+  string,
+  { contentType: string; buffer: Buffer; timestamp: number }
+>();
+
+// Proxies the researcher's Google Scholar profile photo (with CORS headers for PDF & Canvas export)
+app.get('/api/scholar/avatar', async (req, res) => {
+  const userId = String(req.query.userId || '').trim();
+  const fallbackName = String(req.query.name || 'Scholar').trim();
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+
+  if (userId) {
+    const cached = avatarBufferCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) {
+      res.setHeader('Content-Type', cached.contentType);
+      res.send(cached.buffer);
+      return;
+    }
+
+    // Check if profileCache or verifiedScholarSnapshot already has a base64 avatarDataUrl for this userId
+    const lowerId = userId.toLowerCase();
+    const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[userId];
+    const cachedProf: ResearcherProfile | undefined =
+      profileCache.get(`${lowerId}::`)?.data?.profile ||
+      snapObj?.profile ||
+      snapObj;
+    if (
+      cachedProf?.avatarUrl &&
+      cachedProf.avatarUrl.startsWith('data:image/')
+    ) {
+      const m = cachedProf.avatarUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+      if (m) {
+        const ct = m[1];
+        const buf = Buffer.from(m[2], 'base64');
+        avatarBufferCache.set(userId, {
+          contentType: ct,
+          buffer: buf,
+          timestamp: Date.now(),
+        });
+        res.setHeader('Content-Type', ct);
+        res.send(buf);
+        return;
+      }
+    }
+
+    const candidateUrls = [
+      `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+        userId
+      )}`,
+      `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
+        userId
+      )}`,
+      `https://scholar.google.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+        userId
+      )}`,
+    ];
+
+    for (const imgUrl of candidateUrls) {
+      try {
+        const resp = await fetch(imgUrl, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          },
+          signal: AbortSignal.timeout(4000),
+        });
+        const ct = String(resp.headers.get('content-type') || '');
+        if (resp.ok && ct.startsWith('image/')) {
+          const arr = await resp.arrayBuffer();
+          const buf = Buffer.from(arr);
+          if (buf.length > 200) {
+            avatarBufferCache.set(userId, {
+              contentType: ct,
+              buffer: buf,
+              timestamp: Date.now(),
+            });
+            res.setHeader('Content-Type', ct);
+            res.send(buf);
+            return;
+          }
+        }
+      } catch {
+        // Try next candidate URL
+      }
+    }
+  }
+
+  // Fallback academic monogram SVG avatar if Google Scholar has no photo
+  const initials =
+    fallbackName
+      .replace(/\b(Dr\.|Prof\.|Mr\.|Ms\.)\s*/gi, '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() || '')
+      .join('') || 'RS';
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+    <defs>
+      <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1e3a8a"/>
+        <stop offset="100%" stop-color="#2563eb"/>
+      </linearGradient>
+    </defs>
+    <rect width="128" height="128" rx="64" fill="url(#g)"/>
+    <text x="64" y="76" text-anchor="middle" fill="#ffffff" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="44" font-weight="700">${initials}</text>
+  </svg>`;
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.send(svg);
 });
 
 // Authenticated Firestore Bridge between Vercel Serverless and Google Cloud Scholar Node
@@ -2402,11 +2786,6 @@ async function resolveViaScholarBridge(
     }
   }
 
-  // On Vercel, don't block for worker polling if not cached; fall straight to buildLiveResearcherProfile
-  if (process.env.VERCEL) {
-    return null;
-  }
-
   const queued = await writeScholarBridgeDoc(
     docId,
     userId || docId,
@@ -2416,8 +2795,8 @@ async function resolveViaScholarBridge(
   );
   if (!queued) return null;
 
-  for (let attempt = 0; attempt < 15; attempt++) {
-    await new Promise((r) => setTimeout(r, 380));
+  for (let attempt = 0; attempt < 20; attempt++) {
+    await new Promise((r) => setTimeout(r, 360));
     const current = await readScholarBridgeDoc(docId);
     if (current?.status === 'ready' && current.payloadJson) {
       try {
@@ -2559,8 +2938,15 @@ app.get('/api/scholar/analyze', async (req, res) => {
   }
 
   try {
-    if (process.env.VERCEL && userId) {
-      const bridged = await resolveViaScholarBridge(userId, queryName);
+    const resolvedIdForBridge = queryName
+      ? (await resolveGoogleScholarIdByName(queryName)) || userId
+      : userId;
+
+    if (process.env.VERCEL && (resolvedIdForBridge || queryName)) {
+      const bridged = await resolveViaScholarBridge(
+        resolvedIdForBridge,
+        queryName
+      );
       if (bridged && bridged.profile) {
         profileCache.set(cacheKey, {
           timestamp: Date.now(),
@@ -2571,7 +2957,10 @@ app.get('/api/scholar/analyze', async (req, res) => {
       }
     }
 
-    const result = await buildLiveResearcherProfile(userId, queryName);
+    const result = await buildLiveResearcherProfile(
+      resolvedIdForBridge || userId,
+      queryName
+    );
     if (!result) {
       res.status(404).json({
         error:
