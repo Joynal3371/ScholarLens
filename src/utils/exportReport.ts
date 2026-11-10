@@ -27,13 +27,17 @@ export async function svgElementToPngDataUrl(
   const headerH = 54;
   const totalW = svgW + pad * 2;
   const totalH = svgH + headerH + pad * 2;
-  const scale = 2;
+  const scale = 3;
 
   const serializer = new XMLSerializer();
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   clone.setAttribute('width', String(svgW));
   clone.setAttribute('height', String(svgH));
+  clone.setAttribute(
+    'font-family',
+    'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  );
 
   const svgStr = serializer.serializeToString(clone);
   const svgBlob = new Blob([svgStr], {
@@ -90,21 +94,57 @@ export async function svgElementToPngDataUrl(
 }
 
 /**
- * Converts an SVG element directly into a high-DPI PNG data URL preserving its exact native aspect ratio (1100x540).
+ * Robustly finds the chart SVG within a container, explicitly skipping any nested button icons (such as ImageDown).
+ */
+function findTargetChartSvg(
+  container: HTMLElement | null
+): SVGSVGElement | null {
+  if (!container) return null;
+  // 1. Explicitly tagged chart SVG
+  const tagged = container.querySelector<SVGSVGElement>(
+    'svg[data-chart-svg="true"]'
+  );
+  if (tagged) return tagged;
+  // 2. Class-based chart SVG
+  const classed = container.querySelector<SVGSVGElement>(
+    'svg.scholar-chart-svg'
+  );
+  if (classed) return classed;
+  // 3. Role="img" chart SVG
+  const roleImg = container.querySelector<SVGSVGElement>('svg[role="img"]');
+  if (roleImg) return roleImg;
+  // 4. Any SVG that is NOT inside a button
+  const allSvgs = Array.from(container.querySelectorAll<SVGSVGElement>('svg'));
+  const nonButtonSvg = allSvgs.find((s) => !s.closest('button'));
+  if (nonButtonSvg) return nonButtonSvg;
+  return allSvgs[allSvgs.length - 1] || null;
+}
+
+/**
+ * Converts an SVG element directly into a high-DPI PNG data URL preserving its exact native aspect ratio.
  */
 async function svgElementToRawPngDataUrl(
   svgEl: SVGSVGElement
 ): Promise<{ dataUrl: string; width: number; height: number }> {
   const bbox = svgEl.viewBox?.baseVal;
-  const svgW = bbox && bbox.width > 0 ? bbox.width : svgEl.clientWidth || 1100;
-  const svgH = bbox && bbox.height > 0 ? bbox.height : svgEl.clientHeight || 540;
-  const scale = 2;
+  const svgW =
+    bbox && bbox.width > 0 ? bbox.width : svgEl.clientWidth || 360;
+  const svgH =
+    bbox && bbox.height > 0 ? bbox.height : svgEl.clientHeight || 210;
+  const scale = 3;
 
   const serializer = new XMLSerializer();
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   clone.setAttribute('width', String(svgW));
   clone.setAttribute('height', String(svgH));
+  if (!clone.getAttribute('viewBox')) {
+    clone.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+  }
+  clone.setAttribute(
+    'font-family',
+    'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  );
 
   const svgStr = serializer.serializeToString(clone);
   const svgBlob = new Blob([svgStr], {
@@ -158,7 +198,7 @@ export async function exportChartSvgAsPng(
       : chartId;
   const container =
     document.getElementById(effectiveId) || document.getElementById(chartId);
-  const svgEl = container?.querySelector('svg') as SVGSVGElement | null;
+  const svgEl = findTargetChartSvg(container);
   if (!svgEl) return false;
 
   const dataUrl = await svgElementToPngDataUrl(
@@ -180,12 +220,12 @@ const CATEGORY_RGB: Record<
   'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Conference' | 'Non-Indexed',
   [number, number, number]
 > = {
-  Q1: [37, 99, 235],
-  Q2: [14, 165, 233],
-  Q3: [245, 158, 11],
-  Q4: [148, 163, 184],
-  Conference: [79, 70, 229],
-  'Non-Indexed': [100, 116, 139],
+  Q1: [37, 99, 235], // Royal Blue
+  Q2: [5, 150, 105], // Emerald Green
+  Q3: [217, 119, 6], // Amber Gold
+  Q4: [225, 29, 72], // Rose Red
+  Conference: [124, 58, 237], // Royal Purple
+  'Non-Indexed': [71, 85, 105], // Slate Charcoal
 };
 
 function drawSectionHeader(
@@ -308,42 +348,51 @@ export async function generateResearcherPdfReport(params: {
   // PAGE 1: ACADEMIC CURRICULUM & BIBLIOMETRIC DOSSIER HEADER + ANALYTICS
   // =========================================================================
 
-  // Academic Dossier Header Banner
+  // Academic Dossier Header Banner (Enlarged with Name, Affiliation, and Google Scholar)
   doc.setFillColor(248, 250, 252);
-  doc.rect(0, 0, pageW, 36, 'F');
+  doc.rect(0, 0, pageW, 35.5, 'F');
   doc.setFillColor(15, 23, 42);
-  doc.rect(0, 0, pageW, 2.2, 'F');
+  doc.rect(0, 0, pageW, 2.0, 'F');
   doc.setDrawColor(203, 213, 225);
-  doc.line(0, 35.8, pageW, 35.8);
+  doc.line(0, 35.3, pageW, 35.3);
   doc.setFillColor(30, 58, 138);
-  doc.rect(0, 34.9, pageW, 0.9, 'F');
+  doc.rect(0, 34.5, pageW, 0.8, 'F');
 
   // Draw Google Scholar Researcher Portrait on Left
   const hasAvatar = Boolean(avatarPngUrl);
   if (avatarPngUrl) {
     try {
-      doc.addImage(avatarPngUrl, 'PNG', margin, 6.2, 22, 22);
+      doc.addImage(avatarPngUrl, 'PNG', margin, 5.2, 24.5, 24.5);
     } catch {
       // Ignore image error
     }
   }
 
-  const textLeftX = hasAvatar ? margin + 25.5 : margin;
+  const textLeftX = hasAvatar ? margin + 28.5 : margin;
   const maxLeftTextW = pageW - textLeftX - margin;
 
   doc.setTextColor(15, 23, 42);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
-  doc.text(profile.name, textLeftX, 13.5);
+  doc.setFontSize(16.5);
+  doc.text(profile.name, textLeftX, 13.0);
 
   const affilStr = profile.affiliation
     ? profile.affiliation
-    : `Scholar ID: ${profile.scholarUserId}`;
+    : 'Google Scholar Profile';
   const affilLines = doc.splitTextToSize(affilStr, maxLeftTextW);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.4);
+  doc.setFontSize(9.0);
   doc.setTextColor(51, 65, 85);
-  doc.text(affilLines[0], textLeftX, 19.5);
+  doc.text(affilLines[0], textLeftX, 19.0);
+
+  // Google Scholar Link under Affiliated Institute Name (ID removed)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.2);
+  doc.setTextColor(29, 78, 216);
+  const scholarLabel = 'Google Scholar Profile';
+  doc.textWithLink(scholarLabel, textLeftX, 24.5, { url: profile.scholarUrl });
+  const scholarW = (doc.getStringUnitWidth(scholarLabel) * 8.2) / (72 / 25.4);
+  doc.link(textLeftX, 22.0, scholarW, 4.0, { url: profile.scholarUrl });
 
   const domainStr =
     profile.fields.length > 0
@@ -351,12 +400,13 @@ export async function generateResearcherPdfReport(params: {
       : '';
   if (domainStr) {
     const domainLines = doc.splitTextToSize(domainStr, maxLeftTextW);
-    doc.setFontSize(7.6);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text(domainLines[0], textLeftX, 25.0);
+    doc.text(domainLines[0], textLeftX, 29.8);
   }
 
-  y = 41;
+  y = 39.5;
 
   // -------------------------------------------------------------------------
   // SECTION 1: CORE BIBLIOMETRIC INDICATORS (KPI GRID WITHOUT Q1+Q2 COMBINED)
@@ -370,59 +420,43 @@ export async function generateResearcherPdfReport(params: {
     contentW
   );
 
-  const kpiItems: { label: string; value: string; sub: string }[] = [
+  const kpiItems: { label: string; value: string }[] = [
     {
       label: 'Verified Publications',
       value: String(stats.totalPapers),
-      sub: 'Peer-Reviewed Portfolio',
     },
     {
       label: 'Cumulative Citations',
       value: stats.totalCitations.toLocaleString(),
-      sub: `${stats.meanCitationsPerPaper} Mean / Paper`,
     },
     {
       label: 'Citation Indices',
       value: `h: ${stats.hIndex} / i10: ${stats.i10Index}`,
-      sub: `g-index: ${stats.gIndex}`,
-    },
-    {
-      label: 'Q1 Journal Share',
-      value: `${stats.portfolioDistribution.Q1.percentage}%`,
-      sub: `${stats.portfolioDistribution.Q1.count} Q1 Publications`,
     },
     {
       label: 'Citation Velocity',
       value: `${stats.annualCitationVelocity}/yr`,
-      sub: `Median: ${stats.medianCitationsPerPaper} Cit.`,
     },
     {
       label: 'Partner Institutions',
       value: String(universities.length),
-      sub: `${countries.length} Collaborating Nations`,
     },
     {
       label: 'Co-Author Network',
       value: String(coAuthors.length),
-      sub: `${stats.internationalCollabPercentage}% International`,
-    },
-    {
-      label: 'Conference Share',
-      value: `${stats.portfolioDistribution.Conference.percentage}%`,
-      sub: `${stats.portfolioDistribution.Conference.count} Conference Papers`,
     },
   ];
 
-  const kpiCols = 4;
+  const kpiCols = 3;
   const kpiGap = 2.5;
   const kpiW = (contentW - kpiGap * (kpiCols - 1)) / kpiCols;
-  const kpiH = 14.5;
+  const kpiH = 10.6;
 
   kpiItems.forEach((item, idx) => {
     const col = idx % kpiCols;
     const row = Math.floor(idx / kpiCols);
     const bx = margin + col * (kpiW + kpiGap);
-    const by = y + row * (kpiH + 2);
+    const by = y + row * (kpiH + 1.8);
 
     doc.setFillColor(248, 250, 252);
     doc.setDrawColor(226, 232, 240);
@@ -431,41 +465,62 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(100, 116, 139);
-    doc.text(item.label, bx + 2.5, by + 4.3);
+    doc.text(item.label, bx + 2.5, by + 4.0);
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
+    doc.setFontSize(10.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(item.value, bx + 2.5, by + 9.6);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(71, 85, 105);
-    doc.text(item.sub, bx + 2.5, by + 13.1);
+    doc.text(item.value, bx + 2.5, by + 8.8);
   });
 
-  y += Math.ceil(kpiItems.length / kpiCols) * (kpiH + 2) + 3.5;
+  y += Math.ceil(kpiItems.length / kpiCols) * (kpiH + 1.8) + 2.0;
 
   // -------------------------------------------------------------------------
-  // PORTFOLIO QUARTILE & INDEXING DISTRIBUTION (STACKED BAR + LEGEND)
+  // PORTFOLIO QUARTILE & INDEXING DISTRIBUTION (CARDS ABOVE COLORBAR LINE)
   // -------------------------------------------------------------------------
-  y += 1;
-
   const pCategories: {
     key: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Conference' | 'Non-Indexed';
     label: string;
   }[] = [
-    { key: 'Q1', label: 'Q1 Indexed Journals' },
-    { key: 'Q2', label: 'Q2 Indexed Journals' },
-    { key: 'Q3', label: 'Q3 Indexed Journals' },
-    { key: 'Q4', label: 'Q4 Indexed Journals' },
-    { key: 'Conference', label: 'Conference Proceedings' },
-    { key: 'Non-Indexed', label: 'Emerging / Other Venues' },
+    { key: 'Q1', label: 'Q1 Journals' },
+    { key: 'Q2', label: 'Q2 Journals' },
+    { key: 'Q3', label: 'Q3 Journals' },
+    { key: 'Q4', label: 'Q4 Journals' },
+    { key: 'Conference', label: 'Conference' },
+    { key: 'Non-Indexed', label: 'Others' },
   ];
 
-  // Draw 100% Proportional Stacked Bar
+  // Compact 6-Column Visual Legend & Percentage Cards (ABOVE the colorbar line)
+  const catColW = (contentW - 2 * 5) / 6;
+  const catCardH = 10.2;
+  pCategories.forEach(({ key, label }, idx) => {
+    const d = stats.portfolioDistribution[key];
+    const cx = margin + idx * (catColW + 2);
+    const [r, g, b] = CATEGORY_RGB[key];
+
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(cx, y, catColW, catCardH, 1.2, 1.2, 'FD');
+
+    doc.setFillColor(r, g, b);
+    doc.rect(cx, y, catColW, 1.4, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.6);
+    doc.setTextColor(51, 65, 85);
+    doc.text(label, cx + 2, y + 4.6);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${d.percentage}%`, cx + 2, y + 8.7);
+  });
+
+  y += catCardH + 1.8;
+
+  // Draw 100% Proportional Stacked Colorbar Line (BELOW the 6 percentage cards)
   doc.setFillColor(241, 245, 249);
-  doc.roundedRect(margin, y, contentW, 5.5, 1.2, 1.2, 'F');
+  doc.roundedRect(margin, y, contentW, 4.0, 1.2, 1.2, 'F');
   let curBarX = margin;
   pCategories.forEach(({ key }) => {
     const pct = stats.portfolioDistribution[key].percentage;
@@ -477,48 +532,12 @@ export async function generateResearcherPdfReport(params: {
       curBarX,
       y,
       Math.min(segW, margin + contentW - curBarX),
-      5.5,
+      4.0,
       'F'
     );
     curBarX += segW;
   });
-  y += 7.5;
-
-  // Compact 6-Column Visual Legend & Metric Cards
-  const catColW = (contentW - 2 * 5) / 6;
-  pCategories.forEach(({ key, label }, idx) => {
-    const d = stats.portfolioDistribution[key];
-    const cx = margin + idx * (catColW + 2);
-    const [r, g, b] = CATEGORY_RGB[key];
-
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(cx, y, catColW, 14, 1.2, 1.2, 'FD');
-
-    doc.setFillColor(r, g, b);
-    doc.rect(cx, y, catColW, 1.5, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.3);
-    doc.setTextColor(51, 65, 85);
-    doc.text(label.slice(0, 18), cx + 2, y + 5.2);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(`${d.percentage}%`, cx + 2, y + 9.8);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.3);
-    doc.setTextColor(100, 116, 139);
-    doc.text(
-      `${d.count} papers · ${d.citations.toLocaleString()} cit.`,
-      cx + 2,
-      y + 12.9
-    );
-  });
-
-  y += 17.5;
+  y += 6.5;
 
   // -------------------------------------------------------------------------
   // SECTION 2: GLOBAL COLLABORATION NETWORK MAP
@@ -540,136 +559,109 @@ export async function generateResearcherPdfReport(params: {
         contentW
       );
       const rawMap = await svgElementToRawPngDataUrl(flatMapSvg);
-      const trueMapH = Number(
-        ((contentW * rawMap.height) / Math.max(1, rawMap.width)).toFixed(1)
+      const trueMapH = Math.min(
+        62.0,
+        Number(
+          ((contentW * rawMap.height) / Math.max(1, rawMap.width)).toFixed(1)
+        )
       );
-      doc.addImage(rawMap.dataUrl, 'PNG', margin, y, contentW, trueMapH);
-      y += trueMapH + 4;
+      const mapDrawW = Number(
+        ((trueMapH * rawMap.width) / Math.max(1, rawMap.height)).toFixed(1)
+      );
+      const mapDrawX = margin + (contentW - mapDrawW) / 2;
+      doc.addImage(rawMap.dataUrl, 'PNG', mapDrawX, y, mapDrawW, trueMapH);
+      y += trueMapH + 2.5;
     }
   } catch {
     // Continue if offscreen SVG serialization is skipped
   }
 
   // -------------------------------------------------------------------------
-  // SECTION 3: VECTOR STATISTICAL CHARTS (YEARLY TRAJECTORY & CITATION BRACKETS)
+  // SECTION 3: ALL 6 ANALYTICAL GRAPHS GENERATED IN THE SITE (3x2 GRID)
   // -------------------------------------------------------------------------
-  const chartBoxW = (contentW - 4) / 2;
-  const chartBoxH = 48;
-
-  if (y + chartBoxH + 10 > 280) {
-    doc.addPage();
-    y = 14;
-  }
-
   y = drawSectionHeader(
     doc,
     '03',
-    'Bibliometric Trajectory & Citation Distribution Charts',
+    'Bibliometric & Impact Analytics Graphs',
     margin,
     y,
     contentW
   );
 
-  // Left Vector Chart: Google Scholar Matched Annual Citation Bar Chart
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(margin, y, chartBoxW, chartBoxH, 1.5, 1.5, 'FD');
+  const siteAnalyticsCharts: { id: string; title: string }[] = [
+    {
+      id: 'chart-quartile-donut',
+      title: 'Quartile & Indexing Distribution',
+    },
+    {
+      id: 'chart-pub-types',
+      title: 'Document Type Classification',
+    },
+    {
+      id: 'chart-citation-brackets',
+      title: 'Citation Impact Distribution',
+    },
+    {
+      id: 'chart-yearly-trend',
+      title: 'Annual Citation & Publication Trajectory',
+    },
+    {
+      id: 'chart-quartile-yearly',
+      title: 'Quartile Composition by Year',
+    },
+    {
+      id: 'chart-top-countries',
+      title: 'Leading Collaborating Nations',
+    },
+  ];
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(15, 23, 42);
-  doc.text('Annual Citation Trajectory', margin + 3, y + 5);
+  const chartCols = 3;
+  const chartGapX = 2.4;
+  const chartGapY = 2.0;
+  const chartCardW = (contentW - chartGapX * (chartCols - 1)) / chartCols;
+  const chartCardH = 31.0;
 
-  const trendYears = stats.yearlyTrend.slice(-9);
-  const maxYrCit = Math.max(1, ...trendYears.map((t) => t.citations));
-  const plotLeft = margin + 6;
-  const plotRight = margin + chartBoxW - 6;
-  const plotBottom = y + chartBoxH - 7;
-  const plotTop = y + 11;
-  const plotH = plotBottom - plotTop;
-  const plotW = plotRight - plotLeft;
+  for (let i = 0; i < siteAnalyticsCharts.length; i++) {
+    const item = siteAnalyticsCharts[i];
+    const col = i % chartCols;
+    const row = Math.floor(i / chartCols);
+    const cardX = margin + col * (chartCardW + chartGapX);
+    const cardY = y + row * (chartCardH + chartGapY);
 
-  // Gridlines
-  doc.setDrawColor(241, 245, 249);
-  doc.setLineWidth(0.2);
-  [0, 0.5, 1].forEach((frac) => {
-    const gy = plotBottom - frac * plotH;
-    doc.line(plotLeft, gy, plotRight, gy);
-  });
-
-  const stepX = plotW / Math.max(1, trendYears.length);
-  const barW = Math.min(6.2, stepX * 0.62);
-
-  // Annual Citation Bars
-  trendYears.forEach((yr, idx) => {
-    const cx = plotLeft + idx * stepX + stepX / 2;
-    const bh = Math.max(
-      yr.citations > 0 ? 1.2 : 0.2,
-      (yr.citations / maxYrCit) * (plotH * 0.82)
-    );
-    doc.setFillColor(30, 64, 175);
-    doc.roundedRect(cx - barW / 2, plotBottom - bh, barW, bh, 0.6, 0.6, 'F');
-
-    const citLabel =
-      yr.citations >= 10000
-        ? `${(yr.citations / 1000).toFixed(0)}k`
-        : yr.citations >= 1000
-        ? `${(yr.citations / 1000).toFixed(1)}k`
-        : String(yr.citations);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(5.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(citLabel, cx, plotBottom - bh - 1.2, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.0);
-    doc.setTextColor(100, 116, 139);
-    doc.text(String(yr.year).slice(-2), cx, plotBottom + 4, {
-      align: 'center',
-    });
-  });
-
-  // Right Vector Chart: Citation Distribution Histogram
-  const rightChartX = margin + chartBoxW + 4;
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(rightChartX, y, chartBoxW, chartBoxH, 1.5, 1.5, 'FD');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(15, 23, 42);
-  doc.text('Citation Impact Distribution (Papers by Range)', rightChartX + 3, y + 5);
-
-  const maxBracket = Math.max(1, ...stats.citationBrackets.map((b) => b.count));
-  const bPlotLeft = rightChartX + 8;
-  const bPlotRight = rightChartX + chartBoxW - 6;
-  const bPlotW = bPlotRight - bPlotLeft;
-  const bColStep = bPlotW / Math.max(1, stats.citationBrackets.length);
-  const bColW = Math.min(11, bColStep * 0.62);
-
-  doc.setDrawColor(203, 213, 225);
-  doc.setLineWidth(0.25);
-  doc.line(bPlotLeft - 2, plotBottom, bPlotRight, plotBottom);
-
-  stats.citationBrackets.forEach((b, idx) => {
-    const cx = bPlotLeft + idx * bColStep + bColStep / 2;
-    const bh = Math.max(
-      b.count > 0 ? 2 : 0.4,
-      (b.count / maxBracket) * (plotH * 0.82)
-    );
-    doc.setFillColor(37, 99, 235);
-    doc.roundedRect(cx - bColW / 2, plotBottom - bh, bColW, bh, 0.8, 0.8, 'F');
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(cardX, cardY, chartCardW, chartCardH, 1.5, 1.5, 'FD');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.6);
     doc.setTextColor(15, 23, 42);
-    doc.text(String(b.count), cx, plotBottom - bh - 1.5, { align: 'center' });
+    doc.text(item.title, cardX + 2.4, cardY + 4.3);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.2);
-    doc.setTextColor(100, 116, 139);
-    doc.text(b.label, cx, plotBottom + 4, { align: 'center' });
-  });
+    try {
+      const container = document.getElementById(item.id);
+      const svgEl = findTargetChartSvg(container);
+      if (svgEl) {
+        const rendered = await svgElementToRawPngDataUrl(svgEl);
+        const padX = 2.0;
+        const topOffset = 5.6;
+        const maxDrawW = chartCardW - padX * 2;
+        const maxDrawH = chartCardH - topOffset - 1.4;
+        const aspect = rendered.width / Math.max(1, rendered.height);
+
+        let drawW = maxDrawW;
+        let drawH = drawW / aspect;
+        if (drawH > maxDrawH) {
+          drawH = maxDrawH;
+          drawW = drawH * aspect;
+        }
+        const drawX = cardX + (chartCardW - drawW) / 2;
+        const drawY = cardY + topOffset + (maxDrawH - drawH) / 2;
+        doc.addImage(rendered.dataUrl, 'PNG', drawX, drawY, drawW, drawH);
+      }
+    } catch {
+      // Skip individual chart if SVG serialization fails
+    }
+  }
 
   // =========================================================================
   // PAGE 2: TOP 10 COUNTRIES & CO-AUTHORS, TOP 10 PAPERS, UNIVERSITIES & VENUES
@@ -702,7 +694,7 @@ export async function generateResearcherPdfReport(params: {
   );
 
   // Generous card height so country names and co-author names are completely spelled out without truncation
-  const rowItemH1 = 7.1;
+  const rowItemH1 = 7.5;
   const listCardH = Math.max(
     38,
     Math.max(top10Countries.length, top10CoAuthors.length) * rowItemH1 + 7.5
@@ -722,36 +714,37 @@ export async function generateResearcherPdfReport(params: {
 
     // Rank Badge
     doc.setFillColor(239, 246, 255);
-    doc.roundedRect(margin + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
+    doc.roundedRect(margin + 2.5, ry + 0.8, 5.0, 5.4, 0.8, 0.8, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 5, ry + 3.2, { align: 'center' });
+    doc.text(`#${idx + 1}`, margin + 5.0, ry + 4.4, { align: 'center' });
 
-    // Full Country Name
+    // Line 1: Full Country Name
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(15, 23, 42);
     const countryFullName =
       c.country.length > 52 ? c.country.slice(0, 51) + '…' : c.country;
-    doc.text(countryFullName, margin + 8.5, ry + 2.6);
+    doc.text(countryFullName, margin + 8.5, ry + 2.4);
 
-    // Row 2: Proportional Bar + Detailed Paper/Citation Metrics
-    const barMaxW = 26;
+    // Line 2: Proportional Color Bar Line
+    const barMaxW = 76;
     const barFillW =
-      Math.max(2.5, (c.paperCount / maxTopCountryPapers) * barMaxW);
+      Math.max(3.0, (c.paperCount / maxTopCountryPapers) * barMaxW);
     doc.setFillColor(241, 245, 249);
-    doc.rect(margin + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
+    doc.rect(margin + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
     doc.setFillColor(14, 165, 233);
-    doc.rect(margin + 8.5, ry + 3.8, barFillW, 1.2, 'F');
+    doc.rect(margin + 8.5, ry + 3.6, barFillW, 1.2, 'F');
 
+    // Line 3: Paper and Citation Numbers BELOW the Color Line
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.8);
-    doc.setTextColor(71, 85, 105);
+    doc.setFontSize(5.6);
+    doc.setTextColor(100, 116, 139);
     doc.text(
-      `${c.paperCount} papers (${c.percentageOfTotalPapers}%) · ${c.totalCitations.toLocaleString()} cit.`,
-      margin + 36.5,
-      ry + 4.9
+      `${c.paperCount} ${c.paperCount === 1 ? 'paper' : 'papers'} · ${c.totalCitations.toLocaleString()} citations`,
+      margin + 8.5,
+      ry + 6.8
     );
   });
 
@@ -770,48 +763,174 @@ export async function generateResearcherPdfReport(params: {
 
     // Rank Badge
     doc.setFillColor(238, 242, 255);
-    doc.roundedRect(rightCardX + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
+    doc.roundedRect(rightCardX + 2.5, ry + 0.8, 5.0, 5.4, 0.8, 0.8, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(79, 70, 229);
-    doc.text(`#${idx + 1}`, rightCardX + 5, ry + 3.2, { align: 'center' });
+    doc.text(`#${idx + 1}`, rightCardX + 5.0, ry + 4.4, { align: 'center' });
 
-    // Full Co-Author Name (No country suffix beside author name)
+    // Line 1: Full Co-Author Name (No country suffix beside author name)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(15, 23, 42);
     const authorLabel = ca.name;
     const authorFullLabel =
       authorLabel.length > 52 ? authorLabel.slice(0, 51) + '…' : authorLabel;
-    doc.text(authorFullLabel, rightCardX + 8.5, ry + 2.6);
+    doc.text(authorFullLabel, rightCardX + 8.5, ry + 2.4);
 
-    // Row 2: Proportional Bar + Detailed Metrics
-    const barMaxW = 26;
+    // Line 2: Proportional Color Bar Line
+    const barMaxW = 76;
     const barFillW =
-      Math.max(2.5, (ca.paperCount / maxTopAuthorPapers) * barMaxW);
+      Math.max(3.0, (ca.paperCount / maxTopAuthorPapers) * barMaxW);
     doc.setFillColor(241, 245, 249);
-    doc.rect(rightCardX + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
+    doc.rect(rightCardX + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
     doc.setFillColor(79, 70, 229);
-    doc.rect(rightCardX + 8.5, ry + 3.8, barFillW, 1.2, 'F');
+    doc.rect(rightCardX + 8.5, ry + 3.6, barFillW, 1.2, 'F');
 
+    // Line 3: Paper and Citation Numbers BELOW the Color Line
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.8);
-    doc.setTextColor(71, 85, 105);
+    doc.setFontSize(5.6);
+    doc.setTextColor(100, 116, 139);
     doc.text(
-      `${ca.paperCount} papers · ${ca.totalCitations.toLocaleString()} cit.`,
-      rightCardX + 36.5,
-      ry + 4.9
+      `${ca.paperCount} ${ca.paperCount === 1 ? 'paper' : 'papers'} · ${ca.totalCitations.toLocaleString()} citations`,
+      rightCardX + 8.5,
+      ry + 6.8
     );
   });
 
-  y += listCardH + 4;
+  y += listCardH + 3.5;
 
   // -------------------------------------------------------------------------
-  // SECTION 5: TOP 10 MOST CITED PUBLICATIONS
+  // SECTION 5: TOP 10 PARTNER INSTITUTIONS & TOP 10 PUBLICATION VENUES
   // -------------------------------------------------------------------------
   y = drawSectionHeader(
     doc,
     '05',
+    'Top 10 Collaborating Institutions & Top 10 Publication Venues',
+    margin,
+    y,
+    contentW
+  );
+
+  const top10Unis = universities.slice(0, 10);
+  const top10Journals = journals.slice(0, 10);
+  const maxUniPapers = Math.max(1, ...top10Unis.map((u) => u.paperCount));
+  const maxJournalPapers = Math.max(
+    1,
+    ...top10Journals.map((j) => j.paperCount)
+  );
+
+  // Generous card height so institution names are completely spelled out without truncation
+  const rowItemH = 7.5;
+  const listCard2H = Math.max(
+    36,
+    Math.max(top10Unis.length, top10Journals.length) * rowItemH + 7.5
+  );
+
+  // Left Card: Top 10 Partner Universities (Full names with zero slicing)
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(margin, y, halfW, listCard2H, 1.5, 1.5, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.2);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Top 10 Collaborating Institutions', margin + 3, y + 5.2);
+
+  top10Unis.forEach((u, idx) => {
+    const ry = y + 7.2 + idx * rowItemH;
+
+    // Rank Badge
+    doc.setFillColor(239, 246, 255);
+    doc.roundedRect(margin + 2.5, ry + 0.8, 5.0, 5.4, 0.8, 0.8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.2);
+    doc.setTextColor(37, 99, 235);
+    doc.text(`#${idx + 1}`, margin + 5.0, ry + 4.4, { align: 'center' });
+
+    // Line 1: Full University Name (up to 55 characters displayed across full width)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(15, 23, 42);
+    const uniFullName =
+      u.universityName.length > 52
+        ? u.universityName.slice(0, 51) + '…'
+        : u.universityName;
+    doc.text(uniFullName, margin + 8.5, ry + 2.4);
+
+    // Line 2: Proportional Color Bar Line
+    const barMaxW = 76;
+    const barFillW = Math.max(3.0, (u.paperCount / maxUniPapers) * barMaxW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(margin + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
+    doc.setFillColor(37, 99, 235);
+    doc.rect(margin + 8.5, ry + 3.6, barFillW, 1.2, 'F');
+
+    // Line 3: Paper and Citation Numbers BELOW the Color Line
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.6);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${u.paperCount} ${u.paperCount === 1 ? 'paper' : 'papers'} · ${u.totalCitations.toLocaleString()} citations`,
+      margin + 8.5,
+      ry + 6.8
+    );
+  });
+
+  // Right Card: Top 10 Journals / Venues (Full venue names with zero slicing)
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(rightCardX, y, halfW, listCard2H, 1.5, 1.5, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.2);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Top 10 Journals & Conference Venues', rightCardX + 3, y + 5.2);
+
+  top10Journals.forEach((j, idx) => {
+    const ry = y + 7.2 + idx * rowItemH;
+
+    // Rank Badge
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(rightCardX + 2.5, ry + 0.8, 5.0, 5.4, 0.8, 0.8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.2);
+    doc.setTextColor(5, 150, 105);
+    doc.text(`#${idx + 1}`, rightCardX + 5.0, ry + 4.4, { align: 'center' });
+
+    // Line 1: Full Venue Name
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(15, 23, 42);
+    const venueFullName =
+      j.venue.length > 52 ? j.venue.slice(0, 51) + '…' : j.venue;
+    doc.text(venueFullName, rightCardX + 8.5, ry + 2.4);
+
+    // Line 2: Proportional Color Bar Line
+    const barMaxW = 76;
+    const barFillW = Math.max(3.0, (j.paperCount / maxJournalPapers) * barMaxW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(rightCardX + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
+    doc.setFillColor(16, 185, 129);
+    doc.rect(rightCardX + 8.5, ry + 3.6, barFillW, 1.2, 'F');
+
+    // Line 3: Paper and Citation Numbers BELOW the Color Line
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.6);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${j.paperCount} ${j.paperCount === 1 ? 'paper' : 'papers'} · ${j.totalCitations.toLocaleString()} citations`,
+      rightCardX + 8.5,
+      ry + 6.8
+    );
+  });
+
+  y += listCard2H + 3.5;
+
+  // -------------------------------------------------------------------------
+  // SECTION 6: TOP 10 MOST CITED PUBLICATIONS
+  // -------------------------------------------------------------------------
+  y = drawSectionHeader(
+    doc,
+    '06',
     'Top 10 Most Cited Publications',
     margin,
     y,
@@ -871,10 +990,11 @@ export async function generateResearcherPdfReport(params: {
 
     // Tier / Category
     const cat = getPublicationPortfolioCategory(pub);
+    const [cr, cg, cb] = CATEGORY_RGB[cat];
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
-    doc.setTextColor(30, 58, 138);
-    doc.text(cat, margin + 140, y + 4.2);
+    doc.setTextColor(cr, cg, cb);
+    doc.text(cat === 'Non-Indexed' ? 'Others' : cat, margin + 140, y + 4.2);
 
     // Year (Centered at margin + 162 with 7mm clear margin on both sides)
     doc.setFont('helvetica', 'normal');
@@ -892,127 +1012,6 @@ export async function generateResearcherPdfReport(params: {
   });
 
   y += 4;
-
-  // -------------------------------------------------------------------------
-  // SECTION 6: TOP 10 PARTNER INSTITUTIONS & TOP 10 PUBLICATION VENUES
-  // -------------------------------------------------------------------------
-  y = drawSectionHeader(
-    doc,
-    '06',
-    'Top 10 Collaborating Institutions & Top 10 Publication Venues',
-    margin,
-    y,
-    contentW
-  );
-
-  const top10Unis = universities.slice(0, 10);
-  const top10Journals = journals.slice(0, 10);
-  const maxUniPapers = Math.max(1, ...top10Unis.map((u) => u.paperCount));
-  const maxJournalPapers = Math.max(
-    1,
-    ...top10Journals.map((j) => j.paperCount)
-  );
-
-  // Generous card height so institution names are completely spelled out without truncation
-  const rowItemH = 6.1;
-  const listCard2H = Math.max(
-    36,
-    Math.max(top10Unis.length, top10Journals.length) * rowItemH + 7.2
-  );
-
-  // Left Card: Top 10 Partner Universities (Full names with zero slicing)
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(margin, y, halfW, listCard2H, 1.5, 1.5, 'FD');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.2);
-  doc.setTextColor(15, 23, 42);
-  doc.text('Top 10 Collaborating Institutions', margin + 3, y + 5.2);
-
-  top10Unis.forEach((u, idx) => {
-    const ry = y + 7.2 + idx * rowItemH;
-
-    // Rank Badge
-    doc.setFillColor(239, 246, 255);
-    doc.roundedRect(margin + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.2);
-    doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 5, ry + 3.2, { align: 'center' });
-
-    // Full University Name (up to 55 characters displayed across full width)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
-    doc.setTextColor(15, 23, 42);
-    const uniFullName =
-      u.universityName.length > 52
-        ? u.universityName.slice(0, 51) + '…'
-        : u.universityName;
-    doc.text(uniFullName, margin + 8.5, ry + 2.6);
-
-    // Row 2: Proportional Bar + Detailed Paper/Citation Metrics
-    const barMaxW = 26;
-    const barFillW = Math.max(2.5, (u.paperCount / maxUniPapers) * barMaxW);
-    doc.setFillColor(241, 245, 249);
-    doc.rect(margin + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
-    doc.setFillColor(37, 99, 235);
-    doc.rect(margin + 8.5, ry + 3.8, barFillW, 1.2, 'F');
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.8);
-    doc.setTextColor(71, 85, 105);
-    doc.text(
-      `${u.paperCount} papers (${u.country}) · ${u.totalCitations.toLocaleString()} cit.`,
-      margin + 36.5,
-      ry + 4.9
-    );
-  });
-
-  // Right Card: Top 10 Journals / Venues (Full venue names with zero slicing)
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(rightCardX, y, halfW, listCard2H, 1.5, 1.5, 'FD');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.2);
-  doc.setTextColor(15, 23, 42);
-  doc.text('Top 10 Journals & Conference Venues', rightCardX + 3, y + 5.2);
-
-  top10Journals.forEach((j, idx) => {
-    const ry = y + 7.2 + idx * rowItemH;
-
-    // Rank Badge
-    doc.setFillColor(240, 253, 244);
-    doc.roundedRect(rightCardX + 2.5, ry, 5, 4.4, 0.8, 0.8, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.2);
-    doc.setTextColor(5, 150, 105);
-    doc.text(`#${idx + 1}`, rightCardX + 5, ry + 3.2, { align: 'center' });
-
-    // Full Venue Name
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
-    doc.setTextColor(15, 23, 42);
-    const venueFullName =
-      j.venue.length > 52 ? j.venue.slice(0, 51) + '…' : j.venue;
-    doc.text(venueFullName, rightCardX + 8.5, ry + 2.6);
-
-    // Row 2: Proportional Bar + Detailed Metrics
-    const barMaxW = 26;
-    const barFillW = Math.max(2.5, (j.paperCount / maxJournalPapers) * barMaxW);
-    doc.setFillColor(241, 245, 249);
-    doc.rect(rightCardX + 8.5, ry + 3.8, barMaxW, 1.2, 'F');
-    doc.setFillColor(16, 185, 129);
-    doc.rect(rightCardX + 8.5, ry + 3.8, barFillW, 1.2, 'F');
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.8);
-    doc.setTextColor(71, 85, 105);
-    doc.text(
-      `${j.paperCount} papers (${j.quartile}) · ${j.totalCitations.toLocaleString()} cit.`,
-      rightCardX + 36.5,
-      ry + 4.9
-    );
-  });
 
   // =========================================================================
   // PAGE 3+: COMPLETE VERIFIED PUBLICATION INVENTORY
@@ -1083,9 +1082,10 @@ export async function generateResearcherPdfReport(params: {
 
     // Category
     const cat = getPublicationPortfolioCategory(p);
+    const [cr, cg, cb] = CATEGORY_RGB[cat];
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(37, 99, 235);
-    doc.text(cat, margin + 140, y + 4.3);
+    doc.setTextColor(cr, cg, cb);
+    doc.text(cat === 'Non-Indexed' ? 'Others' : cat, margin + 140, y + 4.3);
 
     // Year (Centered at margin + 162 with clear spacing)
     doc.setFont('helvetica', 'normal');
@@ -1110,7 +1110,7 @@ export async function generateResearcherPdfReport(params: {
     doc.setFontSize(7.2);
     doc.setTextColor(148, 163, 184);
     doc.text(
-      `generated by scholarlense — ${profile.name} (${profile.scholarUserId})`,
+      `Generated by ScholarLense — ${profile.name}`,
       margin,
       290
     );
@@ -1119,5 +1119,10 @@ export async function generateResearcherPdfReport(params: {
     });
   }
 
-  doc.save(`${profile.scholarUserId}_bibliometric_report.pdf`);
+  const safeResearcherName =
+    profile.name
+      .trim()
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || profile.scholarUserId;
+  doc.save(`${safeResearcherName}_ScholarLense.pdf`);
 }

@@ -20,12 +20,12 @@ const PORTFOLIO_CATEGORY_COLORS: Record<
   PortfolioCategory,
   { hex: string; label: string }
 > = {
-  Q1: { hex: '#1e3a8a', label: 'Q1 Journals' },
-  Q2: { hex: '#0284c7', label: 'Q2 Journals' },
-  Q3: { hex: '#0d9488', label: 'Q3 Journals' },
-  Q4: { hex: '#d97706', label: 'Q4 Journals' },
-  Conference: { hex: '#4f46e5', label: 'Conference' },
-  'Non-Indexed': { hex: '#64748b', label: 'Others' },
+  Q1: { hex: '#2563eb', label: 'Q1 Journals' },
+  Q2: { hex: '#059669', label: 'Q2 Journals' },
+  Q3: { hex: '#d97706', label: 'Q3 Journals' },
+  Q4: { hex: '#e11d48', label: 'Q4 Journals' },
+  Conference: { hex: '#7c3aed', label: 'Conference' },
+  'Non-Indexed': { hex: '#475569', label: 'Others' },
 };
 
 const TYPE_COLORS: Record<PublicationType, string> = {
@@ -138,8 +138,9 @@ export const PortfolioBreakdownSection: React.FC<
 
           <div className="flex items-center justify-center my-1">
             <svg
+              data-chart-svg="true"
               viewBox="0 0 360 220"
-              className="w-full h-auto max-h-[220px]"
+              className="w-full h-auto max-h-[220px] scholar-chart-svg"
               role="img"
               aria-label="Quartile and indexing distribution donut chart"
             >
@@ -271,8 +272,9 @@ export const PortfolioBreakdownSection: React.FC<
 
           <div className="my-1">
             <svg
+              data-chart-svg="true"
               viewBox="0 0 360 210"
-              className="w-full h-auto max-h-[210px]"
+              className="w-full h-auto max-h-[210px] scholar-chart-svg"
               role="img"
               aria-label="Document type classification horizontal bar chart"
             >
@@ -362,8 +364,9 @@ export const PortfolioBreakdownSection: React.FC<
 
           <div className="my-1">
             <svg
+              data-chart-svg="true"
               viewBox="0 0 360 210"
-              className="w-full h-auto max-h-[210px]"
+              className="w-full h-auto max-h-[210px] scholar-chart-svg"
               role="img"
               aria-label="Citation impact distribution column chart"
             >
@@ -454,8 +457,9 @@ export const PortfolioBreakdownSection: React.FC<
 
           <div className="my-1">
             <svg
+              data-chart-svg="true"
               viewBox="0 0 440 200"
-              className="w-full h-auto max-h-[200px]"
+              className="w-full h-auto max-h-[200px] scholar-chart-svg"
               role="img"
               aria-label="Annual citation and publication trajectory chart"
             >
@@ -566,16 +570,17 @@ export const PortfolioBreakdownSection: React.FC<
 
           <div className="my-1">
             <svg
-              viewBox="0 0 360 200"
-              className="w-full h-auto max-h-[200px]"
+              data-chart-svg="true"
+              viewBox="0 0 360 210"
+              className="w-full h-auto max-h-[210px] scholar-chart-svg"
               role="img"
               aria-label="Quartile composition by year stacked bar chart"
             >
               <line
                 x1="18"
-                y1="168"
+                y1="158"
                 x2="345"
-                y2="168"
+                y2="158"
                 stroke="#cbd5e1"
                 strokeWidth="1"
               />
@@ -586,22 +591,42 @@ export const PortfolioBreakdownSection: React.FC<
                 );
                 const step = 310 / Math.max(1, pubTrendYears.length);
                 const x = 26 + idx * step;
-                const scaleH = 130 / maxYearPapers;
+                const scaleH = 122 / maxYearPapers;
 
                 const segments = [
-                  { count: yr.q1Count, color: '#1e3a8a', label: 'Q1' },
-                  { count: yr.q2Count, color: '#0284c7', label: 'Q2' },
-                  { count: yr.q3Count, color: '#0d9488', label: 'Q3' },
-                  { count: yr.q4Count, color: '#d97706', label: 'Q4' },
+                  {
+                    count: yr.q1Count,
+                    color: PORTFOLIO_CATEGORY_COLORS.Q1.hex,
+                    label: 'Q1',
+                  },
+                  {
+                    count: yr.q2Count,
+                    color: PORTFOLIO_CATEGORY_COLORS.Q2.hex,
+                    label: 'Q2',
+                  },
+                  {
+                    count: yr.q3Count,
+                    color: PORTFOLIO_CATEGORY_COLORS.Q3.hex,
+                    label: 'Q3',
+                  },
+                  {
+                    count: yr.q4Count,
+                    color: PORTFOLIO_CATEGORY_COLORS.Q4.hex,
+                    label: 'Q4',
+                  },
                   {
                     count: yr.conferenceCount,
-                    color: '#4f46e5',
+                    color: PORTFOLIO_CATEGORY_COLORS.Conference.hex,
                     label: 'Conference',
                   },
-                  { count: yr.otherCount, color: '#64748b', label: 'Others' },
+                  {
+                    count: yr.otherCount,
+                    color: PORTFOLIO_CATEGORY_COLORS['Non-Indexed'].hex,
+                    label: 'Others',
+                  },
                 ];
 
-                let curY = 168;
+                let curY = 158;
                 return (
                   <g key={`stack-${yr.year}`}>
                     {segments.map((s, sIdx) => {
@@ -624,7 +649,7 @@ export const PortfolioBreakdownSection: React.FC<
                     })}
                     <text
                       x={x + colW / 2}
-                      y="185"
+                      y="174"
                       textAnchor="middle"
                       fill="#475569"
                       fontSize="9.5"
@@ -635,54 +660,53 @@ export const PortfolioBreakdownSection: React.FC<
                   </g>
                 );
               })}
-            </svg>
-          </div>
 
-          <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600">
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-              <span className="inline-flex items-center gap-1 font-medium">
-                <span
-                  className="w-2.5 h-2.5 rounded-xs inline-block"
-                  style={{ backgroundColor: '#1e3a8a' }}
-                />
-                Q1
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium">
-                <span
-                  className="w-2.5 h-2.5 rounded-xs inline-block"
-                  style={{ backgroundColor: '#0284c7' }}
-                />
-                Q2
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium">
-                <span
-                  className="w-2.5 h-2.5 rounded-xs inline-block"
-                  style={{ backgroundColor: '#0d9488' }}
-                />
-                Q3
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium">
-                <span
-                  className="w-2.5 h-2.5 rounded-xs inline-block"
-                  style={{ backgroundColor: '#d97706' }}
-                />
-                Q4
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium">
-                <span
-                  className="w-2.5 h-2.5 rounded-xs inline-block"
-                  style={{ backgroundColor: '#4f46e5' }}
-                />
-                Conference
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium">
-                <span
-                  className="w-2.5 h-2.5 rounded-xs inline-block"
-                  style={{ backgroundColor: '#64748b' }}
-                />
-                Others
-              </span>
-            </div>
+              {/* Embedded SVG Legend for Q1, Q2, Q3, Q4, Conference, Others */}
+              <line
+                x1="18"
+                y1="184"
+                x2="345"
+                y2="184"
+                stroke="#f1f5f9"
+                strokeWidth="1"
+              />
+              {[
+                { label: 'Q1', color: PORTFOLIO_CATEGORY_COLORS.Q1.hex, x: 18 },
+                { label: 'Q2', color: PORTFOLIO_CATEGORY_COLORS.Q2.hex, x: 60 },
+                { label: 'Q3', color: PORTFOLIO_CATEGORY_COLORS.Q3.hex, x: 102 },
+                { label: 'Q4', color: PORTFOLIO_CATEGORY_COLORS.Q4.hex, x: 144 },
+                {
+                  label: 'Conference',
+                  color: PORTFOLIO_CATEGORY_COLORS.Conference.hex,
+                  x: 186,
+                },
+                {
+                  label: 'Others',
+                  color: PORTFOLIO_CATEGORY_COLORS['Non-Indexed'].hex,
+                  x: 274,
+                },
+              ].map((item) => (
+                <g key={item.label} transform={`translate(${item.x}, 193)`}>
+                  <rect
+                    x="0"
+                    y="0"
+                    width="8"
+                    height="8"
+                    rx="1.5"
+                    fill={item.color}
+                  />
+                  <text
+                    x="12"
+                    y="7.5"
+                    fill="#475569"
+                    fontSize="9.5"
+                    fontWeight="600"
+                  >
+                    {item.label}
+                  </text>
+                </g>
+              ))}
+            </svg>
           </div>
         </div>
 
@@ -714,8 +738,9 @@ export const PortfolioBreakdownSection: React.FC<
 
           <div className="my-1">
             <svg
+              data-chart-svg="true"
               viewBox="0 0 280 200"
-              className="w-full h-auto max-h-[200px]"
+              className="w-full h-auto max-h-[200px] scholar-chart-svg"
               role="img"
               aria-label="Leading collaborating nations bar chart"
             >
@@ -760,7 +785,7 @@ export const PortfolioBreakdownSection: React.FC<
                       width={barW * (274 / 165)}
                       height="8"
                       rx="3"
-                      fill="#0f172a"
+                      fill="#0ea5e9"
                     />
                   </g>
                 );

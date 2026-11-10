@@ -753,17 +753,17 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
                           cat === 'Q1'
                             ? 'text-blue-700'
                             : cat === 'Q2'
-                            ? 'text-sky-700'
+                            ? 'text-emerald-700'
                             : cat === 'Q3'
                             ? 'text-amber-700'
                             : cat === 'Q4'
-                            ? 'text-slate-600'
+                            ? 'text-rose-700'
                             : cat === 'Conference'
-                            ? 'text-indigo-700'
-                            : 'text-slate-500'
+                            ? 'text-purple-700'
+                            : 'text-slate-700'
                         }
                       >
-                        {cat}
+                        {cat === 'Non-Indexed' ? 'Others' : cat}
                       </span>
                     </td>
 

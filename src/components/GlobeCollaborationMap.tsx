@@ -144,16 +144,6 @@ export const FlatWorldCollaborationMap: React.FC<
     return s;
   }, [universities]);
 
-  const uniqueCoAuthorCount = useMemo(() => {
-    const names = new Set<string>();
-    for (const u of universities) {
-      for (const ca of u.coAuthors) {
-        names.add(ca.name.toLowerCase().trim());
-      }
-    }
-    return names.size;
-  }, [universities]);
-
   const flatMapData = useMemo(() => {
     const countries = WORLD_COUNTRY_FEATURES.map((feat, idx) => {
       const d = FLAT_PATH_GENERATOR(feat);
@@ -286,15 +276,15 @@ export const FlatWorldCollaborationMap: React.FC<
               <path
                 d={arc.d}
                 fill="none"
-                stroke="rgba(56, 189, 248, 0.22)"
-                strokeWidth="3.4"
+                stroke="rgba(56, 189, 248, 0.16)"
+                strokeWidth="1.9"
                 strokeLinecap="round"
               />
               <path
                 d={arc.d}
                 fill="none"
-                stroke="rgba(125, 211, 252, 0.85)"
-                strokeWidth="1.5"
+                stroke="rgba(125, 211, 252, 0.82)"
+                strokeWidth="0.9"
                 strokeLinecap="round"
               />
             </g>
@@ -360,7 +350,14 @@ export const FlatWorldCollaborationMap: React.FC<
             >
               {`${universities.length} Institutions · ${collaboratingCountryNames.size} Countries`}
             </text>
-            <circle cx={19} cy={52} r={4} fill="#fbbf24" />
+            <circle
+              cx={19}
+              cy={52}
+              r={4}
+              fill="#f97316"
+              stroke="#ffffff"
+              strokeWidth="1"
+            />
             <text
               x={28}
               y={55}
@@ -368,17 +365,17 @@ export const FlatWorldCollaborationMap: React.FC<
               fontSize="9.5"
               fontFamily="Inter, system-ui, sans-serif"
             >
-              Home Institute
+              Home Institution
             </text>
-            <circle cx={116} cy={52} r={4} fill="#38bdf8" />
+            <circle cx={124} cy={52} r={4} fill="#38bdf8" />
             <text
-              x={125}
+              x={133}
               y={55}
               fill="#cbd5e1"
               fontSize="9.5"
               fontFamily="Inter, system-ui, sans-serif"
             >
-              {`Partner (${uniqueCoAuthorCount} Co-Authors)`}
+              Partner Institutions
             </text>
           </g>
         </svg>
@@ -720,16 +717,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       if (u.country) s.add(u.country.toLowerCase().trim());
     }
     return s;
-  }, [universities]);
-
-  const uniqueCoAuthorCount = useMemo(() => {
-    const names = new Set<string>();
-    for (const u of universities) {
-      for (const ca of u.coAuthors) {
-        names.add(ca.name.toLowerCase().trim());
-      }
-    }
-    return names.size;
   }, [universities]);
 
   useEffect(() => {
@@ -1212,16 +1199,16 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               <path
                 d={arc.d}
                 fill="none"
-                stroke="rgba(56, 189, 248, 0.22)"
-                strokeWidth="3.4"
+                stroke="rgba(56, 189, 248, 0.16)"
+                strokeWidth="1.9"
                 strokeLinecap="round"
               />
               {/* 3D elevated blue arc line */}
               <path
                 d={arc.d}
                 fill="none"
-                stroke="rgba(125, 211, 252, 0.85)"
-                strokeWidth="1.5"
+                stroke="rgba(125, 211, 252, 0.82)"
+                strokeWidth="0.9"
                 strokeLinecap="round"
               />
             </g>
@@ -1284,7 +1271,14 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
             >
               {`${universities.length} Institutions · ${collaboratingCountryNames.size} Countries`}
             </text>
-            <circle cx={19} cy={52} r={4} fill="#fbbf24" />
+            <circle
+              cx={19}
+              cy={52}
+              r={4}
+              fill="#f97316"
+              stroke="#ffffff"
+              strokeWidth="1"
+            />
             <text
               x={28}
               y={55}
@@ -1292,17 +1286,17 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               fontSize="9.5"
               fontFamily="Inter, system-ui, sans-serif"
             >
-              Home Institute
+              Home Institution
             </text>
-            <circle cx={116} cy={52} r={4} fill="#38bdf8" />
+            <circle cx={124} cy={52} r={4} fill="#38bdf8" />
             <text
-              x={125}
+              x={133}
               y={55}
               fill="#cbd5e1"
               fontSize="9.5"
               fontFamily="Inter, system-ui, sans-serif"
             >
-              {`Partner (${uniqueCoAuthorCount} Co-Authors)`}
+              Partner Institutions
             </text>
           </g>
         </svg>
@@ -1759,22 +1753,17 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
           {selectedUni ? (
             <div className="space-y-4">
               <div ref={uniDropdownRef} className="relative">
-                <label
-                  htmlFor="inspector-university-select"
-                  className="block text-[11px] font-medium text-slate-500 mb-1"
-                >
-                  Collaborating University ({universities.length})
-                </label>
                 <button
                   id="inspector-university-select"
                   type="button"
                   onClick={() => setIsUniDropdownOpen((prev) => !prev)}
                   aria-expanded={isUniDropdownOpen}
+                  aria-label="Select collaborating institution"
                   className="w-full px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg text-slate-900 flex items-center justify-between gap-2 text-left focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
                   <span className="truncate">
-                    {selectedUni.universityName} ({selectedUni.country}) —{' '}
-                    {selectedUni.paperCount} papers
+                    {selectedUni.universityName} — {selectedUni.paperCount}{' '}
+                    {selectedUni.paperCount === 1 ? 'paper' : 'papers'}
                   </span>
                   <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
                 </button>
@@ -1964,7 +1953,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                             ? paper.quartile
                             : paper.type === 'Conference'
                             ? 'Conference'
-                            : 'Non-Indexed'}
+                            : 'Others'}
                         </span>
                         <span aria-hidden="true">·</span>
                         <span className="truncate max-w-[200px]">

@@ -381,10 +381,15 @@ export default function App() {
         countries,
         journals,
       });
+      const safeName =
+        activeProfile.name
+          .trim()
+          .replace(/[^a-zA-Z0-9]+/g, '_')
+          .replace(/^_+|_+$/g, '') || activeProfile.scholarUserId;
       await logExportToFirestore(
         activeProfile.name,
         'pdf',
-        `${activeProfile.scholarUserId}_report.pdf`
+        `${safeName}_ScholarLense.pdf`
       );
     } else {
       const ok = await exportChartSvgAsPng(
@@ -687,108 +692,162 @@ export default function App() {
       {/* Main Centered Multi-Page Workspace */}
       <div className="flex-1 max-w-[1360px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-5">
         <main className="w-full space-y-5">
-          {/* Search & Researcher Bar: Shown ONLY on Overview page */}
+          {/* Author Header & Toggleable Search Bar: Shown ONLY on Overview page */}
           {activePage === 'overview' && (
             <section
-              aria-label="Google Scholar Profile Search"
-              className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 space-y-3.5 shadow-xs"
+              aria-label="Google Scholar Profile Header"
+              className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 md:p-7 space-y-4 shadow-xs"
             >
-              <form onSubmit={handleAnalyzeSubmit} noValidate>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <div className="relative flex-1">
-                    <label htmlFor="scholar-url-input" className="sr-only">
-                      Google Scholar Profile Link
-                    </label>
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      id="scholar-url-input"
-                      type="url"
-                      value={scholarUrlInput}
-                      onChange={(e) => {
-                        setScholarUrlInput(e.target.value);
-                        if (urlError) setUrlError(null);
-                      }}
-                      placeholder="Paste Google Scholar profile link (https://scholar.google.com/citations?user=...)"
-                      aria-label="Google Scholar Profile Link"
-                      className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm font-mono bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isAnalyzing}
-                    className="px-5 py-2 text-xs sm:text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer"
-                  >
-                    {isAnalyzing ? 'Analyzing...' : 'Analyze Profile'}
-                  </button>
-                </div>
-
-                {urlError && (
-                  <div
-                    role="alert"
-                    className="mt-2 flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
-                  >
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{urlError}</span>
-                  </div>
-                )}
-              </form>
-
-              {activeProfile && (
-                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={
-                      activeProfile.avatarUrl &&
-                      activeProfile.avatarUrl.startsWith('data:image/')
-                        ? activeProfile.avatarUrl
-                        : `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-                            activeProfile.scholarUserId
-                          )}`
-                    }
-                    alt={activeProfile.name}
-                    referrerPolicy="no-referrer"
-                    data-testid="active-researcher-avatar"
-                    onError={(e) => {
-                      const img = e.currentTarget;
-                      if (!img.dataset.fallbackStep) {
-                        img.dataset.fallbackStep = '1';
-                        img.src = `/api/scholar/avatar?userId=${encodeURIComponent(
-                          activeProfile.scholarUserId
-                        )}&name=${encodeURIComponent(activeProfile.name)}`;
-                      } else if (img.dataset.fallbackStep === '1') {
-                        img.dataset.fallbackStep = '2';
-                        img.src = `/api/scholar/avatar?name=${encodeURIComponent(
-                          activeProfile.name
-                        )}`;
+              {activeProfile ? (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                  <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+                    <img
+                      src={
+                        activeProfile.avatarUrl &&
+                        activeProfile.avatarUrl.startsWith('data:image/')
+                          ? activeProfile.avatarUrl
+                          : `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+                              activeProfile.scholarUserId
+                            )}`
                       }
-                    }}
-                    className="w-11 h-11 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs"
-                  />
-                  <div className="min-w-0">
-                    <h1
-                      data-testid="active-researcher-name"
-                      className="text-base sm:text-lg font-bold text-slate-900 leading-tight truncate"
-                    >
-                      {activeProfile.name}
-                    </h1>
-                    <div className="text-xs text-slate-500 truncate mt-0.5">
-                      {activeProfile.affiliation}
+                      alt={activeProfile.name}
+                      referrerPolicy="no-referrer"
+                      data-testid="active-researcher-avatar"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (!img.dataset.fallbackStep) {
+                          img.dataset.fallbackStep = '1';
+                          img.src = `/api/scholar/avatar?userId=${encodeURIComponent(
+                            activeProfile.scholarUserId
+                          )}&name=${encodeURIComponent(activeProfile.name)}`;
+                        } else if (img.dataset.fallbackStep === '1') {
+                          img.dataset.fallbackStep = '2';
+                          img.src = `/api/scholar/avatar?name=${encodeURIComponent(
+                            activeProfile.name
+                          )}`;
+                        }
+                      }}
+                      className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full object-cover border-2 sm:border-3 border-slate-200 bg-slate-100 shrink-0 shadow-md"
+                    />
+                    <div className="min-w-0">
+                      <h1
+                        data-testid="active-researcher-name"
+                        className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight truncate"
+                      >
+                        {activeProfile.name}
+                      </h1>
+                      <div className="text-sm sm:text-base md:text-lg text-slate-700 font-medium truncate mt-1 sm:mt-1.5">
+                        {activeProfile.affiliation}
+                      </div>
+                      <div className="mt-2 flex items-center">
+                        <a
+                          href={activeProfile.scholarUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 font-sans font-semibold text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline bg-blue-50/80 hover:bg-blue-100 border border-blue-200/60 px-3 py-1 rounded-lg transition-colors"
+                        >
+                          <span>Google Scholar</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                    <form
+                      onSubmit={handleAnalyzeSubmit}
+                      noValidate
+                      className="flex items-center gap-2"
+                    >
+                      <div className="relative w-full sm:w-60 md:w-72">
+                        <label htmlFor="scholar-url-input" className="sr-only">
+                          Google Scholar Profile Link or User ID
+                        </label>
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          id="scholar-url-input"
+                          type="text"
+                          value={scholarUrlInput}
+                          onChange={(e) => {
+                            setScholarUrlInput(e.target.value);
+                            if (urlError) setUrlError(null);
+                          }}
+                          placeholder="Paste Scholar URL or User ID..."
+                          aria-label="Google Scholar Profile Link or User ID"
+                          className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm font-sans bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isAnalyzing}
+                        aria-label="Analyze Google Scholar Profile"
+                        className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                      >
+                        <Search className="w-3.5 h-3.5" />
+                        <span>{isAnalyzing ? 'Analyzing...' : 'Search'}</span>
+                      </button>
+                    </form>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-slate-500 font-mono tabular-nums shrink-0">
-                  <span>ID: {activeProfile.scholarUserId}</span>
-                  <a
-                    href={activeProfile.scholarUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-sans font-medium text-blue-600 hover:text-blue-800"
-                  >
-                    <span>Google Scholar</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+              ) : null}
+
+              {/* URL error message for active profile view */}
+              {activeProfile && urlError && (
+                <div
+                  role="alert"
+                  className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{urlError}</span>
                 </div>
-                </div>
+              )}
+
+              {/* Initial View Search Bar (when no active profile is loaded yet) */}
+              {!activeProfile && (
+                <form
+                  onSubmit={handleAnalyzeSubmit}
+                  noValidate
+                  className="space-y-3"
+                >
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                    <div className="relative flex-1">
+                      <label htmlFor="scholar-url-input-initial" className="sr-only">
+                        Google Scholar Profile Link or User ID
+                      </label>
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        id="scholar-url-input-initial"
+                        type="text"
+                        autoFocus
+                        value={scholarUrlInput}
+                        onChange={(e) => {
+                          setScholarUrlInput(e.target.value);
+                          if (urlError) setUrlError(null);
+                        }}
+                        placeholder="Search by Google Scholar profile URL or researcher User ID..."
+                        aria-label="Google Scholar Profile Link or User ID"
+                        className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm font-sans bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isAnalyzing}
+                      className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer shadow-xs flex items-center justify-center gap-2"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      <span>{isAnalyzing ? 'Analyzing Profile...' : 'Analyze Profile'}</span>
+                    </button>
+                  </div>
+
+                  {urlError && (
+                    <div
+                      role="alert"
+                      className="mt-2.5 flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                      <span>{urlError}</span>
+                    </div>
+                  )}
+                </form>
               )}
             </section>
           )}
@@ -870,13 +929,13 @@ export default function App() {
                   </h2>
                 </div>
 
-                {/* 5 Percentage Cards: Q1, Q2, Q3, Q4, Conference */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {/* 1. Q1 Share */}
+                {/* 6 Percentage Cards: Q1, Q2, Q3, Q4, Conference, Others (Above Colorbar Line) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {/* 1. Q1 Share - Royal Blue */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q1')}
-                    className="text-left p-3.5 bg-blue-50/50 hover:bg-blue-50 border border-blue-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3.5 bg-blue-50/70 hover:bg-blue-50 border border-blue-200/80 rounded-lg transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-blue-900">
@@ -892,31 +951,31 @@ export default function App() {
                     </div>
                   </button>
 
-                  {/* 2. Q2 Share */}
+                  {/* 2. Q2 Share - Emerald Green */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q2')}
-                    className="text-left p-3.5 bg-sky-50/50 hover:bg-sky-50 border border-sky-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3.5 bg-emerald-50/70 hover:bg-emerald-50 border border-emerald-200/80 rounded-lg transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-sky-900">
+                      <span className="text-xs font-semibold text-emerald-900">
                         Q2 Journals
                       </span>
-                      <span className="w-2 h-2 rounded-full bg-sky-500" />
+                      <span className="w-2 h-2 rounded-full bg-emerald-600" />
                     </div>
                     <div
                       data-testid="kpi-q2-percentage"
-                      className="text-2xl font-bold font-mono text-sky-700 tabular-nums mt-1"
+                      className="text-2xl font-bold font-mono text-emerald-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q2.percentage}%
                     </div>
                   </button>
 
-                  {/* 3. Q3 Share */}
+                  {/* 3. Q3 Share - Amber Gold */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q3')}
-                    className="text-left p-3.5 bg-amber-50/50 hover:bg-amber-50 border border-amber-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3.5 bg-amber-50/70 hover:bg-amber-50 border border-amber-200/80 rounded-lg transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-amber-900">
@@ -932,43 +991,63 @@ export default function App() {
                     </div>
                   </button>
 
-                  {/* 4. Q4 Share */}
+                  {/* 4. Q4 Share - Rose / Crimson Red */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q4')}
-                    className="text-left p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3.5 bg-rose-50/70 hover:bg-rose-50 border border-rose-200/80 rounded-lg transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-700">
+                      <span className="text-xs font-semibold text-rose-900">
                         Q4 Journals
                       </span>
-                      <span className="w-2 h-2 rounded-full bg-slate-400" />
+                      <span className="w-2 h-2 rounded-full bg-rose-600" />
                     </div>
                     <div
                       data-testid="kpi-q4-percentage"
-                      className="text-2xl font-bold font-mono text-slate-800 tabular-nums mt-1"
+                      className="text-2xl font-bold font-mono text-rose-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q4.percentage}%
                     </div>
                   </button>
 
-                  {/* 5. Conference Share */}
+                  {/* 5. Conference Share - Royal Purple */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterType('Conference')}
-                    className="text-left p-3.5 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3.5 bg-purple-50/70 hover:bg-purple-50 border border-purple-200/80 rounded-lg transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-indigo-900">
+                      <span className="text-xs font-semibold text-purple-900">
                         Conference
                       </span>
-                      <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                      <span className="w-2 h-2 rounded-full bg-purple-600" />
                     </div>
                     <div
                       data-testid="kpi-conference-percentage"
-                      className="text-2xl font-bold font-mono text-indigo-700 tabular-nums mt-1"
+                      className="text-2xl font-bold font-mono text-purple-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Conference.percentage}%
+                    </div>
+                  </button>
+
+                  {/* 6. Others Share - Dark Slate */}
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFilterQuartile('Unranked')}
+                    className="text-left p-3.5 bg-slate-100/70 hover:bg-slate-100 border border-slate-300/80 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-800">
+                        Others
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-slate-600" />
+                    </div>
+                    <div
+                      data-testid="kpi-others-percentage"
+                      className="text-2xl font-bold font-mono text-slate-800 tabular-nums mt-1"
+                    >
+                      {stats.portfolioDistribution['Non-Indexed'].percentage}%
                     </div>
                   </button>
                 </div>
@@ -989,7 +1068,7 @@ export default function App() {
                     style={{
                       width: `${stats.portfolioDistribution.Q2.percentage}%`,
                     }}
-                    className="bg-sky-500 h-full"
+                    className="bg-emerald-600 h-full"
                     title={`Q2 Journals: ${stats.portfolioDistribution.Q2.percentage}%`}
                   />
                   <div
@@ -1003,14 +1082,14 @@ export default function App() {
                     style={{
                       width: `${stats.portfolioDistribution.Q4.percentage}%`,
                     }}
-                    className="bg-slate-400 h-full"
+                    className="bg-rose-600 h-full"
                     title={`Q4 Journals: ${stats.portfolioDistribution.Q4.percentage}%`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution.Conference.percentage}%`,
                     }}
-                    className="bg-indigo-600 h-full"
+                    className="bg-purple-600 h-full"
                     title={`Conference: ${stats.portfolioDistribution.Conference.percentage}%`}
                   />
                   <div
@@ -1124,12 +1203,15 @@ export default function App() {
                           </div>
                           <div className="text-[11px] text-slate-500 truncate mt-0.5">
                             {uni.city}, {uni.country} · {uni.coAuthors.length}{' '}
-                            co-authors
+                            {uni.coAuthors.length === 1
+                              ? 'co-author'
+                              : 'co-authors'}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-xs font-mono font-semibold text-slate-900 tabular-nums whitespace-nowrap">
-                            {uni.paperCount} papers
+                            {uni.paperCount}{' '}
+                            {uni.paperCount === 1 ? 'paper' : 'papers'}
                           </span>
                           <button
                             type="button"
@@ -1180,7 +1262,7 @@ export default function App() {
                             <div className="text-[11px] text-slate-500 truncate mt-0.5">
                               {pub.venue} · {pub.year} ·{' '}
                               <span className="font-semibold text-slate-700">
-                                {cat === 'Non-Indexed' ? 'Emerging' : cat}
+                                {cat === 'Non-Indexed' ? 'Others' : cat}
                               </span>
                             </div>
                           </div>
@@ -1198,9 +1280,15 @@ export default function App() {
             </div>
           )}
 
-          {/* PAGE 2: CHARTS (Kept mounted in DOM so PDF report can serialize chart SVGs from any page) */}
+          {/* PAGE 2: CHARTS (Kept mounted offscreen so PDF report can serialize chart SVGs from any tab) */}
           {activeProfile && stats && (
-            <div className={activePage === 'charts' ? 'block' : 'hidden'}>
+            <div
+              className={
+                activePage === 'charts'
+                  ? 'block'
+                  : 'fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0 select-none'
+              }
+            >
               <PortfolioBreakdownSection
                 stats={stats}
                 countries={countries}
@@ -1211,9 +1299,15 @@ export default function App() {
             </div>
           )}
 
-          {/* PAGE 3: WORLD COLLABORATION MAP */}
+          {/* PAGE 3: WORLD COLLABORATION MAP (Kept mounted offscreen so PDF report can serialize flat map from any tab) */}
           {activeProfile && stats && (
-            <div className={activePage === 'map' ? 'block' : 'hidden'}>
+            <div
+              className={
+                activePage === 'map'
+                  ? 'block'
+                  : 'fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0 select-none'
+              }
+            >
               <GlobeCollaborationMap
                 profile={activeProfile}
                 universities={universities}
