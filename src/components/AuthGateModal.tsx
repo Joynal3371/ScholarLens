@@ -67,6 +67,16 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  // Reset error and loading state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setSuccessMessage(null);
+      setIsGoogleLoading(false);
+      setPopupBlocked(false);
+    }
+  }, [isOpen]);
+
   // Focus code input when transitioning to enter_code
   useEffect(() => {
     if (emailStep === 'enter_code') {
@@ -287,12 +297,9 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
       ) {
         setError('Google sign-in was cancelled.');
       } else {
-        // Do not auto-spawn popup windows to avoid unwanted redirects.
-        // Switch user smoothly to the Email Verification Code tab.
         setError(
-          'Google sign-in encountered a browser restriction. Please use the Email Verification Code tab below to sign in instantly.'
+          'Google sign-in is restricted in this browser window. Please switch to the Email Code tab above to sign in instantly with your email address.'
         );
-        setActiveTab('email');
       }
       setIsGoogleLoading(false);
     }

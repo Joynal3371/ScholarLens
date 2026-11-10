@@ -385,15 +385,7 @@ export async function generateResearcherPdfReport(params: {
   doc.setTextColor(51, 65, 85);
   doc.text(affilLines[0], textLeftX, 19.0);
 
-  // Google Scholar Link under Affiliated Institute Name (ID removed)
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.2);
-  doc.setTextColor(29, 78, 216);
-  const scholarLabel = 'Google Scholar Profile';
-  doc.textWithLink(scholarLabel, textLeftX, 24.5, { url: profile.scholarUrl });
-  const scholarW = (doc.getStringUnitWidth(scholarLabel) * 8.2) / (72 / 25.4);
-  doc.link(textLeftX, 22.0, scholarW, 4.0, { url: profile.scholarUrl });
-
+  // Research Areas directly under Affiliation (ABOVE Google Scholar link)
   const domainStr =
     profile.fields.length > 0
       ? `Research Areas: ${profile.fields.slice(0, 5).join(' · ')}`
@@ -401,10 +393,19 @@ export async function generateResearcherPdfReport(params: {
   if (domainStr) {
     const domainLines = doc.splitTextToSize(domainStr, maxLeftTextW);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(7.6);
     doc.setTextColor(100, 116, 139);
-    doc.text(domainLines[0], textLeftX, 29.8);
+    doc.text(domainLines[0], textLeftX, 23.8);
   }
+
+  // Google Scholar Profile Link BELOW Research Areas
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.2);
+  doc.setTextColor(29, 78, 216);
+  const scholarLabel = 'Google Scholar Profile';
+  doc.textWithLink(scholarLabel, textLeftX, 29.5, { url: profile.scholarUrl });
+  const scholarW = (doc.getStringUnitWidth(scholarLabel) * 8.2) / (72 / 25.4);
+  doc.link(textLeftX, 26.5, scholarW, 4.2, { url: profile.scholarUrl });
 
   y = 39.5;
 
@@ -540,7 +541,7 @@ export async function generateResearcherPdfReport(params: {
   y += 6.5;
 
   // -------------------------------------------------------------------------
-  // SECTION 2: GLOBAL COLLABORATION NETWORK MAP
+  // SECTION 2: GLOBAL COLLABORATION NETWORK MAP (EXPANDED TO FULL WIDTH ON PAGE 1)
   // -------------------------------------------------------------------------
   try {
     const flatMapContainer = document.getElementById(
@@ -560,25 +561,41 @@ export async function generateResearcherPdfReport(params: {
       );
       const rawMap = await svgElementToRawPngDataUrl(flatMapSvg);
       const trueMapH = Math.min(
-        62.0,
+        94.0,
         Number(
           ((contentW * rawMap.height) / Math.max(1, rawMap.width)).toFixed(1)
         )
       );
-      const mapDrawW = Number(
-        ((trueMapH * rawMap.width) / Math.max(1, rawMap.height)).toFixed(1)
-      );
-      const mapDrawX = margin + (contentW - mapDrawW) / 2;
+      const mapDrawW = contentW;
+      const mapDrawX = margin;
       doc.addImage(rawMap.dataUrl, 'PNG', mapDrawX, y, mapDrawW, trueMapH);
       y += trueMapH + 2.5;
+
+      // Summary strip under map
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(margin, y, contentW, 6.2, 1, 1, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(6.8);
+      doc.setTextColor(71, 85, 105);
+      doc.text(
+        `Global Research Footprint: ${universities.length} Collaborating Institutions Across ${countries.length} Nations Worldwide`,
+        margin + contentW / 2,
+        y + 4.2,
+        { align: 'center' }
+      );
+      y += 8.5;
     }
   } catch {
     // Continue if offscreen SVG serialization is skipped
   }
 
-  // -------------------------------------------------------------------------
-  // SECTION 3: ALL 6 ANALYTICAL GRAPHS GENERATED IN THE SITE (3x2 GRID)
-  // -------------------------------------------------------------------------
+  // =========================================================================
+  // PAGE 2: BIBLIOMETRIC & IMPACT ANALYTICS GRAPHS (LARGE 2x3 GRID)
+  // =========================================================================
+  doc.addPage();
+  y = 14;
+
   y = drawSectionHeader(
     doc,
     '03',
@@ -615,11 +632,11 @@ export async function generateResearcherPdfReport(params: {
     },
   ];
 
-  const chartCols = 3;
-  const chartGapX = 2.4;
-  const chartGapY = 2.0;
+  const chartCols = 2;
+  const chartGapX = 5.0;
+  const chartGapY = 4.5;
   const chartCardW = (contentW - chartGapX * (chartCols - 1)) / chartCols;
-  const chartCardH = 31.0;
+  const chartCardH = 75.0;
 
   for (let i = 0; i < siteAnalyticsCharts.length; i++) {
     const item = siteAnalyticsCharts[i];
@@ -630,22 +647,22 @@ export async function generateResearcherPdfReport(params: {
 
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(cardX, cardY, chartCardW, chartCardH, 1.5, 1.5, 'FD');
+    doc.roundedRect(cardX, cardY, chartCardW, chartCardH, 2.0, 2.0, 'FD');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.6);
+    doc.setFontSize(8.0);
     doc.setTextColor(15, 23, 42);
-    doc.text(item.title, cardX + 2.4, cardY + 4.3);
+    doc.text(item.title, cardX + 3.5, cardY + 5.5);
 
     try {
       const container = document.getElementById(item.id);
       const svgEl = findTargetChartSvg(container);
       if (svgEl) {
         const rendered = await svgElementToRawPngDataUrl(svgEl);
-        const padX = 2.0;
-        const topOffset = 5.6;
+        const padX = 3.0;
+        const topOffset = 7.5;
         const maxDrawW = chartCardW - padX * 2;
-        const maxDrawH = chartCardH - topOffset - 1.4;
+        const maxDrawH = chartCardH - topOffset - 2.5;
         const aspect = rendered.width / Math.max(1, rendered.height);
 
         let drawW = maxDrawW;
@@ -664,7 +681,7 @@ export async function generateResearcherPdfReport(params: {
   }
 
   // =========================================================================
-  // PAGE 2: TOP 10 COUNTRIES & CO-AUTHORS, TOP 10 PAPERS, UNIVERSITIES & VENUES
+  // PAGE 3: TOP 10 COLLABORATING COUNTRIES, CO-AUTHORS, INSTITUTIONS & VENUES
   // =========================================================================
   doc.addPage();
   y = 14;
@@ -924,6 +941,12 @@ export async function generateResearcherPdfReport(params: {
   });
 
   y += listCard2H + 3.5;
+
+  // =========================================================================
+  // PAGE 4+: TOP 10 MOST CITED PUBLICATIONS & COMPLETE INVENTORY
+  // =========================================================================
+  doc.addPage();
+  y = 14;
 
   // -------------------------------------------------------------------------
   // SECTION 6: TOP 10 MOST CITED PUBLICATIONS
