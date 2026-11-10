@@ -530,14 +530,46 @@ export default function App() {
       {/* Top Bar: Clean Brand & Right Actions Only */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-3">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
-          {/* Left: Brand Wordmark Only */}
+          {/* Left: Brand Logo & Wordmark */}
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               type="button"
               onClick={() => navigateToPage('overview')}
-              className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 font-display cursor-pointer"
+              data-testid="brand-logo-button"
+              className="inline-flex items-center gap-2.5 text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 font-display cursor-pointer group"
             >
-              ScholarLens
+              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#2563eb] flex items-center justify-center shadow-2xs group-hover:from-[#172554] group-hover:to-[#1d4ed8] transition-colors shrink-0">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4.5 h-4.5 text-white"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="10.5"
+                    cy="10.5"
+                    r="6.5"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                  />
+                  <path
+                    d="M15.5 15.5L20.5 20.5"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M8 12.5V10.5M10.5 12.5V8.5M13 12.5V9.5"
+                    stroke="#93c5fd"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+              <span>
+                Scholar<span className="text-blue-600">Lens</span>
+              </span>
             </button>
           </div>
 
