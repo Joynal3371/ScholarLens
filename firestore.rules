@@ -29,7 +29,7 @@ service cloud.firestore {
 
     function isValidUserProfile(data) {
       return data.keys().hasAll(['uid', 'displayName', 'provider', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['uid', 'displayName', 'provider', 'orcidId', 'photoURL', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'provider', 'orcidId', 'photoURL', 'scholarUrl', 'createdAt', 'updatedAt'])
         && data.uid is string
         && data.uid.size() >= 1
         && data.uid.size() <= 128
@@ -42,6 +42,7 @@ service cloud.firestore {
         && (data.provider == 'google' || data.provider == 'orcid')
         && (!('orcidId' in data) || (data.orcidId is string && data.orcidId.size() <= 40))
         && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 150000))
+        && (!('scholarUrl' in data) || (data.scholarUrl is string && data.scholarUrl.size() <= 500))
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
@@ -80,8 +81,8 @@ service cloud.firestore {
         && incoming().uid == existing().uid
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'orcidId', 'photoURL', 'updatedAt']);
-      allow delete: if false;
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'orcidId', 'photoURL', 'scholarUrl', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
     }
 
     match /exports/{exportId} {

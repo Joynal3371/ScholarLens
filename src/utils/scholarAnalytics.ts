@@ -496,16 +496,16 @@ export function computeProfileStatistics(
   const citationList = publications.map((p) => p.citations);
   const computedCitations = citationList.reduce((acc, c) => acc + c, 0);
   const totalCitations =
-    officialMetrics && officialMetrics.totalCitations > 0
+    officialMetrics && typeof officialMetrics.totalCitations === 'number'
       ? officialMetrics.totalCitations
       : computedCitations;
 
   const hIndex =
-    officialMetrics && officialMetrics.hIndex > 0
+    officialMetrics && typeof officialMetrics.hIndex === 'number'
       ? officialMetrics.hIndex
       : calculateHIndex(citationList);
   const i10Index =
-    officialMetrics && officialMetrics.i10Index > 0
+    officialMetrics && typeof officialMetrics.i10Index === 'number'
       ? officialMetrics.i10Index
       : citationList.filter((c) => c >= 10).length;
   const gIndex = calculateGIndex(citationList);
@@ -1009,7 +1009,9 @@ export function aggregateUniversityCollaborations(
       continent: data.meta.continent,
       lat: data.meta.lat,
       lng: data.meta.lng,
-      isHomeInstitution: Boolean(data.meta.isHomeInstitution),
+      isHomeInstitution: homeProfile
+        ? universityId === homeProfile.homeUniversityId
+        : Boolean(data.meta.isHomeInstitution),
       paperCount: papers.length,
       totalCitations,
       q1PaperCount,

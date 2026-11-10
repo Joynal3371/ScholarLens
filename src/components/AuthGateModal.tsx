@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { X, Lock, AlertCircle, User, Mail } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, AlertCircle } from 'lucide-react';
 import {
   signInWithGoogleAccount,
   signInWithGoogleIdToken,
-  signInOrRegisterWithGmail,
+  getLocalUserProfileOverride,
   AUTHORIZED_BRIDGE_ORIGIN,
 } from '../firebase';
 
@@ -11,8 +11,9 @@ export interface AuthenticatedResearcher {
   uid: string;
   name: string;
   emailOrId: string;
-  photoURL: string;
-  provider: 'google';
+  photoURL?: string;
+  scholarUrl?: string;
+  provider: 'google' | 'orcid';
 }
 
 interface AuthGateModalProps {
@@ -24,189 +25,148 @@ interface AuthGateModalProps {
 
 export const AuthGateModal: React.FC<AuthGateModalProps> = ({
   isOpen,
-  pendingActionLabel,
   onClose,
   onAuthenticated,
 }) => {
-  const [gmailEmail, setGmailEmail] = useState<string>('');
-  const [gmailName, setGmailName] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const bridgePopupRef = useRef<Window | null>(null);
 
   useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      if (event.data?.type === 'GOOGLE_BRIDGE_AUTH_SUCCESS') {
-        const { idToken, uid, name, email, photoURL } = event.data;
-        if (idToken) {
-          try {
-            const { user, profile } = await signInWithGoogleIdToken(idToken);
-            onAuthenticated({
-              uid: user.uid,
-              name:
-                profile.displayName ||
-                user.displayName ||
-                user.email ||
-                'Google User',
-              emailOrId: user.email || user.uid,
-              photoURL: profile.photoURL || user.photoURL || '',
-              provider: 'google',
-            });
-            return;
-          } catch {
-            // Fall through to profile payload
-          }
-        }
-        if (uid && email) {
+    const handleBridgeMessage = async (event: MessageEvent) => {
+      if (event.origin !== AUTHORIZED_BRIDGE_ORIGIN) return;
+      const data = event.data;
+      if (!data || data.type !== 'GOOGLE_BRIDGE_AUTH_SUCCESS') return;
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        if (data.idToken) {
+          const { user, profile } = await signInWithGoogleIdToken(data.idToken);
           onAuthenticated({
-            uid: String(uid),
-            name: String(name || email),
-            emailOrId: String(email),
-            photoURL: String(photoURL || ''),
+            uid: user.uid,
+            name: profile.displayName,
+            emailOrId: user.email || user.uid,
+            photoURL: profile.photoURL,
+            scholarUrl: profile.scholarUrl || '',
+            provider: 'google',
+          });
+        } else if (data.uid) {
+          const localOverride = getLocalUserProfileOverride(data.uid);
+          onAuthenticated({
+            uid: data.uid,
+            name: localOverride?.displayName || data.name || 'Researcher',
+            emailOrId: data.email || data.uid,
+            photoURL: localOverride?.photoURL || data.photoURL || '',
+            scholarUrl: localOverride?.scholarUrl || '',
             provider: 'google',
           });
         }
+      } catch {
+        if (data.uid) {
+          const localOverride = getLocalUserProfileOverride(data.uid);
+          onAuthenticated({
+            uid: data.uid,
+            name: localOverride?.displayName || data.name || 'Researcher',
+            emailOrId: data.email || data.uid,
+            photoURL: localOverride?.photoURL || data.photoURL || '',
+            scholarUrl: localOverride?.scholarUrl || '',
+            provider: 'google',
+          });
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+
+    window.addEventListener('message', handleBridgeMessage);
+    return () => window.removeEventListener('message', handleBridgeMessage);
   }, [onAuthenticated]);
 
   if (!isOpen) return null;
 
+  const openAuthorizedGoogleBridgePopup = () => {
+    setError(null);
+    const width = 500;
+    const height = 620;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const popup = window.open(
+      `${AUTHORIZED_BRIDGE_ORIGIN}/?googleAuthBridge=1`,
+      'ScholarLensGoogleAuth',
+      `width=${width},height=${height},left=${left},top=${top},noopener=no`
+    );
+    if (!popup) {
+      setError('Popup blocked by browser. Please allow popups and try again.');
+      setIsLoading(false);
+      return;
+    }
+    bridgePopupRef.current = popup;
+  };
+
   const handleGoogleSignIn = async () => {
-    setErrorMessage(null);
-    setLoading(true);
+    setError(null);
+    setIsLoading(true);
     try {
       const { user, profile } = await signInWithGoogleAccount();
       onAuthenticated({
         uid: user.uid,
-        name:
-          profile.displayName ||
-          user.displayName ||
-          user.email ||
-          'Google User',
+        name: profile.displayName,
         emailOrId: user.email || user.uid,
-        photoURL: profile.photoURL || user.photoURL || '',
+        photoURL: profile.photoURL,
+        scholarUrl: profile.scholarUrl || '',
         provider: 'google',
       });
-    } catch (err: any) {
-      const errCode = String(err?.code || err?.message || '');
-      if (errCode.includes('unauthorized-domain')) {
-        // Open the authorized Vercel bridge domain popup seamlessly
-        const popup = window.open(
-          `${AUTHORIZED_BRIDGE_ORIGIN}/?googleAuthBridge=1`,
-          'google_auth_bridge',
-          'width=520,height=640'
-        );
-        if (!popup) {
-          setErrorMessage('Enter your Gmail below to continue.');
-        }
-      } else if (!errCode.includes('popup-closed-by-user')) {
-        setErrorMessage('Enter your Gmail below to continue.');
+    } catch (err: unknown) {
+      const code = String((err as { code?: string })?.code || '');
+      if (
+        code.includes('unauthorized-domain') ||
+        code.includes('operation-not-supported')
+      ) {
+        openAuthorizedGoogleBridgePopup();
+        return;
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGmailDirectSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = gmailEmail.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setErrorMessage('Enter a valid Gmail address.');
-      return;
-    }
-    setErrorMessage(null);
-    setLoading(true);
-    try {
-      const { user, profile } = await signInOrRegisterWithGmail(
-        cleanEmail,
-        gmailName.trim(),
-        ''
-      );
-      onAuthenticated({
-        uid: user.uid,
-        name: profile.displayName || gmailName.trim() || cleanEmail,
-        emailOrId: cleanEmail,
-        photoURL: profile.photoURL || '',
-        provider: 'google',
-      });
-    } catch {
-      const fallbackUid = `google_${cleanEmail.replace(/[^a-z0-9]/g, '')}`;
-      const fallbackName =
-        gmailName.trim() ||
-        cleanEmail
-          .split('@')[0]
-          .replace(/[._-]+/g, ' ')
-          .replace(/\b\w/g, (c) => c.toUpperCase());
-      onAuthenticated({
-        uid: fallbackUid,
-        name: fallbackName,
-        emailOrId: cleanEmail,
-        photoURL: '',
-        provider: 'google',
-      });
-    } finally {
-      setLoading(false);
+      if (
+        code.includes('popup-closed-by-user') ||
+        code.includes('cancelled-popup-request')
+      ) {
+        setError('Google sign-in was cancelled.');
+      } else {
+        setError('Unable to sign in with Google. Please try again.');
+      }
+      setIsLoading(false);
     }
   };
 
   return (
     <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4"
     >
-      <div className="bg-white border border-slate-200 rounded-xl max-w-md w-full p-6 shadow-xl space-y-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              {pendingActionLabel ? (
-                <Lock className="w-4 h-4" />
-              ) : (
-                <User className="w-4 h-4" />
-              )}
-            </div>
-            <div>
-              <h2
-                id="auth-modal-title"
-                className="text-base font-bold text-slate-900"
-              >
-                Researcher Authentication
-              </h2>
-              {pendingActionLabel && (
-                <p className="text-xs text-slate-500">{pendingActionLabel}</p>
-              )}
-            </div>
-          </div>
+      <div className="bg-white border border-slate-200 rounded-xl max-w-sm w-full p-5 shadow-xl space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <h3 id="auth-modal-title" className="text-base font-bold text-slate-900">
+            Sign In
+          </h3>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close sign in dialog"
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition-colors"
+            aria-label="Close modal"
+            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {errorMessage && (
-          <div
-            role="alert"
-            className="flex items-start gap-2 p-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg"
-          >
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
         <button
           type="button"
-          disabled={loading}
           onClick={handleGoogleSignIn}
-          className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 rounded-lg text-sm font-semibold flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50 cursor-pointer"
+          disabled={isLoading}
+          className="w-full py-2.5 px-4 text-xs font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
             <path
               fill="#4285F4"
               d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
@@ -224,60 +184,15 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
               d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"
             />
           </svg>
-          <span>{loading ? 'Authenticating...' : 'Continue with Google'}</span>
+          <span>{isLoading ? 'Signing in...' : 'Continue with Google'}</span>
         </button>
 
-        <div className="relative flex py-0.5 items-center">
-          <div className="grow border-t border-slate-200" />
-          <span className="shrink mx-3 text-[11px] text-slate-400">
-            or verify via Google Mail
-          </span>
-          <div className="grow border-t border-slate-200" />
-        </div>
-
-        <form onSubmit={handleGmailDirectSubmit} className="space-y-3">
-          <div>
-            <label
-              htmlFor="gmail-email-input"
-              className="block text-xs font-medium text-slate-700 mb-1"
-            >
-              Email Address
-            </label>
-            <input
-              id="gmail-email-input"
-              type="email"
-              required
-              value={gmailEmail}
-              onChange={(e) => setGmailEmail(e.target.value)}
-              placeholder="researcher@gmail.com"
-              className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600"
-            />
+        {error && (
+          <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
-          <div>
-            <label
-              htmlFor="gmail-name-input"
-              className="block text-xs font-medium text-slate-700 mb-1"
-            >
-              Researcher Name
-            </label>
-            <input
-              id="gmail-name-input"
-              type="text"
-              value={gmailName}
-              onChange={(e) => setGmailName(e.target.value)}
-              placeholder="Full Name"
-              className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            <Mail className="w-4 h-4" />
-            <span>Authenticate with Email</span>
-          </button>
-        </form>
+        )}
       </div>
     </div>
   );

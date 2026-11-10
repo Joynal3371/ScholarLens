@@ -337,21 +337,24 @@ export async function generateResearcherPdfReport(params: {
   doc.text(profile.name, textLeftX, 13.5);
 
   const affilStr = profile.affiliation
-    ? `${profile.affiliation}  |  Scholar ID: ${profile.scholarUserId}`
-    : `Google Scholar ID: ${profile.scholarUserId}`;
+    ? profile.affiliation
+    : `Scholar ID: ${profile.scholarUserId}`;
   const affilLines = doc.splitTextToSize(affilStr, maxLeftTextW);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.4);
   doc.setTextColor(51, 65, 85);
   doc.text(affilLines[0], textLeftX, 19.5);
 
-  const domainStr = `Research Areas: ${profile.fields.slice(0, 5).join(' · ')}${
-    profile.verifiedDomain ? `  |  Verified: ${profile.verifiedDomain}` : ''
-  }`;
-  const domainLines = doc.splitTextToSize(domainStr, maxLeftTextW);
-  doc.setFontSize(7.6);
-  doc.setTextColor(100, 116, 139);
-  doc.text(domainLines[0], textLeftX, 25.0);
+  const domainStr =
+    profile.fields.length > 0
+      ? `Research Areas: ${profile.fields.slice(0, 5).join(' · ')}`
+      : '';
+  if (domainStr) {
+    const domainLines = doc.splitTextToSize(domainStr, maxLeftTextW);
+    doc.setFontSize(7.6);
+    doc.setTextColor(100, 116, 139);
+    doc.text(domainLines[0], textLeftX, 25.0);
+  }
 
   y = 41;
 
@@ -444,7 +447,7 @@ export async function generateResearcherPdfReport(params: {
   y += Math.ceil(kpiItems.length / kpiCols) * (kpiH + 2) + 3.5;
 
   // -------------------------------------------------------------------------
-  // SECTION: PORTFOLIO QUARTILE & INDEXING DISTRIBUTION (STACKED BAR + TABLE)
+  // PORTFOLIO QUARTILE & INDEXING DISTRIBUTION (STACKED BAR + LEGEND)
   // -------------------------------------------------------------------------
   y += 1;
 
@@ -518,22 +521,54 @@ export async function generateResearcherPdfReport(params: {
   y += 17.5;
 
   // -------------------------------------------------------------------------
+  // SECTION 2: GLOBAL COLLABORATION NETWORK MAP
+  // -------------------------------------------------------------------------
+  try {
+    const flatMapContainer = document.getElementById(
+      'chart-collaboration-globe-flat'
+    );
+    const flatMapSvg = flatMapContainer?.querySelector(
+      'svg'
+    ) as SVGSVGElement | null;
+    if (flatMapSvg) {
+      y = drawSectionHeader(
+        doc,
+        '02',
+        `Global Collaboration Network Map (${universities.length} Institutions Across ${countries.length} Nations)`,
+        margin,
+        y,
+        contentW
+      );
+      const rawMap = await svgElementToRawPngDataUrl(flatMapSvg);
+      const trueMapH = Number(
+        ((contentW * rawMap.height) / Math.max(1, rawMap.width)).toFixed(1)
+      );
+      doc.addImage(rawMap.dataUrl, 'PNG', margin, y, contentW, trueMapH);
+      y += trueMapH + 4;
+    }
+  } catch {
+    // Continue if offscreen SVG serialization is skipped
+  }
+
+  // -------------------------------------------------------------------------
   // SECTION 3: VECTOR STATISTICAL CHARTS (YEARLY TRAJECTORY & CITATION BRACKETS)
   // -------------------------------------------------------------------------
-  // -------------------------------------------------------------------------
-  // SECTION 2: VECTOR STATISTICAL CHARTS (YEARLY TRAJECTORY & CITATION BRACKETS)
-  // -------------------------------------------------------------------------
+  const chartBoxW = (contentW - 4) / 2;
+  const chartBoxH = 48;
+
+  if (y + chartBoxH + 10 > 280) {
+    doc.addPage();
+    y = 14;
+  }
+
   y = drawSectionHeader(
     doc,
-    '02',
+    '03',
     'Bibliometric Trajectory & Citation Distribution Charts',
     margin,
     y,
     contentW
   );
-
-  const chartBoxW = (contentW - 4) / 2;
-  const chartBoxH = 48;
 
   // Left Vector Chart: Google Scholar Matched Annual Citation Bar Chart
   doc.setFillColor(255, 255, 255);
@@ -636,14 +671,18 @@ export async function generateResearcherPdfReport(params: {
     doc.text(b.label, cx, plotBottom + 4, { align: 'center' });
   });
 
-  y += chartBoxH + 4;
+  // =========================================================================
+  // PAGE 2: TOP 10 COUNTRIES & CO-AUTHORS, TOP 10 PAPERS, UNIVERSITIES & VENUES
+  // =========================================================================
+  doc.addPage();
+  y = 14;
 
   // -------------------------------------------------------------------------
-  // SECTION 3: TOP 10 COUNTRIES & TOP 10 CO-AUTHORS (SIDE-BY-SIDE HIGHLIGHTS)
+  // SECTION 4: TOP 10 COUNTRIES & TOP 10 CO-AUTHORS (SIDE-BY-SIDE HIGHLIGHTS)
   // -------------------------------------------------------------------------
   y = drawSectionHeader(
     doc,
-    '03',
+    '04',
     'Top 10 Collaborating Countries & Top 10 Co-Authors',
     margin,
     y,
@@ -765,39 +804,7 @@ export async function generateResearcherPdfReport(params: {
     );
   });
 
-  // =========================================================================
-  // PAGE 2: FLAT WORLD COLLABORATION MAP, TOP 5 PAPERS, UNIVERSITIES & VENUES
-  // =========================================================================
-  doc.addPage();
-  y = 14;
-
-  // Embed World Collaboration Map preserving its true 1100:540 aspect ratio (no vertical squashing/flattening)
-  try {
-    const flatMapContainer = document.getElementById(
-      'chart-collaboration-globe-flat'
-    );
-    const flatMapSvg = flatMapContainer?.querySelector(
-      'svg'
-    ) as SVGSVGElement | null;
-    if (flatMapSvg) {
-      y = drawSectionHeader(
-        doc,
-        '04',
-        `Global Collaboration Network Map (${universities.length} Institutions Across ${countries.length} Nations)`,
-        margin,
-        y,
-        contentW
-      );
-      const rawMap = await svgElementToRawPngDataUrl(flatMapSvg);
-      const trueMapH = Number(
-        ((contentW * rawMap.height) / Math.max(1, rawMap.width)).toFixed(1)
-      );
-      doc.addImage(rawMap.dataUrl, 'PNG', margin, y, contentW, trueMapH);
-      y += trueMapH + 3.5;
-    }
-  } catch {
-    // Continue if offscreen SVG serialization is skipped
-  }
+  y += listCardH + 4;
 
   // -------------------------------------------------------------------------
   // SECTION 5: TOP 10 MOST CITED PUBLICATIONS
@@ -1103,7 +1110,7 @@ export async function generateResearcherPdfReport(params: {
     doc.setFontSize(7.2);
     doc.setTextColor(148, 163, 184);
     doc.text(
-      `ScholarLens Bibliometric Dossier — ${profile.name} (${profile.scholarUserId})`,
+      `generated by scholarlense — ${profile.name} (${profile.scholarUserId})`,
       margin,
       290
     );

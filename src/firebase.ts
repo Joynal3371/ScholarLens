@@ -4,11 +4,10 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithCredential,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
+  deleteUser,
   User,
 } from 'firebase/auth';
 import {
@@ -18,6 +17,7 @@ import {
   getDocFromServer,
   setDoc,
   updateDoc,
+  deleteDoc,
   collection,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -29,7 +29,7 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-export const AUTHORIZED_BRIDGE_ORIGIN = 'https://1xkhel-bd.vercel.app';
+export const AUTHORIZED_BRIDGE_ORIGIN = 'https://scholarlens-analytics.vercel.app';
 
 export enum OperationType {
   CREATE = 'create',
@@ -101,6 +101,7 @@ testConnection();
 export interface StoredUserProfileData {
   displayName: string;
   photoURL: string;
+  scholarUrl?: string;
 }
 
 const LOCAL_PROFILE_PREFIX = 'scholarlens_user_profile_';
@@ -116,6 +117,8 @@ export function getLocalUserProfileOverride(
       return {
         displayName: parsed.displayName,
         photoURL: typeof parsed.photoURL === 'string' ? parsed.photoURL : '',
+        scholarUrl:
+          typeof parsed.scholarUrl === 'string' ? parsed.scholarUrl : '',
       };
     }
   } catch {
@@ -152,7 +155,7 @@ export async function syncOrFetchGoogleUserProfile(
       const snap = await getDoc(userRef);
       if (snap.exists()) {
         const d = snap.data();
-        const resolved = {
+        const resolved: StoredUserProfileData = {
           displayName:
             localOverride?.displayName ||
             (typeof d.displayName === 'string' && d.displayName
@@ -165,18 +168,25 @@ export async function syncOrFetchGoogleUserProfile(
               : typeof d.photoURL === 'string' && d.photoURL
               ? d.photoURL
               : fallbackPhoto,
+          scholarUrl:
+            localOverride?.scholarUrl ||
+            (typeof d.scholarUrl === 'string' ? d.scholarUrl : ''),
         };
         saveLocalUserProfileOverride(safeUid, resolved);
         return resolved;
       } else {
-        const initialData = {
+        const initialData: StoredUserProfileData = {
           displayName: localOverride?.displayName || fallbackName,
           photoURL: localOverride?.photoURL || fallbackPhoto,
+          scholarUrl: localOverride?.scholarUrl || '',
         };
         await setDoc(userRef, {
           uid: safeUid,
           displayName: initialData.displayName,
           photoURL: initialData.photoURL.slice(0, 140000),
+          ...(initialData.scholarUrl
+            ? { scholarUrl: initialData.scholarUrl.slice(0, 500) }
+            : {}),
           provider: 'google',
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
@@ -192,6 +202,7 @@ export async function syncOrFetchGoogleUserProfile(
   return {
     displayName: localOverride?.displayName || fallbackName,
     photoURL: localOverride?.photoURL || fallbackPhoto,
+    scholarUrl: localOverride?.scholarUrl || '',
   };
 }
 
@@ -216,78 +227,21 @@ export async function signInWithGoogleIdToken(idToken: string): Promise<{
   return { user: cred.user, profile };
 }
 
-export async function signInOrRegisterWithGmail(
-  emailInput: string,
-  displayNameInput: string,
-  passwordInput: string
-): Promise<{
-  user: User;
-  profile: StoredUserProfileData;
-}> {
-  const email = emailInput.trim().toLowerCase();
-  const displayName =
-    displayNameInput.trim() ||
-    email
-      .split('@')[0]
-      .replace(/[._-]+/g, ' ')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-  const password =
-    passwordInput && passwordInput.length >= 6
-      ? passwordInput
-      : `Scholar#${email.slice(0, 8)}2026!`;
-
-  let user: User;
-  try {
-    const signInCred = await signInWithEmailAndPassword(auth, email, password);
-    user = signInCred.user;
-  } catch (err: any) {
-    const code = String(err?.code || '');
-    if (
-      code.includes('user-not-found') ||
-      code.includes('invalid-credential') ||
-      code.includes('invalid-login-credentials')
-    ) {
-      const createCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      user = createCred.user;
-    } else {
-      throw err;
-    }
-  }
-
-  if (displayName && (!user.displayName || displayNameInput.trim())) {
-    try {
-      await updateProfile(user, { displayName });
-    } catch {
-      // Ignore profile update warning
-    }
-  }
-
-  const localOverride = getLocalUserProfileOverride(user.uid);
-  const finalProfile: StoredUserProfileData = {
-    displayName: localOverride?.displayName || displayName || user.displayName || email,
-    photoURL: localOverride?.photoURL || user.photoURL || '',
-  };
-  saveLocalUserProfileOverride(user.uid, finalProfile);
-
-  return { user, profile: finalProfile };
-}
-
 export async function updateCustomUserProfile(
   uid: string,
   displayName: string,
-  photoURL: string
+  photoURL: string,
+  scholarUrl: string
 ): Promise<void> {
   const cleanName = displayName.trim().slice(0, 120) || 'Researcher';
   const cleanPhoto = photoURL.trim().slice(0, 140000);
+  const cleanScholarUrl = scholarUrl.trim().slice(0, 500);
   const safeUid = uid.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 128);
 
   saveLocalUserProfileOverride(safeUid, {
     displayName: cleanName,
     photoURL: cleanPhoto,
+    scholarUrl: cleanScholarUrl,
   });
 
   const currentUser = auth.currentUser;
@@ -309,6 +263,7 @@ export async function updateCustomUserProfile(
           await updateDoc(userRef, {
             displayName: cleanName,
             photoURL: cleanPhoto,
+            scholarUrl: cleanScholarUrl,
             updatedAt: serverTimestamp(),
           });
         } else {
@@ -316,6 +271,7 @@ export async function updateCustomUserProfile(
             uid: safeUid,
             displayName: cleanName,
             photoURL: cleanPhoto,
+            scholarUrl: cleanScholarUrl,
             provider: 'google',
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
@@ -325,6 +281,36 @@ export async function updateCustomUserProfile(
         handleFirestoreError(error, OperationType.UPDATE, `users/${safeUid}`);
       }
     }
+  }
+}
+
+export async function deleteCustomUserAccount(uid: string): Promise<void> {
+  const safeUid = uid.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 128);
+  try {
+    localStorage.removeItem(`${LOCAL_PROFILE_PREFIX}${safeUid}`);
+  } catch {
+    // Ignore storage errors
+  }
+
+  const currentUser = auth.currentUser;
+  if (currentUser && currentUser.uid === uid) {
+    try {
+      await deleteDoc(doc(db, 'users', safeUid));
+    } catch {
+      // Ignore if document does not exist
+    }
+    try {
+      await deleteUser(currentUser);
+      return;
+    } catch {
+      // Fall back to signOut if recent authentication is required for deleteUser
+    }
+  }
+
+  try {
+    await firebaseSignOut(auth);
+  } catch {
+    // Ignore
   }
 }
 

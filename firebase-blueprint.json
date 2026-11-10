@@ -35,6 +35,12 @@
           "minLength": 0,
           "maxLength": 150000
         },
+        "scholarUrl": {
+          "type": "string",
+          "description": "Mandatory Google Scholar profile link for the researcher.",
+          "minLength": 0,
+          "maxLength": 500
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",

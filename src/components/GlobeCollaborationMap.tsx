@@ -8,6 +8,8 @@ import {
   Minus,
   RotateCcw,
   Compass,
+  ChevronDown,
+  X,
 } from 'lucide-react';
 import {
   geoOrthographic,
@@ -113,6 +115,278 @@ function matchesCollaboratingCountry(
   return false;
 }
 
+// Deterministic deep-space starfield for the 3D globe background
+const DEEP_SPACE_STARS = Array.from({ length: 145 }, (_, i) => {
+  const x = ((i * 173 + (i * i * 31)) % (GLOBE_WIDTH - 16)) + 8;
+  const y = ((i * 137 + (i * 43)) % (GLOBE_HEIGHT - 16)) + 8;
+  const r = i % 11 === 0 ? 1.65 : i % 4 === 0 ? 1.15 : 0.75;
+  const opacity = Number((0.25 + ((i * 19) % 70) / 100).toFixed(2));
+  const color =
+    i % 7 === 0 ? '#bae6fd' : i % 5 === 0 ? '#e0e7ff' : '#f8fafc';
+  const hasGlow = i % 11 === 0;
+  return { id: `star-${i}`, x, y, r, opacity, color, hasGlow };
+});
+
+interface FlatWorldCollaborationMapProps {
+  profile: ResearcherProfile;
+  universities: UniversityCollaboration[];
+  onSelectUniversity?: (universityId: string) => void;
+}
+
+export const FlatWorldCollaborationMap: React.FC<
+  FlatWorldCollaborationMapProps
+> = ({ profile, universities, onSelectUniversity }) => {
+  const collaboratingCountryNames = useMemo(() => {
+    const s = new Set<string>();
+    for (const u of universities) {
+      if (u.country) s.add(u.country.toLowerCase().trim());
+    }
+    return s;
+  }, [universities]);
+
+  const uniqueCoAuthorCount = useMemo(() => {
+    const names = new Set<string>();
+    for (const u of universities) {
+      for (const ca of u.coAuthors) {
+        names.add(ca.name.toLowerCase().trim());
+      }
+    }
+    return names.size;
+  }, [universities]);
+
+  const flatMapData = useMemo(() => {
+    const countries = WORLD_COUNTRY_FEATURES.map((feat, idx) => {
+      const d = FLAT_PATH_GENERATOR(feat);
+      if (!d) return null;
+      const name = String(feat.properties?.name || `country-${idx}`);
+      const isCollab = matchesCollaboratingCountry(
+        name,
+        collaboratingCountryNames
+      );
+      return { id: `overview-flat-${idx}`, name, d, isCollab };
+    }).filter(Boolean) as {
+      id: string;
+      name: string;
+      d: string;
+      isCollab: boolean;
+    }[];
+
+    const homePt = FLAT_PROJECTION([
+      profile.homeLng || 90.4,
+      profile.homeLat || 23.78,
+    ]) || [FLAT_WIDTH / 2, FLAT_HEIGHT / 2];
+
+    const nodes = universities
+      .map((u) => {
+        const pt = FLAT_PROJECTION([u.lng, u.lat]) || [
+          FLAT_WIDTH / 2,
+          FLAT_HEIGHT / 2,
+        ];
+        return {
+          uni: u,
+          x: pt[0],
+          y: pt[1],
+          isHome:
+            u.universityId === profile.homeUniversityId || u.isHomeInstitution,
+        };
+      })
+      .sort((a, b) => Number(a.isHome) - Number(b.isHome));
+
+    const arcs = nodes
+      .filter((n) => !n.isHome)
+      .map((n) => {
+        const midX = (homePt[0] + n.x) / 2;
+        const dist = Math.hypot(n.x - homePt[0], n.y - homePt[1]);
+        const archLift = Math.max(5, Math.min(18, dist * 0.06));
+        const midY = Math.max(14, (homePt[1] + n.y) / 2 - archLift);
+        const startY = homePt[1] - 1.5;
+        const endY = n.y - 1.5;
+        return {
+          id: `overview-flat-arc-${n.uni.universityId}`,
+          d: `M ${homePt[0].toFixed(1)} ${startY.toFixed(1)} Q ${midX.toFixed(1)} ${midY.toFixed(1)} ${n.x.toFixed(1)} ${endY.toFixed(1)}`,
+        };
+      });
+
+    return { countries, nodes, arcs };
+  }, [universities, profile, collaboratingCountryNames]);
+
+  return (
+    <section
+      aria-label="Global Collaboration Map"
+      className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-bold text-slate-900">
+          Global Collaboration Map
+        </h2>
+      </div>
+      <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-[#091526]">
+        <svg
+          viewBox={`0 0 ${FLAT_WIDTH} ${FLAT_HEIGHT}`}
+          className="w-full h-auto block"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient
+              id="overviewFlatOceanBg"
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="#091526" />
+              <stop offset="50%" stopColor="#0c1f38" />
+              <stop offset="100%" stopColor="#071120" />
+            </linearGradient>
+          </defs>
+          <rect
+            x={0}
+            y={0}
+            width={FLAT_WIDTH}
+            height={FLAT_HEIGHT}
+            fill="url(#overviewFlatOceanBg)"
+          />
+          {FLAT_GRATICULE_PATH && (
+            <path
+              d={FLAT_GRATICULE_PATH}
+              fill="none"
+              stroke="rgba(148, 163, 184, 0.14)"
+              strokeWidth="0.6"
+            />
+          )}
+          {flatMapData.countries.map((c) => (
+            <path
+              key={c.id}
+              d={c.d}
+              fill={
+                c.isCollab
+                  ? 'rgba(14, 116, 144, 0.48)'
+                  : 'rgba(30, 41, 59, 0.85)'
+              }
+              stroke={
+                c.isCollab
+                  ? 'rgba(56, 189, 248, 0.78)'
+                  : 'rgba(100, 116, 139, 0.4)'
+              }
+              strokeWidth={c.isCollab ? '0.9' : '0.5'}
+            >
+              <title>{c.name}</title>
+            </path>
+          ))}
+          {FLAT_BORDERS_PATH && (
+            <path
+              d={FLAT_BORDERS_PATH}
+              fill="none"
+              stroke="rgba(148, 163, 184, 0.45)"
+              strokeWidth="0.55"
+            />
+          )}
+          {flatMapData.arcs.map((arc) => (
+            <g key={arc.id} className="pointer-events-none">
+              <path
+                d={arc.d}
+                fill="none"
+                stroke="rgba(56, 189, 248, 0.22)"
+                strokeWidth="3.4"
+                strokeLinecap="round"
+              />
+              <path
+                d={arc.d}
+                fill="none"
+                stroke="rgba(125, 211, 252, 0.85)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </g>
+          ))}
+          {flatMapData.nodes.map((n) => (
+            <g
+              key={`overview-flat-node-${n.uni.universityId}`}
+              className={onSelectUniversity ? 'cursor-pointer' : undefined}
+              onClick={() => onSelectUniversity?.(n.uni.universityId)}
+            >
+              <title>{`${n.uni.universityName} — ${n.uni.paperCount} papers`}</title>
+              <circle
+                cx={n.x}
+                cy={n.y}
+                r={n.isHome ? 11 : 6.2}
+                fill={
+                  n.isHome
+                    ? 'rgba(249, 115, 22, 0.36)'
+                    : 'rgba(56, 189, 248, 0.24)'
+                }
+                stroke={n.isHome ? 'rgba(251, 191, 36, 0.85)' : 'none'}
+                strokeWidth={n.isHome ? '1.2' : '0'}
+              />
+              <circle
+                cx={n.x}
+                cy={n.y}
+                r={n.isHome ? 6.5 : 4.2}
+                fill={n.isHome ? '#f97316' : '#38bdf8'}
+                stroke={n.isHome ? '#ffffff' : '#0f172a'}
+                strokeWidth={n.isHome ? '1.8' : '1.4'}
+              />
+            </g>
+          ))}
+          <g transform={`translate(18, ${FLAT_HEIGHT - 84})`}>
+            <rect
+              x={0}
+              y={0}
+              width={255}
+              height={68}
+              rx={8}
+              fill="rgba(15, 23, 42, 0.9)"
+              stroke="rgba(56, 189, 248, 0.35)"
+              strokeWidth="1"
+            />
+            <text
+              x={14}
+              y={19}
+              fill="#38bdf8"
+              fontSize="9.5"
+              fontWeight="700"
+              fontFamily="Inter, system-ui, sans-serif"
+              letterSpacing="0.5"
+            >
+              GLOBAL COLLABORATION OVERVIEW
+            </text>
+            <text
+              x={14}
+              y={36}
+              fill="#f8fafc"
+              fontSize="11.5"
+              fontWeight="700"
+              fontFamily="JetBrains Mono, monospace"
+            >
+              {`${universities.length} Institutions · ${collaboratingCountryNames.size} Countries`}
+            </text>
+            <circle cx={19} cy={52} r={4} fill="#fbbf24" />
+            <text
+              x={28}
+              y={55}
+              fill="#cbd5e1"
+              fontSize="9.5"
+              fontFamily="Inter, system-ui, sans-serif"
+            >
+              Home Institute
+            </text>
+            <circle cx={116} cy={52} r={4} fill="#38bdf8" />
+            <text
+              x={125}
+              y={55}
+              fill="#cbd5e1"
+              fontSize="9.5"
+              fontFamily="Inter, system-ui, sans-serif"
+            >
+              {`Partner (${uniqueCoAuthorCount} Co-Authors)`}
+            </text>
+          </g>
+        </svg>
+      </div>
+    </section>
+  );
+};
+
 export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   profile,
   universities,
@@ -135,6 +409,22 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [coAuthorQuery, setCoAuthorQuery] = useState<string>('');
   const [hoveredUniId, setHoveredUniId] = useState<string | null>(null);
+  const [isUniDropdownOpen, setIsUniDropdownOpen] = useState<boolean>(false);
+  const [uniSearchQuery, setUniSearchQuery] = useState<string>('');
+  const uniDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        uniDropdownRef.current &&
+        !uniDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsUniDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const centerLat = viewState.lat;
   const centerLng = viewState.lng;
@@ -223,6 +513,17 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   }, [universities, selectedUniversityId]);
 
   const projectedScale = BASE_RADIUS * zoom;
+
+  const filteredDropdownUniversities = useMemo(() => {
+    const q = uniSearchQuery.trim().toLowerCase();
+    if (!q) return universities;
+    return universities.filter(
+      (u) =>
+        u.universityName.toLowerCase().includes(q) ||
+        u.city.toLowerCase().includes(q) ||
+        u.country.toLowerCase().includes(q)
+    );
+  }, [universities, uniSearchQuery]);
 
   const pathGenerator = useMemo(() => {
     const proj = geoOrthographic()
@@ -1077,8 +1378,61 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 <clipPath id="globeCircleClip">
                   <circle cx={CENTER_X} cy={CENTER_Y} r={projectedScale} />
                 </clipPath>
+
+                {/* Deep Space Starfield & Atmospheric Rim Gradients */}
+                <radialGradient id="deepSpaceBgGrad" cx="50%" cy="50%" r="75%">
+                  <stop offset="0%" stopColor="#09152b" />
+                  <stop offset="55%" stopColor="#050b18" />
+                  <stop offset="100%" stopColor="#02050b" />
+                </radialGradient>
+                <radialGradient id="earthAtmosphereHalo" cx="50%" cy="50%" r="50%">
+                  <stop offset="78%" stopColor="#0ea5e9" stopOpacity="0" />
+                  <stop offset="92%" stopColor="#38bdf8" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+                </radialGradient>
               </defs>
 
+              {/* 1. DEEP SPACE STARFIELD BACKGROUND */}
+              <rect
+                x={0}
+                y={0}
+                width={GLOBE_WIDTH}
+                height={GLOBE_HEIGHT}
+                fill="url(#deepSpaceBgGrad)"
+              />
+              <g id="deep-space-starfield" className="pointer-events-none select-none">
+                {DEEP_SPACE_STARS.map((star) => (
+                  <g key={star.id}>
+                    {star.hasGlow && (
+                      <circle
+                        cx={star.x}
+                        cy={star.y}
+                        r={star.r * 2.6}
+                        fill={star.color}
+                        opacity={star.opacity * 0.28}
+                      />
+                    )}
+                    <circle
+                      cx={star.x}
+                      cy={star.y}
+                      r={star.r}
+                      fill={star.color}
+                      opacity={star.opacity}
+                    />
+                  </g>
+                ))}
+              </g>
+
+              {/* Subtle Blue Atmospheric Halo Around Earth */}
+              <circle
+                cx={CENTER_X}
+                cy={CENTER_Y}
+                r={projectedScale * 1.12}
+                fill="url(#earthAtmosphereHalo)"
+                className="pointer-events-none"
+              />
+
+              {/* 2. SOLID EARTH SPHERE & VISUAL DATA */}
               <circle
                 cx={CENTER_X}
                 cy={CENTER_Y}
@@ -1292,7 +1646,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               </g>
             </svg>
 
-            {/* Non-obtrusive Active University Badge: Pinned at top-left so it NEVER covers any dots */}
+            {/* Non-obtrusive Active University Badge: Pinned at top-left without institution location */}
             {activeBadgeUni && (
               <div className="pointer-events-none absolute top-3 left-3 z-30 bg-slate-900/90 backdrop-blur-xs border border-slate-700/80 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 max-w-[85%]">
                 <span
@@ -1303,15 +1657,14 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   }`}
                 />
                 <div className="truncate text-xs font-semibold">
-                  {activeBadgeUni.universityName}
+                  {activeBadgeUni.universityName.replace(/\s*\([^)]+\)\s*$/, '')}
                   <span className="text-slate-300 font-normal ml-1.5 font-mono text-[11px]">
                     · {activeBadgeUni.paperCount}{' '}
                     {activeBadgeUni.paperCount === 1 ? 'paper' : 'papers'} ·{' '}
                     {activeBadgeUni.coAuthors.length}{' '}
                     {activeBadgeUni.coAuthors.length === 1
                       ? 'co-author'
-                      : 'co-authors'}{' '}
-                    ({activeBadgeUni.city}, {activeBadgeUni.country})
+                      : 'co-authors'}
                   </span>
                 </div>
               </div>
@@ -1405,44 +1758,106 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         <div className="lg:col-span-5 p-4 sm:p-5 bg-white flex flex-col justify-between">
           {selectedUni ? (
             <div className="space-y-4">
-              <div>
+              <div ref={uniDropdownRef} className="relative">
                 <label
                   htmlFor="inspector-university-select"
                   className="block text-[11px] font-medium text-slate-500 mb-1"
                 >
                   Collaborating University ({universities.length})
                 </label>
-                <select
+                <button
                   id="inspector-university-select"
-                  value={selectedUni.universityId}
-                  onChange={(e) => {
-                    const target = universities.find(
-                      (u) => u.universityId === e.target.value
-                    );
-                    if (target) focusOnUniversity(target);
-                  }}
-                  className="w-full px-3 py-2 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600"
+                  type="button"
+                  onClick={() => setIsUniDropdownOpen((prev) => !prev)}
+                  aria-expanded={isUniDropdownOpen}
+                  className="w-full px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg text-slate-900 flex items-center justify-between gap-2 text-left focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
-                  {universities.map((u) => (
-                    <option key={u.universityId} value={u.universityId}>
-                      {u.universityName} ({u.country}) — {u.paperCount} papers
-                    </option>
-                  ))}
-                </select>
+                  <span className="truncate">
+                    {selectedUni.universityName} ({selectedUni.country}) —{' '}
+                    {selectedUni.paperCount} papers
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
+                </button>
+
+                {isUniDropdownOpen && (
+                  <div className="absolute z-40 mt-1 inset-x-0 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                    <div className="p-2 border-b border-slate-100 bg-slate-50/70">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={uniSearchQuery}
+                          onChange={(e) => setUniSearchQuery(e.target.value)}
+                          placeholder="Search university..."
+                          aria-label="Search collaborating university"
+                          autoFocus
+                          className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-md text-slate-900 focus:outline-none focus:border-blue-600"
+                        />
+                        {uniSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setUniSearchQuery('')}
+                            aria-label="Clear university search"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="max-h-56 overflow-y-auto divide-y divide-slate-100">
+                      {filteredDropdownUniversities.map((u) => {
+                        const isSelected =
+                          u.universityId === selectedUni.universityId;
+                        return (
+                          <button
+                            key={u.universityId}
+                            type="button"
+                            onClick={() => {
+                              focusOnUniversity(u);
+                              setIsUniDropdownOpen(false);
+                              setUniSearchQuery('');
+                            }}
+                            className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between gap-2 transition-colors cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-50 text-blue-900 font-semibold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate">{u.universityName}</div>
+                              <div className="text-[11px] text-slate-500 truncate">
+                                {u.city} · {u.country}
+                              </div>
+                            </div>
+                            <span className="font-mono text-[11px] text-slate-600 shrink-0 tabular-nums">
+                              {u.paperCount} papers
+                            </span>
+                          </button>
+                        );
+                      })}
+                      {filteredDropdownUniversities.length === 0 && (
+                        <div className="px-3 py-3 text-center text-xs text-slate-500">
+                          No matching universities
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="border-b border-slate-200 pb-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-xs text-slate-500 font-medium">
-                      {selectedUni.city} · {selectedUni.country}
-                    </div>
                     <h3
                       data-testid="selected-university-name"
-                      className="text-lg font-bold text-slate-900 mt-0.5"
+                      className="text-lg font-bold text-slate-900"
                     >
                       {selectedUni.universityName}
                     </h3>
+                    <div className="text-xs text-slate-500 font-medium mt-0.5">
+                      {selectedUni.city} · {selectedUni.country}
+                    </div>
                   </div>
 
                   <button
@@ -1457,7 +1872,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-100">
+                <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100">
                   <div>
                     <div className="text-[11px] text-slate-500">Papers</div>
                     <div
@@ -1471,12 +1886,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     <div className="text-[11px] text-slate-500">Citations</div>
                     <div className="text-sm font-bold font-mono text-slate-900 tabular-nums">
                       {selectedUni.totalCitations.toLocaleString()}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-slate-500">Q1 Papers</div>
-                    <div className="text-sm font-bold font-mono text-blue-700 tabular-nums">
-                      {selectedUni.q1PaperCount}
                     </div>
                   </div>
                   <div>

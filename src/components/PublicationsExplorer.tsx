@@ -46,14 +46,6 @@ const TYPE_OPTIONS: PublicationType[] = [
   'Book Chapter',
 ];
 
-const CITATION_PRESETS: { label: string; min: string; max: string }[] = [
-  { label: 'All', min: '', max: '' },
-  { label: '0–25', min: '0', max: '25' },
-  { label: '25–100', min: '25', max: '100' },
-  { label: '100–500', min: '100', max: '500' },
-  { label: '500+', min: '500', max: '' },
-];
-
 interface SearchableSelectOption {
   id: string;
   label: string;
@@ -607,7 +599,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
 
             {/* Row 3: Citations, Authorship Role, and Open Access */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-200/70">
-              <div className="md:col-span-4">
+              <div className="md:col-span-6">
                 <span className="block text-xs font-semibold text-slate-700 mb-1">
                   Citation Count Range
                 </span>
@@ -646,39 +638,6 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
               </div>
 
               <div className="md:col-span-4">
-                <span className="block text-xs font-semibold text-slate-700 mb-1">
-                  Quick Citation Presets
-                </span>
-                <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-200/70 rounded-lg">
-                  {CITATION_PRESETS.map((preset) => {
-                    const isCurrent =
-                      filter.minCitations === preset.min &&
-                      filter.maxCitations === preset.max;
-                    return (
-                      <button
-                        key={preset.label}
-                        type="button"
-                        onClick={() =>
-                          onChangeFilter((prev) => ({
-                            ...prev,
-                            minCitations: preset.min,
-                            maxCitations: preset.max,
-                          }))
-                        }
-                        className={`px-2 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                          isCurrent
-                            ? 'bg-white text-slate-900 shadow-xs'
-                            : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
                 <label
                   htmlFor="filter-role-select"
                   className="block text-xs font-semibold text-slate-700 mb-1"

@@ -47,7 +47,10 @@ import {
 } from './components/AuthGateModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { PortfolioBreakdownSection } from './components/PortfolioBreakdownSection';
-import { GlobeCollaborationMap } from './components/GlobeCollaborationMap';
+import {
+  GlobeCollaborationMap,
+  FlatWorldCollaborationMap,
+} from './components/GlobeCollaborationMap';
 import { PublicationsExplorer } from './components/PublicationsExplorer';
 import { ResearchDirectoriesSection } from './components/ResearchDirectoriesSection';
 
@@ -68,8 +71,6 @@ type PendingExportTask =
       darkTheme?: boolean;
     };
 
-const DEFAULT_SCHOLAR_URL =
-  'https://scholar.google.com/citations?user=be8uiCkAAAAJ&hl=en';
 const SESSION_STORAGE_KEY = 'scholarlens_active_auth_user';
 
 const PAGE_METADATA: {
@@ -125,9 +126,8 @@ export default function App() {
   const [activeProfile, setActiveProfile] = useState<ResearcherProfile | null>(
     null
   );
-  const [scholarUrlInput, setScholarUrlInput] =
-    useState<string>(DEFAULT_SCHOLAR_URL);
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(true);
+  const [scholarUrlInput, setScholarUrlInput] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [urlError, setUrlError] = useState<string | null>(null);
 
   const [filter, setFilter] = useState<PublicationFilterState>(
@@ -193,7 +193,7 @@ export default function App() {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const synced = await syncOrFetchGoogleUserProfile(firebaseUser);
-        saveSessionUser({
+        const sessionUser: AuthenticatedResearcher = {
           uid: firebaseUser.uid,
           name:
             synced.displayName ||
@@ -202,8 +202,13 @@ export default function App() {
             'Authenticated Researcher',
           emailOrId: firebaseUser.email || firebaseUser.uid,
           photoURL: synced.photoURL || firebaseUser.photoURL || '',
+          scholarUrl: synced.scholarUrl || '',
           provider: 'google',
-        });
+        };
+        saveSessionUser(sessionUser);
+        if (!sessionUser.scholarUrl) {
+          setIsProfileModalOpen(true);
+        }
       }
     });
     return () => unsub();
@@ -264,6 +269,16 @@ export default function App() {
       setScholarUrlInput(resolved.scholarUrl);
       setFilter(DEFAULT_FILTER_STATE);
 
+      try {
+        if (resolved.scholarUserId) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('user', resolved.scholarUserId);
+          window.history.replaceState({}, '', url.toString());
+        }
+      } catch {
+        // Ignore history errors in restricted frames
+      }
+
       const nextUnis = aggregateUniversityCollaborations(
         resolved.publications,
         resolved
@@ -283,8 +298,10 @@ export default function App() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const initialUser = urlParams.get('user') || 'be8uiCkAAAAJ';
-    void fetchProfileFromServer(initialUser, undefined);
+    const initialUser = urlParams.get('user')?.trim() || '';
+    if (initialUser) {
+      void fetchProfileFromServer(initialUser, undefined);
+    }
   }, []);
 
   const stats = useMemo(
@@ -417,7 +434,8 @@ export default function App() {
   const handleAuthenticatedSuccess = (user: AuthenticatedResearcher) => {
     saveSessionUser(user);
     setIsAuthModalOpen(false);
-    if (pendingExport) {
+    setIsProfileModalOpen(true);
+    if (user.scholarUrl && pendingExport) {
       const task = pendingExport;
       setPendingExport(null);
       void executeExportTask(task);
@@ -428,6 +446,10 @@ export default function App() {
     if (authUser?.provider === 'google') {
       await firebaseSignOut(auth);
     }
+    saveSessionUser(null);
+  };
+
+  const handleRemoveAccount = () => {
     saveSessionUser(null);
   };
 
@@ -527,11 +549,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 lg:pb-6">
-      {/* Top Bar: Clean Brand & Right Actions Only */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-3">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
+      {/* Top Bar: Brand Logo, Centered Desktop Navigation Tabs, and Right Actions */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-2.5">
+        <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-4">
           {/* Left: Brand Logo & Wordmark */}
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 shrink-0">
             <button
               type="button"
               onClick={() => navigateToPage('overview')}
@@ -573,6 +595,33 @@ export default function App() {
             </button>
           </div>
 
+          {/* Center: Desktop Horizontal Navigation Bar */}
+          <nav
+            aria-label="Analytics Pages"
+            className="hidden lg:flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl"
+          >
+            {PAGE_METADATA.map((item) => {
+              const Icon = item.icon;
+              const isActive = activePage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => navigateToPage(item.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+                    isActive
+                      ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{item.shortLabel}</span>
+                </button>
+              );
+            })}
+          </nav>
+
           {/* Right: PDF Report + Corner Login / User Profile Icon */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <button
@@ -595,7 +644,7 @@ export default function App() {
                 onClick={() => setIsProfileModalOpen(true)}
                 data-testid="corner-profile-button"
                 aria-label="Open profile settings"
-                title="Edit your display name and profile picture"
+                title="Profile Settings"
                 className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
               >
                 <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center overflow-hidden shrink-0">
@@ -635,89 +684,57 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Multi-Page Workspace with Left Sidebar on Desktop & Bottom Navigation on Android */}
-      <div className="flex-1 max-w-[1400px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-5 flex flex-col lg:flex-row gap-5 items-start">
-        {/* Desktop Left Sidebar Navigation (Clean Multi-Page Architecture) */}
-        <aside
-          aria-label="Workspace Pages"
-          className="hidden lg:block w-52 shrink-0 sticky top-20 bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs"
-        >
-          <div className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Analytics Pages
-          </div>
-          <nav className="space-y-1 mt-1">
-            {PAGE_METADATA.map((item) => {
-              const Icon = item.icon;
-              const isActive = activePage === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => navigateToPage(item.id)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left cursor-pointer ${
-                    isActive
-                      ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{item.shortLabel}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </aside>
-
-        {/* Main Active Page Content */}
-        <main className="flex-1 min-w-0 w-full space-y-5">
-          {/* Clean, Compact Search & Researcher Bar */}
-          <section
-            aria-label="Google Scholar Profile Search"
-            className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 space-y-3.5 shadow-xs"
-          >
-            <form onSubmit={handleAnalyzeSubmit} noValidate>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <div className="relative flex-1">
-                  <label htmlFor="scholar-url-input" className="sr-only">
-                    Google Scholar Profile Link
-                  </label>
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    id="scholar-url-input"
-                    type="url"
-                    value={scholarUrlInput}
-                    onChange={(e) => {
-                      setScholarUrlInput(e.target.value);
-                      if (urlError) setUrlError(null);
-                    }}
-                    placeholder="Paste Google Scholar profile link (https://scholar.google.com/citations?user=...)"
-                    aria-label="Google Scholar Profile Link"
-                    className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm font-mono bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-600"
-                  />
+      {/* Main Centered Multi-Page Workspace */}
+      <div className="flex-1 max-w-[1360px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-5">
+        <main className="w-full space-y-5">
+          {/* Search & Researcher Bar: Shown ONLY on Overview page */}
+          {activePage === 'overview' && (
+            <section
+              aria-label="Google Scholar Profile Search"
+              className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 space-y-3.5 shadow-xs"
+            >
+              <form onSubmit={handleAnalyzeSubmit} noValidate>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="relative flex-1">
+                    <label htmlFor="scholar-url-input" className="sr-only">
+                      Google Scholar Profile Link
+                    </label>
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      id="scholar-url-input"
+                      type="url"
+                      value={scholarUrlInput}
+                      onChange={(e) => {
+                        setScholarUrlInput(e.target.value);
+                        if (urlError) setUrlError(null);
+                      }}
+                      placeholder="Paste Google Scholar profile link (https://scholar.google.com/citations?user=...)"
+                      aria-label="Google Scholar Profile Link"
+                      className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm font-mono bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isAnalyzing}
+                    className="px-5 py-2 text-xs sm:text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isAnalyzing ? 'Analyzing...' : 'Analyze Profile'}
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isAnalyzing}
-                  className="px-5 py-2 text-xs sm:text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer"
-                >
-                  {isAnalyzing ? 'Analyzing...' : 'Analyze Profile'}
-                </button>
-              </div>
 
-              {urlError && (
-                <div
-                  role="alert"
-                  className="mt-2 flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
-                >
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{urlError}</span>
-                </div>
-              )}
-            </form>
+                {urlError && (
+                  <div
+                    role="alert"
+                    className="mt-2 flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
+                  >
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{urlError}</span>
+                  </div>
+                )}
+              </form>
 
-            {activeProfile && (
-              <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              {activeProfile && (
+                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <img
                     src={
@@ -771,9 +788,10 @@ export default function App() {
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
-              </div>
-            )}
-          </section>
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Loading State */}
           {isAnalyzing && !activeProfile && (
@@ -835,16 +853,13 @@ export default function App() {
                       Institutional Network
                     </div>
                     <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1">
-                      {universities.length}{' '}
-                      <span className="text-sm font-normal text-slate-500">
-                        institutions
-                      </span>
+                      {universities.length}
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* Row 2: Separate Q1, Q2, Q3, Q4, Conference & Emerging Percentage Breakdown (Total = 100%) */}
+              {/* Row 2: Separate Q1, Q2, Q3, Q4, Conference & Emerging Percentage Breakdown */}
               <section
                 aria-label="Publication Indexing and Quartile Distribution"
                 className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3.5"
@@ -853,12 +868,6 @@ export default function App() {
                   <h2 className="text-sm font-bold text-slate-900">
                     Journal Quartile &amp; Indexing Distribution
                   </h2>
-                  <span
-                    data-testid="portfolio-total-percentage"
-                    className="px-2.5 py-1 text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md tabular-nums"
-                  >
-                    100%
-                  </span>
                 </div>
 
                 {/* 5 Percentage Cards: Q1, Q2, Q3, Q4, Conference */}
@@ -1014,6 +1023,13 @@ export default function App() {
                 </div>
               </section>
 
+              {/* Row 3: Flattened Global Collaboration Map */}
+              <FlatWorldCollaborationMap
+                profile={activeProfile}
+                universities={universities}
+                onSelectUniversity={handleInspectUniversityOnGlobe}
+              />
+
               {/* Quick Navigation Cards to Dedicated Pages (No subtext) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button
@@ -1097,7 +1113,7 @@ export default function App() {
                     </button>
                   </div>
                   <div className="divide-y divide-slate-100">
-                    {universities.slice(0, 6).map((uni) => (
+                    {universities.slice(0, 5).map((uni) => (
                       <div
                         key={uni.universityId}
                         className="py-2.5 flex items-center justify-between gap-3"
@@ -1288,15 +1304,31 @@ export default function App() {
         onAuthenticated={handleAuthenticatedSuccess}
       />
 
-      {/* Profile Settings Modal (Edit Display Name & Profile Picture) */}
+      {/* Profile Settings Modal (Edit Display Name, Profile Picture & Mandatory Google Scholar Link) */}
       <UserProfileModal
         isOpen={isProfileModalOpen}
         user={authUser}
         onClose={() => setIsProfileModalOpen(false)}
         onUpdateUser={(updated) => {
           saveSessionUser(updated);
+          if (updated.scholarUrl) {
+            const parsed = parseGoogleScholarInput(updated.scholarUrl);
+            if (
+              parsed.valid &&
+              parsed.userId &&
+              (!activeProfile || activeProfile.scholarUserId !== parsed.userId)
+            ) {
+              void fetchProfileFromServer(parsed.userId, parsed.queryName);
+            }
+          }
+          if (pendingExport) {
+            const task = pendingExport;
+            setPendingExport(null);
+            void executeExportTask(task);
+          }
         }}
         onSignOut={handleSignOut}
+        onRemoveAccount={handleRemoveAccount}
       />
     </div>
   );

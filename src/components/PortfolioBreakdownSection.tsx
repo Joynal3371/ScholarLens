@@ -95,8 +95,8 @@ export const PortfolioBreakdownSection: React.FC<
     ...stats.citationBrackets.map((b) => b.count)
   );
 
-  // Top countries max
-  const topCountries = countries.slice(0, 6);
+  // Top countries max (highlight top 5 collaborating nations)
+  const topCountries = countries.slice(0, 5);
   const maxCountryPapers = Math.max(
     1,
     ...topCountries.map((c) => c.paperCount)
@@ -241,13 +241,6 @@ export const PortfolioBreakdownSection: React.FC<
               </g>
             </svg>
           </div>
-
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Portfolio Coverage</span>
-            <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              100.0%
-            </span>
-          </div>
         </div>
 
         {/* Chart 2: Document Type Classification */}
@@ -339,13 +332,6 @@ export const PortfolioBreakdownSection: React.FC<
               })}
             </svg>
           </div>
-
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>First / Corresponding Authorship</span>
-            <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              {stats.firstOrCorrespondingPercentage}% ({stats.firstOrCorrespondingCount}/{stats.totalPapers})
-            </span>
-          </div>
         </div>
 
         {/* Chart 3: Citation Impact Distribution */}
@@ -434,14 +420,6 @@ export const PortfolioBreakdownSection: React.FC<
                 );
               })}
             </svg>
-          </div>
-
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Median / Mean Citations</span>
-            <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              {stats.medianCitationsPerPaper.toLocaleString()} /{' '}
-              {stats.meanCitationsPerPaper.toLocaleString()}
-            </span>
           </div>
         </div>
       </div>
@@ -557,13 +535,6 @@ export const PortfolioBreakdownSection: React.FC<
                 );
               })}
             </svg>
-          </div>
-
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Annual Citation Velocity</span>
-            <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              {stats.annualCitationVelocity.toLocaleString()} citations / yr
-            </span>
           </div>
         </div>
 
@@ -795,13 +766,6 @@ export const PortfolioBreakdownSection: React.FC<
                 );
               })}
             </svg>
-          </div>
-
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>International Collaboration</span>
-            <span className="font-mono font-semibold text-slate-900 tabular-nums">
-              {stats.internationalCollabPercentage}%
-            </span>
           </div>
         </div>
       </div>

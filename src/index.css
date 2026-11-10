@@ -21,3 +21,18 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+@keyframes solarPulseSlow {
+  0%, 100% {
+    opacity: 0.88;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.025);
+  }
+}
+
+.solar-rays-cluster {
+  animation: solarPulseSlow 9s ease-in-out infinite;
+}

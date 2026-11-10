@@ -89,7 +89,16 @@ function slugifyInstitution(name: string): string {
 }
 
 function normalizeUniversityDisplayName(name: string): string {
-  return name.replace(/East–West University/gi, 'East West University').trim();
+  const cleaned = name
+    .replace(/East–West University/gi, 'East West University')
+    .replace(/\s*\([A-Z0-9-]{2,10}\)\s*$/g, '')
+    .trim();
+  if (/^university of girona$/i.test(cleaned)) return 'Universitat de Girona';
+  if (/^university politehnica timisoara$/i.test(cleaned))
+    return 'Politehnica University of Timisoara';
+  if (/^cnrs$/i.test(cleaned))
+    return 'Centre National de la Recherche Scientifique';
+  return cleaned;
 }
 
 /**
@@ -108,12 +117,14 @@ export function cleanVenueName(rawVenue: string): string {
     .replace(/,?\s*\bvol\.?\s*\d+.*$/i, '')
     .replace(/,?\s*\bno\.?\s*\d+.*$/i, '')
     .replace(/,?\s*\bpp\.?\s*\d+.*$/i, '')
+    .replace(/\s*\(?(?:cat\.?\s*no\.?|vol\.?|pp\.?|no\.?)[^)]*[…\.]*$/i, '')
     .replace(/\s+\d+\s*\([^)]+\).*$/i, '')
     .replace(/\s+\d+\s*,\s*[\d–eE.-]+.*$/i, '')
     .replace(/,\s*\d+-\d+.*$/i, '')
     .replace(/,\s*[A-Za-z]?\d{4,8}\s*$/i, '')
     .replace(/\s+\(\d{4}\)\s*$/i, '')
     .replace(/\s+\d{1,4}\s*$/i, '')
+    .replace(/[…\.\s]+$/, '')
     .replace(/^[,\s-]+|[,\s-]+$/g, '')
     .trim();
 
@@ -388,54 +399,70 @@ async function queryWikidataInstitutionCoords(
   return null;
 }
 
+const openAlexJsonCache = new Map<string, { ts: number; data: any }>();
+let openAlexDirectRateLimitedUntil = 0;
+
 /**
- * Fetches JSON from OpenAlex with automatic fallback via secondary proxy/relay if the local IP hits HTTP 429 rate limits.
+ * Fetches JSON from OpenAlex with in-memory caching, rotating polite-pool identifier, and automatic fallback via secondary proxy/relay if the local IP hits HTTP 429 rate limits.
  */
 async function fetchOpenAlexJson(
   url: string,
-  timeoutMs: number = 4500
+  timeoutMs: number = 3800
 ): Promise<any | null> {
-  const fullUrl = url.includes('mailto=')
-    ? url
-    : `${url}${url.includes('?') ? '&' : '?'}mailto=research@scholarlens.org`;
-  try {
-    const res = await fetch(fullUrl, {
-      headers: {
-        'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
-      },
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (res.ok) {
-      return await res.json();
-    }
-    if (res.status !== 429 && res.status < 500) {
-      return null;
-    }
-  } catch {
-    // Fall through to relay below
+  const canonicalUrl = url
+    .replace(/([?&])mailto=[^&]+(&|$)/i, (_m, p1, p2) => (p2 === '&' ? p1 : ''))
+    .replace(/[?&]$/, '');
+
+  const cached = openAlexJsonCache.get(canonicalUrl);
+  if (cached && Date.now() - cached.ts < 30 * 60 * 1000) {
+    return cached.data;
   }
 
-  const relayUrls = [
-    ...(!process.env.VERCEL
-      ? [
-          `https://scholarlens-analytics.vercel.app/api/scholar/openalex-proxy?url=${encodeURIComponent(
-            fullUrl
-          )}`,
-        ]
-      : []),
-    `https://allorigins.hexlet.app/raw?url=${encodeURIComponent(fullUrl)}`,
-  ];
+  const rotatingMailto = `node-${Math.floor(Date.now() / 60000).toString(
+    36
+  )}-${Math.random().toString(36).slice(2, 6)}@scholarlens.org`;
+  const fullUrl = `${canonicalUrl}${
+    canonicalUrl.includes('?') ? '&' : '?'
+  }mailto=${rotatingMailto}`;
 
-  for (const rUrl of relayUrls) {
+  if (Date.now() >= openAlexDirectRateLimitedUntil) {
     try {
-      const rRes = await fetch(rUrl, {
-        signal: AbortSignal.timeout(timeoutMs + 1500),
+      const res = await fetch(fullUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; ScholarLens/2.0)',
+        },
+        signal: AbortSignal.timeout(timeoutMs),
       });
-      if (rRes.ok) {
-        return await rRes.json();
+      if (res.ok) {
+        const data = await res.json();
+        openAlexJsonCache.set(canonicalUrl, { ts: Date.now(), data });
+        return data;
+      }
+      if (res.status === 429) {
+        openAlexDirectRateLimitedUntil = Date.now() + 10 * 60 * 1000;
+      } else if (res.status < 500) {
+        return null;
       }
     } catch {
-      // Try next relay
+      // Fall through to relay below
+    }
+  }
+
+  if (!process.env.VERCEL) {
+    try {
+      const vUrl = `https://scholarlens-analytics.vercel.app/api/scholar/openalex-proxy?url=${encodeURIComponent(
+        fullUrl
+      )}`;
+      const vRes = await fetch(vUrl, {
+        signal: AbortSignal.timeout(Math.max(timeoutMs, 6500)),
+      });
+      if (vRes.ok) {
+        const data = await vRes.json();
+        openAlexJsonCache.set(canonicalUrl, { ts: Date.now(), data });
+        return data;
+      }
+    } catch {
+      // Ignore proxy error
     }
   }
   return null;
@@ -595,7 +622,60 @@ async function resolveInstitutionFromOfficialSources(
 
     if (rorRes?.ok) {
       const rorData = (await rorRes.json()) as any;
-      const item = rorData?.items?.[0];
+      const items: any[] = Array.isArray(rorData?.items) ? rorData.items : [];
+      const genericWords = new Set([
+        'university',
+        'universitat',
+        'universite',
+        'universidad',
+        'universidade',
+        'universiti',
+        'institute',
+        'institut',
+        'institution',
+        'college',
+        'polytechnic',
+        'polytechnique',
+        'technology',
+        'science',
+        'sciences',
+        'research',
+        'national',
+        'international',
+        'center',
+        'centre',
+        'computing',
+        'engineering',
+        'department',
+        'school',
+        'academy',
+        'foundation',
+        'the',
+        'and',
+        'for',
+      ]);
+      const queryTokens = cleanName
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((t) => t.length >= 3 && !genericWords.has(t));
+
+      const item =
+        items.find((cand: any) => {
+          if (queryTokens.length === 0) return true;
+          const allNames = (cand?.names || [])
+            .map((n: any) =>
+              String(n?.value || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+            )
+            .join(' ');
+          return queryTokens.some((qt) => allNames.includes(qt));
+        }) || (queryTokens.length === 0 ? items[0] : null);
+
       const loc = item?.locations?.[0]?.geonames_details;
       if (item && loc) {
         const cc = String(
@@ -641,8 +721,19 @@ async function resolveInstitutionFromOfficialSources(
   }
 
   const wdFallback = await queryWikidataInstitutionCoords(cleanName);
-  const cc = (rawCountryCode || 'BD').toUpperCase();
-  const base = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.BD;
+  let resolvedCC = (rawCountryCode || '').toUpperCase();
+  if (!resolvedCC) {
+    const cLower = cleanName.toLowerCase();
+    if (cLower.includes('spain') || cLower.includes('girona') || cLower.includes('catalonia') || cLower.includes('barcelona') || cLower.includes('madrid')) resolvedCC = 'ES';
+    else if (cLower.includes('norway') || cLower.includes('bergen') || cLower.includes('oslo')) resolvedCC = 'NO';
+    else if (cLower.includes('france') || cLower.includes('paris') || cLower.includes('cnrs')) resolvedCC = 'FR';
+    else if (cLower.includes('germany') || cLower.includes('berlin') || cLower.includes('munich') || cLower.includes('kiel')) resolvedCC = 'DE';
+    else if (cLower.includes('canada') || cLower.includes('toronto')) resolvedCC = 'CA';
+    else if (cLower.includes('bangladesh') || cLower.includes('dhaka')) resolvedCC = 'BD';
+    else if (cLower.includes('uk') || cLower.includes('united kingdom') || cLower.includes('london') || cLower.includes('oxford') || cLower.includes('cambridge')) resolvedCC = 'GB';
+    else resolvedCC = 'US';
+  }
+  const base = ISO_COUNTRY_INFO[resolvedCC] || ISO_COUNTRY_INFO.US;
   const fallbackResolved: Omit<
     CoAuthorAffiliation,
     'name' | 'isHomeInstitution'
@@ -651,13 +742,150 @@ async function resolveInstitutionFromOfficialSources(
     universityName: cleanName,
     city: base.country,
     country: base.country,
-    countryCode: cc,
+    countryCode: resolvedCC,
     continent: base.continent,
     lat: wdFallback?.lat ?? base.lat,
     lng: wdFallback?.lng ?? base.lng,
   };
   officialInstitutionGeoCache.set(cacheKey, fallbackResolved);
   return fallbackResolved;
+}
+
+async function resolveInstitutionByVerifiedDomain(
+  rawDomain: string | undefined
+): Promise<Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'> | null> {
+  if (!rawDomain) return null;
+  const clean = rawDomain
+    .toLowerCase()
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/\/.*$/, '')
+    .replace(/\.$/, '');
+  if (
+    !clean ||
+    clean === 'scholar.google.com' ||
+    clean.endsWith('gmail.com') ||
+    clean.endsWith('yahoo.com') ||
+    clean.endsWith('outlook.com') ||
+    clean.endsWith('hotmail.com') ||
+    clean.endsWith('icloud.com') ||
+    clean.endsWith('ieee.org') ||
+    clean.endsWith('acm.org')
+  ) {
+    return null;
+  }
+
+  const cacheKey = `domain:${clean}`;
+  const cached = officialInstitutionGeoCache.get(cacheKey);
+  if (cached) return cached;
+
+  const parts = clean.split('.');
+  let rootDomain = clean;
+  if (parts.length >= 3) {
+    const lastTwo = parts.slice(-2).join('.');
+    if (/^(edu|ac|org|gov|res)\.[a-z]{2}$/.test(lastTwo)) {
+      rootDomain = parts.slice(-3).join('.');
+    } else {
+      rootDomain = lastTwo;
+    }
+  }
+  const altRootDomain = rootDomain.includes('.ac.')
+    ? rootDomain.replace('.ac.', '.edu.')
+    : rootDomain.includes('.edu.')
+    ? rootDomain.replace('.edu.', '.ac.')
+    : rootDomain;
+  const slug = rootDomain.split('.')[0];
+  if (!slug || slug.length < 2) return null;
+
+  const queries = [slug, rootDomain];
+  for (const q of queries) {
+    try {
+      const rorResp = await fetch(
+        `https://api.ror.org/v2/organizations?query=${encodeURIComponent(q)}`,
+        {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(3500),
+        }
+      );
+      if (!rorResp.ok) continue;
+      const rorData = (await rorResp.json()) as any;
+      const items: any[] = Array.isArray(rorData?.items) ? rorData.items : [];
+      const matched = items.find((it) => {
+        const doms: string[] = (it.domains || []).map((d: string) =>
+          String(d).toLowerCase()
+        );
+        if (
+          doms.some(
+            (d) =>
+              d === rootDomain ||
+              d === altRootDomain ||
+              d === clean ||
+              clean.endsWith(`.${d}`) ||
+              rootDomain.endsWith(`.${d}`)
+          )
+        ) {
+          return true;
+        }
+        const links: string[] = (it.links || []).map((l: any) =>
+          String(l.value || '').toLowerCase()
+        );
+        return links.some((u) => {
+          try {
+            const h = new URL(u).hostname.replace(/^www\./, '');
+            return (
+              h === rootDomain ||
+              h === altRootDomain ||
+              h === clean ||
+              clean.endsWith(`.${h}`) ||
+              h.endsWith(`.${rootDomain}`) ||
+              h.endsWith(`.${altRootDomain}`)
+            );
+          } catch {
+            return false;
+          }
+        });
+      });
+
+      if (matched) {
+        const names: any[] = Array.isArray(matched.names) ? matched.names : [];
+        const dispObj =
+          names.find(
+            (n) => (n.types || []).includes('ror_display') && n.lang === 'en'
+          ) ||
+          names.find((n) => (n.types || []).includes('ror_display')) ||
+          names.find((n) => (n.types || []).includes('label') && n.lang === 'en') ||
+          names[0];
+        const rorName = String(dispObj?.value || '').trim();
+        const loc = matched.locations?.[0]?.geonames_details;
+        const rorCC = String(
+          loc?.country_code || loc?.country_subdivision_code || 'US'
+        ).toUpperCase();
+        const base = ISO_COUNTRY_INFO[rorCC] || ISO_COUNTRY_INFO.US;
+        const rorLat = Number(loc?.lat);
+        const rorLng = Number(loc?.lng);
+        if (rorName) {
+          const resolved: Omit<
+            CoAuthorAffiliation,
+            'name' | 'isHomeInstitution'
+          > = {
+            universityId: slugifyInstitution(rorName),
+            universityName: rorName,
+            city: String(loc?.name || base.country),
+            country: String(loc?.country_name || base.country),
+            countryCode: rorCC,
+            continent: base.continent,
+            lat: Number.isFinite(rorLat) ? rorLat : base.lat,
+            lng: Number.isFinite(rorLng) ? rorLng : base.lng,
+          };
+          officialInstitutionGeoCache.set(cacheKey, resolved);
+          return resolved;
+        }
+      }
+    } catch {
+      // Ignore ROR domain lookup timeout
+    }
+  }
+  return null;
 }
 
 interface ScrapedScholarPublication {
@@ -672,6 +900,7 @@ interface ScrapedScholarPublication {
 interface ScrapedScholarSidebarAuthor {
   name: string;
   affiliation: string;
+  verifiedDomain?: string;
 }
 
 interface ScrapedScholarProfile {
@@ -859,10 +1088,13 @@ async function scrapeGoogleScholarFullProfile(
       (affilMatch?.[1] || 'Academic Researcher').replace(/<[^>]+>/g, '')
     );
 
-    const domainMatch = firstPage.match(
+    const ivhBlock =
+      firstPage.match(/id="gsc_prf_ivh"[^>]*>([\s\S]*?)<\/div>/i)?.[1] || '';
+    const domainMatch = ivhBlock.match(
       /Verified email at\s+([a-zA-Z0-9.-]+)/i
     );
-    const verifiedDomain = domainMatch?.[1] || 'scholar.google.com';
+    const verifiedDomain =
+      domainMatch?.[1]?.replace(/\.$/, '') || 'scholar.google.com';
 
     const fieldMatches = [
       ...firstPage.matchAll(/class="gsc_prf_inta[^"]*"[^>]*>([^<]+)<\/a>/gi),
@@ -977,13 +1209,23 @@ async function scrapeGoogleScholarFullProfile(
     for (const block of coDescBlocks) {
       const inner = block[1];
       const coNameMatch = inner.match(/<a[^>]*>([^<]+)<\/a>/i);
-      const extMatch = inner.match(/class="gsc_rsb_a_ext"[^>]*>([^<]+)<\/span>/i);
+      const extMatches = [
+        ...inner.matchAll(/class="gsc_rsb_a_ext"[^>]*>([^<]+)<\/span>/gi),
+      ].map((m) => decodeHtmlEntities(m[1]));
       if (coNameMatch?.[1]) {
         const cleanCoName = decodeHtmlEntities(coNameMatch[1])
           .replace(/,\s*(PhD|SMIEEE|MIEEE|FIEEE|Dr\.|Prof\.)/gi, '')
           .trim();
-        const coAff = decodeHtmlEntities(extMatch?.[1] || '');
-        sidebarCoAuthors.push({ name: cleanCoName, affiliation: coAff });
+        const coAff = extMatches[0] || '';
+        const coDomainMatch = inner.match(
+          /Verified email at\s+([a-zA-Z0-9.-]+)/i
+        );
+        const coDomain = coDomainMatch?.[1]?.replace(/\.$/, '') || undefined;
+        sidebarCoAuthors.push({
+          name: cleanCoName,
+          affiliation: coAff,
+          ...(coDomain ? { verifiedDomain: coDomain } : {}),
+        });
       }
     }
 
@@ -1490,12 +1732,18 @@ function isSameResearcherName(
   targetName: string
 ): boolean {
   const c = stripAcademicHonorifics(candidateName)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/[^a-z\s]/g, '')
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
   const t = stripAcademicHonorifics(targetName)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/[^a-z\s]/g, '')
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
   if (!c || !t) return false;
   if (c === t) return true;
@@ -1505,11 +1753,41 @@ function isSameResearcherName(
   const tNorm = t.replace(/v|w/g, 'b');
   if (cNorm === tNorm) return true;
 
-  const tParts = t.split(/\s+/).filter((p) => p.length >= 4);
+  const cTokens = c.split(/\s+/).filter(Boolean);
+  const tTokens = t.split(/\s+/).filter(Boolean);
+
+  // Support reversed name order (e.g. East Asian "Li Fei-Fei" <-> "Fei-Fei Li")
+  if (
+    cTokens.length >= 2 &&
+    cTokens.length === tTokens.length &&
+    [...cTokens].sort().join(' ') === [...tTokens].sort().join(' ')
+  ) {
+    return true;
+  }
+
+  const tParts = tTokens.filter((p) => p.length >= 4);
   if (tParts.length > 0) {
     const lastPart = tParts[tParts.length - 1];
     const lastPartNorm = lastPart.replace(/v|w/g, 'b');
-    if (c.includes(lastPart) || cNorm.includes(lastPartNorm)) {
+    const firstInit = tTokens[0]?.[0] || '';
+    const cFirstInit = cTokens[0]?.[0] || '';
+    if (
+      (c.includes(lastPart) || cNorm.includes(lastPartNorm)) &&
+      (!firstInit || !cFirstInit || firstInit === cFirstInit)
+    ) {
+      return true;
+    }
+  } else if (tTokens.length >= 2 && cTokens.length >= 2) {
+    // Support 2-3 letter surnames (e.g. "Kaiming He", "Andrew Ng", "Fei-Fei Li")
+    const tLast = tTokens[tTokens.length - 1];
+    const tFirst = tTokens[0];
+    if (
+      tLast.length >= 2 &&
+      cTokens.includes(tLast) &&
+      (cTokens.includes(tFirst) ||
+        (tFirst.length >= 4 && c.includes(tFirst)) ||
+        cTokens[0]?.[0] === tFirst[0])
+    ) {
       return true;
     }
   }
@@ -1520,12 +1798,20 @@ function matchGsTitleToOpenAlexWork(
   gsTitle: string,
   oaWorks: any[]
 ): any | null {
-  const gsNorm = gsTitle.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const gsNorm = gsTitle
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
   if (gsNorm.length < 5) return null;
 
   for (const w of oaWorks) {
     const oaTitle = String(w.title || w.display_name || '');
-    const oaNorm = oaTitle.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const oaNorm = oaTitle
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
     if (!oaNorm) continue;
     if (
       oaNorm === gsNorm ||
@@ -1706,9 +1992,15 @@ export async function buildLiveResearcherProfile(
     scraped?.name || queryNameInput || resolvedWikidataName || userIdInput;
   if (!targetName) return null;
 
+  // Pre-resolve the verified email domain via ROR so its official institution name aids OpenAlex author disambiguation and home institution mapping
+  const domainResolvedHome = await resolveInstitutionByVerifiedDomain(
+    scraped?.verifiedDomain
+  );
+
   // 1. Find all matching OpenAlex author records for targetName (stripping Dr./Prof. honorifics so OpenAlex search succeeds)
   const openAlexAuthorIds: string[] = [];
   let primaryOpenAlexAuthor: any = null;
+  let bestOaCandidateScore = -1;
   const cleanSearchName = stripAcademicHonorifics(targetName) || targetName;
 
   try {
@@ -1722,27 +2014,230 @@ export async function buildLiveResearcherProfile(
       const results: any[] = Array.isArray(authorData?.results)
         ? authorData.results
         : [];
+      // Score each candidate author dynamically using the researcher's Google Scholar affiliation, verified domain institution, and publication profile
+      let bestCandidate: any = null;
+      let bestScore = -1;
+
+      const combinedAffilText = `${scraped?.affiliation || ''} ${
+        domainResolvedHome?.universityName || ''
+      }`.toLowerCase();
+      const affilTokens = Array.from(
+        new Set(
+          combinedAffilText
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(
+              (t) =>
+                t.length >= 3 &&
+                ![
+                  'dept',
+                  'department',
+                  'student',
+                  'professor',
+                  'prof',
+                  'researcher',
+                  'fellow',
+                  'post',
+                  'graduate',
+                  'undergraduate',
+                  'associate',
+                  'assistant',
+                  'emeritus',
+                  'chairman',
+                  'chair',
+                  'dr',
+                  'faculty',
+                  'univ',
+                  'university',
+                  'institute',
+                  'college',
+                  'school',
+                  'technology',
+                  'science',
+                  'engineering',
+                  'computer',
+                ].includes(t)
+            )
+        )
+      );
+
+      const normSearchExact = cleanSearchName
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const normSearchNoMidInit = normSearchExact
+        .split(' ')
+        .filter((w, i, arr) => i === 0 || i === arr.length - 1 || w.length > 1)
+        .join(' ');
+
+      const scoredCandidates: Array<{
+        author: any;
+        score: number;
+        affilMatches: number;
+        worksCount: number;
+      }> = [];
+
       for (const a of results) {
         const disp = String(a.display_name || '');
-        if (isSameResearcherName(disp, cleanSearchName)) {
-          const cleanId = String(a.id).replace('https://openalex.org/', '');
-          if (!openAlexAuthorIds.includes(cleanId)) {
-            openAlexAuthorIds.push(cleanId);
-          }
-          if (!primaryOpenAlexAuthor) {
-            primaryOpenAlexAuthor = a;
+        if (!isSameResearcherName(disp, cleanSearchName)) continue;
+
+        let score = 0;
+        const normDispExact = stripAcademicHonorifics(disp)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z\s]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const normDispNoMidInit = normDispExact
+          .split(' ')
+          .filter((w, i, arr) => i === 0 || i === arr.length - 1 || w.length > 1)
+          .join(' ');
+
+        if (normDispExact === normSearchExact) {
+          score += 25;
+        } else if (normDispNoMidInit === normSearchNoMidInit) {
+          score += 24;
+        }
+
+        const candidateInstitutions: string[] = [];
+        if (Array.isArray(a.last_known_institutions)) {
+          for (const inst of a.last_known_institutions) {
+            if (inst?.display_name)
+              candidateInstitutions.push(
+                String(inst.display_name)
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase()
+              );
           }
         }
+        if (Array.isArray(a.affiliations)) {
+          for (const aff of a.affiliations) {
+            if (aff?.institution?.display_name)
+              candidateInstitutions.push(
+                String(aff.institution.display_name)
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase()
+              );
+          }
+        }
+
+        // Match affiliation keywords from Google Scholar & verified domain institution
+        let affilMatches = 0;
+        for (const token of affilTokens) {
+          if (candidateInstitutions.some((cInst) => cInst.includes(token))) {
+            affilMatches++;
+            score += 30;
+          }
+        }
+
+        // Add proportional score for works count
+        const worksCount = Number(a.works_count || 0);
+        score += Math.min(25, Math.log10(worksCount + 1) * 8);
+
+        scoredCandidates.push({
+          author: a,
+          score,
+          affilMatches,
+          worksCount,
+        });
       }
-      if (!primaryOpenAlexAuthor && results[0]) {
-        primaryOpenAlexAuthor = results[0];
-        openAlexAuthorIds.push(
-          String(results[0].id).replace('https://openalex.org/', '')
+
+      scoredCandidates.sort(
+        (x, y) => y.score - x.score || y.worksCount - x.worksCount
+      );
+
+      if (scoredCandidates.length > 0) {
+        bestCandidate = scoredCandidates[0].author;
+        bestScore = scoredCandidates[0].score;
+        for (const sc of scoredCandidates) {
+          if (
+            openAlexAuthorIds.length === 0 ||
+            (sc.affilMatches > 0 && openAlexAuthorIds.length < 4)
+          ) {
+            const cId = String(sc.author.id || '').replace(
+              'https://openalex.org/',
+              ''
+            );
+            if (cId && !openAlexAuthorIds.includes(cId)) {
+              openAlexAuthorIds.push(cId);
+            }
+          }
+        }
+      } else if (results[0]) {
+        bestCandidate = results[0];
+        const cleanId = String(bestCandidate.id).replace(
+          'https://openalex.org/',
+          ''
         );
+        if (cleanId) openAlexAuthorIds.push(cleanId);
+      }
+
+      if (bestCandidate) {
+        primaryOpenAlexAuthor = bestCandidate;
+        bestOaCandidateScore = bestScore;
       }
     }
   } catch {
     // Continue with scraped Scholar data if OpenAlex author lookup times out
+  }
+
+  // Fallback disambiguation via top Google Scholar publication title if author search had no affiliation match or returned no candidates
+  if (
+    scraped &&
+    scraped.publications.length > 0 &&
+    (openAlexAuthorIds.length === 0 ||
+      !primaryOpenAlexAuthor ||
+      bestOaCandidateScore < 30)
+  ) {
+    try {
+      const topTitle = scraped.publications[0].title;
+      const wSearch = await fetchOpenAlexJson(
+        `https://api.openalex.org/works?search=${encodeURIComponent(
+          topTitle
+        )}&per-page=3&select=id,title,display_name,authorships&mailto=research@scholarlens.org`,
+        4000
+      );
+      const wItems: any[] = Array.isArray(wSearch?.results)
+        ? wSearch.results
+        : [];
+      for (const wItem of wItems) {
+        if (!matchGsTitleToOpenAlexWork(topTitle, [wItem])) continue;
+        for (const au of wItem.authorships || []) {
+          const auName = String(au.author?.display_name || '');
+          const auId = String(au.author?.id || '').replace(
+            'https://openalex.org/',
+            ''
+          );
+          if (auId && isSameResearcherName(auName, cleanSearchName)) {
+            if (!openAlexAuthorIds.includes(auId)) {
+              openAlexAuthorIds.unshift(auId);
+            }
+            if (!primaryOpenAlexAuthor || bestOaCandidateScore < 30) {
+              const directAuthor = await fetchOpenAlexJson(
+                `https://api.openalex.org/authors/${encodeURIComponent(
+                  auId
+                )}?mailto=research@scholarlens.org`,
+                3500
+              );
+              if (directAuthor?.id) {
+                primaryOpenAlexAuthor = directAuthor;
+                bestOaCandidateScore = 100;
+              }
+            }
+            break;
+          }
+        }
+        if (bestOaCandidateScore >= 100) break;
+      }
+    } catch {
+      // Ignore fallback error
+    }
   }
 
   // 2. Fetch works from OpenAlex (sorted by citations descending in the polite pool) to enrich the Google Scholar profile's papers
@@ -1756,7 +2251,7 @@ export async function buildLiveResearcherProfile(
         pagesToFetch.map(async (pageNum) => {
           const url = `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
             filterIds
-          )}&sort=cited_by_count:desc&per-page=200&page=${pageNum}&mailto=research@scholarlens.org`;
+          )}&sort=cited_by_count:desc&per-page=200&page=${pageNum}&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`;
           const worksData = await fetchOpenAlexJson(url, 6500);
           return Array.isArray(worksData?.results) ? worksData.results : [];
         })
@@ -1909,29 +2404,145 @@ export async function buildLiveResearcherProfile(
 
   await Promise.all(batchPromises);
 
-  // 4. Resolve researcher's Home Institution dynamically from official sources (OpenAlex / ROR / Wikidata)
+  // 4. Resolve researcher's Home Institution dynamically from official sources (ROR Verified Domain / Explicit University in Affiliation / OpenAlex)
   let homeMapped: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>;
-  if (primaryOpenAlexAuthor?.last_known_institutions?.[0]) {
-    const inst0 = primaryOpenAlexAuthor.last_known_institutions[0];
-    const shortId = String(inst0.id || '').replace('https://openalex.org/', '');
+  const rawAffil = scraped?.affiliation || '';
+  const affilLower = rawAffil.toLowerCase();
+
+  // Extract explicit university or institution phrases from Google Scholar affiliation string
+  const affilParts = rawAffil
+    .split(/(?:,|\s+-\s+|\||&)/)
+    .map((s) =>
+      s
+        .replace(
+          /^(?:associate|assistant|adjunct|visiting|emeritus|distinguished|executive|senior|lead|principal|post-graduate|postgraduate|undergraduate|graduate|phd|doctoral|postdoc)?\s*(?:professor|prof\.?|lecturer|researcher|research\s+assistant|research\s+fellow|fellow|student|faculty|chairman|chair|dean|director|head|scientist)\s*(?:of\s+[A-Za-z\s]+)?\s*(?:at\s+)?/i,
+          ''
+        )
+        .trim()
+    )
+    .filter(Boolean);
+
+  const primaryUniCandidate = affilParts.find((p) =>
+    /\b(?:university|universitat|universiti|universit[a-z]*|universidad|universidade|polytechnic\s+institute|polytechnic|polytechnique|institute\s+of\s+technology|hochschule)\b/i.test(
+      p
+    )
+  );
+  const secondaryInstCandidate = affilParts.find(
+    (p) =>
+      /\b(?:institute|institut|college|academy|centre|center|laboratory)\b/i.test(
+        p
+      ) &&
+      !/\b(?:post-graduate|postgraduate|graduate|undergraduate|department|dept)\b/i.test(
+        p
+      )
+  );
+
+  const GENERIC_INST_WORDS = new Set([
+    'university',
+    'universitat',
+    'universidad',
+    'universiti',
+    'institute',
+    'college',
+    'school',
+    'academy',
+    'centre',
+    'center',
+    'department',
+    'faculty',
+    'laboratory',
+    'national',
+    'state',
+    'international',
+    'american',
+    'science',
+    'technology',
+    'engineering',
+    'business',
+    'bangladesh',
+    'india',
+    'united',
+    'states',
+    'kingdom',
+    'australia',
+    'canada',
+    'china',
+    'japan',
+    'korea',
+    'malaysia',
+    'spain',
+    'france',
+    'germany',
+  ]);
+
+  let matchedInstRecord: any = null;
+  if (
+    primaryOpenAlexAuthor?.last_known_institutions &&
+    primaryOpenAlexAuthor.last_known_institutions.length > 0
+  ) {
+    if (rawAffil) {
+      matchedInstRecord = primaryOpenAlexAuthor.last_known_institutions.find(
+        (inst: any) => {
+          const name = String(inst?.display_name || '').toLowerCase();
+          if (!name) return false;
+          if (affilLower.includes(name)) return true;
+          const distinctiveTokens = name
+            .split(/[^a-z0-9]+/)
+            .filter((w) => w.length >= 3 && !GENERIC_INST_WORDS.has(w));
+          return (
+            distinctiveTokens.length > 0 &&
+            distinctiveTokens.every((w) => affilLower.includes(w))
+          );
+        }
+      );
+    }
+    if (!matchedInstRecord && !rawAffil && !domainResolvedHome) {
+      matchedInstRecord = primaryOpenAlexAuthor.last_known_institutions[0];
+    }
+  }
+
+  if (matchedInstRecord) {
+    const shortId = String(matchedInstRecord.id || '').replace(
+      'https://openalex.org/',
+      ''
+    );
     homeMapped = await resolveInstitutionFromOfficialSources(
-      String(inst0.display_name || scraped?.affiliation || 'Research University'),
-      String(inst0.country_code || ''),
+      String(matchedInstRecord.display_name || rawAffil || 'Research University'),
+      String(matchedInstRecord.country_code || ''),
+      shortId,
+      geoCache
+    );
+  } else if (primaryUniCandidate) {
+    homeMapped = await resolveInstitutionFromOfficialSources(
+      primaryUniCandidate,
+      domainResolvedHome?.countryCode || '',
+      undefined,
+      geoCache
+    );
+  } else if (domainResolvedHome) {
+    homeMapped = domainResolvedHome;
+  } else if (secondaryInstCandidate) {
+    homeMapped = await resolveInstitutionFromOfficialSources(
+      secondaryInstCandidate,
+      '',
+      undefined,
+      geoCache
+    );
+  } else if (primaryOpenAlexAuthor?.last_known_institutions?.[0]) {
+    const fallbackInst = primaryOpenAlexAuthor.last_known_institutions[0];
+    const shortId = String(fallbackInst.id || '').replace(
+      'https://openalex.org/',
+      ''
+    );
+    homeMapped = await resolveInstitutionFromOfficialSources(
+      String(fallbackInst.display_name || 'Research University'),
+      String(fallbackInst.country_code || ''),
       shortId,
       geoCache
     );
   } else {
-    const rawAffil = scraped?.affiliation || 'Academic Research University';
-    const affilParts = rawAffil
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const uniCandidate =
-      affilParts.find((p) =>
-        /university|institute|college|school|academy|ulab|dtu|cnrs/i.test(p)
-      ) || rawAffil;
     homeMapped = await resolveInstitutionFromOfficialSources(
-      uniCandidate,
+      rawAffil || 'Academic Research University',
       '',
       undefined,
       geoCache
@@ -1951,45 +2562,146 @@ export async function buildLiveResearcherProfile(
   >();
   const oaAuthorIdInstSet = new Map<string, Set<string>>();
 
+  function indexSidebarAuthorKeys(
+    rawSidebarName: string,
+    mappedInst: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>
+  ) {
+    const addKey = (k: string) => {
+      const clean = k
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (clean && !sidebarAuthorInstitution.has(clean)) {
+        sidebarAuthorInstitution.set(clean, mappedInst);
+      }
+      const compact = clean.replace(/\s+/g, '');
+      if (compact && !sidebarAuthorInstitution.has(compact)) {
+        sidebarAuthorInstitution.set(compact, mappedInst);
+      }
+    };
+
+    const stripped = rawSidebarName.replace(/\([^)]*\)/g, '').trim();
+    addKey(stripped);
+
+    const ascii = stripped.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    addKey(ascii);
+
+    const parts = ascii
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+    if (parts.length >= 2) {
+      const firstInit = parts[0][0];
+      const last = parts[parts.length - 1];
+      addKey(`${firstInit} ${last}`);
+      if (parts.length >= 3) {
+        const mid = parts[1];
+        addKey(`${firstInit} ${mid}`);
+        addKey(`${firstInit}${mid[0]} ${last}`);
+        addKey(`${firstInit} ${mid} ${last}`);
+        addKey(`${parts[0]} ${mid}`);
+      }
+    }
+  }
+
+  function matchAuthorToSidebar(
+    rawAuthorName: string
+  ): Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'> | null {
+    const clean = rawAuthorName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!clean) return null;
+    if (sidebarAuthorInstitution.has(clean)) {
+      return sidebarAuthorInstitution.get(clean)!;
+    }
+    const compact = clean.replace(/\s+/g, '');
+    if (sidebarAuthorInstitution.has(compact)) {
+      return sidebarAuthorInstitution.get(compact)!;
+    }
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      const initLast = `${parts[0][0]} ${parts[parts.length - 1]}`;
+      if (sidebarAuthorInstitution.has(initLast)) {
+        return sidebarAuthorInstitution.get(initLast)!;
+      }
+    }
+    return null;
+  }
+
   if (scraped?.sidebarCoAuthors && scraped.sidebarCoAuthors.length > 0) {
     await Promise.all(
       scraped.sidebarCoAuthors.map(async (sAuth) => {
-        if (!sAuth.affiliation) return;
-        const cleanedAffil = sAuth.affiliation
+        if (!sAuth.affiliation && !sAuth.verifiedDomain) return;
+        const cleanedAffil = (sAuth.affiliation || '')
           .replace(
-            /^.*?\b(?:at|of|from)\s+(?=[A-Z].*?(?:university|universitat|universiti|universit|institute|college|polytechnic|dtu|buet|ulab|iut|bubt|normale))/i,
+            /^(?:associate|assistant|adjunct|visiting|emeritus|distinguished|lead|senior|principal)?\s*(?:professor|prof\.?|lecturer|researcher|research\s+assistant|research\s+fellow|fellow|student|faculty|chair|chairman|dean|director|head|scientist)\s*(?:and\s+head)?(?:\s+of\s+[^,|-]+)?(?:,|\s+-\s+|\||\bat\b)?\s*/i,
+            ''
+          )
+          .replace(
+            /^(?:ph\.?d\.?|post-?graduate|undergraduate|graduate|master'?s?|doctoral|postdoc(?:toral)?)\s+(?:researcher|student|fellow|candidate|assistant|scholar)\s*(?:,|\s+-\s+|\||\bat\b)?\s*/i,
             ''
           )
           .trim();
+
         const parts = cleanedAffil
-          .split(/[,|-]/)
+          .split(/(?:,|\s+-\s+|\|)/)
           .map((p) =>
             p
               .replace(
-                /^(?:associate|assistant|adjunct|visiting|emeritus|distinguished)?\s*(?:professor|lecturer|researcher|fellow|student|faculty|chair|dean|director|head)\s*(?:of\s+[A-Za-z&\s]+)?\s*(?:at\s+)?/i,
+                /^(?:associate|assistant|adjunct|visiting|emeritus|distinguished)?\s*(?:professor|prof\.?|lecturer|researcher|research\s+assistant|research\s+fellow|fellow|student|faculty|chair|chairman|dean|director|head)\s*(?:of\s+[A-Za-z&\s]+)?\s*(?:at\s+)?/i,
+                ''
+              )
+              .replace(
+                /^(?:ph\.?d\.?|post-?graduate|undergraduate|graduate|master'?s?|doctoral|postdoc(?:toral)?)\s+(?:researcher|student|fellow|candidate|assistant|scholar)\s*(?:at\s+)?/i,
                 ''
               )
               .trim()
           )
           .filter(Boolean);
-        const uniPart = parts.find((p) =>
-          /university|universitat|universiti|universit|institute of technology|college|polytechnic|dtu|buet|cuet|kuet|ruet|duet|sust|ulab|iut|bubt|aiub|iub|nsu|ewu|brac|diu|uiu|gub|normale/i.test(
+
+        const primaryUniPart = parts.find((p) =>
+          /\b(?:university|universitat|universiti|universit[a-z]*|universidad|universidade|institute of technology|polytechnic\s+institute|polytechnic|polytechnique|hochschule|uclouvain|politehnica|cnrs|inria|ifremer|csiro|cern|max planck)\b/i.test(
             p
           )
         );
-        if (uniPart && uniPart.length >= 3) {
-          const mapped = await resolveInstitutionFromOfficialSources(
-            uniPart,
+        const secondaryInstPart = parts.find(
+          (p) =>
+            /\b(?:institute|institut|college|academy|centre|center|laboratory|hospital|institution)\b/i.test(
+              p
+            ) &&
+            !/\b(?:post-graduate|postgraduate|graduate|undergraduate|department|dept)\b/i.test(
+              p
+            )
+        );
+
+        let mapped: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'> | null =
+          null;
+        if (primaryUniPart && primaryUniPart.length >= 3) {
+          mapped = await resolveInstitutionFromOfficialSources(
+            primaryUniPart,
             '',
             undefined,
             geoCache
           );
-          if (mapped.universityId !== 'unlisted') {
-            sidebarAuthorInstitution.set(
-              sAuth.name.toLowerCase().trim(),
-              mapped
-            );
-          }
+        } else if (sAuth.verifiedDomain) {
+          mapped = await resolveInstitutionByVerifiedDomain(sAuth.verifiedDomain);
+        }
+        if (!mapped && secondaryInstPart && secondaryInstPart.length >= 3) {
+          mapped = await resolveInstitutionFromOfficialSources(
+            secondaryInstPart,
+            '',
+            undefined,
+            geoCache
+          );
+        }
+        if (mapped && mapped.universityId !== 'unlisted') {
+          indexSidebarAuthorKeys(sAuth.name, mapped);
         }
       })
     );
@@ -2153,19 +2865,15 @@ export async function buildLiveResearcherProfile(
           });
         }
       } else {
-        // Author has no explicit affiliation on this specific work: ONLY use their disambiguated OpenAlex Author ID (if unambiguous) or exact sidebar name
+        // Author has no explicit affiliation on this specific work: use their disambiguated OpenAlex Author ID or sidebar co-author match
         let mapped: Omit<
           CoAuthorAffiliation,
           'name' | 'isHomeInstitution'
         > | null = null;
-        if (
-          aId &&
-          knownByOaAuthorId.has(aId) &&
-          (oaAuthorIdInstSet.get(aId)?.size || 0) === 1
-        ) {
+        if (aId && knownByOaAuthorId.has(aId)) {
           mapped = knownByOaAuthorId.get(aId)!;
-        } else if (sidebarAuthorInstitution.has(aName.toLowerCase())) {
-          mapped = sidebarAuthorInstitution.get(aName.toLowerCase())!;
+        } else {
+          mapped = matchAuthorToSidebar(aName);
         }
 
         const dedupKey = `${aName.toLowerCase()}::${
@@ -2230,7 +2938,7 @@ export async function buildLiveResearcherProfile(
 
     for (const rawAuth of rawAuthorParts) {
       const lower = rawAuth.toLowerCase().trim();
-      const matchedInst = sidebarAuthorInstitution.get(lower) || null;
+      const matchedInst = matchAuthorToSidebar(rawAuth);
       if (seenCoAuthorNames.has(lower)) continue;
       seenCoAuthorNames.add(lower);
 
@@ -2277,7 +2985,7 @@ export async function buildLiveResearcherProfile(
         !officialSourceByNameCache.has(v.toLowerCase())
       ) {
         candidateVenues.add(v);
-        if (candidateVenues.size >= 6) break;
+        if (candidateVenues.size >= 40) break;
       }
     }
     if (candidateVenues.size > 0) {
@@ -2510,12 +3218,9 @@ export async function buildLiveResearcherProfile(
     userIdInput ||
     slugifyInstitution(targetName).slice(0, 12);
 
-  // Fallback per-year citation histogram from OpenAlex author counts_by_year if Google Scholar histogram was not available
+  // Fallback per-year citation histogram from OpenAlex author counts_by_year ONLY when Google Scholar was not scraped directly
   let finalOfficialMetrics = scraped?.officialMetrics;
-  if (
-    (!finalOfficialMetrics || !finalOfficialMetrics.citationsByYear) &&
-    Array.isArray(primaryOpenAlexAuthor?.counts_by_year)
-  ) {
+  if (!scraped && Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
     const oaCitByYr: Record<number, number> = {};
     for (const row of primaryOpenAlexAuthor.counts_by_year) {
       const y = Number(row?.year);
@@ -2524,20 +3229,21 @@ export async function buildLiveResearcherProfile(
         oaCitByYr[y] = c;
       }
     }
-    if (Object.keys(oaCitByYr).length > 0) {
-      finalOfficialMetrics = {
-        totalCitations:
-          finalOfficialMetrics?.totalCitations ||
-          Number(primaryOpenAlexAuthor?.cited_by_count || 0),
-        hIndex:
-          finalOfficialMetrics?.hIndex ||
-          Number(primaryOpenAlexAuthor?.summary_stats?.h_index || 0),
-        i10Index:
-          finalOfficialMetrics?.i10Index ||
-          Number(primaryOpenAlexAuthor?.summary_stats?.i10_index || 0),
-        citationsByYear: oaCitByYr,
-      };
-    }
+    finalOfficialMetrics = {
+      totalCitations:
+        typeof finalOfficialMetrics?.totalCitations === 'number'
+          ? finalOfficialMetrics.totalCitations
+          : Number(primaryOpenAlexAuthor?.cited_by_count || 0),
+      hIndex:
+        typeof finalOfficialMetrics?.hIndex === 'number'
+          ? finalOfficialMetrics.hIndex
+          : Number(primaryOpenAlexAuthor?.summary_stats?.h_index || 0),
+      i10Index:
+        typeof finalOfficialMetrics?.i10Index === 'number'
+          ? finalOfficialMetrics.i10Index
+          : Number(primaryOpenAlexAuthor?.summary_stats?.i10_index || 0),
+      ...(Object.keys(oaCitByYr).length > 0 ? { citationsByYear: oaCitByYr } : {}),
+    };
   }
 
   const normalizedPublications =
@@ -2954,17 +3660,26 @@ function startScholarBridgeWorker() {
 
 // OpenAlex JSON relay endpoint
 app.get('/api/scholar/openalex-proxy', async (req, res) => {
-  const targetUrl = String(req.query.url || '').trim();
-  if (!targetUrl.startsWith('https://api.openalex.org/')) {
+  const rawTargetUrl = String(req.query.url || '').trim();
+  if (!rawTargetUrl.startsWith('https://api.openalex.org/')) {
     res.status(400).json({ error: 'Invalid OpenAlex URL' });
     return;
   }
+  const cleanUrl = rawTargetUrl
+    .replace(/([?&])mailto=[^&]+(&|$)/i, (_m, p1, p2) => (p2 === '&' ? p1 : ''))
+    .replace(/[?&]$/, '');
+  const rotatingMailto = `relay-${Math.floor(Date.now() / 60000).toString(
+    36
+  )}-${Math.random().toString(36).slice(2, 6)}@scholarlens.org`;
+  const targetUrl = `${cleanUrl}${
+    cleanUrl.includes('?') ? '&' : '?'
+  }mailto=${rotatingMailto}`;
   try {
     const oaRes = await fetch(targetUrl, {
       headers: {
-        'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+        'User-Agent': 'Mozilla/5.0 (compatible; ScholarLens/2.0)',
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(6500),
     });
     const text = await oaRes.text();
     res.status(oaRes.status).type('application/json').send(text);
@@ -3100,7 +3815,7 @@ async function startServer() {
   }
 }
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && !process.env.SKIP_SERVER_LISTEN) {
   void startServer();
 }
 
