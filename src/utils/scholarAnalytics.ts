@@ -1261,9 +1261,9 @@ export function filterAndSortPublications(
       const inVenue = pub.venue.toLowerCase().includes(query);
       const inAuthors = pub.coAuthors.some(
         (ca) =>
-          ca.name.toLowerCase().includes(query) ||
-          ca.universityName.toLowerCase().includes(query) ||
-          ca.country.toLowerCase().includes(query)
+          (ca.name && ca.name.toLowerCase().includes(query)) ||
+          ((ca.universityName || (ca as any).affiliation || '').toLowerCase().includes(query)) ||
+          (ca.country && ca.country.toLowerCase().includes(query))
       );
       if (!inTitle && !inVenue && !inAuthors) {
         return false;
@@ -1399,17 +1399,31 @@ export function aggregateUniversityCollaborations(
 
     // 2. Co-authors: EACH CO-AUTHOR BELONGS STRICTLY TO THEIR OWN UNIVERSITY!
     for (const ca of pub.coAuthors) {
+      const uName = ca.universityName || (ca as any).affiliation;
+      const uId =
+        ca.universityId ||
+        (uName
+          ? uName
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '')
+          : '');
       if (
-        !ca.universityName ||
-        !ca.universityId ||
-        ca.universityId === 'unlisted'
+        !uName ||
+        !uId ||
+        uId === 'unlisted' ||
+        uName === 'Independent / Unlisted'
       )
         continue;
 
-      const cKey = getCanonicalUniKey(ca.universityId, ca.universityName);
+      const cKey = getCanonicalUniKey(uId, uName);
       if (!uniMap.has(cKey)) {
         uniMap.set(cKey, {
-          meta: ca,
+          meta: {
+            ...ca,
+            universityId: uId,
+            universityName: uName,
+          },
           papers: new Map(),
           authorMap: new Map(),
         });
@@ -1434,10 +1448,18 @@ export function aggregateUniversityCollaborations(
         targetUni &&
         getCanonicalUniKey(targetUni.universityId, targetUni.universityName) ===
           homeKey;
-      const hasHomeCoAuthor = pub.coAuthors.some(
-        (ca) =>
-          getCanonicalUniKey(ca.universityId, ca.universityName) === homeKey
-      );
+      const hasHomeCoAuthor = pub.coAuthors.some((ca) => {
+        const uName = ca.universityName || (ca as any).affiliation || '';
+        const uId =
+          ca.universityId ||
+          (uName
+            ? uName
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '')
+            : '');
+        return getCanonicalUniKey(uId, uName) === homeKey;
+      });
       // Unassigned recent work (e.g. within current tenure year) fallback
       const isUnassignedRecent =
         !targetUni && (pub.year >= 2024 || publications.length <= 5);
@@ -1631,7 +1653,7 @@ export function aggregateCountries(
         });
       }
       const entry = countryMap.get(ca.country)!;
-      entry.universities.add(ca.universityName);
+      entry.universities.add(ca.universityName || (ca as any).affiliation || 'Unknown University');
       entry.coAuthors.add(ca.name);
       entry.papers.set(pub.id, pub);
     }
