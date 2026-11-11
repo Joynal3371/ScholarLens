@@ -685,10 +685,10 @@ export default function App() {
             >
               {isAnalyzing && (
                 <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
-                  <SearchLoadingDots size="xs" color="bg-slate-400" />
                   <span className="text-xs text-slate-400 font-sans tracking-tight">
-                    analyzing...
+                    analyzing
                   </span>
+                  <SearchLoadingDots size="xs" color="bg-slate-400" />
                 </div>
               )}
               <input
@@ -809,10 +809,10 @@ export default function App() {
             >
               {isAnalyzing && (
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
-                  <SearchLoadingDots size="xs" color="bg-slate-400" />
                   <span className="text-xs text-slate-400 font-sans tracking-tight">
-                    analyzing...
+                    analyzing
                   </span>
+                  <SearchLoadingDots size="xs" color="bg-slate-400" />
                 </div>
               )}
               <input
@@ -925,11 +925,11 @@ export default function App() {
                         Google Scholar Profile Link or User ID
                       </label>
                       {isAnalyzing ? (
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none select-none z-10">
-                          <SearchLoadingDots size="xs" color="bg-slate-400" />
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
                           <span className="text-xs sm:text-sm text-slate-400 font-sans tracking-tight">
-                            analyzing...
+                            analyzing
                           </span>
+                          <SearchLoadingDots size="xs" color="bg-slate-400" />
                         </div>
                       ) : (
                         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />

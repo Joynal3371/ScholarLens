@@ -599,7 +599,7 @@ export const PortfolioBreakdownSection: React.FC<
           <div className="my-1">
             <svg
               data-chart-svg="true"
-              viewBox="0 0 360 210"
+              viewBox="0 0 380 210"
               className="w-full h-auto max-h-[210px] scholar-chart-svg"
               role="img"
               aria-label="Quartile composition by year stacked bar chart"
@@ -616,10 +616,10 @@ export const PortfolioBreakdownSection: React.FC<
                   if (totalCount <= 0) return null;
                   const colW = Math.min(
                     26,
-                    Math.floor(290 / Math.max(1, pubTrendYears.length)) - 6
+                    Math.floor(310 / Math.max(1, pubTrendYears.length)) - 6
                   );
-                  const step = 310 / Math.max(1, pubTrendYears.length);
-                  const x = 26 + idx * step;
+                  const step = 330 / Math.max(1, pubTrendYears.length);
+                  const x = 24 + idx * step;
                   const scaleH = 122 / maxYearPapers;
                   const totalH = totalCount * scaleH;
                   return (
@@ -640,9 +640,9 @@ export const PortfolioBreakdownSection: React.FC<
                 })}
               </defs>
               <line
-                x1="18"
+                x1="16"
                 y1="158"
-                x2="345"
+                x2="368"
                 y2="158"
                 stroke="#cbd5e1"
                 strokeWidth="1"
@@ -657,10 +657,10 @@ export const PortfolioBreakdownSection: React.FC<
                   yr.otherCount;
                 const colW = Math.min(
                   26,
-                  Math.floor(290 / Math.max(1, pubTrendYears.length)) - 6
+                  Math.floor(310 / Math.max(1, pubTrendYears.length)) - 6
                 );
-                const step = 310 / Math.max(1, pubTrendYears.length);
-                const x = 26 + idx * step;
+                const step = 330 / Math.max(1, pubTrendYears.length);
+                const x = 24 + idx * step;
                 const scaleH = 122 / maxYearPapers;
                 const totalH = totalCount * scaleH;
 
@@ -737,10 +737,11 @@ export const PortfolioBreakdownSection: React.FC<
                       y="174"
                       textAnchor="middle"
                       fill="#475569"
-                      fontSize="9.5"
+                      fontSize="8"
+                      fontWeight="600"
                       fontFamily="JetBrains Mono, monospace"
                     >
-                      {String(yr.year).slice(-2)}
+                      {yr.year}
                     </text>
                   </g>
                 );

@@ -61,6 +61,7 @@ export interface OfficialScholarMetrics {
   hIndex: number;
   i10Index: number;
   citationsByYear?: Record<number, number>;
+  papersByYear?: Record<number, number>;
 }
 
 export interface ResearcherProfile {
@@ -982,9 +983,10 @@ export function computeProfileStatistics(
     )) {
       const yrNum = Number(yrStr);
       if (!Number.isFinite(yrNum) || yrNum < 1950) continue;
+      const offPapers = officialMetrics.papersByYear?.[yrNum] || 0;
       yearMap.set(yrNum, {
         year: yrNum,
-        papers: 0,
+        papers: offPapers,
         citations: Number(citCount) || 0,
         q1Count: 0,
         q2Count: 0,
@@ -995,6 +997,35 @@ export function computeProfileStatistics(
       });
     }
   }
+
+  if (officialMetrics?.papersByYear) {
+    for (const [yrStr, pCount] of Object.entries(officialMetrics.papersByYear)) {
+      const yrNum = Number(yrStr);
+      if (!Number.isFinite(yrNum) || yrNum < 1950) continue;
+      if (!yearMap.has(yrNum)) {
+        yearMap.set(yrNum, {
+          year: yrNum,
+          papers: Number(pCount) || 0,
+          citations: 0,
+          q1Count: 0,
+          q2Count: 0,
+          q3Count: 0,
+          q4Count: 0,
+          conferenceCount: 0,
+          otherCount: 0,
+        });
+      } else {
+        const e = yearMap.get(yrNum)!;
+        e.papers = Math.max(e.papers, Number(pCount) || 0);
+      }
+    }
+  }
+
+  // Count sampled publications per year for category distribution
+  const sampleQuartilesByYear = new Map<
+    number,
+    { q1: number; q2: number; q3: number; q4: number; conf: number; oth: number; total: number }
+  >();
 
   for (const p of publications) {
     if (!yearMap.has(p.year)) {
@@ -1011,17 +1042,64 @@ export function computeProfileStatistics(
       });
     }
     const entry = yearMap.get(p.year)!;
-    entry.papers += 1;
     if (!hasOfficialYearlyCitations) {
       entry.citations += p.citations;
     }
+    if (!officialMetrics?.papersByYear?.[p.year]) {
+      entry.papers += 1;
+    }
+
+    if (!sampleQuartilesByYear.has(p.year)) {
+      sampleQuartilesByYear.set(p.year, { q1: 0, q2: 0, q3: 0, q4: 0, conf: 0, oth: 0, total: 0 });
+    }
+    const sq = sampleQuartilesByYear.get(p.year)!;
+    sq.total += 1;
     const cat = getPublicationPortfolioCategory(p);
-    if (cat === 'Q1') entry.q1Count += 1;
-    else if (cat === 'Q2') entry.q2Count += 1;
-    else if (cat === 'Q3') entry.q3Count += 1;
-    else if (cat === 'Q4') entry.q4Count += 1;
-    else if (cat === 'Conference') entry.conferenceCount += 1;
-    else entry.otherCount += 1;
+    if (cat === 'Q1') sq.q1 += 1;
+    else if (cat === 'Q2') sq.q2 += 1;
+    else if (cat === 'Q3') sq.q3 += 1;
+    else if (cat === 'Q4') sq.q4 += 1;
+    else if (cat === 'Conference') sq.conf += 1;
+    else sq.oth += 1;
+  }
+
+  // Scale quartile composition to the actual total publication volume for each year
+  for (const [yrNum, entry] of yearMap.entries()) {
+    const sq = sampleQuartilesByYear.get(yrNum);
+    if (sq && sq.total > 0) {
+      const targetTotal = Math.max(entry.papers, sq.total);
+      entry.papers = targetTotal;
+      const factor = targetTotal / sq.total;
+      entry.q1Count = Math.round(sq.q1 * factor);
+      entry.q2Count = Math.round(sq.q2 * factor);
+      entry.q3Count = Math.round(sq.q3 * factor);
+      entry.q4Count = Math.round(sq.q4 * factor);
+      entry.conferenceCount = Math.round(sq.conf * factor);
+      entry.otherCount = Math.max(
+        0,
+        targetTotal -
+          (entry.q1Count +
+            entry.q2Count +
+            entry.q3Count +
+            entry.q4Count +
+            entry.conferenceCount)
+      );
+    } else if (entry.papers > 0) {
+      const q1Ratio =
+        (portfolioDistribution.Q1.count || 1) / Math.max(1, totalPapers || 1);
+      const q2Ratio =
+        (portfolioDistribution.Q2.count || 0) / Math.max(1, totalPapers || 1);
+      const confRatio =
+        (portfolioDistribution.Conference.count || 0) /
+        Math.max(1, totalPapers || 1);
+      entry.q1Count = Math.round(entry.papers * q1Ratio);
+      entry.q2Count = Math.round(entry.papers * q2Ratio);
+      entry.conferenceCount = Math.round(entry.papers * confRatio);
+      entry.otherCount = Math.max(
+        0,
+        entry.papers - (entry.q1Count + entry.q2Count + entry.conferenceCount)
+      );
+    }
   }
 
   const yearlyTrend = Array.from(yearMap.values()).sort((a, b) => a.year - b.year);

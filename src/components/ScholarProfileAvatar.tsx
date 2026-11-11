@@ -43,8 +43,13 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
-    // Avoid re-processing the fitted data URL
+    // Avoid re-processing the fitted data URL or SVG monogram
     if (img.src.startsWith('data:image/png;base64,') && fittedSrc) return;
+    if (img.src.includes('image/svg') || img.src.includes('/api/scholar/avatar?name=')) {
+      setFittedSrc(null);
+      setFitResult(null);
+      return;
+    }
 
     try {
       setIsProcessing(true);
@@ -55,12 +60,13 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
         clipToCircle: false,
       });
 
-      if (result.wasExpanded || result.dataUrl) {
+      if (result.wasExpanded && result.dataUrl) {
         setFittedSrc(result.dataUrl);
         setFitResult(result);
       }
     } catch (err) {
-      console.warn('AI Generative Portrait fitting error:', err);
+      // If canvas is tainted or fitting fails, gracefully stay with raw photo without erroring out
+      console.warn('AI Portrait fitting notice:', err);
     } finally {
       setIsProcessing(false);
     }
@@ -80,8 +86,11 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
     }
   };
 
+  const isMonogram =
+    currentSrc.includes('image/svg') ||
+    currentSrc.includes('/api/scholar/avatar?name=');
   const displaySrc =
-    useFittedMode && fittedSrc ? fittedSrc : currentSrc;
+    useFittedMode && fittedSrc && !isMonogram ? fittedSrc : currentSrc;
 
   return (
     <div className="relative group shrink-0 select-none">
@@ -92,7 +101,6 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
         <img
           src={displaySrc}
           alt={name}
-          crossOrigin="anonymous"
           referrerPolicy="no-referrer"
           data-testid="active-researcher-avatar"
           onLoad={handleImageLoad}
@@ -108,8 +116,8 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
         )}
       </div>
 
-      {/* AI Generative Fit Pill Badge */}
-      {fittedSrc && fitResult?.wasExpanded && (
+      {/* AI Generative Fit Pill Badge - ONLY displayed on real photos, never on monogram */}
+      {fittedSrc && fitResult?.wasExpanded && !isMonogram && (
         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20">
           <button
             type="button"

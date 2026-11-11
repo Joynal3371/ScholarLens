@@ -2276,23 +2276,37 @@ export async function buildLiveResearcherProfile(
     }
   }
 
-  // 2. Fetch works from OpenAlex (sorted by citations descending in the polite pool) to enrich the Google Scholar profile's papers
+  // 2. Fetch works from OpenAlex (both top-cited impact works AND recent works by publication year)
   let rawOaWorks: any[] = [];
   if (openAlexAuthorIds.length > 0) {
     try {
       const filterIds = openAlexAuthorIds.slice(0, 5).join('|');
-      const pagesToFetch =
-        scraped && scraped.publications.length > 140 ? [1, 2] : [1];
+      const fetchUrls = [
+        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
+          filterIds
+        )}&sort=cited_by_count:desc&per-page=200&page=1&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
+        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
+          filterIds
+        )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&page=1&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
+        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
+          filterIds
+        )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&page=2&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
+      ];
       const pageResults = await Promise.all(
-        pagesToFetch.map(async (pageNum) => {
-          const url = `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
-            filterIds
-          )}&sort=cited_by_count:desc&per-page=200&page=${pageNum}&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`;
+        fetchUrls.map(async (url) => {
           const worksData = await fetchOpenAlexJson(url, 6500);
           return Array.isArray(worksData?.results) ? worksData.results : [];
         })
       );
-      rawOaWorks = pageResults.flat();
+      const combinedOa = pageResults.flat();
+      const seenOaWorkIdSet = new Set<string>();
+      rawOaWorks = [];
+      for (const w of combinedOa) {
+        const wid = String(w.id || '');
+        if (wid && seenOaWorkIdSet.has(wid)) continue;
+        if (wid) seenOaWorkIdSet.add(wid);
+        rawOaWorks.push(w);
+      }
     } catch {
       rawOaWorks = [];
     }
@@ -3314,15 +3328,20 @@ export async function buildLiveResearcherProfile(
     userIdInput ||
     slugifyInstitution(targetName).slice(0, 12);
 
-  // Fallback per-year citation histogram from OpenAlex author counts_by_year ONLY when Google Scholar was not scraped directly
+  // Extract authoritative citationsByYear and papersByYear from OpenAlex author counts_by_year
   let finalOfficialMetrics = scraped?.officialMetrics;
-  if (!scraped && Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
+  if (Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
     const oaCitByYr: Record<number, number> = {};
+    const oaWorksByYr: Record<number, number> = {};
     for (const row of primaryOpenAlexAuthor.counts_by_year) {
       const y = Number(row?.year);
       const c = Number(row?.cited_by_count || 0);
+      const w = Number(row?.works_count || 0);
       if (y >= 1980 && c >= 0) {
         oaCitByYr[y] = c;
+      }
+      if (y >= 1980 && w > 0) {
+        oaWorksByYr[y] = w;
       }
     }
     finalOfficialMetrics = {
@@ -3338,7 +3357,16 @@ export async function buildLiveResearcherProfile(
         typeof finalOfficialMetrics?.i10Index === 'number'
           ? finalOfficialMetrics.i10Index
           : Number(primaryOpenAlexAuthor?.summary_stats?.i10_index || 0),
-      ...(Object.keys(oaCitByYr).length > 0 ? { citationsByYear: oaCitByYr } : {}),
+      citationsByYear:
+        finalOfficialMetrics?.citationsByYear &&
+        Object.keys(finalOfficialMetrics.citationsByYear).length > 0
+          ? finalOfficialMetrics.citationsByYear
+          : oaCitByYr,
+      papersByYear:
+        finalOfficialMetrics?.papersByYear &&
+        Object.keys(finalOfficialMetrics.papersByYear).length > 0
+          ? finalOfficialMetrics.papersByYear
+          : oaWorksByYr,
     };
   }
 
