@@ -3734,6 +3734,26 @@ app.get('/api/scholar/avatar/ai-fit', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'public, max-age=86400');
 
+  const candidateUrls = [
+    `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(userId)}&citpid=1`,
+    `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(userId)}`,
+  ];
+  const results: any[] = [];
+  for (const u of candidateUrls) {
+    try {
+      const resp = await fetch(u, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+      results.push({ url: u, status: resp.status, contentType: resp.headers.get('content-type') });
+    } catch (e: any) {
+      results.push({ url: u, error: e.message || String(e) });
+    }
+  }
+
   const geminiKey =
     process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_GENAI_API_KEY ||
@@ -3748,6 +3768,7 @@ app.get('/api/scholar/avatar/ai-fit', async (req, res) => {
     description:
       'Fits researcher portrait inside circular avatar without modifying facial identity or portrait pixels',
     userId,
+    fetchTest: results,
   });
 });
 

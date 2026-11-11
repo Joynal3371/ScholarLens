@@ -43760,6 +43760,25 @@ app.get("/api/scholar/avatar/ai-fit", async (req, res) => {
   const userId = String(req.query.userId || "").trim();
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "public, max-age=86400");
+  const candidateUrls = [
+    `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(userId)}&citpid=1`,
+    `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(userId)}`
+  ];
+  const results = [];
+  for (const u of candidateUrls) {
+    try {
+      const resp = await fetch(u, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
+        },
+        signal: AbortSignal.timeout(5e3)
+      });
+      results.push({ url: u, status: resp.status, contentType: resp.headers.get("content-type") });
+    } catch (e) {
+      results.push({ url: u, error: e.message || String(e) });
+    }
+  }
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.GOOGLE_API_KEY;
   res.json({
     supported: true,
@@ -43767,7 +43786,8 @@ app.get("/api/scholar/avatar/ai-fit", async (req, res) => {
     facialIdentityProtected: true,
     expansionEngine: "Generative ambient outpainting + portrait safe-zone headroom centering",
     description: "Fits researcher portrait inside circular avatar without modifying facial identity or portrait pixels",
-    userId
+    userId,
+    fetchTest: results
   });
 });
 var FIRESTORE_DOC_BASE = `https://firestore.googleapis.com/v1/projects/${firebase_applet_config_default.projectId}/databases/${firebase_applet_config_default.firestoreDatabaseId}/documents`;
