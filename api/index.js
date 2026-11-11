@@ -5994,7 +5994,7 @@ var verifiedScholarCache_default = {
         year: 2024,
         citations: 19,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -6074,7 +6074,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2,
+        impactFactor: 1.9,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -6297,7 +6297,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.4,
+        impactFactor: 1.1,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -6317,7 +6317,7 @@ var verifiedScholarCache_default = {
         year: 2022,
         citations: 18,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -6409,7 +6409,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2,
+        impactFactor: 1.9,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I31669788",
@@ -6592,7 +6592,7 @@ var verifiedScholarCache_default = {
         year: 2023,
         citations: 15,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -6636,7 +6636,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2,
+        impactFactor: 1.9,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -12649,7 +12649,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 1,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -12717,7 +12717,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2,
+        impactFactor: 1.9,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -13710,7 +13710,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 0,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -13742,7 +13742,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2
+        impactFactor: 1.9
       },
       {
         id: "gs-123",
@@ -14506,7 +14506,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 0,
         venue: "Results in Engineering",
-        quartile: "Q2",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -14526,7 +14526,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 5,
+        impactFactor: 7.9,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -16613,7 +16613,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 0,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: true,
@@ -16645,7 +16645,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2,
+        impactFactor: 1.9,
         authorAffiliation: {
           name: "Joynal Abadin",
           universityId: "I130571618",
@@ -27747,7 +27747,7 @@ var verifiedScholarCache_default = {
         year: 2024,
         citations: 19,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: true,
@@ -27827,7 +27827,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2
+        impactFactor: 1.9
       },
       {
         id: "gs-27",
@@ -27917,7 +27917,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.4
+        impactFactor: 1.1
       },
       {
         id: "gs-29",
@@ -27925,7 +27925,7 @@ var verifiedScholarCache_default = {
         year: 2022,
         citations: 18,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: true,
@@ -28017,7 +28017,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2
+        impactFactor: 1.9
       },
       {
         id: "gs-30",
@@ -28679,7 +28679,7 @@ var verifiedScholarCache_default = {
         year: 2023,
         citations: 15,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: true,
@@ -28723,7 +28723,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2
+        impactFactor: 1.9
       },
       {
         id: "gs-37",
@@ -29057,7 +29057,7 @@ var verifiedScholarCache_default = {
         year: 2024,
         citations: 14,
         venue: "Data in Brief",
-        quartile: "Q4",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -29125,7 +29125,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2
+        impactFactor: 1.9
       },
       {
         id: "gs-42",
@@ -37630,7 +37630,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 0,
         venue: "Results in Engineering",
-        quartile: "Q2",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -37674,7 +37674,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           }
         ],
-        impactFactor: 5
+        impactFactor: 7.9
       },
       {
         id: "gs-156",
@@ -40902,7 +40902,7 @@ var AUTHORITATIVE_JOURNAL_IMPACT_FACTORS = {
   "energy conversion and management: x": 7.5,
   "energy conversion and management": 10.4,
   "energy reports": 5.2,
-  "results in engineering": 5,
+  "results in engineering": 7.9,
   "remote sensing": 4.2,
   "international journal of thermofluids": 4.2,
   "wind energy": 3.6,
@@ -40918,8 +40918,8 @@ var AUTHORITATIVE_JOURNAL_IMPACT_FACTORS = {
   "journal of renewable and sustainable energy": 2.5,
   "physica d nonlinear phenomena": 2.1,
   "the journal of engineering": 1.5,
-  "international journal of electronics": 1.4,
-  "data in brief": 1.2,
+  "international journal of electronics": 1.1,
+  "data in brief": 1.9,
   "marine technology society journal": 1,
   "international journal of electronics letters": 1.2,
   "international journal of computer science and network security": 0.5,
@@ -40975,12 +40975,13 @@ var AUTHORITATIVE_JOURNAL_QUARTILES = {
   "energy conversion and management": "Q1",
   "remote sensing": "Q1",
   "energies": "Q1",
+  "data in brief": "Q1",
+  "results in engineering": "Q1",
   "psychological review": "Q1",
   // Q2 Journals
   "ieee access": "Q2",
   "sustainability": "Q2",
   "energy reports": "Q2",
-  "results in engineering": "Q2",
   "vehicles": "Q2",
   "international journal of thermofluids": "Q2",
   "wind energy": "Q2",
@@ -41015,7 +41016,6 @@ var AUTHORITATIVE_JOURNAL_QUARTILES = {
   "statistics in medicine": "Q3",
   // Q4 Journals
   "international journal of electronics": "Q4",
-  "data in brief": "Q4",
   "marine technology society journal": "Q4",
   "international journal of electronics letters": "Q4",
   "international journal of computer applications": "Q4",
@@ -42242,16 +42242,16 @@ function classifyQuartileFromOfficialMetrics(type, venue, sourceMetrics) {
   if (!hasIssn && hIdx < 10 && impact2Yr < 0.3) {
     return "Unranked";
   }
-  if (impact2Yr >= 3.8 || hIdx >= 60 || worksCount >= 300 && impact2Yr >= 3) {
+  if (impact2Yr >= 3 || hIdx >= 60 || worksCount >= 200 && impact2Yr >= 2.4) {
     return "Q1";
   }
-  if (impact2Yr >= 2 || hIdx >= 28 || worksCount >= 150 && impact2Yr >= 1.6) {
+  if (impact2Yr >= 1.6 || hIdx >= 25 || worksCount >= 80 && impact2Yr >= 1.2) {
     return "Q2";
   }
-  if (impact2Yr >= 1 || hIdx >= 14) {
+  if (impact2Yr >= 0.8 || hIdx >= 10) {
     return "Q3";
   }
-  if (hasIssn || impact2Yr >= 0.2 || hIdx >= 5 || sourceMetrics.is_core) {
+  if (hasIssn || impact2Yr >= 0.1 || hIdx >= 3 || sourceMetrics.is_core) {
     return "Q4";
   }
   return "Unranked";

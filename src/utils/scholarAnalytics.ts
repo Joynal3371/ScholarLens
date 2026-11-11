@@ -159,7 +159,7 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'energy conversion and management: x': 7.5,
   'energy conversion and management': 10.4,
   'energy reports': 5.2,
-  'results in engineering': 5.0,
+  'results in engineering': 7.9,
   'remote sensing': 4.2,
   'international journal of thermofluids': 4.2,
   'wind energy': 3.6,
@@ -175,8 +175,8 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'journal of renewable and sustainable energy': 2.5,
   'physica d nonlinear phenomena': 2.1,
   'the journal of engineering': 1.5,
-  'international journal of electronics': 1.4,
-  'data in brief': 1.2,
+  'international journal of electronics': 1.1,
+  'data in brief': 1.9,
   'marine technology society journal': 1.0,
   'international journal of electronics letters': 1.2,
   'international journal of computer science and network security': 0.5,
@@ -237,13 +237,14 @@ export const AUTHORITATIVE_JOURNAL_QUARTILES: Record<string, Quartile> = {
   'energy conversion and management': 'Q1',
   'remote sensing': 'Q1',
   'energies': 'Q1',
+  'data in brief': 'Q1',
+  'results in engineering': 'Q1',
   'psychological review': 'Q1',
 
   // Q2 Journals
   'ieee access': 'Q2',
   'sustainability': 'Q2',
   'energy reports': 'Q2',
-  'results in engineering': 'Q2',
   'vehicles': 'Q2',
   'international journal of thermofluids': 'Q2',
   'wind energy': 'Q2',
@@ -280,7 +281,6 @@ export const AUTHORITATIVE_JOURNAL_QUARTILES: Record<string, Quartile> = {
 
   // Q4 Journals
   'international journal of electronics': 'Q4',
-  'data in brief': 'Q4',
   'marine technology society journal': 'Q4',
   'international journal of electronics letters': 'Q4',
   'international journal of computer applications': 'Q4',

@@ -5974,7 +5974,7 @@
         "year": 2024,
         "citations": 19,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -6054,7 +6054,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2,
+        "impactFactor": 1.9,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -6277,7 +6277,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.4,
+        "impactFactor": 1.1,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -6297,7 +6297,7 @@
         "year": 2022,
         "citations": 18,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -6389,7 +6389,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2,
+        "impactFactor": 1.9,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I31669788",
@@ -6572,7 +6572,7 @@
         "year": 2023,
         "citations": 15,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -6616,7 +6616,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2,
+        "impactFactor": 1.9,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -12629,7 +12629,7 @@
         "year": 2026,
         "citations": 1,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -12697,7 +12697,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2,
+        "impactFactor": 1.9,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -13690,7 +13690,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -13722,7 +13722,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2
+        "impactFactor": 1.9
       },
       {
         "id": "gs-123",
@@ -14486,7 +14486,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Results in Engineering",
-        "quartile": "Q2",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -14506,7 +14506,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 5,
+        "impactFactor": 7.9,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -16593,7 +16593,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -16625,7 +16625,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2,
+        "impactFactor": 1.9,
         "authorAffiliation": {
           "name": "Joynal Abadin",
           "universityId": "I130571618",
@@ -27727,7 +27727,7 @@
         "year": 2024,
         "citations": 19,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -27807,7 +27807,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2
+        "impactFactor": 1.9
       },
       {
         "id": "gs-27",
@@ -27897,7 +27897,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.4
+        "impactFactor": 1.1
       },
       {
         "id": "gs-29",
@@ -27905,7 +27905,7 @@
         "year": 2022,
         "citations": 18,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -27997,7 +27997,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2
+        "impactFactor": 1.9
       },
       {
         "id": "gs-30",
@@ -28659,7 +28659,7 @@
         "year": 2023,
         "citations": 15,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -28703,7 +28703,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2
+        "impactFactor": 1.9
       },
       {
         "id": "gs-37",
@@ -29037,7 +29037,7 @@
         "year": 2024,
         "citations": 14,
         "venue": "Data in Brief",
-        "quartile": "Q4",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -29105,7 +29105,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.2
+        "impactFactor": 1.9
       },
       {
         "id": "gs-42",
@@ -37610,7 +37610,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Results in Engineering",
-        "quartile": "Q2",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -37654,7 +37654,7 @@
             "isHomeInstitution": true
           }
         ],
-        "impactFactor": 5
+        "impactFactor": 7.9
       },
       {
         "id": "gs-156",

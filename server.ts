@@ -1719,23 +1719,23 @@ function classifyQuartileFromOfficialMetrics(
   // If computed via OpenAlex / Scopus 2-year mean citedness & h-index
   // Calibrated against international Clarivate JCR & Scopus percentile distributions:
   if (
-    impact2Yr >= 3.8 ||
+    impact2Yr >= 3.0 ||
     hIdx >= 60 ||
-    (worksCount >= 300 && impact2Yr >= 3.0)
+    (worksCount >= 200 && impact2Yr >= 2.4)
   ) {
     return 'Q1';
   }
   if (
-    impact2Yr >= 2.0 ||
-    hIdx >= 28 ||
-    (worksCount >= 150 && impact2Yr >= 1.6)
+    impact2Yr >= 1.6 ||
+    hIdx >= 25 ||
+    (worksCount >= 80 && impact2Yr >= 1.2)
   ) {
     return 'Q2';
   }
-  if (impact2Yr >= 1.0 || hIdx >= 14) {
+  if (impact2Yr >= 0.8 || hIdx >= 10) {
     return 'Q3';
   }
-  if (hasIssn || impact2Yr >= 0.2 || hIdx >= 5 || sourceMetrics.is_core) {
+  if (hasIssn || impact2Yr >= 0.1 || hIdx >= 3 || sourceMetrics.is_core) {
     return 'Q4';
   }
   return 'Unranked';

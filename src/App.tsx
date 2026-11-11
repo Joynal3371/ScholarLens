@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Search,
   FileDown,
@@ -150,7 +150,8 @@ export default function App() {
   );
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
+  const desktopSearchInputRef = useRef<HTMLInputElement>(null);
   const [pendingExport, setPendingExport] = useState<PendingExportTask | null>(
     null
   );
@@ -240,10 +241,8 @@ export default function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
-        setIsSearchModalOpen((prev) => !prev);
-      }
-      if (e.key === 'Escape') {
-        setIsSearchModalOpen(false);
+        desktopSearchInputRef.current?.focus();
+        desktopSearchInputRef.current?.select();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -286,7 +285,6 @@ export default function App() {
       setActiveProfile(resolved);
       setScholarUrlInput(resolved.scholarUrl);
       setFilter(DEFAULT_FILTER_STATE);
-      setIsSearchModalOpen(false);
 
       try {
         if (resolved.scholarUserId) {
@@ -487,6 +485,7 @@ export default function App() {
 
   const handleAnalyzeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsMobileSearchOpen(false);
     const parsed = parseGoogleScholarInput(scholarUrlInput);
     if (!parsed.valid || !parsed.userId) {
       setUrlError(
@@ -629,9 +628,13 @@ export default function App() {
             {/* Mobile Search Button */}
             <button
               type="button"
-              onClick={() => setIsSearchModalOpen(true)}
-              aria-label="Search Scholar Profile"
-              className="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              onClick={() => setIsMobileSearchOpen((prev) => !prev)}
+              aria-label="Toggle Search Scholar Profile"
+              className={`lg:hidden p-1.5 rounded-lg transition-colors cursor-pointer ${
+                isMobileSearchOpen
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-100'
+              }`}
             >
               <Search className="w-4 h-4" />
             </button>
@@ -642,16 +645,48 @@ export default function App() {
             aria-label="Analytics Pages"
             className="hidden lg:flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl"
           >
-            {/* Search Icon Button placed right before Overview */}
-            <button
-              type="button"
-              onClick={() => setIsSearchModalOpen(true)}
-              title="Search Researcher Profile (Ctrl+K)"
-              aria-label="Search Researcher Profile"
-              className="inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-white/80 transition-all cursor-pointer group shrink-0"
+            {/* Small Navigation Search Bar with Integrated Search Icon */}
+            <form
+              onSubmit={handleAnalyzeSubmit}
+              noValidate
+              className="relative flex items-center shrink-0 mr-1"
             >
-              <Search className="w-3.5 h-3.5 text-slate-600 group-hover:text-blue-600 transition-colors" />
-            </button>
+              <button
+                type="submit"
+                disabled={isAnalyzing}
+                aria-label="Search Scholar Profile"
+                title="Search Scholar Profile"
+                className="absolute left-2.5 text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer disabled:opacity-50"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
+              <input
+                ref={desktopSearchInputRef}
+                type="text"
+                value={scholarUrlInput}
+                onChange={(e) => {
+                  setScholarUrlInput(e.target.value);
+                  if (urlError) setUrlError(null);
+                }}
+                placeholder="Search Scholar ID / URL..."
+                aria-label="Search Google Scholar profile URL or User ID"
+                className="w-36 xl:w-48 pl-8 pr-6 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all"
+              />
+              {scholarUrlInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setScholarUrlInput('');
+                    if (urlError) setUrlError(null);
+                  }}
+                  aria-label="Clear search input"
+                  title="Clear input"
+                  className="absolute right-2 text-slate-300 hover:text-slate-500 transition-colors p-0.5 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </form>
             {PAGE_METADATA.map((item) => {
               const Icon = item.icon;
               const isActive = activePage === item.id;
@@ -734,6 +769,51 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {/* Mobile Inline Search Bar (integrated in header, no popup modal window) */}
+        {isMobileSearchOpen && (
+          <div className="lg:hidden max-w-[1360px] mx-auto mt-2.5 pt-2.5 border-t border-slate-200/80 animate-in fade-in duration-150">
+            <form
+              onSubmit={handleAnalyzeSubmit}
+              noValidate
+              className="relative flex items-center"
+            >
+              <button
+                type="submit"
+                disabled={isAnalyzing}
+                aria-label="Search Scholar Profile"
+                className="absolute left-2.5 text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer disabled:opacity-50"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
+              <input
+                type="text"
+                autoFocus
+                value={scholarUrlInput}
+                onChange={(e) => {
+                  setScholarUrlInput(e.target.value);
+                  if (urlError) setUrlError(null);
+                }}
+                placeholder="Paste Scholar profile URL or User ID..."
+                aria-label="Search Google Scholar profile URL or User ID"
+                className="w-full pl-8 pr-7 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {scholarUrlInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setScholarUrlInput('');
+                    if (urlError) setUrlError(null);
+                  }}
+                  aria-label="Clear search input"
+                  className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </form>
+          </div>
+        )}
       </header>
 
       {/* Main Centered Multi-Page Workspace */}
@@ -1522,112 +1602,6 @@ export default function App() {
         onSignOut={handleSignOut}
         onRemoveAccount={handleRemoveAccount}
       />
-
-      {/* Global Researcher Search Modal */}
-      {isSearchModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="search-modal-title"
-          className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150"
-          onClick={() => setIsSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                  <Search className="w-4 h-4" />
-                </span>
-                <div>
-                  <h3
-                    id="search-modal-title"
-                    className="text-sm font-bold text-slate-900"
-                  >
-                    Search Scholar Profile
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    Paste any Google Scholar profile URL or researcher User ID
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSearchModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer transition-colors"
-                aria-label="Close search"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAnalyzeSubmit} className="p-4 sm:p-5 space-y-4">
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  autoFocus
-                  value={scholarUrlInput}
-                  onChange={(e) => {
-                    setScholarUrlInput(e.target.value);
-                    if (urlError) setUrlError(null);
-                  }}
-                  placeholder="e.g. https://scholar.google.com/citations?user=be8uiCkAAAAJ"
-                  className="w-full pl-10 pr-24 py-3 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
-                />
-                <button
-                  type="submit"
-                  disabled={isAnalyzing}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 cursor-pointer shadow-xs flex items-center gap-1.5"
-                >
-                  <Search className="w-3 h-3" />
-                  <span>{isAnalyzing ? 'Analyzing...' : 'Search'}</span>
-                </button>
-              </div>
-
-              {urlError && (
-                <div
-                  role="alert"
-                  className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2"
-                >
-                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-                  <span>{urlError}</span>
-                </div>
-              )}
-
-              <div className="pt-2 border-t border-slate-100">
-                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Verified Scholar Profiles
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { name: 'ASM Shihavuddin', id: 'be8uiCkAAAAJ' },
-                    { name: 'Joynal Abadin', id: '3nI1dHsAAAAJ' },
-                    { name: 'Geoffrey Hinton', id: 'JicYPdAAAAAJ' },
-                    { name: 'Ahmed Al Mansur', id: 'GGR7HJ8AAAAJ' },
-                  ].map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setScholarUrlInput(
-                          `https://scholar.google.com/citations?user=${p.id}`
-                        );
-                        void fetchProfileFromServer(p.id, p.name);
-                      }}
-                      className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 hover:border-blue-200 rounded-lg transition-all cursor-pointer"
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
