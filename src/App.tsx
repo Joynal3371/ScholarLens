@@ -114,6 +114,37 @@ const PAGE_METADATA: {
   },
 ];
 
+function SearchLoadingDots({
+  size = 'sm',
+  color = 'bg-blue-600',
+}: {
+  size?: 'xs' | 'sm' | 'md';
+  color?: string;
+}) {
+  const dotSize =
+    size === 'xs' ? 'w-1 h-1' : size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2';
+  return (
+    <div
+      role="status"
+      aria-label="Loading profile"
+      className="flex items-center gap-1 shrink-0 select-none pointer-events-none"
+    >
+      <span
+        className={`${dotSize} rounded-full ${color} animate-bounce`}
+        style={{ animationDelay: '-0.32s', animationDuration: '0.8s' }}
+      />
+      <span
+        className={`${dotSize} rounded-full ${color} animate-bounce`}
+        style={{ animationDelay: '-0.16s', animationDuration: '0.8s' }}
+      />
+      <span
+        className={`${dotSize} rounded-full ${color} animate-bounce`}
+        style={{ animationDuration: '0.8s' }}
+      />
+    </div>
+  );
+}
+
 export default function App() {
   const [activePage, setActivePage] = useState<AppPage>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -645,7 +676,7 @@ export default function App() {
             aria-label="Analytics Pages"
             className="hidden lg:flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl"
           >
-            {/* Small Navigation Search Bar with Integrated Search Icon on the right */}
+            {/* Small Navigation Search Bar with Integrated Search Icon / 3-Dots Loading on the right */}
             <form
               onSubmit={handleAnalyzeSubmit}
               noValidate
@@ -654,24 +685,31 @@ export default function App() {
               <input
                 ref={desktopSearchInputRef}
                 type="text"
+                disabled={isAnalyzing}
                 value={scholarUrlInput}
                 onChange={(e) => {
                   setScholarUrlInput(e.target.value);
                   if (urlError) setUrlError(null);
                 }}
-                placeholder="Search Scholar ID / URL..."
+                placeholder={isAnalyzing ? 'Analyzing…' : 'Search Scholar ID / URL...'}
                 aria-label="Search Google Scholar profile URL or User ID"
-                className="w-36 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all"
+                className="w-36 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all disabled:bg-slate-50"
               />
-              <button
-                type="submit"
-                disabled={isAnalyzing}
-                aria-label="Search Scholar Profile"
-                title="Search Scholar Profile"
-                className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
-              >
-                <Search className="w-3.5 h-3.5" />
-              </button>
+              {isAnalyzing ? (
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                  <SearchLoadingDots size="sm" color="bg-blue-600" />
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isAnalyzing}
+                  aria-label="Search Scholar Profile"
+                  title="Search Scholar Profile"
+                  className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                </button>
+              )}
             </form>
             {PAGE_METADATA.map((item) => {
               const Icon = item.icon;
@@ -767,23 +805,30 @@ export default function App() {
               <input
                 type="text"
                 autoFocus
+                disabled={isAnalyzing}
                 value={scholarUrlInput}
                 onChange={(e) => {
                   setScholarUrlInput(e.target.value);
                   if (urlError) setUrlError(null);
                 }}
-                placeholder="Paste Scholar profile URL or User ID..."
+                placeholder={isAnalyzing ? 'Analyzing profile…' : 'Paste Scholar profile URL or User ID...'}
                 aria-label="Search Google Scholar profile URL or User ID"
-                className="w-full pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100"
               />
-              <button
-                type="submit"
-                disabled={isAnalyzing}
-                aria-label="Search Scholar Profile"
-                className="absolute right-2.5 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
-              >
-                <Search className="w-3.5 h-3.5" />
-              </button>
+              {isAnalyzing ? (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <SearchLoadingDots size="sm" color="bg-blue-600" />
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isAnalyzing}
+                  aria-label="Search Scholar Profile"
+                  className="absolute right-2.5 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                </button>
+              )}
             </form>
           </div>
         )}
@@ -897,23 +942,42 @@ export default function App() {
                         id="scholar-url-input-initial"
                         type="text"
                         autoFocus
+                        disabled={isAnalyzing}
                         value={scholarUrlInput}
                         onChange={(e) => {
                           setScholarUrlInput(e.target.value);
                           if (urlError) setUrlError(null);
                         }}
-                        placeholder="Search by Google Scholar profile URL or researcher User ID..."
+                        placeholder={
+                          isAnalyzing
+                            ? 'Analyzing Google Scholar profile…'
+                            : 'Search by Google Scholar profile URL or researcher User ID...'
+                        }
                         aria-label="Google Scholar Profile Link or User ID"
-                        className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm font-sans bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+                        className="w-full pl-10 pr-12 py-2.5 text-xs sm:text-sm font-sans bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors disabled:bg-slate-100"
                       />
+                      {isAnalyzing && (
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                          <SearchLoadingDots size="md" color="bg-blue-600" />
+                        </div>
+                      )}
                     </div>
                     <button
                       type="submit"
                       disabled={isAnalyzing}
-                      className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer shadow-xs flex items-center justify-center gap-2"
+                      className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors whitespace-nowrap shrink-0 disabled:opacity-75 cursor-pointer shadow-xs flex items-center justify-center gap-2"
                     >
-                      <Search className="w-3.5 h-3.5" />
-                      <span>{isAnalyzing ? 'Analyzing Profile...' : 'Analyze Profile'}</span>
+                      {isAnalyzing ? (
+                        <>
+                          <SearchLoadingDots size="sm" color="bg-white" />
+                          <span>Analyzing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Search className="w-3.5 h-3.5" />
+                          <span>Analyze Profile</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
