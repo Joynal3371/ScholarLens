@@ -9,7 +9,6 @@ import {
   getPublicationPortfolioCategory,
   getPublicationUrl,
 } from './scholarAnalytics';
-import { fitScholarPortraitWithGenerativeExpansion } from './portraitGenerativeFitter';
 
 /**
  * Converts an SVG element in the DOM into a high-DPI PNG data URL.
@@ -324,35 +323,45 @@ async function loadCircularAvatarPngDataUrl(
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         try {
-          const fitted = fitScholarPortraitWithGenerativeExpansion(img, {
-            targetSize: 320,
-            headroomRatio: 0.08,
-            generativeBlur: 28,
-            clipToCircle: true,
-          });
-
-          // Add clean border ring for publication PDF
+          const size = 320;
           const canvas = document.createElement('canvas');
-          canvas.width = 320;
-          canvas.height = 320;
+          canvas.width = size;
+          canvas.height = size;
           const ctx = canvas.getContext('2d');
           if (!ctx) {
-            resolve(fitted.dataUrl);
+            resolve(null);
             return;
           }
 
-          const fittedImg = new Image();
-          fittedImg.onload = () => {
-            ctx.drawImage(fittedImg, 0, 0);
-            ctx.beginPath();
-            ctx.arc(160, 160, 156, 0, Math.PI * 2);
-            ctx.strokeStyle = '#cbd5e1';
-            ctx.lineWidth = 6;
-            ctx.stroke();
-            resolve(canvas.toDataURL('image/png'));
-          };
-          fittedImg.onerror = () => resolve(fitted.dataUrl);
-          fittedImg.src = fitted.dataUrl;
+          // Clip to circular avatar frame
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+
+          // Draw directly from Google Scholar photo preserving aspect ratio
+          const nw = img.naturalWidth || img.width;
+          const nh = img.naturalHeight || img.height;
+          const scale = Math.max(size / nw, size / nh);
+          const drawW = nw * scale;
+          const drawH = nh * scale;
+          const drawX = (size - drawW) / 2;
+          const drawY = (size - drawH) / 2;
+
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(0, 0, size, size);
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
+          ctx.restore();
+
+          // Outer border ring
+          ctx.beginPath();
+          ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.lineWidth = 5;
+          ctx.stroke();
+
+          resolve(canvas.toDataURL('image/png'));
         } catch {
           resolve(null);
         }
