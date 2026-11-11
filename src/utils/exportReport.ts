@@ -9,6 +9,7 @@ import {
   getPublicationPortfolioCategory,
   getPublicationUrl,
 } from './scholarAnalytics';
+import { fitScholarPortraitWithGenerativeExpansion } from './portraitGenerativeFitter';
 
 /**
  * Converts an SVG element in the DOM into a high-DPI PNG data URL.
@@ -323,32 +324,35 @@ async function loadCircularAvatarPngDataUrl(
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         try {
-          const size = 240;
+          const fitted = fitScholarPortraitWithGenerativeExpansion(img, {
+            targetSize: 320,
+            headroomRatio: 0.08,
+            generativeBlur: 28,
+            clipToCircle: true,
+          });
+
+          // Add clean border ring for publication PDF
           const canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = size;
+          canvas.width = 320;
+          canvas.height = 320;
           const ctx = canvas.getContext('2d');
           if (!ctx) {
-            resolve(null);
+            resolve(fitted.dataUrl);
             return;
           }
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
-          ctx.closePath();
-          ctx.clip();
-          ctx.fillStyle = '#f8fafc';
-          ctx.fillRect(0, 0, size, size);
-          ctx.drawImage(img, 4, 4, size - 8, size - 8);
-          ctx.restore();
 
-          ctx.beginPath();
-          ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
-          ctx.strokeStyle = '#cbd5e1';
-          ctx.lineWidth = 5;
-          ctx.stroke();
-
-          resolve(canvas.toDataURL('image/png'));
+          const fittedImg = new Image();
+          fittedImg.onload = () => {
+            ctx.drawImage(fittedImg, 0, 0);
+            ctx.beginPath();
+            ctx.arc(160, 160, 156, 0, Math.PI * 2);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            resolve(canvas.toDataURL('image/png'));
+          };
+          fittedImg.onerror = () => resolve(fitted.dataUrl);
+          fittedImg.src = fitted.dataUrl;
         } catch {
           resolve(null);
         }
@@ -890,7 +894,11 @@ export async function generateResearcherPdfReport(params: {
   const siteAnalyticsCharts: { id: string; title: string }[] = [
     {
       id: 'chart-top-impact-journals',
-      title: 'Top 5 High-Impact Publishing Venues',
+      title: 'High-Impact Publishing Venues',
+    },
+    {
+      id: 'chart-leading-coauthors',
+      title: 'Leading Co-Authors',
     },
     {
       id: 'chart-quartile-donut',
@@ -912,13 +920,17 @@ export async function generateResearcherPdfReport(params: {
       id: 'chart-quartile-yearly',
       title: 'Quartile Composition by Year',
     },
+    {
+      id: 'chart-top-countries',
+      title: 'Collaborating Countries',
+    },
   ];
 
   const chartCols = 2;
   const chartGapX = 5.0;
-  const chartGapY = 4.5;
+  const chartGapY = 3.5;
   const chartCardW = (contentW - chartGapX * (chartCols - 1)) / chartCols;
-  const chartCardH = 74.0;
+  const chartCardH = 58.0;
 
   let chartRowOnPage = 0;
   for (let i = 0; i < siteAnalyticsCharts.length; i++) {

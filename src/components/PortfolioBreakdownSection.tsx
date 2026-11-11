@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ImageDown, Award } from 'lucide-react';
+import { ImageDown, Award, Users } from 'lucide-react';
 import {
   ProfileStatistics,
   Quartile,
@@ -7,12 +7,14 @@ import {
   PublicationType,
   CountryCollaboration,
   JournalSummary,
+  CoAuthorSummary,
 } from '../utils/scholarAnalytics';
 
 interface PortfolioBreakdownSectionProps {
   stats: ProfileStatistics;
   countries: CountryCollaboration[];
   journals?: JournalSummary[];
+  coAuthors?: CoAuthorSummary[];
   onQuickFilterQuartile: (quartile: Quartile) => void;
   onQuickFilterType: (type: PublicationType) => void;
   onExportChartPng: (chartId: string, title: string, filename: string) => void;
@@ -44,10 +46,16 @@ export const PortfolioBreakdownSection: React.FC<
   stats,
   countries,
   journals = [],
+  coAuthors = [],
   onQuickFilterQuartile,
   onQuickFilterType,
   onExportChartPng,
 }) => {
+  const topCoAuthors = useMemo(() => {
+    if (!coAuthors) return [];
+    return coAuthors.slice(0, 5);
+  }, [coAuthors]);
+
   const topImpactJournals = useMemo(() => {
     if (!journals) return [];
     return journals
@@ -871,36 +879,31 @@ export const PortfolioBreakdownSection: React.FC<
           </div>
         </div>
 
-        {/* Chart 7: Top 5 High-Impact Publishing Venues */}
+        {/* Chart 7: High-Impact Publishing Venues */}
         {topImpactJournals.length > 0 && (
           <div
             id="chart-top-impact-journals"
-            className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs"
+            className="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs"
           >
             <div className="flex items-center justify-between gap-2 mb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
-                    <Award className="w-4 h-4" />
-                  </div>
-                  <h2 className="text-sm font-bold text-slate-900">
-                    Top 5 High-Impact Publishing Venues
-                  </h2>
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                  <Award className="w-4 h-4" />
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Ranked by authoritative Clarivate Journal Impact Factor (JIF)
-                </p>
+                <h2 className="text-sm font-bold text-slate-900">
+                  High-Impact Publishing Venues
+                </h2>
               </div>
               <button
                 type="button"
                 onClick={() =>
                   onExportChartPng(
                     'chart-top-impact-journals',
-                    'Top 5 High-Impact Publishing Venues',
-                    'top_impact_journals.png'
+                    'High-Impact Publishing Venues',
+                    'high_impact_publishing_venues.png'
                   )
                 }
-                aria-label="Export Top 5 High-Impact Publishing Venues chart as PNG"
+                aria-label="Export High-Impact Publishing Venues chart as PNG"
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <ImageDown className="w-3.5 h-3.5" />
@@ -914,7 +917,7 @@ export const PortfolioBreakdownSection: React.FC<
                 viewBox="0 0 420 250"
                 className="w-full h-auto min-w-[320px] max-h-[250px] scholar-chart-svg"
                 role="img"
-                aria-label="Top 5 High-Impact Publishing Venues horizontal bar chart"
+                aria-label="High-Impact Publishing Venues horizontal bar chart"
               >
                 {topImpactJournals.map((j, idx) => {
                   const maxIf = topImpactJournals[0]?.impactFactor || 10;
@@ -1020,6 +1023,154 @@ export const PortfolioBreakdownSection: React.FC<
                       </text>
 
                       {/* Row 2: Full-Width Prominent Impact Bar Track & Fill */}
+                      <rect
+                        x="32"
+                        y="25"
+                        width={barMaxW}
+                        height="9"
+                        rx="4.5"
+                        fill="#f1f5f9"
+                      />
+                      <rect
+                        x="32"
+                        y="25"
+                        width={barW}
+                        height="9"
+                        rx="4.5"
+                        fill={barColor}
+                      />
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+        )}
+
+        {/* Chart 8: Leading Co-Authors */}
+        {topCoAuthors.length > 0 && (
+          <div
+            id="chart-leading-coauthors"
+            className="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs"
+          >
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+                  <Users className="w-4 h-4" />
+                </div>
+                <h2 className="text-sm font-bold text-slate-900">
+                  Leading Co-Authors
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  onExportChartPng(
+                    'chart-leading-coauthors',
+                    'Leading Co-Authors',
+                    'leading_coauthors.png'
+                  )
+                }
+                aria-label="Export Leading Co-Authors chart as PNG"
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <ImageDown className="w-3.5 h-3.5" />
+                <span>PNG</span>
+              </button>
+            </div>
+
+            <div className="my-1 overflow-x-auto">
+              <svg
+                data-chart-svg="true"
+                viewBox="0 0 420 250"
+                className="w-full h-auto min-w-[320px] max-h-[250px] scholar-chart-svg"
+                role="img"
+                aria-label="Leading Co-Authors horizontal bar chart"
+              >
+                {topCoAuthors.map((ca, idx) => {
+                  const maxPapers = Math.max(1, topCoAuthors[0]?.paperCount || 1);
+                  const barMaxW = 384;
+                  const barW = Math.max(14, (ca.paperCount / maxPapers) * barMaxW);
+                  const y = 6 + idx * 48;
+                  const coColors = [
+                    '#059669',
+                    '#0d9488',
+                    '#2563eb',
+                    '#4f46e5',
+                    '#7c3aed',
+                  ];
+                  const barColor = coColors[idx % coColors.length];
+
+                  return (
+                    <g key={ca.name} transform={`translate(0, ${y})`}>
+                      {/* 1. Rank Badge */}
+                      <rect
+                        x="4"
+                        y="2"
+                        width="22"
+                        height="18"
+                        rx="4"
+                        fill="#f1f5f9"
+                      />
+                      <text
+                        x="15"
+                        y="15"
+                        fill="#334155"
+                        fontSize="10.5"
+                        fontWeight="700"
+                        textAnchor="middle"
+                      >
+                        #{idx + 1}
+                      </text>
+
+                      {/* 2. Co-Author Name */}
+                      <text
+                        x="32"
+                        y="15.5"
+                        fill="#0f172a"
+                        fontSize="12"
+                        fontWeight="700"
+                      >
+                        {ca.name.length > 20 ? ca.name.slice(0, 19) + '…' : ca.name}
+                      </text>
+
+                      {/* 3. Institution / Country Badge */}
+                      <rect
+                        x="190"
+                        y="2.5"
+                        width="92"
+                        height="17"
+                        rx="3.5"
+                        fill="#f8fafc"
+                        stroke="#e2e8f0"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x="236"
+                        y="14.5"
+                        fill="#475569"
+                        fontSize="9"
+                        fontWeight="600"
+                        textAnchor="middle"
+                      >
+                        {(ca.universityName || ca.country || 'Collaborator').length > 15
+                          ? (ca.universityName || ca.country || 'Collaborator').slice(0, 14) + '…'
+                          : ca.universityName || ca.country || 'Collaborator'}
+                      </text>
+
+                      {/* 4. Collaboration Metrics */}
+                      <text
+                        x="416"
+                        y="15"
+                        fill="#64748b"
+                        fontSize="10"
+                        fontWeight="500"
+                        textAnchor="end"
+                      >
+                        {ca.paperCount} {ca.paperCount === 1 ? 'pub' : 'pubs'} · {ca.totalCitations.toLocaleString()} cites
+                      </text>
+
+                      {/* Row 2: Full-Width Prominent Collaboration Bar Track & Fill */}
                       <rect
                         x="32"
                         y="25"

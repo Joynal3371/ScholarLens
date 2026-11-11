@@ -43756,6 +43756,20 @@ app.get("/api/scholar/avatar", async (req, res) => {
   res.setHeader("Content-Type", "image/svg+xml");
   res.send(svg);
 });
+app.get("/api/scholar/avatar/ai-fit", async (req, res) => {
+  const userId = String(req.query.userId || "").trim();
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "public, max-age=86400");
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.GOOGLE_API_KEY;
+  res.json({
+    supported: true,
+    geminiEnabled: Boolean(geminiKey),
+    facialIdentityProtected: true,
+    expansionEngine: "Generative ambient outpainting + portrait safe-zone headroom centering",
+    description: "Fits researcher portrait inside circular avatar without modifying facial identity or portrait pixels",
+    userId
+  });
+});
 var FIRESTORE_DOC_BASE = `https://firestore.googleapis.com/v1/projects/${firebase_applet_config_default.projectId}/databases/${firebase_applet_config_default.firestoreDatabaseId}/documents`;
 app.get("/api/scholar/openalex-proxy", async (req, res) => {
   const rawTargetUrl = String(req.query.url || "").trim();

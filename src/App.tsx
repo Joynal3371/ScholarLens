@@ -56,6 +56,7 @@ import {
 } from './components/GlobeCollaborationMap';
 import { PublicationsExplorer } from './components/PublicationsExplorer';
 import { ResearchDirectoriesSection } from './components/ResearchDirectoriesSection';
+import { ScholarProfileAvatar } from './components/ScholarProfileAvatar';
 
 export type AppPage =
   | 'overview'
@@ -115,8 +116,8 @@ const PAGE_METADATA: {
 ];
 
 function SearchLoadingDots({
-  size = 'sm',
-  color = 'bg-blue-600',
+  size = 'xs',
+  color = 'bg-slate-400',
 }: {
   size?: 'xs' | 'sm' | 'md';
   color?: string;
@@ -127,7 +128,7 @@ function SearchLoadingDots({
     <div
       role="status"
       aria-label="Loading profile"
-      className="flex items-center gap-1 shrink-0 select-none pointer-events-none"
+      className="flex items-center gap-0.5 shrink-0 select-none pointer-events-none"
     >
       <span
         className={`${dotSize} rounded-full ${color} animate-bounce`}
@@ -676,40 +677,44 @@ export default function App() {
             aria-label="Analytics Pages"
             className="hidden lg:flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl"
           >
-            {/* Small Navigation Search Bar with Integrated Search Icon / 3-Dots Loading on the right */}
+            {/* Small Navigation Search Bar with Integrated Search Icon on the right & 3-Dots on the left during loading */}
             <form
               onSubmit={handleAnalyzeSubmit}
               noValidate
               className="relative flex items-center shrink-0 mr-1"
             >
+              {isAnalyzing && (
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
+                  <SearchLoadingDots size="xs" color="bg-slate-400" />
+                  <span className="text-xs text-slate-400 font-sans tracking-tight">
+                    analyzing...
+                  </span>
+                </div>
+              )}
               <input
                 ref={desktopSearchInputRef}
                 type="text"
                 disabled={isAnalyzing}
-                value={scholarUrlInput}
+                value={isAnalyzing ? '' : scholarUrlInput}
                 onChange={(e) => {
                   setScholarUrlInput(e.target.value);
                   if (urlError) setUrlError(null);
                 }}
-                placeholder={isAnalyzing ? 'Analyzing…' : 'Search Scholar ID / URL...'}
+                placeholder={isAnalyzing ? '' : 'Search Scholar ID / URL...'}
                 aria-label="Search Google Scholar profile URL or User ID"
-                className="w-36 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all disabled:bg-slate-50"
+                className={`w-36 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all disabled:bg-slate-50 ${
+                  isAnalyzing ? 'text-transparent' : ''
+                }`}
               />
-              {isAnalyzing ? (
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                  <SearchLoadingDots size="sm" color="bg-blue-600" />
-                </div>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={isAnalyzing}
-                  aria-label="Search Scholar Profile"
-                  title="Search Scholar Profile"
-                  className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <button
+                type="submit"
+                disabled={isAnalyzing}
+                aria-label="Search Scholar Profile"
+                title="Search Scholar Profile"
+                className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-40"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
             </form>
             {PAGE_METADATA.map((item) => {
               const Icon = item.icon;
@@ -802,33 +807,37 @@ export default function App() {
               noValidate
               className="relative flex items-center"
             >
+              {isAnalyzing && (
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
+                  <SearchLoadingDots size="xs" color="bg-slate-400" />
+                  <span className="text-xs text-slate-400 font-sans tracking-tight">
+                    analyzing...
+                  </span>
+                </div>
+              )}
               <input
                 type="text"
                 autoFocus
                 disabled={isAnalyzing}
-                value={scholarUrlInput}
+                value={isAnalyzing ? '' : scholarUrlInput}
                 onChange={(e) => {
                   setScholarUrlInput(e.target.value);
                   if (urlError) setUrlError(null);
                 }}
-                placeholder={isAnalyzing ? 'Analyzing profile…' : 'Paste Scholar profile URL or User ID...'}
+                placeholder={isAnalyzing ? '' : 'Paste Scholar profile URL or User ID...'}
                 aria-label="Search Google Scholar profile URL or User ID"
-                className="w-full pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100"
+                className={`w-full pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100 ${
+                  isAnalyzing ? 'text-transparent' : ''
+                }`}
               />
-              {isAnalyzing ? (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <SearchLoadingDots size="sm" color="bg-blue-600" />
-                </div>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={isAnalyzing}
-                  aria-label="Search Scholar Profile"
-                  className="absolute right-2.5 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <button
+                type="submit"
+                disabled={isAnalyzing}
+                aria-label="Search Scholar Profile"
+                className="absolute right-2.5 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-40"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
             </form>
           </div>
         )}
@@ -846,33 +855,11 @@ export default function App() {
               {activeProfile ? (
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                   <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6 min-w-0">
-                    <img
-                      src={
-                        activeProfile.avatarUrl &&
-                        activeProfile.avatarUrl.startsWith('data:image/')
-                          ? activeProfile.avatarUrl
-                          : `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-                              activeProfile.scholarUserId
-                            )}`
-                      }
-                      alt={activeProfile.name}
-                      referrerPolicy="no-referrer"
-                      data-testid="active-researcher-avatar"
-                      onError={(e) => {
-                        const img = e.currentTarget;
-                        if (!img.dataset.fallbackStep) {
-                          img.dataset.fallbackStep = '1';
-                          img.src = `/api/scholar/avatar?userId=${encodeURIComponent(
-                            activeProfile.scholarUserId
-                          )}&name=${encodeURIComponent(activeProfile.name)}`;
-                        } else if (img.dataset.fallbackStep === '1') {
-                          img.dataset.fallbackStep = '2';
-                          img.src = `/api/scholar/avatar?name=${encodeURIComponent(
-                            activeProfile.name
-                          )}`;
-                        }
-                      }}
-                      className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-full object-cover border-4 border-slate-200/90 bg-slate-100 shrink-0 shadow-md ring-4 ring-slate-100/80"
+                    <ScholarProfileAvatar
+                      scholarUserId={activeProfile.scholarUserId}
+                      name={activeProfile.name}
+                      avatarUrl={activeProfile.avatarUrl}
+                      className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40"
                     />
                     <div className="min-w-0 flex-1">
                       <h1
@@ -937,30 +924,36 @@ export default function App() {
                       <label htmlFor="scholar-url-input-initial" className="sr-only">
                         Google Scholar Profile Link or User ID
                       </label>
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      {isAnalyzing ? (
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none select-none z-10">
+                          <SearchLoadingDots size="xs" color="bg-slate-400" />
+                          <span className="text-xs sm:text-sm text-slate-400 font-sans tracking-tight">
+                            analyzing...
+                          </span>
+                        </div>
+                      ) : (
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      )}
                       <input
                         id="scholar-url-input-initial"
                         type="text"
                         autoFocus
                         disabled={isAnalyzing}
-                        value={scholarUrlInput}
+                        value={isAnalyzing ? '' : scholarUrlInput}
                         onChange={(e) => {
                           setScholarUrlInput(e.target.value);
                           if (urlError) setUrlError(null);
                         }}
                         placeholder={
                           isAnalyzing
-                            ? 'Analyzing Google Scholar profile…'
+                            ? ''
                             : 'Search by Google Scholar profile URL or researcher User ID...'
                         }
                         aria-label="Google Scholar Profile Link or User ID"
-                        className="w-full pl-10 pr-12 py-2.5 text-xs sm:text-sm font-sans bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors disabled:bg-slate-100"
+                        className={`w-full pl-10 pr-12 py-2.5 text-xs sm:text-sm font-sans bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors disabled:bg-slate-100 ${
+                          isAnalyzing ? 'text-transparent' : ''
+                        }`}
                       />
-                      {isAnalyzing && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                          <SearchLoadingDots size="md" color="bg-blue-600" />
-                        </div>
-                      )}
                     </div>
                     <button
                       type="submit"
@@ -969,7 +962,7 @@ export default function App() {
                     >
                       {isAnalyzing ? (
                         <>
-                          <SearchLoadingDots size="sm" color="bg-white" />
+                          <SearchLoadingDots size="xs" color="bg-white" />
                           <span>Analyzing...</span>
                         </>
                       ) : (
@@ -1499,6 +1492,7 @@ export default function App() {
                 stats={stats}
                 countries={countries}
                 journals={journals}
+                coAuthors={coAuthors}
                 onQuickFilterQuartile={handleQuickFilterQuartile}
                 onQuickFilterType={handleQuickFilterType}
                 onExportChartPng={handleRequestChartPng}
