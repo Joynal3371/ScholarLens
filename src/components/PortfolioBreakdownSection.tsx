@@ -640,6 +640,13 @@ export const PortfolioBreakdownSection: React.FC<
                 strokeWidth="1"
               />
               {pubTrendYears.map((yr, idx) => {
+                const totalCount =
+                  yr.q1Count +
+                  yr.q2Count +
+                  yr.q3Count +
+                  yr.q4Count +
+                  yr.conferenceCount +
+                  yr.otherCount;
                 const colW = Math.min(
                   26,
                   Math.floor(290 / Math.max(1, pubTrendYears.length)) - 6
@@ -647,6 +654,7 @@ export const PortfolioBreakdownSection: React.FC<
                 const step = 310 / Math.max(1, pubTrendYears.length);
                 const x = 26 + idx * step;
                 const scaleH = 122 / maxYearPapers;
+                const totalH = totalCount * scaleH;
 
                 const segments = [
                   {
@@ -684,6 +692,19 @@ export const PortfolioBreakdownSection: React.FC<
                 let curY = 158;
                 return (
                   <g key={`stack-${yr.year}`}>
+                    {totalCount > 0 && (
+                      <text
+                        x={x + colW / 2}
+                        y={Math.max(14, 158 - totalH - 4)}
+                        textAnchor="middle"
+                        fill="#0f172a"
+                        fontSize="9"
+                        fontWeight="700"
+                        fontFamily="JetBrains Mono, monospace"
+                      >
+                        {totalCount}
+                      </text>
+                    )}
                     <g clipPath={`url(#clip-yearly-bar-${yr.year})`}>
                       {segments.map((s, sIdx) => {
                         if (s.count <= 0) return null;
