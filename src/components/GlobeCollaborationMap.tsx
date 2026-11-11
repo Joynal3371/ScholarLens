@@ -410,6 +410,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [coAuthorQuery, setCoAuthorQuery] = useState<string>('');
   const [hoveredUniId, setHoveredUniId] = useState<string | null>(null);
+  const [hoveredCountryName, setHoveredCountryName] = useState<string | null>(null);
   const [isUniDropdownOpen, setIsUniDropdownOpen] = useState<boolean>(false);
   const [uniSearchQuery, setUniSearchQuery] = useState<string>('');
   const uniDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -1123,13 +1124,63 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     );
   }, [selectedUni, coAuthorQuery]);
 
-  const activeBadgeUni = useMemo(() => {
+  const dynamicGlobeStat = useMemo(() => {
+    // 1. If a specific university is hovered, show its live details:
     if (hoveredUniId) {
-      const hovered = universities.find((u) => u.universityId === hoveredUniId);
-      if (hovered) return hovered;
+      const u = universities.find((x) => x.universityId === hoveredUniId);
+      if (u) {
+        return {
+          type: 'university' as const,
+          isHome: u.universityId === profile.homeUniversityId || u.isHomeInstitution,
+          title: u.universityName.replace(/\s*\([^)]+\)\s*$/, ''),
+          subtitle: `${u.paperCount} ${u.paperCount === 1 ? 'paper' : 'papers'} · ${u.coAuthors.length} ${u.coAuthors.length === 1 ? 'co-author' : 'co-authors'} · ${u.city ? `${u.city}, ` : ''}${u.country}`,
+        };
+      }
     }
-    return selectedUni;
-  }, [hoveredUniId, universities, selectedUni]);
+
+    // 2. If a collaborating country is hovered:
+    if (hoveredCountryName) {
+      const matchKey = hoveredCountryName.toLowerCase().trim();
+      const inCountry = universities.filter(
+        (u) => u.country.toLowerCase().trim() === matchKey
+      );
+      if (inCountry.length > 0) {
+        const totalPapers = inCountry.reduce((acc, u) => acc + u.paperCount, 0);
+        return {
+          type: 'country' as const,
+          isHome: inCountry.some((u) => u.isHomeInstitution),
+          title: hoveredCountryName,
+          subtitle: `${inCountry.length} ${inCountry.length === 1 ? 'institution' : 'institutions'} · ${totalPapers} ${totalPapers === 1 ? 'paper' : 'papers'}`,
+        };
+      }
+    }
+
+    // 3. If a university is selected (clicked):
+    if (selectedUni) {
+      return {
+        type: 'university' as const,
+        isHome: selectedUni.universityId === profile.homeUniversityId || selectedUni.isHomeInstitution,
+        title: selectedUni.universityName.replace(/\s*\([^)]+\)\s*$/, ''),
+        subtitle: `${selectedUni.paperCount} ${selectedUni.paperCount === 1 ? 'paper' : 'papers'} · ${selectedUni.coAuthors.length} ${selectedUni.coAuthors.length === 1 ? 'co-author' : 'co-authors'} · ${selectedUni.city ? `${selectedUni.city}, ` : ''}${selectedUni.country}`,
+      };
+    }
+
+    // 4. Default: Live Global Research Network Overview
+    const totalPapers = universities.reduce((acc, u) => acc + u.paperCount, 0);
+    return {
+      type: 'overview' as const,
+      isHome: false,
+      title: 'Global Research Network',
+      subtitle: `${universities.length} Institutions · ${collaboratingCountryNames.size} Countries · ${totalPapers} Papers`,
+    };
+  }, [
+    hoveredUniId,
+    hoveredCountryName,
+    selectedUni,
+    universities,
+    profile.homeUniversityId,
+    collaboratingCountryNames.size,
+  ]);
 
   return (
     <section
@@ -1466,6 +1517,9 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     }
                     strokeWidth={country.isCollab ? '0.95' : '0.6'}
                     strokeLinejoin="round"
+                    className={country.isCollab ? 'cursor-pointer' : undefined}
+                    onMouseEnter={() => country.isCollab && setHoveredCountryName(country.name)}
+                    onMouseLeave={() => setHoveredCountryName((prev) => (prev === country.name ? null : prev))}
                   >
                     <title>{country.name}</title>
                   </path>
@@ -1644,25 +1698,24 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               </g>
             </svg>
 
-            {/* Non-obtrusive Active University Badge: Pinned at top-left without institution location */}
-            {activeBadgeUni && (
-              <div className="pointer-events-none absolute top-3 left-3 z-30 bg-slate-900/90 backdrop-blur-xs border border-slate-700/80 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 max-w-[85%]">
+            {/* Dynamic Interactive Globe Stat Badge: Pinned at top-left of the 3D globe viewport */}
+            {dynamicGlobeStat && (
+              <div className="pointer-events-none absolute top-3 left-3 z-30 bg-slate-900/90 backdrop-blur-xs border border-slate-700/80 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 max-w-[85%] transition-all">
                 <span
                   className={`w-2.5 h-2.5 rounded-full shrink-0 ring-2 ${
-                    activeBadgeUni.universityId === profile.homeUniversityId
+                    dynamicGlobeStat.isHome
                       ? 'bg-amber-400 ring-amber-400/30'
+                      : dynamicGlobeStat.type === 'country'
+                      ? 'bg-emerald-400 ring-emerald-400/30'
+                      : dynamicGlobeStat.type === 'overview'
+                      ? 'bg-indigo-400 ring-indigo-400/30'
                       : 'bg-sky-400 ring-sky-400/30'
                   }`}
                 />
                 <div className="truncate text-xs font-semibold">
-                  {activeBadgeUni.universityName.replace(/\s*\([^)]+\)\s*$/, '')}
+                  {dynamicGlobeStat.title}
                   <span className="text-slate-300 font-normal ml-1.5 font-mono text-[11px]">
-                    · {activeBadgeUni.paperCount}{' '}
-                    {activeBadgeUni.paperCount === 1 ? 'paper' : 'papers'} ·{' '}
-                    {activeBadgeUni.coAuthors.length}{' '}
-                    {activeBadgeUni.coAuthors.length === 1
-                      ? 'co-author'
-                      : 'co-authors'}
+                    · {dynamicGlobeStat.subtitle}
                   </span>
                 </div>
               </div>

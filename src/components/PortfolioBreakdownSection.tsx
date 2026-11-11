@@ -854,17 +854,17 @@ export const PortfolioBreakdownSection: React.FC<
             <div className="my-1 overflow-x-auto">
               <svg
                 data-chart-svg="true"
-                viewBox="0 0 720 220"
-                className="w-full h-auto min-w-[560px] max-h-[220px] scholar-chart-svg"
+                viewBox="0 0 420 250"
+                className="w-full h-auto min-w-[320px] max-h-[250px] scholar-chart-svg"
                 role="img"
                 aria-label="Top 5 High-Impact Publishing Venues horizontal bar chart"
               >
                 {topImpactJournals.map((j, idx) => {
                   const maxIf = topImpactJournals[0]?.impactFactor || 10;
                   const ifVal = j.impactFactor || 0;
-                  const barMaxW = 200;
-                  const barW = Math.max(12, (ifVal / maxIf) * barMaxW);
-                  const y = 8 + idx * 42;
+                  const barMaxW = 384;
+                  const barW = Math.max(14, (ifVal / maxIf) * barMaxW);
+                  const y = 6 + idx * 48;
                   const rankColors = [
                     '#2563eb',
                     '#059669',
@@ -880,16 +880,16 @@ export const PortfolioBreakdownSection: React.FC<
                       <rect
                         x="4"
                         y="2"
-                        width="24"
-                        height="20"
+                        width="22"
+                        height="18"
                         rx="4"
                         fill="#f1f5f9"
                       />
                       <text
-                        x="16"
-                        y="16"
+                        x="15"
+                        y="15"
                         fill="#334155"
-                        fontSize="11"
+                        fontSize="10.5"
                         fontWeight="700"
                         textAnchor="middle"
                       >
@@ -898,29 +898,29 @@ export const PortfolioBreakdownSection: React.FC<
 
                       {/* 2. Venue Name */}
                       <text
-                        x="36"
-                        y="16"
+                        x="32"
+                        y="15.5"
                         fill="#0f172a"
                         fontSize="12"
-                        fontWeight="600"
+                        fontWeight="700"
                       >
-                        {j.venue.length > 28 ? j.venue.slice(0, 27) + '…' : j.venue}
+                        {j.venue.length > 22 ? j.venue.slice(0, 21) + '…' : j.venue}
                       </text>
 
                       {/* 3. Quartile Pill */}
                       <rect
-                        x="234"
-                        y="3"
-                        width="30"
-                        height="18"
-                        rx="4"
-                        fill={j.quartile === 'Q1' ? '#eff6ff' : '#ecfdf5'}
+                        x="192"
+                        y="2.5"
+                        width="28"
+                        height="17"
+                        rx="3.5"
+                        fill={j.quartile === 'Q1' ? '#eff6ff' : j.quartile === 'Q2' ? '#ecfdf5' : j.quartile === 'Q3' ? '#fffbeb' : '#fef2f2'}
                       />
                       <text
-                        x="249"
-                        y="15.5"
-                        fill={j.quartile === 'Q1' ? '#1d4ed8' : '#047857'}
-                        fontSize="10"
+                        x="206"
+                        y="14.5"
+                        fill={j.quartile === 'Q1' ? '#1d4ed8' : j.quartile === 'Q2' ? '#047857' : j.quartile === 'Q3' ? '#b45309' : '#b91c1c'}
+                        fontSize="9.5"
                         fontWeight="700"
                         textAnchor="middle"
                       >
@@ -929,20 +929,20 @@ export const PortfolioBreakdownSection: React.FC<
 
                       {/* 4. Clarivate JIF Metric Badge */}
                       <rect
-                        x="272"
-                        y="3"
-                        width="60"
-                        height="18"
-                        rx="4"
+                        x="226"
+                        y="2.5"
+                        width="54"
+                        height="17"
+                        rx="3.5"
                         fill="#f8fafc"
                         stroke="#e2e8f0"
                         strokeWidth="1"
                       />
                       <text
-                        x="302"
-                        y="15.5"
+                        x="253"
+                        y="14.5"
                         fill="#0f172a"
-                        fontSize="10"
+                        fontSize="9.5"
                         fontWeight="700"
                         fontFamily="JetBrains Mono, monospace"
                         textAnchor="middle"
@@ -950,34 +950,35 @@ export const PortfolioBreakdownSection: React.FC<
                         IF {ifVal.toFixed(1)}
                       </text>
 
-                      {/* 5. Proportional Impact Bar Track & Fill */}
-                      <rect
-                        x="342"
-                        y="7"
-                        width={barMaxW}
-                        height="10"
-                        rx="5"
-                        fill="#f1f5f9"
-                      />
-                      <rect
-                        x="342"
-                        y="7"
-                        width={barW}
-                        height="10"
-                        rx="5"
-                        fill={barColor}
-                      />
-
-                      {/* 6. Publications & Citations */}
+                      {/* 5. Publications & Citations */}
                       <text
-                        x="712"
-                        y="15.5"
+                        x="416"
+                        y="15"
                         fill="#64748b"
                         fontSize="10"
+                        fontWeight="500"
                         textAnchor="end"
                       >
                         {j.paperCount} {j.paperCount === 1 ? 'pub' : 'pubs'} · {j.totalCitations.toLocaleString()} cites
                       </text>
+
+                      {/* Row 2: Full-Width Prominent Impact Bar Track & Fill */}
+                      <rect
+                        x="32"
+                        y="25"
+                        width={barMaxW}
+                        height="9"
+                        rx="4.5"
+                        fill="#f1f5f9"
+                      />
+                      <rect
+                        x="32"
+                        y="25"
+                        width={barW}
+                        height="9"
+                        rx="4.5"
+                        fill={barColor}
+                      />
                     </g>
                   );
                 })}

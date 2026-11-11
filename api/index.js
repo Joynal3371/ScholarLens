@@ -40560,6 +40560,10 @@ async function queryCrossrefWorkByTitle(title) {
 function classifyPublicationType(sourceType, workType, venue, title) {
   const vLower = venue.toLowerCase();
   const tLower = title.toLowerCase();
+  const isJournalProceedings = vLower.startsWith("proceedings of the ieee") || vLower.startsWith("proceedings of the national academy of sciences") || vLower.startsWith("proceedings of the royal society") || vLower.startsWith("proceedings of the acm") || vLower.startsWith("proceedings of the american mathematical society") || vLower.startsWith("proceedings of the institution of mechanical");
+  if (isJournalProceedings) {
+    return "Journal";
+  }
   if (sourceType.includes("conference") || workType.includes("proceedings") || vLower.includes("conference") || vLower.includes("symposium") || vLower.includes("workshop") || vLower.includes("proceedings") || vLower.includes("congress") || vLower.includes("colloquium") || vLower.includes("oceans") || vLower.includes("cinti") || vLower.includes("icacte") || vLower.includes("caepia") || vLower.includes("society:") || vLower.includes("cvpr") || vLower.includes("neurips") || vLower.includes("icml") || vLower.includes("iclr") || vLower.includes("iccv") || vLower.includes("eccv") || vLower.includes("icassp") || vLower.includes("igarss") || vLower.includes("globecom") || vLower.includes("infocom") || vLower.includes("icra") || vLower.includes("iros") || vLower.includes("tencon") || vLower.includes("iccit") || vLower.includes("iceee") || vLower.includes("icrest") || vLower.includes("ic4ir") || vLower.includes("sti ") || vLower.includes("ieee") && (vLower.includes("international") || vLower.includes("conf") || vLower.includes("region") || vLower.includes("annual") || /\b20\d{2}\b/.test(vLower))) {
     return "Conference";
   }
@@ -40594,25 +40598,25 @@ function classifyQuartileFromOfficialMetrics(type, venue, sourceMetrics) {
     sourceMetrics.issn_l || sourceMetrics.issns && sourceMetrics.issns.length > 0
   );
   if (normScore !== void 0) {
-    if (!hasIssn || worksCount < 30) return "Unranked";
-    if (normScore >= 12 || normScore >= 4.8 && worksCount >= 800 || normScore >= 8 && worksCount < 8e3) {
+    if (!hasIssn || worksCount < 20) return "Unranked";
+    if (normScore >= 6 || normScore >= 3.8 && worksCount >= 400) {
       return "Q1";
     }
-    if (normScore >= 4.2 || normScore >= 2.8 && worksCount >= 500) return "Q2";
-    if (normScore >= 1.6) return "Q3";
-    if (normScore >= 0.5 || hasIssn) return "Q4";
+    if (normScore >= 2.8 || normScore >= 2 && worksCount >= 200) return "Q2";
+    if (normScore >= 1.2) return "Q3";
+    if (normScore >= 0.4 || hasIssn) return "Q4";
     return "Unranked";
   }
-  if (!hasIssn && hIdx < 12 && impact2Yr < 0.4) {
+  if (!hasIssn && hIdx < 10 && impact2Yr < 0.3) {
     return "Unranked";
   }
-  if (impact2Yr >= 6 || hIdx >= 100 || worksCount >= 1e3 && impact2Yr >= 4.8) {
+  if (impact2Yr >= 3.8 || hIdx >= 60 || worksCount >= 300 && impact2Yr >= 3) {
     return "Q1";
   }
-  if (impact2Yr >= 3 || hIdx >= 45) {
+  if (impact2Yr >= 2 || hIdx >= 28 || worksCount >= 150 && impact2Yr >= 1.6) {
     return "Q2";
   }
-  if (impact2Yr >= 1.4 || hIdx >= 18) {
+  if (impact2Yr >= 1 || hIdx >= 14) {
     return "Q3";
   }
   if (hasIssn || impact2Yr >= 0.2 || hIdx >= 5 || sourceMetrics.is_core) {

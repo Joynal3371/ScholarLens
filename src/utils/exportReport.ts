@@ -440,124 +440,227 @@ export async function generateResearcherPdfReport(params: {
     contentW
   );
 
-  const kpiItems: { label: string; value: string }[] = [
+  // -------------------------------------------------------------------------
+  // SECTION 1: EXECUTIVE BIBLIOMETRIC & IMPACT INDICATORS (MATCHING WEB HIGHLIGHT SECTION)
+  // -------------------------------------------------------------------------
+  y = drawSectionHeader(
+    doc,
+    '01',
+    'Executive Bibliometric & Impact Indicators',
+    margin,
+    y,
+    contentW
+  );
+
+  // 1. Top Row: 4 Primary Metric Cards (Matching Web Highlight Cards)
+  const metricCards = [
     {
-      label: 'Verified Publications',
+      label: 'VERIFIED PUBLICATIONS',
       value: String(stats.totalPapers),
+      sub: 'Peer-reviewed corpus',
+      badgeBg: [239, 246, 255] as [number, number, number],
+      badgeColor: [37, 99, 235] as [number, number, number],
     },
     {
-      label: 'Cumulative Citations',
+      label: 'CUMULATIVE CITATIONS',
       value: stats.totalCitations.toLocaleString(),
+      sub: `~${(stats.totalCitations / Math.max(1, stats.totalPapers)).toFixed(1)} cites/paper`,
+      badgeBg: [236, 253, 245] as [number, number, number],
+      badgeColor: [5, 150, 105] as [number, number, number],
     },
     {
-      label: 'Citation Indices',
-      value: `h: ${stats.hIndex} / i10: ${stats.i10Index}`,
+      label: 'H-INDEX / I10-INDEX',
+      value: `${stats.hIndex}  /  ${stats.i10Index}`,
+      sub: `${stats.i10Index} papers ≥ 10 citations`,
+      badgeBg: [238, 242, 255] as [number, number, number],
+      badgeColor: [79, 70, 229] as [number, number, number],
     },
     {
-      label: 'Citation Velocity',
-      value: `${stats.annualCitationVelocity}/yr`,
-    },
-    {
-      label: 'Partner Institutions',
+      label: 'INSTITUTIONAL NETWORK',
       value: String(universities.length),
-    },
-    {
-      label: 'Co-Author Network',
-      value: String(coAuthors.length),
+      sub: `Across ${countries.length} collaborating nations`,
+      badgeBg: [245, 243, 255] as [number, number, number],
+      badgeColor: [124, 58, 237] as [number, number, number],
     },
   ];
 
-  const kpiCols = 3;
-  const kpiGap = 2.5;
-  const kpiW = (contentW - kpiGap * (kpiCols - 1)) / kpiCols;
-  const kpiH = 10.6;
+  const mCols = 4;
+  const mGap = 2.5;
+  const mW = (contentW - mGap * (mCols - 1)) / mCols;
+  const mH = 14.2;
 
-  kpiItems.forEach((item, idx) => {
-    const col = idx % kpiCols;
-    const row = Math.floor(idx / kpiCols);
-    const bx = margin + col * (kpiW + kpiGap);
-    const by = y + row * (kpiH + 1.8);
+  metricCards.forEach((card, idx) => {
+    const bx = margin + idx * (mW + mGap);
+    const by = y;
 
-    doc.setFillColor(248, 250, 252);
+    // Card background & subtle border
+    doc.setFillColor(255, 255, 255);
     doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(bx, by, kpiW, kpiH, 1.5, 1.5, 'FD');
+    doc.roundedRect(bx, by, mW, mH, 1.5, 1.5, 'FD');
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(100, 116, 139);
-    doc.text(item.label, bx + 2.5, by + 4.0);
+    // Micro badge icon box on top right
+    const iconW = 4.4;
+    const iconH = 4.4;
+    const iconX = bx + mW - iconW - 2.0;
+    const iconY = by + 2.0;
+    doc.setFillColor(card.badgeBg[0], card.badgeBg[1], card.badgeBg[2]);
+    doc.roundedRect(iconX, iconY, iconW, iconH, 1.0, 1.0, 'F');
+    doc.setFillColor(card.badgeColor[0], card.badgeColor[1], card.badgeColor[2]);
+    doc.circle(iconX + iconW / 2, iconY + iconH / 2, 1.0, 'F');
 
+    // Label
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10.5);
+    doc.setFontSize(5.8);
+    doc.setTextColor(100, 116, 139);
+    doc.text(card.label, bx + 2.5, by + 4.2);
+
+    // Primary Value
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.0);
     doc.setTextColor(15, 23, 42);
-    doc.text(item.value, bx + 2.5, by + 8.8);
+    doc.text(card.value, bx + 2.5, by + 9.5);
+
+    // Subtitle
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.2);
+    doc.setTextColor(148, 163, 184);
+    doc.text(card.sub, bx + 2.5, by + 12.8);
   });
 
-  y += Math.ceil(kpiItems.length / kpiCols) * (kpiH + 1.8) + 2.0;
+  y += mH + 2.5;
 
-  // -------------------------------------------------------------------------
-  // PORTFOLIO QUARTILE & INDEXING DISTRIBUTION (CARDS ABOVE COLORBAR LINE)
-  // -------------------------------------------------------------------------
+  // 2. Row 2: Dedicated Journal Quartile & Indexing Distribution Container
   const pCategories: {
     key: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Conference' | 'Non-Indexed';
     label: string;
+    bg: [number, number, number];
+    border: [number, number, number];
+    dotColor: [number, number, number];
   }[] = [
-    { key: 'Q1', label: 'Q1 Journals' },
-    { key: 'Q2', label: 'Q2 Journals' },
-    { key: 'Q3', label: 'Q3 Journals' },
-    { key: 'Q4', label: 'Q4 Journals' },
-    { key: 'Conference', label: 'Conference' },
-    { key: 'Non-Indexed', label: 'Others' },
+    {
+      key: 'Q1',
+      label: 'Q1 Journals',
+      bg: [248, 250, 255],
+      border: [219, 234, 254],
+      dotColor: [37, 99, 235],
+    },
+    {
+      key: 'Q2',
+      label: 'Q2 Journals',
+      bg: [244, 251, 247],
+      border: [209, 250, 229],
+      dotColor: [5, 150, 105],
+    },
+    {
+      key: 'Q3',
+      label: 'Q3 Journals',
+      bg: [254, 252, 243],
+      border: [254, 243, 199],
+      dotColor: [217, 119, 6],
+    },
+    {
+      key: 'Q4',
+      label: 'Q4 Journals',
+      bg: [255, 245, 245],
+      border: [254, 226, 226],
+      dotColor: [220, 38, 38],
+    },
+    {
+      key: 'Conference',
+      label: 'Conference',
+      bg: [250, 245, 255],
+      border: [243, 232, 255],
+      dotColor: [124, 58, 237],
+    },
+    {
+      key: 'Non-Indexed',
+      label: 'Others',
+      bg: [248, 250, 252],
+      border: [226, 232, 240],
+      dotColor: [71, 85, 105],
+    },
   ];
 
-  // Compact 6-Column Visual Legend & Percentage Cards (ABOVE the colorbar line)
-  const catColW = (contentW - 2 * 5) / 6;
-  const catCardH = 10.2;
-  pCategories.forEach(({ key, label }, idx) => {
-    const d = stats.portfolioDistribution[key];
-    const cx = margin + idx * (catColW + 2);
-    const [r, g, b] = CATEGORY_RGB[key];
+  const containerH = 22.0;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(margin, y, contentW, containerH, 1.8, 1.8, 'FD');
 
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(cx, y, catColW, catCardH, 1.2, 1.2, 'FD');
+  // Container Header: Title (left) and 100% Corpus (right)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.2);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Journal Quartile & Indexing Distribution', margin + 3.0, y + 4.2);
 
-    doc.setFillColor(r, g, b);
-    doc.rect(cx, y, catColW, 1.4, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.6);
-    doc.setTextColor(51, 65, 85);
-    doc.text(label, cx + 2, y + 4.6);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(`${d.percentage}%`, cx + 2, y + 8.7);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(5.2);
+  doc.setTextColor(148, 163, 184);
+  doc.text('100% of Verified Corpus', margin + contentW - 3.0, y + 4.2, {
+    align: 'right',
   });
 
-  y += catCardH + 1.8;
+  // 6 Interactive/Visual Category Chips
+  const chipPad = 3.0;
+  const chipGap = 1.8;
+  const chipW = (contentW - chipPad * 2 - chipGap * 5) / 6;
+  const chipH = 10.0;
+  const chipY = y + 5.6;
 
-  // Draw 100% Proportional Stacked Colorbar Line (BELOW the 6 percentage cards)
+  pCategories.forEach(({ key, label, bg, border, dotColor }, idx) => {
+    const d = stats.portfolioDistribution[key];
+    const cx = margin + chipPad + idx * (chipW + chipGap);
+
+    // Chip box
+    doc.setFillColor(bg[0], bg[1], bg[2]);
+    doc.setDrawColor(border[0], border[1], border[2]);
+    doc.roundedRect(cx, chipY, chipW, chipH, 1.2, 1.2, 'FD');
+
+    // Label (left) & Colored indicator dot (right)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(5.6);
+    doc.setTextColor(51, 65, 85);
+    doc.text(label, cx + 2.0, chipY + 3.6);
+
+    doc.setFillColor(dotColor[0], dotColor[1], dotColor[2]);
+    doc.circle(cx + chipW - 3.0, chipY + 2.8, 0.9, 'F');
+
+    // Percentage value
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.2);
+    doc.setTextColor(dotColor[0], dotColor[1], dotColor[2]);
+    doc.text(`${d.percentage}%`, cx + 2.0, chipY + 7.2);
+
+    // Paper count
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(4.8);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`${d.count} papers`, cx + 2.0, chipY + 9.2);
+  });
+
+  // Modern Segmented Progress Bar inside the container
+  const barY = y + 17.2;
+  const barW = contentW - chipPad * 2;
   doc.setFillColor(241, 245, 249);
-  doc.roundedRect(margin, y, contentW, 4.0, 1.2, 1.2, 'F');
-  let curBarX = margin;
+  doc.roundedRect(margin + chipPad, barY, barW, 2.8, 1.0, 1.0, 'F');
+
+  let curBarX = margin + chipPad;
   pCategories.forEach(({ key }) => {
     const pct = stats.portfolioDistribution[key].percentage;
     if (pct <= 0) return;
-    const segW = Math.max(1.5, (pct / 100) * contentW);
+    const segW = Math.max(1.2, (pct / 100) * barW);
     const [r, g, b] = CATEGORY_RGB[key];
     doc.setFillColor(r, g, b);
     doc.rect(
       curBarX,
-      y,
-      Math.min(segW, margin + contentW - curBarX),
-      4.0,
+      barY,
+      Math.min(segW, margin + chipPad + barW - curBarX),
+      2.8,
       'F'
     );
     curBarX += segW;
   });
-  y += 6.5;
+
+  y += containerH + 3.0;
 
   // -------------------------------------------------------------------------
   // SECTION 2: GLOBAL COLLABORATION NETWORK MAP (EXPANDED TO FULL WIDTH ON PAGE 1)

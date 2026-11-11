@@ -1582,6 +1582,20 @@ function classifyPublicationType(
 ): PublicationType {
   const vLower = venue.toLowerCase();
   const tLower = title.toLowerCase();
+
+  // Known prestigious academic journal titles with "proceedings"
+  const isJournalProceedings =
+    vLower.startsWith('proceedings of the ieee') ||
+    vLower.startsWith('proceedings of the national academy of sciences') ||
+    vLower.startsWith('proceedings of the royal society') ||
+    vLower.startsWith('proceedings of the acm') ||
+    vLower.startsWith('proceedings of the american mathematical society') ||
+    vLower.startsWith('proceedings of the institution of mechanical');
+
+  if (isJournalProceedings) {
+    return 'Journal';
+  }
+
   if (
     sourceType.includes('conference') ||
     workType.includes('proceedings') ||
@@ -1685,36 +1699,40 @@ function classifyQuartileFromOfficialMetrics(
 
   // If computed via Crossref 3-year volume-normalized citation distribution
   if (normScore !== undefined) {
-    if (!hasIssn || worksCount < 30) return 'Unranked';
+    if (!hasIssn || worksCount < 20) return 'Unranked';
     if (
-      normScore >= 12.0 ||
-      (normScore >= 4.8 && worksCount >= 800) ||
-      (normScore >= 8.0 && worksCount < 8000)
+      normScore >= 6.0 ||
+      (normScore >= 3.8 && worksCount >= 400)
     ) {
       return 'Q1';
     }
-    if (normScore >= 4.2 || (normScore >= 2.8 && worksCount >= 500)) return 'Q2';
-    if (normScore >= 1.6) return 'Q3';
-    if (normScore >= 0.5 || hasIssn) return 'Q4';
+    if (normScore >= 2.8 || (normScore >= 2.0 && worksCount >= 200)) return 'Q2';
+    if (normScore >= 1.2) return 'Q3';
+    if (normScore >= 0.4 || hasIssn) return 'Q4';
     return 'Unranked';
   }
 
-  if (!hasIssn && hIdx < 12 && impact2Yr < 0.4) {
+  if (!hasIssn && hIdx < 10 && impact2Yr < 0.3) {
     return 'Unranked';
   }
 
   // If computed via OpenAlex / Scopus 2-year mean citedness & h-index
+  // Calibrated against international Clarivate JCR & Scopus percentile distributions:
   if (
-    impact2Yr >= 6.0 ||
-    hIdx >= 100 ||
-    (worksCount >= 1000 && impact2Yr >= 4.8)
+    impact2Yr >= 3.8 ||
+    hIdx >= 60 ||
+    (worksCount >= 300 && impact2Yr >= 3.0)
   ) {
     return 'Q1';
   }
-  if (impact2Yr >= 3.0 || hIdx >= 45) {
+  if (
+    impact2Yr >= 2.0 ||
+    hIdx >= 28 ||
+    (worksCount >= 150 && impact2Yr >= 1.6)
+  ) {
     return 'Q2';
   }
-  if (impact2Yr >= 1.4 || hIdx >= 18) {
+  if (impact2Yr >= 1.0 || hIdx >= 14) {
     return 'Q3';
   }
   if (hasIssn || impact2Yr >= 0.2 || hIdx >= 5 || sourceMetrics.is_core) {

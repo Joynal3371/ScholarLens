@@ -1233,9 +1233,9 @@ export function aggregateUniversityCollaborations(
       name: homeProfile.name,
       universityId: homeProfile.homeUniversityId,
       universityName: homeProfile.homeUniversity,
-      city: homeProfile.homeCity || 'Dhaka',
-      country: homeProfile.homeCountry || 'Bangladesh',
-      countryCode: 'BD',
+      city: homeProfile.homeCity || '',
+      country: homeProfile.homeCountry || '',
+      countryCode: homeProfile.homeCountry ? (homeProfile.homeCountry.toLowerCase() === 'bangladesh' ? 'BD' : homeProfile.homeCountry.slice(0, 2).toUpperCase()) : 'BD',
       continent: 'Asia',
       lat: homeProfile.homeLat || 23.7548,
       lng: homeProfile.homeLng || 90.3585,
@@ -1249,6 +1249,45 @@ export function aggregateUniversityCollaborations(
   }
 
   for (const pub of publications) {
+    // Determine whether this publication is attributed to the researcher's home institution:
+    const hasHomeCoAuthor = pub.coAuthors.some(
+      (ca) =>
+        ca.universityId === homeProfile?.homeUniversityId ||
+        Boolean(ca.isHomeInstitution)
+    );
+    const isLeadAuthor =
+      pub.authorshipRole === 'First Author' ||
+      pub.authorshipRole === 'Corresponding Author';
+    const isSoloPaper = pub.coAuthors.length === 0;
+
+    // A paper is credited to the researcher's home institution if:
+    // - Co-author belongs to home institution
+    // - OR researcher is Lead Author (First / Corresponding) or solo author
+    const belongsToHome =
+      Boolean(homeProfile?.homeUniversityId) &&
+      (hasHomeCoAuthor || isLeadAuthor || isSoloPaper);
+
+    if (
+      belongsToHome &&
+      homeProfile?.homeUniversityId &&
+      uniMap.has(homeProfile.homeUniversityId)
+    ) {
+      const homeEntry = uniMap.get(homeProfile.homeUniversityId)!;
+      homeEntry.papers.set(pub.id, pub);
+
+      // Record collaborators who co-authored this publication with the researcher
+      for (const ca of pub.coAuthors) {
+        if (!homeEntry.authorMap.has(ca.name)) {
+          homeEntry.authorMap.set(ca.name, { paperIds: new Set(), citations: 0 });
+        }
+        const authorEntry = homeEntry.authorMap.get(ca.name)!;
+        if (!authorEntry.paperIds.has(pub.id)) {
+          authorEntry.paperIds.add(pub.id);
+          authorEntry.citations += pub.citations;
+        }
+      }
+    }
+
     for (const ca of pub.coAuthors) {
       if (ca.universityId === 'unlisted') continue;
       if (!uniMap.has(ca.universityId)) {
@@ -1268,6 +1307,30 @@ export function aggregateUniversityCollaborations(
       if (!authorEntry.paperIds.has(pub.id)) {
         authorEntry.paperIds.add(pub.id);
         authorEntry.citations += pub.citations;
+      }
+    }
+  }
+
+  // Safety Fallback: If home institution currently has 0 papers but researcher has publications:
+  // Attribute publications to home institution so an active researcher's home institution is never left at 0 papers!
+  if (
+    homeProfile?.homeUniversityId &&
+    uniMap.has(homeProfile.homeUniversityId) &&
+    uniMap.get(homeProfile.homeUniversityId)!.papers.size === 0 &&
+    publications.length > 0
+  ) {
+    const homeEntry = uniMap.get(homeProfile.homeUniversityId)!;
+    for (const pub of publications) {
+      homeEntry.papers.set(pub.id, pub);
+      for (const ca of pub.coAuthors) {
+        if (!homeEntry.authorMap.has(ca.name)) {
+          homeEntry.authorMap.set(ca.name, { paperIds: new Set(), citations: 0 });
+        }
+        const authorEntry = homeEntry.authorMap.get(ca.name)!;
+        if (!authorEntry.paperIds.has(pub.id)) {
+          authorEntry.paperIds.add(pub.id);
+          authorEntry.citations += pub.citations;
+        }
       }
     }
   }

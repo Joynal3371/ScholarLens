@@ -967,7 +967,7 @@ export default function App() {
                   </div>
                   <div className="mt-2">
                     <div className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight tabular-nums">
-                      {collaboratingUnis.length}
+                      {universities.length}
                     </div>
                     <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
                       <span>Across {countries.length} collaborating nations</span>
@@ -1265,7 +1265,7 @@ export default function App() {
                 <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-bold text-slate-900">
-                      Leading Collaborating Institutions ({collaboratingUnis.length})
+                      Leading Collaborating Institutions ({universities.length})
                     </h3>
                     <button
                       type="button"
@@ -1276,14 +1276,19 @@ export default function App() {
                     </button>
                   </div>
                   <div className="divide-y divide-slate-100">
-                    {collaboratingUnis.slice(0, 5).map((uni) => (
+                    {universities.slice(0, 5).map((uni) => (
                       <div
                         key={uni.universityId}
                         className="py-2.5 flex items-center justify-between gap-3"
                       >
                         <div className="min-w-0 flex-1 pr-2">
-                          <div className="text-xs font-semibold text-slate-900 truncate">
-                            {uni.universityName}
+                          <div className="text-xs font-semibold text-slate-900 truncate flex items-center gap-1.5">
+                            <span className="truncate">{uni.universityName}</span>
+                            {uni.isHomeInstitution && (
+                              <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 rounded shrink-0">
+                                Current
+                              </span>
+                            )}
                           </div>
                           <div className="text-[11px] text-slate-500 truncate mt-0.5">
                             {uni.city}, {uni.country} · {uni.coAuthors.length}{' '}
