@@ -99,7 +99,7 @@ test('filterAndSortPublications filters by custom citation range, quartile, type
     assert.equal(p.type, 'Journal');
   }
 
-  assert.equal(getJournalImpactFactor('Energies', 'Journal'), 3.0);
+  assert.equal(getJournalImpactFactor('Energies', 'Journal'), 3.2);
   assert.equal(getJournalImpactFactor('Nature', 'Journal'), 50.5);
   assert.equal(
     getJournalImpactFactor('IEEE International Conference', 'Conference'),

@@ -105,7 +105,7 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'science advances': 11.7,
   'pnas': 9.5,
   'proceedings of the national academy of sciences': 9.5,
-  'heliyon': 4.0,
+  'heliyon': 3.4,
   'plos one': 3.7,
 
   // Medical / Neuroscience / Life Sciences
@@ -130,26 +130,32 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'ieee transactions on neural networks and learning systems': 10.4,
   'ieee transactions on communications': 8.3,
   'ieee/acm transactions on audio speech and language processing': 4.3,
-  'expert systems with applications': 9.4,
+  'expert systems with applications': 8.5,
   'knowledge-based systems': 8.8,
   'neural networks': 7.8,
   'journal of machine learning research': 6.0,
+  'neural computation': 2.7,
+  'cognitive science': 2.6,
+  'trends in cognitive sciences': 16.7,
+  'communications of the acm': 11.1,
+  'artificial intelligence': 9.1,
+  'ieee signal processing magazine': 12.3,
   'computer speech & language': 3.2,
   'scholarpedia': 2.8,
   'array': 3.2,
-  'electronics': 3.2,
-  'applied sciences': 2.7,
+  'electronics': 2.6,
+  'applied sciences': 2.5,
   'international journal of computer applications': 1.5,
-  'ieee access': 4.2,
-  'sensors': 3.9,
+  'ieee access': 3.4,
+  'sensors': 3.4,
 
   // Energy / Renewable / Engineering / Physics / Materials
-  'applied energy': 11.2,
-  'renewable energy': 9.5,
-  'journal of energy storage': 10.7,
+  'applied energy': 10.1,
+  'renewable energy': 9.0,
+  'journal of energy storage': 9.4,
   'sustainable energy technologies and assessments': 8.0,
-  'case studies in thermal engineering': 6.8,
-  'composite structures': 6.6,
+  'case studies in thermal engineering': 6.4,
+  'composite structures': 6.3,
   'energy conversion and management: x': 7.5,
   'energy conversion and management': 10.4,
   'energy reports': 5.2,
@@ -158,7 +164,7 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'international journal of thermofluids': 4.2,
   'wind energy': 3.6,
   'energy science & engineering': 4.0,
-  'sustainability': 3.9,
+  'sustainability': 3.3,
   'energies': 3.2,
   'physica scripta': 2.9,
   'world electric vehicle journal': 2.6,
@@ -170,7 +176,7 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'physica d nonlinear phenomena': 2.1,
   'the journal of engineering': 1.5,
   'international journal of electronics': 1.4,
-  'data in brief': 1.5,
+  'data in brief': 1.2,
   'marine technology society journal': 1.0,
   'international journal of electronics letters': 1.2,
   'international journal of computer science and network security': 0.5,
@@ -214,6 +220,13 @@ export const AUTHORITATIVE_JOURNAL_QUARTILES: Record<string, Quartile> = {
   'knowledge-based systems': 'Q1',
   'neural networks': 'Q1',
   'journal of machine learning research': 'Q1',
+  'neural computation': 'Q1',
+  'advances in neural information processing systems': 'Q1',
+  'cognitive science': 'Q1',
+  'trends in cognitive sciences': 'Q1',
+  'communications of the acm': 'Q1',
+  'artificial intelligence': 'Q1',
+  'ieee signal processing magazine': 'Q1',
   'applied energy': 'Q1',
   'renewable energy': 'Q1',
   'journal of energy storage': 'Q1',
@@ -223,6 +236,7 @@ export const AUTHORITATIVE_JOURNAL_QUARTILES: Record<string, Quartile> = {
   'energy conversion and management: x': 'Q1',
   'energy conversion and management': 'Q1',
   'remote sensing': 'Q1',
+  'energies': 'Q1',
   'psychological review': 'Q1',
 
   // Q2 Journals
@@ -256,7 +270,6 @@ export const AUTHORITATIVE_JOURNAL_QUARTILES: Record<string, Quartile> = {
   'array': 'Q2',
 
   // Q3 Journals
-  'energies': 'Q3',
   'energy exploration & exploitation': 'Q3',
   'journal of renewable and sustainable energy': 'Q3',
   'the journal of engineering': 'Q3',
@@ -1406,8 +1419,6 @@ export function aggregateUniversityCollaborations(
   }
 
   const sorted = results.sort((a, b) => {
-    if (a.isHomeInstitution && !b.isHomeInstitution) return -1;
-    if (!a.isHomeInstitution && b.isHomeInstitution) return 1;
     return b.paperCount - a.paperCount || b.totalCitations - a.totalCitations;
   });
 
@@ -1576,7 +1587,7 @@ export function aggregateJournals(publications: Publication[]): JournalSummary[]
     .map(([venue, papers]) => {
       const sample = papers[0];
       const totalCitations = papers.reduce((acc, p) => acc + p.citations, 0);
-      const impactFactor = getJournalImpactFactor(venue, sample.impactFactor);
+      const impactFactor = getJournalImpactFactor(venue, sample.type, sample.impactFactor);
       return {
         venue,
         type: sample.type,

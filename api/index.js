@@ -71,7 +71,7 @@ var verifiedScholarCache_default = {
         year: 2019,
         citations: 352,
         venue: "Energies",
-        quartile: "Q3",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: true,
@@ -299,7 +299,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 10.7,
+        impactFactor: 9.4,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -387,7 +387,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 9.4,
+        impactFactor: 8.5,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I96673099",
@@ -463,7 +463,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 4.2,
+        impactFactor: 3.4,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I31669788",
@@ -603,7 +603,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           }
         ],
-        impactFactor: 9.4,
+        impactFactor: 8.5,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -1307,7 +1307,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9,
+        impactFactor: 3.3,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -3151,7 +3151,7 @@ var verifiedScholarCache_default = {
         year: 2023,
         citations: 80,
         venue: "Energies",
-        quartile: "Q3",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -4149,7 +4149,8 @@ var verifiedScholarCache_default = {
           lat: 55.7856,
           lng: 12.5215,
           isHomeInstitution: false
-        }
+        },
+        impactFactor: 8.8
       },
       {
         id: "gs-20",
@@ -4157,7 +4158,7 @@ var verifiedScholarCache_default = {
         year: 2020,
         citations: 59,
         venue: "Frontiers in Plant Science",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -4248,7 +4249,8 @@ var verifiedScholarCache_default = {
           lat: 23.8103,
           lng: 90.4125,
           isHomeInstitution: false
-        }
+        },
+        impactFactor: 4.5
       },
       {
         id: "gs-21",
@@ -4282,7 +4284,7 @@ var verifiedScholarCache_default = {
         year: 2024,
         citations: 50,
         venue: "Heliyon",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -4397,7 +4399,8 @@ var verifiedScholarCache_default = {
           lat: 23.8103,
           lng: 90.4125,
           isHomeInstitution: false
-        }
+        },
+        impactFactor: 3.4
       },
       {
         id: "gs-23",
@@ -4461,7 +4464,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 2.7,
+        impactFactor: 2.5,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I31669788",
@@ -4816,7 +4819,7 @@ var verifiedScholarCache_default = {
         year: 2021,
         citations: 35,
         venue: "Scientific Reports",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -4859,7 +4862,8 @@ var verifiedScholarCache_default = {
           lat: 23.8103,
           lng: 90.4125,
           isHomeInstitution: false
-        }
+        },
+        impactFactor: 4.3
       },
       {
         id: "gs-28",
@@ -4959,7 +4963,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 6.8,
+        impactFactor: 6.4,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -5212,7 +5216,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 6.6,
+        impactFactor: 6.3,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -5324,7 +5328,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2,
+        impactFactor: 2.6,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I31669788",
@@ -5819,7 +5823,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 0.5
       },
       {
         id: "gs-39",
@@ -6069,7 +6074,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5,
+        impactFactor: 1.2,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -6404,7 +6409,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5,
+        impactFactor: 1.2,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I31669788",
@@ -6454,7 +6459,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 0.5
       },
       {
         id: "gs-46",
@@ -6566,7 +6572,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9,
+        impactFactor: 3.3,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -6630,7 +6636,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5,
+        impactFactor: 1.2,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -6650,7 +6656,7 @@ var verifiedScholarCache_default = {
         year: 2022,
         citations: 15,
         venue: "BioMed Research International",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -6717,7 +6723,8 @@ var verifiedScholarCache_default = {
           lat: 23.8103,
           lng: 90.4125,
           isHomeInstitution: false
-        }
+        },
+        impactFactor: 2.6
       },
       {
         id: "gs-49",
@@ -6829,7 +6836,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9,
+        impactFactor: 3.3,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -7187,7 +7194,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2,
+        impactFactor: 2.6,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -7386,7 +7393,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 2.7,
+        impactFactor: 2.5,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -7460,7 +7467,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 0.5
       },
       {
         id: "gs-56",
@@ -8217,7 +8225,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2,
+        impactFactor: 2.6,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -10275,7 +10283,8 @@ var verifiedScholarCache_default = {
           lat: 55.7856,
           lng: 12.5215,
           isHomeInstitution: false
-        }
+        },
+        impactFactor: 7.4
       },
       {
         id: "gs-81",
@@ -11694,7 +11703,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 10.7
+        impactFactor: 9.4
       },
       {
         id: "gs-99",
@@ -12230,7 +12239,7 @@ var verifiedScholarCache_default = {
         year: 2019,
         citations: 2,
         venue: "Energies",
-        quartile: "Q3",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: true,
@@ -12708,7 +12717,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5,
+        impactFactor: 1.2,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -13045,7 +13054,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2,
+        impactFactor: 2.6,
         authorAffiliation: {
           name: "ASM Shihavuddin",
           universityId: "I2802576217",
@@ -13626,7 +13635,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 0,
         venue: "Heliyon",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -13692,7 +13701,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 3.4
       },
       {
         id: "gs-122",
@@ -13732,7 +13742,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.2
       },
       {
         id: "gs-123",
@@ -16635,7 +16645,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5,
+        impactFactor: 1.2,
         authorAffiliation: {
           name: "Joynal Abadin",
           universityId: "I130571618",
@@ -16778,7 +16788,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 11.1
       },
       {
         id: "gs-1",
@@ -16829,7 +16840,8 @@ var verifiedScholarCache_default = {
             lng: -73.58781,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 50.5
       },
       {
         id: "gs-3",
@@ -16930,7 +16942,8 @@ var verifiedScholarCache_default = {
             lng: -117.16472,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 50.5
       },
       {
         id: "gs-5",
@@ -16944,7 +16957,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1016/j.tics.2007.09.004",
         url: "https://doi.org/10.1016/j.tics.2007.09.004",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 16.7
       },
       {
         id: "gs-7",
@@ -17037,7 +17051,8 @@ var verifiedScholarCache_default = {
             lng: 103.85007,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-10",
@@ -17184,7 +17199,8 @@ var verifiedScholarCache_default = {
             lng: -84.48387,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 12.3
       },
       {
         id: "gs-11",
@@ -17274,7 +17290,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-13",
@@ -17364,7 +17381,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1162/089976602760128018",
         url: "https://doi.org/10.1162/089976602760128018",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.7
       },
       {
         id: "gs-17",
@@ -17403,7 +17421,8 @@ var verifiedScholarCache_default = {
             lng: -76.61219,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.6
       },
       {
         id: "gs-18",
@@ -17550,7 +17569,7 @@ var verifiedScholarCache_default = {
         year: 2009,
         citations: 4376,
         venue: "Artificial Intelligence and Statistics",
-        quartile: "Q2",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: false,
@@ -17568,7 +17587,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 9.1
       },
       {
         id: "gs-22",
@@ -17713,7 +17733,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1016/0004-3702(89)90049-0",
         url: "https://doi.org/10.1016/0004-3702(89)90049-0",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 9.1
       },
       {
         id: "gs-31",
@@ -17983,7 +18004,8 @@ var verifiedScholarCache_default = {
             lng: -117.2742,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-38",
@@ -18128,7 +18150,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1016/j.tics.2007.09.004",
         url: "https://doi.org/10.1016/j.tics.2007.09.004",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 16.7
       },
       {
         id: "gs-45",
@@ -18255,7 +18278,8 @@ var verifiedScholarCache_default = {
             lng: -1.25596,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 28.7
       },
       {
         id: "gs-47",
@@ -18357,7 +18381,8 @@ var verifiedScholarCache_default = {
         openAccess: true,
         doi: "10.4249/scholarpedia.5947",
         url: "https://doi.org/10.4249/scholarpedia.5947",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.8
       },
       {
         id: "gs-50",
@@ -18474,7 +18499,8 @@ var verifiedScholarCache_default = {
             lng: -74.00597,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 11.1
       },
       {
         id: "gs-56",
@@ -18527,7 +18553,8 @@ var verifiedScholarCache_default = {
             lng: -117.2742,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-58",
@@ -18541,7 +18568,8 @@ var verifiedScholarCache_default = {
         openAccess: true,
         doi: "10.4249/scholarpedia.5947",
         url: "https://doi.org/10.4249/scholarpedia.5947",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.8
       },
       {
         id: "gs-59",
@@ -18568,7 +18596,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 7.6
       },
       {
         id: "gs-60",
@@ -18763,7 +18792,8 @@ var verifiedScholarCache_default = {
             lng: -79.99589,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 7.8
       },
       {
         id: "gs-67",
@@ -19254,7 +19284,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1001/jama.2018.11100",
         url: "https://doi.org/10.1001/jama.2018.11100",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 63.1
       },
       {
         id: "gs-71",
@@ -19397,13 +19428,14 @@ var verifiedScholarCache_default = {
         year: 1992,
         citations: 805,
         venue: "Scientific American",
-        quartile: "Q1",
+        quartile: "Q3",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: false,
         doi: "10.1038/scientificamerican0992-144",
         url: "https://doi.org/10.1038/scientificamerican0992-144",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.3
       },
       {
         id: "gs-73",
@@ -19430,7 +19462,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 50.5
       },
       {
         id: "gs-74",
@@ -19565,7 +19598,8 @@ var verifiedScholarCache_default = {
             lng: -0.12574,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 5.7
       },
       {
         id: "gs-75",
@@ -19573,7 +19607,7 @@ var verifiedScholarCache_default = {
         year: 2007,
         citations: 733,
         venue: "Artificial Intelligence and Statistics",
-        quartile: "Q2",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: false,
@@ -19591,7 +19625,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 9.1
       },
       {
         id: "gs-76",
@@ -19631,7 +19666,8 @@ var verifiedScholarCache_default = {
         openAccess: true,
         doi: "10.4249/scholarpedia.5947",
         url: "https://doi.org/10.4249/scholarpedia.5947",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.8
       },
       {
         id: "gs-78",
@@ -19696,7 +19732,8 @@ var verifiedScholarCache_default = {
             lng: -0.12574,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-81",
@@ -19807,7 +19844,7 @@ var verifiedScholarCache_default = {
         year: 2014,
         citations: 635,
         venue: "IEEE/ACM Transactions on Audio Speech and Language Processing",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -19838,7 +19875,8 @@ var verifiedScholarCache_default = {
             lng: -122.12151,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 4.3
       },
       {
         id: "gs-85",
@@ -19891,7 +19929,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 10.4
       },
       {
         id: "gs-87",
@@ -20019,7 +20058,8 @@ var verifiedScholarCache_default = {
             lng: -0.12574,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-90",
@@ -20060,7 +20100,8 @@ var verifiedScholarCache_default = {
             lng: -79.99589,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.6
       },
       {
         id: "gs-92",
@@ -20099,7 +20140,8 @@ var verifiedScholarCache_default = {
             lng: -76.61219,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 50.5
       },
       {
         id: "gs-93",
@@ -20225,7 +20267,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 10.4
       },
       {
         id: "gs-95",
@@ -20239,7 +20282,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1016/0004-3702(90)90004-j",
         url: "https://doi.org/10.1016/0004-3702(90)90004-j",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 9.1
       },
       {
         id: "gs-96",
@@ -20448,7 +20492,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1207/s15516709cog0303_3",
         url: "https://doi.org/10.1207/s15516709cog0303_3",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.6
       },
       {
         id: "gs-105",
@@ -20985,7 +21030,8 @@ var verifiedScholarCache_default = {
             lng: -122.08385,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 27.8
       },
       {
         id: "gs-110",
@@ -21198,7 +21244,8 @@ var verifiedScholarCache_default = {
             lng: -84.48387,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 12.3
       },
       {
         id: "gs-115",
@@ -21250,7 +21297,8 @@ var verifiedScholarCache_default = {
         openAccess: true,
         doi: "10.1162/neco_a_01557",
         url: "https://doi.org/10.1162/neco_a_01557",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.7
       },
       {
         id: "gs-118",
@@ -21365,7 +21413,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-121",
@@ -21431,7 +21480,8 @@ var verifiedScholarCache_default = {
         openAccess: true,
         doi: "10.1162/neco.1989.1.1.143",
         url: "https://doi.org/10.1162/neco.1989.1.1.143",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.7
       },
       {
         id: "gs-124",
@@ -21597,7 +21647,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 6
       },
       {
         id: "gs-128",
@@ -21776,7 +21827,8 @@ var verifiedScholarCache_default = {
             lng: -117.16472,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 50.5
       },
       {
         id: "gs-133",
@@ -21842,7 +21894,8 @@ var verifiedScholarCache_default = {
             lng: -71.10561,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-137",
@@ -22451,7 +22504,8 @@ var verifiedScholarCache_default = {
         openAccess: true,
         doi: "10.4249/scholarpedia.1668",
         url: "https://doi.org/10.4249/scholarpedia.1668",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.8
       },
       {
         id: "gs-141",
@@ -22478,7 +22532,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 6
       },
       {
         id: "gs-142",
@@ -22621,7 +22676,8 @@ var verifiedScholarCache_default = {
             lng: -123.11934,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 10.4
       },
       {
         id: "gs-146",
@@ -22635,7 +22691,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1016/j.tics.2007.09.004",
         url: "https://doi.org/10.1016/j.tics.2007.09.004",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 16.7
       },
       {
         id: "gs-147",
@@ -22674,7 +22731,8 @@ var verifiedScholarCache_default = {
             lng: -1.8998299837112427,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 20.8
       },
       {
         id: "gs-149",
@@ -22930,7 +22988,8 @@ var verifiedScholarCache_default = {
             lng: -71.10561,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 7.8
       },
       {
         id: "gs-155",
@@ -23020,7 +23079,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 11.1
       },
       {
         id: "gs-157",
@@ -23028,7 +23088,7 @@ var verifiedScholarCache_default = {
         year: 1987,
         citations: 208,
         venue: "Computer Speech & Language",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: false,
@@ -23047,7 +23107,8 @@ var verifiedScholarCache_default = {
             lng: -79.99589,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 3.2
       },
       {
         id: "gs-158",
@@ -23174,7 +23235,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 2.6
       },
       {
         id: "gs-161",
@@ -23315,7 +23377,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-164",
@@ -23576,7 +23639,7 @@ var verifiedScholarCache_default = {
         year: 2012,
         citations: 185,
         venue: "Neural Networks for Machine Learning",
-        quartile: "Unranked",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -23606,7 +23669,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 7.8
       },
       {
         id: "gs-171",
@@ -23641,7 +23705,7 @@ var verifiedScholarCache_default = {
         year: 1986,
         citations: 179,
         venue: "Perception",
-        quartile: "Q1",
+        quartile: "Q3",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -23684,7 +23748,8 @@ var verifiedScholarCache_default = {
             lng: -79.99589,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 1.6
       },
       {
         id: "gs-173",
@@ -23723,7 +23788,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 6
       },
       {
         id: "gs-174",
@@ -23731,7 +23797,7 @@ var verifiedScholarCache_default = {
         year: 2007,
         citations: 171,
         venue: "Artificial Intelligence and Statistics",
-        quartile: "Q2",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: false,
@@ -23773,7 +23839,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 9.1
       },
       {
         id: "gs-175",
@@ -23895,7 +23962,7 @@ var verifiedScholarCache_default = {
         year: 1986,
         citations: 164,
         venue: "Physica D Nonlinear Phenomena",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -23926,7 +23993,8 @@ var verifiedScholarCache_default = {
             lng: -76.61219,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.1
       },
       {
         id: "gs-179",
@@ -24071,7 +24139,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1016/0004-3702(90)90004-j",
         url: "https://doi.org/10.1016/0004-3702(90)90004-j",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 9.1
       },
       {
         id: "gs-188",
@@ -24079,7 +24148,7 @@ var verifiedScholarCache_default = {
         year: 2011,
         citations: 153,
         venue: "Topics in Cognitive Science",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: false,
@@ -24098,7 +24167,8 @@ var verifiedScholarCache_default = {
             lng: -71.10561,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.4
       },
       {
         id: "gs-189",
@@ -24170,13 +24240,14 @@ var verifiedScholarCache_default = {
         year: 1984,
         citations: 145,
         venue: "Journal of Motor Behavior",
-        quartile: "Q1",
+        quartile: "Q3",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: false,
         doi: "10.1080/00222895.1984.10735317",
         url: "https://doi.org/10.1080/00222895.1984.10735317",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 1.1
       },
       {
         id: "gs-193",
@@ -24184,7 +24255,7 @@ var verifiedScholarCache_default = {
         year: 1988,
         citations: 143,
         venue: "Cognition",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: false,
@@ -24203,7 +24274,8 @@ var verifiedScholarCache_default = {
             lng: -71.10561,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.8
       },
       {
         id: "gs-194",
@@ -24211,7 +24283,7 @@ var verifiedScholarCache_default = {
         year: 1998,
         citations: 138,
         venue: "Statistics in Medicine",
-        quartile: "Q1",
+        quartile: "Q3",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -24266,7 +24338,8 @@ var verifiedScholarCache_default = {
             lng: -79.39864,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 2.4
       },
       {
         id: "gs-195",
@@ -24274,7 +24347,7 @@ var verifiedScholarCache_default = {
         year: 1993,
         citations: 135,
         venue: "Scientific American",
-        quartile: "Q1",
+        quartile: "Q3",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: false,
@@ -24305,7 +24378,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.3
       },
       {
         id: "gs-196",
@@ -24344,7 +24418,8 @@ var verifiedScholarCache_default = {
             lng: -117.82311,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-197",
@@ -24384,7 +24459,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1111/cogs.12049",
         url: "https://doi.org/10.1111/cogs.12049",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 2.6
       },
       {
         id: "gs-200",
@@ -24425,7 +24501,8 @@ var verifiedScholarCache_default = {
             lng: -88.20727,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-202",
@@ -24704,7 +24781,8 @@ var verifiedScholarCache_default = {
         openAccess: false,
         doi: "10.1016/j.tics.2007.09.004",
         url: "https://doi.org/10.1016/j.tics.2007.09.004",
-        coAuthors: []
+        coAuthors: [],
+        impactFactor: 16.7
       },
       {
         id: "gs-210",
@@ -24936,7 +25014,7 @@ var verifiedScholarCache_default = {
         year: 1987,
         citations: 103,
         venue: "Perception",
-        quartile: "Q1",
+        quartile: "Q3",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -24979,7 +25057,8 @@ var verifiedScholarCache_default = {
             lng: -79.99589,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 1.6
       },
       {
         id: "gs-216",
@@ -25070,7 +25149,8 @@ var verifiedScholarCache_default = {
             lng: -73.58781,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-220",
@@ -25147,7 +25227,8 @@ var verifiedScholarCache_default = {
             lng: -117.2742,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.7
       },
       {
         id: "gs-222",
@@ -25188,7 +25269,8 @@ var verifiedScholarCache_default = {
             lng: -117.2742,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 8.3
       },
       {
         id: "gs-224",
@@ -25265,7 +25347,8 @@ var verifiedScholarCache_default = {
             lng: -117.16472,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 20.8
       },
       {
         id: "gs-226",
@@ -25578,7 +25661,7 @@ var verifiedScholarCache_default = {
         year: 2023,
         citations: 224,
         venue: "Energies",
-        quartile: "Q3",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -25926,7 +26009,7 @@ var verifiedScholarCache_default = {
         year: 2023,
         citations: 80,
         venue: "Energies",
-        quartile: "Q3",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -26092,7 +26175,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 1.4
       },
       {
         id: "gs-5",
@@ -26308,7 +26392,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9
+        impactFactor: 3.3
       },
       {
         id: "gs-8",
@@ -26404,7 +26488,7 @@ var verifiedScholarCache_default = {
         year: 2019,
         citations: 61,
         venue: "Energies",
-        quartile: "Q3",
+        quartile: "Q1",
         type: "Journal",
         authorshipRole: "First Author",
         openAccess: true,
@@ -26444,7 +26528,7 @@ var verifiedScholarCache_default = {
         year: 2024,
         citations: 50,
         venue: "Heliyon",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -26547,7 +26631,8 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 3.4
       },
       {
         id: "gs-11",
@@ -26647,7 +26732,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 6.8
+        impactFactor: 6.4
       },
       {
         id: "gs-12",
@@ -26750,7 +26835,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 9.5
+        impactFactor: 9
       },
       {
         id: "gs-14",
@@ -26838,7 +26923,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9
+        impactFactor: 3.3
       },
       {
         id: "gs-15",
@@ -26988,7 +27073,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 2.6
       },
       {
         id: "gs-17",
@@ -27403,7 +27488,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 5.8
       },
       {
         id: "gs-23",
@@ -27741,7 +27827,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.2
       },
       {
         id: "gs-27",
@@ -27931,7 +28017,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.2
       },
       {
         id: "gs-30",
@@ -28240,7 +28326,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9
+        impactFactor: 3.3
       },
       {
         id: "gs-33",
@@ -28637,7 +28723,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.2
       },
       {
         id: "gs-37",
@@ -28645,7 +28731,7 @@ var verifiedScholarCache_default = {
         year: 2022,
         citations: 15,
         venue: "BioMed Research International",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -28711,7 +28797,8 @@ var verifiedScholarCache_default = {
             lng: 90.3744,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.6
       },
       {
         id: "gs-38",
@@ -28874,7 +28961,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 10.7
+        impactFactor: 9.4
       },
       {
         id: "gs-40",
@@ -29038,7 +29125,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.2
       },
       {
         id: "gs-42",
@@ -29448,7 +29535,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 2.6
       },
       {
         id: "gs-46",
@@ -30082,7 +30169,7 @@ var verifiedScholarCache_default = {
         year: 2021,
         citations: 9,
         venue: "Metals",
-        quartile: "Unranked",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -30148,7 +30235,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.6
       },
       {
         id: "gs-56",
@@ -30198,7 +30286,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 1.4
       },
       {
         id: "gs-57",
@@ -30621,7 +30710,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 2.6
       },
       {
         id: "gs-62",
@@ -32163,7 +32252,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 4,
         venue: "Array",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Review",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -32266,7 +32355,8 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: true
           }
-        ]
+        ],
+        impactFactor: 3.2
       },
       {
         id: "gs-84",
@@ -32925,7 +33015,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 1.4
       },
       {
         id: "gs-92",
@@ -35355,7 +35446,7 @@ var verifiedScholarCache_default = {
         year: 2012,
         citations: 2,
         venue: "International Journal of Computer Applications",
-        quartile: "Q1",
+        quartile: "Q4",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: true,
@@ -35386,7 +35477,8 @@ var verifiedScholarCache_default = {
             lng: 90.40744,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 1.5
       },
       {
         id: "gs-126",
@@ -36806,7 +36898,7 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 2.6
       },
       {
         id: "gs-144",
@@ -37337,7 +37429,7 @@ var verifiedScholarCache_default = {
         year: 2012,
         citations: 1,
         venue: "International Journal of Computer Applications",
-        quartile: "Q1",
+        quartile: "Q4",
         type: "Journal",
         authorshipRole: "Co-Author",
         openAccess: false,
@@ -37391,7 +37483,8 @@ var verifiedScholarCache_default = {
             lng: 0,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 1.5
       },
       {
         id: "gs-152",
@@ -37473,7 +37566,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 0,
         venue: "Array",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Review",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -37528,7 +37621,8 @@ var verifiedScholarCache_default = {
             lng: 90.40744,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 3.2
       },
       {
         id: "gs-155",
@@ -38125,7 +38219,7 @@ var verifiedScholarCache_default = {
         year: 2026,
         citations: 0,
         venue: "Data",
-        quartile: "Q1",
+        quartile: "Q2",
         type: "Journal",
         authorshipRole: "Corresponding Author",
         openAccess: true,
@@ -38192,7 +38286,8 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        impactFactor: 2.6
       },
       {
         id: "gs-164",
@@ -40756,7 +40851,7 @@ var AUTHORITATIVE_JOURNAL_IMPACT_FACTORS = {
   "science advances": 11.7,
   "pnas": 9.5,
   "proceedings of the national academy of sciences": 9.5,
-  "heliyon": 4,
+  "heliyon": 3.4,
   "plos one": 3.7,
   // Medical / Neuroscience / Life Sciences
   "jama": 63.1,
@@ -40779,25 +40874,31 @@ var AUTHORITATIVE_JOURNAL_IMPACT_FACTORS = {
   "ieee transactions on neural networks and learning systems": 10.4,
   "ieee transactions on communications": 8.3,
   "ieee/acm transactions on audio speech and language processing": 4.3,
-  "expert systems with applications": 9.4,
+  "expert systems with applications": 8.5,
   "knowledge-based systems": 8.8,
   "neural networks": 7.8,
   "journal of machine learning research": 6,
+  "neural computation": 2.7,
+  "cognitive science": 2.6,
+  "trends in cognitive sciences": 16.7,
+  "communications of the acm": 11.1,
+  "artificial intelligence": 9.1,
+  "ieee signal processing magazine": 12.3,
   "computer speech & language": 3.2,
   "scholarpedia": 2.8,
   "array": 3.2,
-  "electronics": 3.2,
-  "applied sciences": 2.7,
+  "electronics": 2.6,
+  "applied sciences": 2.5,
   "international journal of computer applications": 1.5,
-  "ieee access": 4.2,
-  "sensors": 3.9,
+  "ieee access": 3.4,
+  "sensors": 3.4,
   // Energy / Renewable / Engineering / Physics / Materials
-  "applied energy": 11.2,
-  "renewable energy": 9.5,
-  "journal of energy storage": 10.7,
+  "applied energy": 10.1,
+  "renewable energy": 9,
+  "journal of energy storage": 9.4,
   "sustainable energy technologies and assessments": 8,
-  "case studies in thermal engineering": 6.8,
-  "composite structures": 6.6,
+  "case studies in thermal engineering": 6.4,
+  "composite structures": 6.3,
   "energy conversion and management: x": 7.5,
   "energy conversion and management": 10.4,
   "energy reports": 5.2,
@@ -40806,7 +40907,7 @@ var AUTHORITATIVE_JOURNAL_IMPACT_FACTORS = {
   "international journal of thermofluids": 4.2,
   "wind energy": 3.6,
   "energy science & engineering": 4,
-  "sustainability": 3.9,
+  "sustainability": 3.3,
   "energies": 3.2,
   "physica scripta": 2.9,
   "world electric vehicle journal": 2.6,
@@ -40818,7 +40919,7 @@ var AUTHORITATIVE_JOURNAL_IMPACT_FACTORS = {
   "physica d nonlinear phenomena": 2.1,
   "the journal of engineering": 1.5,
   "international journal of electronics": 1.4,
-  "data in brief": 1.5,
+  "data in brief": 1.2,
   "marine technology society journal": 1,
   "international journal of electronics letters": 1.2,
   "international journal of computer science and network security": 0.5,
@@ -40857,6 +40958,13 @@ var AUTHORITATIVE_JOURNAL_QUARTILES = {
   "knowledge-based systems": "Q1",
   "neural networks": "Q1",
   "journal of machine learning research": "Q1",
+  "neural computation": "Q1",
+  "advances in neural information processing systems": "Q1",
+  "cognitive science": "Q1",
+  "trends in cognitive sciences": "Q1",
+  "communications of the acm": "Q1",
+  "artificial intelligence": "Q1",
+  "ieee signal processing magazine": "Q1",
   "applied energy": "Q1",
   "renewable energy": "Q1",
   "journal of energy storage": "Q1",
@@ -40866,6 +40974,7 @@ var AUTHORITATIVE_JOURNAL_QUARTILES = {
   "energy conversion and management: x": "Q1",
   "energy conversion and management": "Q1",
   "remote sensing": "Q1",
+  "energies": "Q1",
   "psychological review": "Q1",
   // Q2 Journals
   "ieee access": "Q2",
@@ -40897,7 +41006,6 @@ var AUTHORITATIVE_JOURNAL_QUARTILES = {
   "data": "Q2",
   "array": "Q2",
   // Q3 Journals
-  "energies": "Q3",
   "energy exploration & exploitation": "Q3",
   "journal of renewable and sustainable energy": "Q3",
   "the journal of engineering": "Q3",
@@ -43520,7 +43628,16 @@ app.get("/api/scholar/avatar", async (req, res) => {
     const candidateUrls = [
       `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
         userId
+      )}&citpid=1`,
+      `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+        userId
+      )}&citpid=2`,
+      `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+        userId
       )}`,
+      `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
+        userId
+      )}&citpid=1`,
       `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
         userId
       )}`,
@@ -43555,6 +43672,90 @@ app.get("/api/scholar/avatar", async (req, res) => {
       } catch {
       }
     }
+  }
+  const nameKey = fallbackName.toLowerCase().trim();
+  const nameCached = avatarBufferCache.get(`name::${nameKey}`);
+  if (nameCached && Date.now() - nameCached.timestamp < 24 * 60 * 60 * 1e3) {
+    res.setHeader("Content-Type", nameCached.contentType);
+    res.send(nameCached.buffer);
+    return;
+  }
+  if (rawSnapshot && typeof rawSnapshot === "object") {
+    for (const [sId, sVal] of Object.entries(rawSnapshot)) {
+      const prof = sVal?.profile || sVal;
+      if (prof && prof.name && isSameResearcherName(prof.name, fallbackName) && prof.avatarUrl && prof.avatarUrl.startsWith("data:image/")) {
+        const m = prof.avatarUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+        if (m) {
+          const ct = m[1];
+          const buf = Buffer.from(m[2], "base64");
+          avatarBufferCache.set(`name::${nameKey}`, {
+            contentType: ct,
+            buffer: buf,
+            timestamp: Date.now()
+          });
+          res.setHeader("Content-Type", ct);
+          res.send(buf);
+          return;
+        }
+      }
+    }
+  }
+  try {
+    const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(
+      fallbackName
+    )}&prop=pageimages&format=json&pithumbsize=200`;
+    const wikiResp = await fetch(wikiUrl, {
+      signal: AbortSignal.timeout(2500)
+    });
+    if (wikiResp.ok) {
+      const wikiJson = await wikiResp.json();
+      const pages = wikiJson.query?.pages || {};
+      const firstPage = Object.values(pages)[0];
+      if (firstPage?.thumbnail?.source) {
+        const imgResp = await fetch(firstPage.thumbnail.source, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          },
+          signal: AbortSignal.timeout(3e3)
+        });
+        const ct = String(imgResp.headers.get("content-type") || "");
+        if (imgResp.ok && ct.startsWith("image/")) {
+          const buf = Buffer.from(await imgResp.arrayBuffer());
+          if (buf.length > 200) {
+            avatarBufferCache.set(`name::${nameKey}`, {
+              contentType: ct,
+              buffer: buf,
+              timestamp: Date.now()
+            });
+            res.setHeader("Content-Type", ct);
+            res.send(buf);
+            return;
+          }
+        }
+      }
+    }
+  } catch {
+  }
+  try {
+    const pravatarUrl = `https://i.pravatar.cc/150?u=${encodeURIComponent(fallbackName)}`;
+    const pResp = await fetch(pravatarUrl, {
+      signal: AbortSignal.timeout(3500)
+    });
+    const ct = String(pResp.headers.get("content-type") || "");
+    if (pResp.ok && ct.startsWith("image/")) {
+      const buf = Buffer.from(await pResp.arrayBuffer());
+      if (buf.length > 200) {
+        avatarBufferCache.set(`name::${nameKey}`, {
+          contentType: ct,
+          buffer: buf,
+          timestamp: Date.now()
+        });
+        res.setHeader("Content-Type", ct);
+        res.send(buf);
+        return;
+      }
+    }
+  } catch {
   }
   const initials = fallbackName.replace(/\b(Dr\.|Prof\.|Mr\.|Ms\.)\s*/gi, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("") || "RS";
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">

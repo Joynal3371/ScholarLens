@@ -51,7 +51,7 @@
         "year": 2019,
         "citations": 352,
         "venue": "Energies",
-        "quartile": "Q3",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -279,7 +279,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 10.7,
+        "impactFactor": 9.4,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -367,7 +367,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 9.4,
+        "impactFactor": 8.5,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I96673099",
@@ -443,7 +443,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 4.2,
+        "impactFactor": 3.4,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I31669788",
@@ -583,7 +583,7 @@
             "isHomeInstitution": true
           }
         ],
-        "impactFactor": 9.4,
+        "impactFactor": 8.5,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -1287,7 +1287,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.9,
+        "impactFactor": 3.3,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -3131,7 +3131,7 @@
         "year": 2023,
         "citations": 80,
         "venue": "Energies",
-        "quartile": "Q3",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -4129,7 +4129,8 @@
           "lat": 55.7856,
           "lng": 12.5215,
           "isHomeInstitution": false
-        }
+        },
+        "impactFactor": 8.8
       },
       {
         "id": "gs-20",
@@ -4137,7 +4138,7 @@
         "year": 2020,
         "citations": 59,
         "venue": "Frontiers in Plant Science",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -4228,7 +4229,8 @@
           "lat": 23.8103,
           "lng": 90.4125,
           "isHomeInstitution": false
-        }
+        },
+        "impactFactor": 4.5
       },
       {
         "id": "gs-21",
@@ -4262,7 +4264,7 @@
         "year": 2024,
         "citations": 50,
         "venue": "Heliyon",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -4377,7 +4379,8 @@
           "lat": 23.8103,
           "lng": 90.4125,
           "isHomeInstitution": false
-        }
+        },
+        "impactFactor": 3.4
       },
       {
         "id": "gs-23",
@@ -4441,7 +4444,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 2.7,
+        "impactFactor": 2.5,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I31669788",
@@ -4796,7 +4799,7 @@
         "year": 2021,
         "citations": 35,
         "venue": "Scientific Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -4839,7 +4842,8 @@
           "lat": 23.8103,
           "lng": 90.4125,
           "isHomeInstitution": false
-        }
+        },
+        "impactFactor": 4.3
       },
       {
         "id": "gs-28",
@@ -4939,7 +4943,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 6.8,
+        "impactFactor": 6.4,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -5192,7 +5196,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 6.6,
+        "impactFactor": 6.3,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -5304,7 +5308,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2,
+        "impactFactor": 2.6,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I31669788",
@@ -5799,7 +5803,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 0.5
       },
       {
         "id": "gs-39",
@@ -6049,7 +6054,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5,
+        "impactFactor": 1.2,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -6384,7 +6389,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5,
+        "impactFactor": 1.2,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I31669788",
@@ -6434,7 +6439,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 0.5
       },
       {
         "id": "gs-46",
@@ -6546,7 +6552,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.9,
+        "impactFactor": 3.3,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -6610,7 +6616,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5,
+        "impactFactor": 1.2,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -6630,7 +6636,7 @@
         "year": 2022,
         "citations": 15,
         "venue": "BioMed Research International",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -6697,7 +6703,8 @@
           "lat": 23.8103,
           "lng": 90.4125,
           "isHomeInstitution": false
-        }
+        },
+        "impactFactor": 2.6
       },
       {
         "id": "gs-49",
@@ -6809,7 +6816,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.9,
+        "impactFactor": 3.3,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -7167,7 +7174,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2,
+        "impactFactor": 2.6,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -7366,7 +7373,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 2.7,
+        "impactFactor": 2.5,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -7440,7 +7447,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 0.5
       },
       {
         "id": "gs-56",
@@ -8197,7 +8205,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2,
+        "impactFactor": 2.6,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -10255,7 +10263,8 @@
           "lat": 55.7856,
           "lng": 12.5215,
           "isHomeInstitution": false
-        }
+        },
+        "impactFactor": 7.4
       },
       {
         "id": "gs-81",
@@ -11674,7 +11683,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 10.7
+        "impactFactor": 9.4
       },
       {
         "id": "gs-99",
@@ -12210,7 +12219,7 @@
         "year": 2019,
         "citations": 2,
         "venue": "Energies",
-        "quartile": "Q3",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -12688,7 +12697,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5,
+        "impactFactor": 1.2,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -13025,7 +13034,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2,
+        "impactFactor": 2.6,
         "authorAffiliation": {
           "name": "ASM Shihavuddin",
           "universityId": "I2802576217",
@@ -13606,7 +13615,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Heliyon",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -13672,7 +13681,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.4
       },
       {
         "id": "gs-122",
@@ -13712,7 +13722,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5
+        "impactFactor": 1.2
       },
       {
         "id": "gs-123",
@@ -16615,7 +16625,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5,
+        "impactFactor": 1.2,
         "authorAffiliation": {
           "name": "Joynal Abadin",
           "universityId": "I130571618",
@@ -16758,7 +16768,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 11.1
       },
       {
         "id": "gs-1",
@@ -16809,7 +16820,8 @@
             "lng": -73.58781,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 50.5
       },
       {
         "id": "gs-3",
@@ -16910,7 +16922,8 @@
             "lng": -117.16472,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 50.5
       },
       {
         "id": "gs-5",
@@ -16924,7 +16937,8 @@
         "openAccess": false,
         "doi": "10.1016/j.tics.2007.09.004",
         "url": "https://doi.org/10.1016/j.tics.2007.09.004",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 16.7
       },
       {
         "id": "gs-7",
@@ -17017,7 +17031,8 @@
             "lng": 103.85007,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-10",
@@ -17164,7 +17179,8 @@
             "lng": -84.48387,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 12.3
       },
       {
         "id": "gs-11",
@@ -17254,7 +17270,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-13",
@@ -17344,7 +17361,8 @@
         "openAccess": false,
         "doi": "10.1162/089976602760128018",
         "url": "https://doi.org/10.1162/089976602760128018",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-17",
@@ -17383,7 +17401,8 @@
             "lng": -76.61219,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-18",
@@ -17530,7 +17549,7 @@
         "year": 2009,
         "citations": 4376,
         "venue": "Artificial Intelligence and Statistics",
-        "quartile": "Q2",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": false,
@@ -17548,7 +17567,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 9.1
       },
       {
         "id": "gs-22",
@@ -17693,7 +17713,8 @@
         "openAccess": false,
         "doi": "10.1016/0004-3702(89)90049-0",
         "url": "https://doi.org/10.1016/0004-3702(89)90049-0",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 9.1
       },
       {
         "id": "gs-31",
@@ -17963,7 +17984,8 @@
             "lng": -117.2742,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-38",
@@ -18108,7 +18130,8 @@
         "openAccess": false,
         "doi": "10.1016/j.tics.2007.09.004",
         "url": "https://doi.org/10.1016/j.tics.2007.09.004",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 16.7
       },
       {
         "id": "gs-45",
@@ -18235,7 +18258,8 @@
             "lng": -1.25596,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 28.7
       },
       {
         "id": "gs-47",
@@ -18337,7 +18361,8 @@
         "openAccess": true,
         "doi": "10.4249/scholarpedia.5947",
         "url": "https://doi.org/10.4249/scholarpedia.5947",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.8
       },
       {
         "id": "gs-50",
@@ -18454,7 +18479,8 @@
             "lng": -74.00597,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 11.1
       },
       {
         "id": "gs-56",
@@ -18507,7 +18533,8 @@
             "lng": -117.2742,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-58",
@@ -18521,7 +18548,8 @@
         "openAccess": true,
         "doi": "10.4249/scholarpedia.5947",
         "url": "https://doi.org/10.4249/scholarpedia.5947",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.8
       },
       {
         "id": "gs-59",
@@ -18548,7 +18576,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 7.6
       },
       {
         "id": "gs-60",
@@ -18743,7 +18772,8 @@
             "lng": -79.99589,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 7.8
       },
       {
         "id": "gs-67",
@@ -19234,7 +19264,8 @@
         "openAccess": false,
         "doi": "10.1001/jama.2018.11100",
         "url": "https://doi.org/10.1001/jama.2018.11100",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 63.1
       },
       {
         "id": "gs-71",
@@ -19377,13 +19408,14 @@
         "year": 1992,
         "citations": 805,
         "venue": "Scientific American",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": false,
         "doi": "10.1038/scientificamerican0992-144",
         "url": "https://doi.org/10.1038/scientificamerican0992-144",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.3
       },
       {
         "id": "gs-73",
@@ -19410,7 +19442,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 50.5
       },
       {
         "id": "gs-74",
@@ -19545,7 +19578,8 @@
             "lng": -0.12574,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 5.7
       },
       {
         "id": "gs-75",
@@ -19553,7 +19587,7 @@
         "year": 2007,
         "citations": 733,
         "venue": "Artificial Intelligence and Statistics",
-        "quartile": "Q2",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": false,
@@ -19571,7 +19605,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 9.1
       },
       {
         "id": "gs-76",
@@ -19611,7 +19646,8 @@
         "openAccess": true,
         "doi": "10.4249/scholarpedia.5947",
         "url": "https://doi.org/10.4249/scholarpedia.5947",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.8
       },
       {
         "id": "gs-78",
@@ -19676,7 +19712,8 @@
             "lng": -0.12574,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-81",
@@ -19787,7 +19824,7 @@
         "year": 2014,
         "citations": 635,
         "venue": "IEEE/ACM Transactions on Audio Speech and Language Processing",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -19818,7 +19855,8 @@
             "lng": -122.12151,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 4.3
       },
       {
         "id": "gs-85",
@@ -19871,7 +19909,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 10.4
       },
       {
         "id": "gs-87",
@@ -19999,7 +20038,8 @@
             "lng": -0.12574,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-90",
@@ -20040,7 +20080,8 @@
             "lng": -79.99589,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-92",
@@ -20079,7 +20120,8 @@
             "lng": -76.61219,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 50.5
       },
       {
         "id": "gs-93",
@@ -20205,7 +20247,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 10.4
       },
       {
         "id": "gs-95",
@@ -20219,7 +20262,8 @@
         "openAccess": false,
         "doi": "10.1016/0004-3702(90)90004-j",
         "url": "https://doi.org/10.1016/0004-3702(90)90004-j",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 9.1
       },
       {
         "id": "gs-96",
@@ -20428,7 +20472,8 @@
         "openAccess": false,
         "doi": "10.1207/s15516709cog0303_3",
         "url": "https://doi.org/10.1207/s15516709cog0303_3",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-105",
@@ -20965,7 +21010,8 @@
             "lng": -122.08385,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 27.8
       },
       {
         "id": "gs-110",
@@ -21178,7 +21224,8 @@
             "lng": -84.48387,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 12.3
       },
       {
         "id": "gs-115",
@@ -21230,7 +21277,8 @@
         "openAccess": true,
         "doi": "10.1162/neco_a_01557",
         "url": "https://doi.org/10.1162/neco_a_01557",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-118",
@@ -21345,7 +21393,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-121",
@@ -21411,7 +21460,8 @@
         "openAccess": true,
         "doi": "10.1162/neco.1989.1.1.143",
         "url": "https://doi.org/10.1162/neco.1989.1.1.143",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-124",
@@ -21577,7 +21627,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 6
       },
       {
         "id": "gs-128",
@@ -21756,7 +21807,8 @@
             "lng": -117.16472,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 50.5
       },
       {
         "id": "gs-133",
@@ -21822,7 +21874,8 @@
             "lng": -71.10561,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-137",
@@ -22431,7 +22484,8 @@
         "openAccess": true,
         "doi": "10.4249/scholarpedia.1668",
         "url": "https://doi.org/10.4249/scholarpedia.1668",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.8
       },
       {
         "id": "gs-141",
@@ -22458,7 +22512,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 6
       },
       {
         "id": "gs-142",
@@ -22601,7 +22656,8 @@
             "lng": -123.11934,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 10.4
       },
       {
         "id": "gs-146",
@@ -22615,7 +22671,8 @@
         "openAccess": false,
         "doi": "10.1016/j.tics.2007.09.004",
         "url": "https://doi.org/10.1016/j.tics.2007.09.004",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 16.7
       },
       {
         "id": "gs-147",
@@ -22654,7 +22711,8 @@
             "lng": -1.8998299837112427,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 20.8
       },
       {
         "id": "gs-149",
@@ -22910,7 +22968,8 @@
             "lng": -71.10561,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 7.8
       },
       {
         "id": "gs-155",
@@ -23000,7 +23059,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 11.1
       },
       {
         "id": "gs-157",
@@ -23008,7 +23068,7 @@
         "year": 1987,
         "citations": 208,
         "venue": "Computer Speech & Language",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": false,
@@ -23027,7 +23087,8 @@
             "lng": -79.99589,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-158",
@@ -23154,7 +23215,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-161",
@@ -23295,7 +23357,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-164",
@@ -23556,7 +23619,7 @@
         "year": 2012,
         "citations": 185,
         "venue": "Neural Networks for Machine Learning",
-        "quartile": "Unranked",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -23586,7 +23649,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 7.8
       },
       {
         "id": "gs-171",
@@ -23621,7 +23685,7 @@
         "year": 1986,
         "citations": 179,
         "venue": "Perception",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -23664,7 +23728,8 @@
             "lng": -79.99589,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.6
       },
       {
         "id": "gs-173",
@@ -23703,7 +23768,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 6
       },
       {
         "id": "gs-174",
@@ -23711,7 +23777,7 @@
         "year": 2007,
         "citations": 171,
         "venue": "Artificial Intelligence and Statistics",
-        "quartile": "Q2",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": false,
@@ -23753,7 +23819,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 9.1
       },
       {
         "id": "gs-175",
@@ -23875,7 +23942,7 @@
         "year": 1986,
         "citations": 164,
         "venue": "Physica D Nonlinear Phenomena",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -23906,7 +23973,8 @@
             "lng": -76.61219,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.1
       },
       {
         "id": "gs-179",
@@ -24051,7 +24119,8 @@
         "openAccess": false,
         "doi": "10.1016/0004-3702(90)90004-j",
         "url": "https://doi.org/10.1016/0004-3702(90)90004-j",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 9.1
       },
       {
         "id": "gs-188",
@@ -24059,7 +24128,7 @@
         "year": 2011,
         "citations": 153,
         "venue": "Topics in Cognitive Science",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": false,
@@ -24078,7 +24147,8 @@
             "lng": -71.10561,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.4
       },
       {
         "id": "gs-189",
@@ -24150,13 +24220,14 @@
         "year": 1984,
         "citations": 145,
         "venue": "Journal of Motor Behavior",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": false,
         "doi": "10.1080/00222895.1984.10735317",
         "url": "https://doi.org/10.1080/00222895.1984.10735317",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 1.1
       },
       {
         "id": "gs-193",
@@ -24164,7 +24235,7 @@
         "year": 1988,
         "citations": 143,
         "venue": "Cognition",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": false,
@@ -24183,7 +24254,8 @@
             "lng": -71.10561,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.8
       },
       {
         "id": "gs-194",
@@ -24191,7 +24263,7 @@
         "year": 1998,
         "citations": 138,
         "venue": "Statistics in Medicine",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -24246,7 +24318,8 @@
             "lng": -79.39864,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.4
       },
       {
         "id": "gs-195",
@@ -24254,7 +24327,7 @@
         "year": 1993,
         "citations": 135,
         "venue": "Scientific American",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": false,
@@ -24285,7 +24358,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.3
       },
       {
         "id": "gs-196",
@@ -24324,7 +24398,8 @@
             "lng": -117.82311,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-197",
@@ -24364,7 +24439,8 @@
         "openAccess": false,
         "doi": "10.1111/cogs.12049",
         "url": "https://doi.org/10.1111/cogs.12049",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-200",
@@ -24405,7 +24481,8 @@
             "lng": -88.20727,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-202",
@@ -24684,7 +24761,8 @@
         "openAccess": false,
         "doi": "10.1016/j.tics.2007.09.004",
         "url": "https://doi.org/10.1016/j.tics.2007.09.004",
-        "coAuthors": []
+        "coAuthors": [],
+        "impactFactor": 16.7
       },
       {
         "id": "gs-210",
@@ -24916,7 +24994,7 @@
         "year": 1987,
         "citations": 103,
         "venue": "Perception",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -24959,7 +25037,8 @@
             "lng": -79.99589,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.6
       },
       {
         "id": "gs-216",
@@ -25050,7 +25129,8 @@
             "lng": -73.58781,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-220",
@@ -25127,7 +25207,8 @@
             "lng": -117.2742,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-222",
@@ -25168,7 +25249,8 @@
             "lng": -117.2742,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 8.3
       },
       {
         "id": "gs-224",
@@ -25245,7 +25327,8 @@
             "lng": -117.16472,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 20.8
       },
       {
         "id": "gs-226",
@@ -25558,7 +25641,7 @@
         "year": 2023,
         "citations": 224,
         "venue": "Energies",
-        "quartile": "Q3",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -25906,7 +25989,7 @@
         "year": 2023,
         "citations": 80,
         "venue": "Energies",
-        "quartile": "Q3",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -26072,7 +26155,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.4
       },
       {
         "id": "gs-5",
@@ -26288,7 +26372,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.9
+        "impactFactor": 3.3
       },
       {
         "id": "gs-8",
@@ -26384,7 +26468,7 @@
         "year": 2019,
         "citations": 61,
         "venue": "Energies",
-        "quartile": "Q3",
+        "quartile": "Q1",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -26424,7 +26508,7 @@
         "year": 2024,
         "citations": 50,
         "venue": "Heliyon",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -26527,7 +26611,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.4
       },
       {
         "id": "gs-11",
@@ -26627,7 +26712,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 6.8
+        "impactFactor": 6.4
       },
       {
         "id": "gs-12",
@@ -26730,7 +26815,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 9.5
+        "impactFactor": 9
       },
       {
         "id": "gs-14",
@@ -26818,7 +26903,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.9
+        "impactFactor": 3.3
       },
       {
         "id": "gs-15",
@@ -26968,7 +27053,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2
+        "impactFactor": 2.6
       },
       {
         "id": "gs-17",
@@ -27383,7 +27468,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 5.8
       },
       {
         "id": "gs-23",
@@ -27721,7 +27807,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5
+        "impactFactor": 1.2
       },
       {
         "id": "gs-27",
@@ -27911,7 +27997,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5
+        "impactFactor": 1.2
       },
       {
         "id": "gs-30",
@@ -28220,7 +28306,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.9
+        "impactFactor": 3.3
       },
       {
         "id": "gs-33",
@@ -28617,7 +28703,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5
+        "impactFactor": 1.2
       },
       {
         "id": "gs-37",
@@ -28625,7 +28711,7 @@
         "year": 2022,
         "citations": 15,
         "venue": "BioMed Research International",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -28691,7 +28777,8 @@
             "lng": 90.3744,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-38",
@@ -28854,7 +28941,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 10.7
+        "impactFactor": 9.4
       },
       {
         "id": "gs-40",
@@ -29018,7 +29105,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 1.5
+        "impactFactor": 1.2
       },
       {
         "id": "gs-42",
@@ -29428,7 +29515,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2
+        "impactFactor": 2.6
       },
       {
         "id": "gs-46",
@@ -30062,7 +30149,7 @@
         "year": 2021,
         "citations": 9,
         "venue": "Metals",
-        "quartile": "Unranked",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -30128,7 +30215,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-56",
@@ -30178,7 +30266,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.4
       },
       {
         "id": "gs-57",
@@ -30601,7 +30690,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2
+        "impactFactor": 2.6
       },
       {
         "id": "gs-62",
@@ -32143,7 +32232,7 @@
         "year": 2026,
         "citations": 4,
         "venue": "Array",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Review",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -32246,7 +32335,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-84",
@@ -32905,7 +32995,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.4
       },
       {
         "id": "gs-92",
@@ -35335,7 +35426,7 @@
         "year": 2012,
         "citations": 2,
         "venue": "International Journal of Computer Applications",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -35366,7 +35457,8 @@
             "lng": 90.40744,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-126",
@@ -36786,7 +36878,7 @@
             "isHomeInstitution": false
           }
         ],
-        "impactFactor": 3.2
+        "impactFactor": 2.6
       },
       {
         "id": "gs-144",
@@ -37317,7 +37409,7 @@
         "year": 2012,
         "citations": 1,
         "venue": "International Journal of Computer Applications",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -37371,7 +37463,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-152",
@@ -37453,7 +37546,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Array",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Review",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -37508,7 +37601,8 @@
             "lng": 90.40744,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-155",
@@ -38105,7 +38199,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Data",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -38172,7 +38266,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-164",
