@@ -613,9 +613,15 @@ export default function App() {
     : '';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 lg:pb-6">
+    <div
+      className={`min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 ${
+        activePage === 'map'
+          ? 'lg:h-screen lg:overflow-hidden lg:pb-0'
+          : 'lg:pb-6'
+      }`}
+    >
       {/* Top Bar: Brand Logo, Centered Desktop Navigation Tabs, and Right Actions */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-2.5">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-2.5 shrink-0">
         <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-4">
           {/* Left: Brand Logo & Wordmark */}
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink-0">
@@ -740,24 +746,23 @@ export default function App() {
                 </button>
               );
             })}
-          </nav>
-
-          {/* Right: PDF Report + Corner Login / User Profile Icon */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <button
               type="button"
               disabled={!activeProfile}
               onClick={handleRequestPdfReport}
-              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:hover:bg-transparent disabled:cursor-not-allowed"
             >
               {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
-                <FileDown className="w-3.5 h-3.5" />
+                <FileDown className="w-3.5 h-3.5 shrink-0" />
               ) : (
-                <Lock className="w-3.5 h-3.5" />
+                <Lock className="w-3.5 h-3.5 shrink-0" />
               )}
               <span>PDF Report</span>
             </button>
+          </nav>
 
+          {/* Right: Corner Login / User Profile Icon */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {authUser ? (
               <button
                 type="button"
@@ -848,8 +853,20 @@ export default function App() {
       </header>
 
       {/* Main Centered Multi-Page Workspace */}
-      <div className="flex-1 max-w-[1360px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-5">
-        <main className="w-full space-y-5">
+      <div
+        className={`flex-1 max-w-[1360px] w-full mx-auto px-3 sm:px-6 ${
+          activePage === 'map'
+            ? 'py-3 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden'
+            : 'py-4 sm:py-5'
+        }`}
+      >
+        <main
+          className={`w-full ${
+            activePage === 'map'
+              ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col'
+              : 'space-y-5'
+          }`}
+        >
           {/* Author Header & Toggleable Search Bar: Shown ONLY on Overview page */}
           {activePage === 'overview' && (
             <section
@@ -1509,7 +1526,7 @@ export default function App() {
             <div
               className={
                 activePage === 'map'
-                  ? 'block'
+                  ? 'block lg:flex-1 lg:min-h-0 lg:flex lg:flex-col'
                   : 'fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0 select-none'
               }
             >
@@ -1560,7 +1577,7 @@ export default function App() {
       {/* Android & Mobile Bottom Navigation Bar (48px+ ergonomic touch targets) */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xs border-t border-slate-200 px-1 py-1 grid grid-cols-5 gap-0.5 shadow-lg"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xs border-t border-slate-200 px-1 py-1 grid grid-cols-6 gap-0.5 shadow-lg"
       >
         {PAGE_METADATA.map((item) => {
           const Icon = item.icon;
@@ -1584,6 +1601,19 @@ export default function App() {
             </button>
           );
         })}
+        <button
+          type="button"
+          disabled={!activeProfile}
+          onClick={handleRequestPdfReport}
+          className="min-h-[48px] flex flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+        >
+          {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
+            <FileDown className="w-4 h-4 shrink-0" />
+          ) : (
+            <Lock className="w-4 h-4 shrink-0" />
+          )}
+          <span className="truncate max-w-full px-1">PDF Report</span>
+        </button>
       </nav>
 
       {/* Gmail / ORCID Login Modal */}

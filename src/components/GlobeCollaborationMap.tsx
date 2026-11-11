@@ -1242,7 +1242,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     <section
       id="global-map"
       aria-labelledby="globe-section-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs relative"
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs relative lg:flex-1 lg:min-h-0 lg:flex lg:flex-col"
     >
       {/* Offscreen Full Flattened World Map used when exporting PNG or PDF Report */}
       <div
@@ -1414,7 +1414,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       </div>
 
       {/* Top Header */}
-      <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex items-center justify-between gap-4">
+      <div className="px-4 sm:px-6 py-3 border-b border-slate-200 flex items-center justify-between gap-4 shrink-0">
         <h2
           id="globe-section-heading"
           className="text-base font-bold text-slate-900 tracking-tight"
@@ -1441,11 +1441,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       </div>
 
       {/* Main Split Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         {/* Left 7 Columns: Full-Window Edge-to-Edge Globe Viewport (No inner bounding box) */}
         <div
           id="chart-collaboration-globe"
-          className="lg:col-span-7 bg-slate-950 text-slate-100 flex items-center justify-center relative select-none overflow-hidden"
+          className="lg:col-span-7 bg-slate-950 text-slate-100 flex items-center justify-center relative select-none overflow-hidden lg:h-full lg:min-h-0"
         >
           <div
             ref={globeContainerRef}
@@ -1464,7 +1464,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 ),
               }));
             }}
-            className={`relative w-full h-full min-h-[520px] sm:min-h-[580px] flex items-center justify-center overflow-hidden bg-slate-950 touch-none ${
+            className={`relative w-full h-full min-h-[420px] sm:min-h-[480px] lg:min-h-0 flex items-center justify-center overflow-hidden bg-slate-950 touch-none ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
           >
@@ -1960,10 +1960,10 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         </div>
 
         {/* Right 5 Columns: Selected University Inspector */}
-        <div className="lg:col-span-5 p-4 sm:p-5 bg-white flex flex-col justify-between">
+        <div className="lg:col-span-5 p-4 sm:p-5 bg-white flex flex-col lg:h-full lg:min-h-0 lg:overflow-hidden">
           {selectedUni ? (
-            <div className="space-y-4">
-              <div ref={uniDropdownRef} className="relative">
+            <div className="flex flex-col gap-3.5 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+              <div ref={uniDropdownRef} className="relative shrink-0">
                 <button
                   id="inspector-university-select"
                   type="button"
@@ -2046,7 +2046,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 )}
               </div>
 
-              <div className="border-b border-slate-200 pb-3.5">
+              <div className="border-b border-slate-200 pb-3 shrink-0">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3
@@ -2072,7 +2072,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100">
+                <div className="grid grid-cols-3 gap-2 mt-2.5 pt-2.5 border-t border-slate-100">
                   <div>
                     <div className="text-[11px] text-slate-500">Papers</div>
                     <div
@@ -2098,8 +2098,8 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex flex-col lg:flex-1 lg:min-h-0">
+                <div className="flex items-center justify-between gap-2 mb-1.5 shrink-0">
                   <h4 className="text-xs font-semibold text-slate-700">
                     Co-Authors ({filteredSelectedCoAuthors.length})
                   </h4>
@@ -2115,7 +2115,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     />
                   </div>
                 </div>
-                <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg max-h-[150px] overflow-y-auto">
+                <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg max-h-[160px] lg:max-h-none lg:flex-1 lg:min-h-0 overflow-y-auto">
                   {filteredSelectedCoAuthors.map((author) => (
                     <div
                       key={author.name}
@@ -2158,11 +2158,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              <div>
-                <h4 className="text-xs font-semibold text-slate-700 mb-2">
+              <div className="flex flex-col lg:flex-1 lg:min-h-0">
+                <h4 className="text-xs font-semibold text-slate-700 mb-1.5 shrink-0">
                   Collaborative Papers ({selectedUni.papers.length})
                 </h4>
-                <div className="space-y-2 max-h-[175px] overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-[180px] lg:max-h-none lg:flex-1 lg:min-h-0 overflow-y-auto pr-1">
                   {selectedUni.papers.map((paper) => (
                     <article
                       key={paper.id}
