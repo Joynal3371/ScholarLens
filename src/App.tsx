@@ -283,7 +283,7 @@ export default function App() {
         ),
       };
       setActiveProfile(resolved);
-      setScholarUrlInput(resolved.scholarUrl);
+      setScholarUrlInput('');
       setFilter(DEFAULT_FILTER_STATE);
 
       try {
@@ -645,21 +645,12 @@ export default function App() {
             aria-label="Analytics Pages"
             className="hidden lg:flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl"
           >
-            {/* Small Navigation Search Bar with Integrated Search Icon */}
+            {/* Small Navigation Search Bar with Integrated Search Icon on the right */}
             <form
               onSubmit={handleAnalyzeSubmit}
               noValidate
               className="relative flex items-center shrink-0 mr-1"
             >
-              <button
-                type="submit"
-                disabled={isAnalyzing}
-                aria-label="Search Scholar Profile"
-                title="Search Scholar Profile"
-                className="absolute left-2.5 text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer disabled:opacity-50"
-              >
-                <Search className="w-3.5 h-3.5" />
-              </button>
               <input
                 ref={desktopSearchInputRef}
                 type="text"
@@ -670,22 +661,17 @@ export default function App() {
                 }}
                 placeholder="Search Scholar ID / URL..."
                 aria-label="Search Google Scholar profile URL or User ID"
-                className="w-36 xl:w-48 pl-8 pr-6 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all"
+                className="w-36 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all"
               />
-              {scholarUrlInput && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setScholarUrlInput('');
-                    if (urlError) setUrlError(null);
-                  }}
-                  aria-label="Clear search input"
-                  title="Clear input"
-                  className="absolute right-2 text-slate-300 hover:text-slate-500 transition-colors p-0.5 cursor-pointer"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
+              <button
+                type="submit"
+                disabled={isAnalyzing}
+                aria-label="Search Scholar Profile"
+                title="Search Scholar Profile"
+                className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
             </form>
             {PAGE_METADATA.map((item) => {
               const Icon = item.icon;
@@ -778,14 +764,6 @@ export default function App() {
               noValidate
               className="relative flex items-center"
             >
-              <button
-                type="submit"
-                disabled={isAnalyzing}
-                aria-label="Search Scholar Profile"
-                className="absolute left-2.5 text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer disabled:opacity-50"
-              >
-                <Search className="w-3.5 h-3.5" />
-              </button>
               <input
                 type="text"
                 autoFocus
@@ -796,21 +774,16 @@ export default function App() {
                 }}
                 placeholder="Paste Scholar profile URL or User ID..."
                 aria-label="Search Google Scholar profile URL or User ID"
-                className="w-full pl-8 pr-7 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               />
-              {scholarUrlInput && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setScholarUrlInput('');
-                    if (urlError) setUrlError(null);
-                  }}
-                  aria-label="Clear search input"
-                  className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <button
+                type="submit"
+                disabled={isAnalyzing}
+                aria-label="Search Scholar Profile"
+                className="absolute right-2.5 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-50"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
             </form>
           </div>
         )}
@@ -1069,18 +1042,10 @@ export default function App() {
                 aria-label="Publication Indexing and Quartile Distribution"
                 className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-slate-100">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900 tracking-tight">
-                      Journal Quartile &amp; Indexing Distribution
-                    </h2>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Click any category chip to instantly filter the publication portfolio
-                    </p>
-                  </div>
-                  <span className="text-[11px] font-mono text-slate-400 self-start sm:self-auto">
-                    100% of Verified Corpus
-                  </span>
+                <div className="pb-1 border-b border-slate-100">
+                  <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+                    Journal Quartile &amp; Indexing Distribution
+                  </h2>
                 </div>
 
                 {/* 6 Category Interactive Cards */}

@@ -597,18 +597,11 @@ export async function generateResearcherPdfReport(params: {
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(margin, y, contentW, containerH, 1.8, 1.8, 'FD');
 
-  // Container Header: Title (left) and 100% Corpus (right)
+  // Container Header: Title
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.2);
   doc.setTextColor(15, 23, 42);
   doc.text('Journal Quartile & Indexing Distribution', margin + 3.0, y + 4.2);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(5.2);
-  doc.setTextColor(148, 163, 184);
-  doc.text('100% of Verified Corpus', margin + contentW - 3.0, y + 4.2, {
-    align: 'right',
-  });
 
   // 6 Interactive/Visual Category Chips (pure white cards, matching web app)
   const chipPad = 3.0;
@@ -1243,15 +1236,22 @@ export async function generateResearcherPdfReport(params: {
     );
   });
 
-  // =========================================================================
-  // PAGE 4: TOP 10 MOST CITED PUBLICATIONS & COMPLETE INVENTORY
-  // =========================================================================
-  doc.addPage();
-  y = 14;
+  y += listCard2H + 6.0;
 
   // -------------------------------------------------------------------------
   // SECTION 6: TOP 10 MOST CITED PUBLICATIONS
   // -------------------------------------------------------------------------
+  const top10Papers = [...profile.publications]
+    .sort((a, b) => b.citations - a.citations)
+    .slice(0, 10);
+
+  // Dynamic Page Flow: Only add a new page if Section 06 will exceed the bottom margin
+  const section6NeededH = 9.0 + 5.5 + top10Papers.length * 6.2 + 5.0;
+  if (y + section6NeededH > 276) {
+    doc.addPage();
+    y = 14;
+  }
+
   y = drawSectionHeader(
     doc,
     '06',
@@ -1260,10 +1260,6 @@ export async function generateResearcherPdfReport(params: {
     y,
     contentW
   );
-
-  const top10Papers = [...profile.publications]
-    .sort((a, b) => b.citations - a.citations)
-    .slice(0, 10);
 
   doc.setFillColor(15, 23, 42);
   doc.rect(margin, y, contentW, 5.5, 'F');
@@ -1338,8 +1334,13 @@ export async function generateResearcherPdfReport(params: {
   y += 5.0;
 
   // -------------------------------------------------------------------------
-  // SECTION 7: COMPLETE VERIFIED PUBLICATION PORTFOLIO (CONTINUES DIRECTLY ON PAGE 4)
+  // SECTION 7: COMPLETE VERIFIED PUBLICATION PORTFOLIO
   // -------------------------------------------------------------------------
+  if (y + 28 > 276) {
+    doc.addPage();
+    y = 14;
+  }
+
   y = drawSectionHeader(
     doc,
     '07',

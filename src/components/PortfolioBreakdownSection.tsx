@@ -596,6 +596,41 @@ export const PortfolioBreakdownSection: React.FC<
               role="img"
               aria-label="Quartile composition by year stacked bar chart"
             >
+              <defs>
+                {pubTrendYears.map((yr, idx) => {
+                  const totalCount =
+                    yr.q1Count +
+                    yr.q2Count +
+                    yr.q3Count +
+                    yr.q4Count +
+                    yr.conferenceCount +
+                    yr.otherCount;
+                  if (totalCount <= 0) return null;
+                  const colW = Math.min(
+                    26,
+                    Math.floor(290 / Math.max(1, pubTrendYears.length)) - 6
+                  );
+                  const step = 310 / Math.max(1, pubTrendYears.length);
+                  const x = 26 + idx * step;
+                  const scaleH = 122 / maxYearPapers;
+                  const totalH = totalCount * scaleH;
+                  return (
+                    <clipPath
+                      key={`clip-yearly-${yr.year}`}
+                      id={`clip-yearly-bar-${yr.year}`}
+                    >
+                      <rect
+                        x={x}
+                        y={158 - totalH}
+                        width={colW}
+                        height={totalH}
+                        rx="2"
+                        ry="2"
+                      />
+                    </clipPath>
+                  );
+                })}
+              </defs>
               <line
                 x1="18"
                 y1="158"
@@ -649,24 +684,25 @@ export const PortfolioBreakdownSection: React.FC<
                 let curY = 158;
                 return (
                   <g key={`stack-${yr.year}`}>
-                    {segments.map((s, sIdx) => {
-                      if (s.count <= 0) return null;
-                      const h = s.count * scaleH;
-                      curY -= h;
-                      return (
-                        <rect
-                          key={sIdx}
-                          x={x}
-                          y={curY}
-                          width={colW}
-                          height={Math.max(2, h - 1)}
-                          rx="1.5"
-                          fill={s.color}
-                        >
-                          <title>{`${yr.year} — ${s.label}: ${s.count}`}</title>
-                        </rect>
-                      );
-                    })}
+                    <g clipPath={`url(#clip-yearly-bar-${yr.year})`}>
+                      {segments.map((s, sIdx) => {
+                        if (s.count <= 0) return null;
+                        const h = s.count * scaleH;
+                        curY -= h;
+                        return (
+                          <rect
+                            key={sIdx}
+                            x={x}
+                            y={curY}
+                            width={colW}
+                            height={h}
+                            fill={s.color}
+                          >
+                            <title>{`${yr.year} — ${s.label}: ${s.count}`}</title>
+                          </rect>
+                        );
+                      })}
+                    </g>
                     <text
                       x={x + colW / 2}
                       y="174"

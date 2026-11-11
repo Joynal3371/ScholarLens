@@ -119,18 +119,25 @@ export function cleanVenueName(rawVenue: string): string {
     .replace(/,?\s*\bvol\.?\s*\d+.*$/i, '')
     .replace(/,?\s*\bno\.?\s*\d+.*$/i, '')
     .replace(/,?\s*\bpp\.?\s*\d+.*$/i, '')
-    .replace(/\s*\(?(?:cat\.?\s*no\.?|vol\.?|pp\.?|no\.?)[^)]*[…\.]*$/i, '')
+    .replace(/\s*\((?:cat\.?\s*no\.?|vol\.?|pp\.?|no\.?)[^)]*\)/i, '')
+    .replace(/(?:,\s*|\s+)\b(?:cat\.?\s*no\.?|vol\.?|pp\.?|no\.?)\s*[:#]?\s*\d+.*$/i, '')
     .replace(/\s+\d+\s*\([^)]+\).*$/i, '')
     .replace(/\s+\d+\s*,\s*[\d–eE.-]+.*$/i, '')
     .replace(/,\s*\d+-\d+.*$/i, '')
     .replace(/,\s*[A-Za-z]?\d{4,8}\s*$/i, '')
     .replace(/\s+\(\d{4}\)\s*$/i, '')
     .replace(/\s+\d{1,4}\s*$/i, '')
-    .replace(/[…\.\s]+$/, '')
-    .replace(/^[,\s-]+|[,\s-]+$/g, '')
+    .replace(/[…\.\s\(\)]+$/, '')
+    .replace(/^[,\s\(-]+|[,\s\)-]+$/g, '')
     .trim();
 
-  // Canonicalize abbreviated/casing variants so the same journal is never split
+  // Canonicalize major journals & conferences so the same venue is never fragmented
+  if (/^renewable\s+(and\s+)?sustainable\s+energy\s+rev/i.test(v))
+    return 'Renewable and Sustainable Energy Reviews';
+  if (/^applied\s+energy/i.test(v) || /^appl\.\s*energy/i.test(v))
+    return 'Applied Energy';
+  if (/^proceedings\s+of\s+the\s+ieee/i.test(v) || /^proc\.\s*ieee/i.test(v))
+    return 'Proceedings of the IEEE';
   if (/^nature communications/i.test(v) || /^nat\.\s*commun/i.test(v)) return 'Nature Communications';
   if (/^the embo journal$/i.test(v)) return 'The EMBO Journal';
   if (/^ieee access$/i.test(v)) return 'IEEE Access';
@@ -141,6 +148,9 @@ export function cleanVenueName(rawVenue: string): string {
     return 'Sustainable Energy Technologies and Assessments';
   if (/^energy conversion and management:?\s*x$/i.test(v))
     return 'Energy Conversion and Management: X';
+  if (/^energy conversion and management$/i.test(v))
+    return 'Energy Conversion and Management';
+  if (/^energy$/i.test(v)) return 'Energy';
   if (/^gub journal of science and engineering/i.test(v))
     return 'GUB Journal of Science and Engineering';
   if (/^journal of engineering and technology\s*(\(jet\))?$/i.test(v))
@@ -151,7 +161,8 @@ export function cleanVenueName(rawVenue: string): string {
   ) {
     return 'International Journal of Computer Science and Network Security';
   }
-  return v || 'Academic Venue';
+  if (!v || v.length <= 2) return 'Academic Venue';
+  return v;
 }
 
 /**
@@ -3679,71 +3690,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
 
-  // Check Wikipedia API for real portrait photograph
-  try {
-    const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(
-      fallbackName
-    )}&prop=pageimages&format=json&pithumbsize=200`;
-    const wikiResp = await fetch(wikiUrl, {
-      signal: AbortSignal.timeout(2500),
-    });
-    if (wikiResp.ok) {
-      const wikiJson = await wikiResp.json();
-      const pages = wikiJson.query?.pages || {};
-      const firstPage = Object.values(pages)[0] as any;
-      if (firstPage?.thumbnail?.source) {
-        const imgResp = await fetch(firstPage.thumbnail.source, {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          },
-          signal: AbortSignal.timeout(3000),
-        });
-        const ct = String(imgResp.headers.get('content-type') || '');
-        if (imgResp.ok && ct.startsWith('image/')) {
-          const buf = Buffer.from(await imgResp.arrayBuffer());
-          if (buf.length > 200) {
-            avatarBufferCache.set(`name::${nameKey}`, {
-              contentType: ct,
-              buffer: buf,
-              timestamp: Date.now(),
-            });
-            res.setHeader('Content-Type', ct);
-            res.send(buf);
-            return;
-          }
-        }
-      }
-    }
-  } catch {
-    // Continue to next photo provider
-  }
-
-  // Retrieve realistic professional scholar portrait photo
-  try {
-    const pravatarUrl = `https://i.pravatar.cc/150?u=${encodeURIComponent(fallbackName)}`;
-    const pResp = await fetch(pravatarUrl, {
-      signal: AbortSignal.timeout(3500),
-    });
-    const ct = String(pResp.headers.get('content-type') || '');
-    if (pResp.ok && ct.startsWith('image/')) {
-      const buf = Buffer.from(await pResp.arrayBuffer());
-      if (buf.length > 200) {
-        avatarBufferCache.set(`name::${nameKey}`, {
-          contentType: ct,
-          buffer: buf,
-          timestamp: Date.now(),
-        });
-        res.setHeader('Content-Type', ct);
-        res.send(buf);
-        return;
-      }
-    }
-  } catch {
-    // Continue to monogram fallback if network fails
-  }
-
-  // Fallback academic monogram SVG avatar if no real photo could be fetched
+  // Fallback academic monogram SVG avatar (authentic, deterministic, and never a random stranger's face)
   const initials =
     fallbackName
       .replace(/\b(Dr\.|Prof\.|Mr\.|Ms\.)\s*/gi, '')
@@ -3753,15 +3700,29 @@ app.get('/api/scholar/avatar', async (req, res) => {
       .map((w) => w[0]?.toUpperCase() || '')
       .join('') || 'RS';
 
+  const hash = fallbackName
+    .split('')
+    .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const palette = [
+    ['#1e3a8a', '#2563eb'], // Blue
+    ['#065f46', '#059669'], // Emerald
+    ['#4c1d95', '#7c3aed'], // Purple
+    ['#7c2d12', '#ea580c'], // Amber
+    ['#831843', '#db2777'], // Rose
+    ['#134e4a', '#0d9488'], // Teal
+    ['#1e293b', '#475569'], // Slate
+  ];
+  const [stop1, stop2] = palette[hash % palette.length];
+
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
     <defs>
       <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#1e3a8a"/>
-        <stop offset="100%" stop-color="#2563eb"/>
+        <stop offset="0%" stop-color="${stop1}"/>
+        <stop offset="100%" stop-color="${stop2}"/>
       </linearGradient>
     </defs>
     <rect width="128" height="128" rx="64" fill="url(#g)"/>
-    <text x="64" y="76" text-anchor="middle" fill="#ffffff" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="44" font-weight="700">${initials}</text>
+    <text x="64" y="78" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="700" letter-spacing="1">${initials}</text>
   </svg>`;
   res.setHeader('Content-Type', 'image/svg+xml');
   res.send(svg);
