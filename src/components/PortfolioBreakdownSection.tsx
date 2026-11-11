@@ -1,16 +1,18 @@
-import React from 'react';
-import { ImageDown } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { ImageDown, Award } from 'lucide-react';
 import {
   ProfileStatistics,
   Quartile,
   PortfolioCategory,
   PublicationType,
   CountryCollaboration,
+  JournalSummary,
 } from '../utils/scholarAnalytics';
 
 interface PortfolioBreakdownSectionProps {
   stats: ProfileStatistics;
   countries: CountryCollaboration[];
+  journals?: JournalSummary[];
   onQuickFilterQuartile: (quartile: Quartile) => void;
   onQuickFilterType: (type: PublicationType) => void;
   onExportChartPng: (chartId: string, title: string, filename: string) => void;
@@ -41,10 +43,28 @@ export const PortfolioBreakdownSection: React.FC<
 > = ({
   stats,
   countries,
+  journals = [],
   onQuickFilterQuartile,
   onQuickFilterType,
   onExportChartPng,
 }) => {
+  const topImpactJournals = useMemo(() => {
+    if (!journals) return [];
+    return journals
+      .filter(
+        (j) =>
+          (j.type === 'Journal' || !j.type) &&
+          j.impactFactor !== undefined &&
+          j.impactFactor > 0
+      )
+      .sort(
+        (a, b) =>
+          (b.impactFactor || 0) - (a.impactFactor || 0) ||
+          b.paperCount - a.paperCount ||
+          b.totalCitations - a.totalCitations
+      )
+      .slice(0, 5);
+  }, [journals]);
   const portfolioCategories: PortfolioCategory[] = [
     'Q1',
     'Q2',
@@ -793,6 +813,167 @@ export const PortfolioBreakdownSection: React.FC<
             </svg>
           </div>
         </div>
+
+        {/* Chart 7: Top 5 High-Impact Publishing Venues */}
+        {topImpactJournals.length > 0 && (
+          <div
+            id="chart-top-impact-journals"
+            className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs"
+          >
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-sm font-bold text-slate-900">
+                    Top 5 High-Impact Publishing Venues
+                  </h2>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Ranked by authoritative Clarivate Journal Impact Factor (JIF)
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  onExportChartPng(
+                    'chart-top-impact-journals',
+                    'Top 5 High-Impact Publishing Venues',
+                    'top_impact_journals.png'
+                  )
+                }
+                aria-label="Export Top 5 High-Impact Publishing Venues chart as PNG"
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <ImageDown className="w-3.5 h-3.5" />
+                <span>PNG</span>
+              </button>
+            </div>
+
+            <div className="my-1 overflow-x-auto">
+              <svg
+                data-chart-svg="true"
+                viewBox="0 0 680 220"
+                className="w-full h-auto min-w-[540px] max-h-[220px] scholar-chart-svg"
+                role="img"
+                aria-label="Top 5 High-Impact Publishing Venues horizontal bar chart"
+              >
+                {topImpactJournals.map((j, idx) => {
+                  const maxIf = topImpactJournals[0]?.impactFactor || 10;
+                  const ifVal = j.impactFactor || 0;
+                  const barMaxW = 280;
+                  const barW = Math.max(16, (ifVal / maxIf) * barMaxW);
+                  const y = 8 + idx * 42;
+                  const rankColors = [
+                    '#2563eb',
+                    '#059669',
+                    '#0d9488',
+                    '#4f46e5',
+                    '#7c3aed',
+                  ];
+                  const barColor = rankColors[idx % rankColors.length];
+
+                  return (
+                    <g key={j.venue} transform={`translate(0, ${y})`}>
+                      {/* Rank Badge */}
+                      <rect
+                        x="4"
+                        y="2"
+                        width="24"
+                        height="20"
+                        rx="4"
+                        fill="#f1f5f9"
+                      />
+                      <text
+                        x="16"
+                        y="16"
+                        fill="#334155"
+                        fontSize="11"
+                        fontWeight="700"
+                        textAnchor="middle"
+                      >
+                        #{idx + 1}
+                      </text>
+
+                      {/* Venue Name */}
+                      <text
+                        x="38"
+                        y="16"
+                        fill="#0f172a"
+                        fontSize="12"
+                        fontWeight="600"
+                      >
+                        {j.venue.length > 34 ? j.venue.slice(0, 33) + '…' : j.venue}
+                      </text>
+
+                      {/* Quartile Pill */}
+                      <rect
+                        x="270"
+                        y="3"
+                        width="30"
+                        height="18"
+                        rx="4"
+                        fill={j.quartile === 'Q1' ? '#eff6ff' : '#ecfdf5'}
+                      />
+                      <text
+                        x="285"
+                        y="15.5"
+                        fill={j.quartile === 'Q1' ? '#1d4ed8' : '#047857'}
+                        fontSize="10"
+                        fontWeight="700"
+                        textAnchor="middle"
+                      >
+                        {j.quartile}
+                      </text>
+
+                      {/* Bar Track & Fill */}
+                      <rect
+                        x="315"
+                        y="7"
+                        width={barMaxW}
+                        height="10"
+                        rx="5"
+                        fill="#f1f5f9"
+                      />
+                      <rect
+                        x="315"
+                        y="7"
+                        width={barW}
+                        height="10"
+                        rx="5"
+                        fill={barColor}
+                      />
+
+                      {/* JIF Value Text */}
+                      <text
+                        x={Math.min(610, 325 + barW)}
+                        y="16"
+                        fill="#0f172a"
+                        fontSize="11"
+                        fontWeight="700"
+                        fontFamily="JetBrains Mono, monospace"
+                      >
+                        IF {ifVal.toFixed(1)}
+                      </text>
+
+                      {/* Publications & Citations */}
+                      <text
+                        x="675"
+                        y="16"
+                        fill="#64748b"
+                        fontSize="10"
+                        textAnchor="end"
+                      >
+                        {j.paperCount} {j.paperCount === 1 ? 'pub' : 'pubs'} · {j.totalCitations} cites
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

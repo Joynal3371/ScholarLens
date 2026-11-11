@@ -12,6 +12,8 @@ import {
   ArrowRight,
   ExternalLink,
   User,
+  Award,
+  TrendingUp,
 } from 'lucide-react';
 import {
   parseGoogleScholarInput,
@@ -326,6 +328,11 @@ export default function App() {
           )
         : [],
     [activeProfile]
+  );
+
+  const collaboratingUnis = useMemo(
+    () => universities.filter((u) => !u.isHomeInstitution),
+    [universities]
   );
 
   const coAuthors = useMemo(
@@ -735,16 +742,16 @@ export default function App() {
                     <div className="min-w-0">
                       <h1
                         data-testid="active-researcher-name"
-                        className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight truncate"
+                        className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight break-words"
                       >
                         {activeProfile.name}
                       </h1>
-                      <div className="text-sm sm:text-base md:text-lg text-slate-700 font-medium truncate mt-1 sm:mt-1.5">
+                      <div className="text-sm sm:text-base md:text-lg text-slate-700 font-medium break-words mt-1 sm:mt-1.5 leading-snug">
                         {activeProfile.affiliation}
                       </div>
 
                       {activeProfile.fields && activeProfile.fields.length > 0 && (
-                        <div className="mt-1 text-xs text-slate-500 font-normal truncate max-w-xl">
+                        <div className="mt-1 text-xs text-slate-500 font-normal break-words max-w-2xl">
                           <span className="font-medium text-slate-600">Research Areas:</span>{' '}
                           {activeProfile.fields.join(' · ')}
                         </div>
@@ -878,52 +885,92 @@ export default function App() {
               {/* Row 1: Core Scholar Profile Summary Metrics */}
               <section
                 aria-label="Core Profile Metrics"
-                className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-3.5"
               >
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
-                    <div className="text-xs text-slate-500 font-medium">
+                {/* 1. Verified Publications */}
+                <div className="bg-white border border-slate-200/90 hover:border-blue-300 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                       Verified Publications
+                    </span>
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                      <BookOpen className="w-3.5 h-3.5" />
                     </div>
+                  </div>
+                  <div className="mt-2">
                     <div
                       data-testid="kpi-total-papers"
-                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1"
+                      className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight tabular-nums"
                     >
                       {stats.totalPapers}
                     </div>
-                  </div>
-
-                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
-                    <div className="text-xs text-slate-500 font-medium">
-                      Cumulative Citations
+                    <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
+                      <span>Peer-reviewed corpus</span>
                     </div>
+                  </div>
+                </div>
+
+                {/* 2. Cumulative Citations */}
+                <div className="bg-white border border-slate-200/90 hover:border-emerald-300 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                      Cumulative Citations
+                    </span>
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                      <Award className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div className="mt-2">
                     <div
                       data-testid="kpi-total-citations"
-                      className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1"
+                      className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight tabular-nums"
                     >
                       {stats.totalCitations.toLocaleString()}
                     </div>
+                    <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
+                      <span>~{stats.meanCitationsPerPaper} cites/paper</span>
+                    </div>
                   </div>
+                </div>
 
-                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
-                    <div className="text-xs text-slate-500 font-medium">
+                {/* 3. Citation Indices (h-index & i10-index) */}
+                <div className="bg-white border border-slate-200/90 hover:border-indigo-300 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                       h-index / i10-index
-                    </div>
-                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1">
-                      {stats.hIndex}{' '}
-                      <span className="text-base font-normal text-slate-400">
-                        /
-                      </span>{' '}
-                      {stats.i10Index}
+                    </span>
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                      <TrendingUp className="w-3.5 h-3.5" />
                     </div>
                   </div>
-
-                  <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
-                    <div className="text-xs text-slate-500 font-medium">
-                      Institutional Network
+                  <div className="mt-2">
+                    <div className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight tabular-nums flex items-baseline gap-1.5">
+                      <span>{stats.hIndex}</span>
+                      <span className="text-base font-normal text-slate-300">/</span>
+                      <span className="text-xl sm:text-2xl text-slate-600">{stats.i10Index}</span>
                     </div>
-                    <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums mt-1">
-                      {universities.length}
+                    <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
+                      <span>{stats.i10Index} papers ≥ 10 citations</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Institutional Network */}
+                <div className="bg-white border border-slate-200/90 hover:border-violet-300 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                      Institutional Network
+                    </span>
+                    <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+                      <Globe2 className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <div className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight tabular-nums">
+                      {collaboratingUnis.length}
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
+                      <span>Across {countries.length} collaborating nations</span>
                     </div>
                   </div>
                 </div>
@@ -932,183 +979,209 @@ export default function App() {
               {/* Row 2: Separate Q1, Q2, Q3, Q4, Conference & Emerging Percentage Breakdown */}
               <section
                 aria-label="Publication Indexing and Quartile Distribution"
-                className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3.5"
+                className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-sm font-bold text-slate-900">
-                    Journal Quartile &amp; Indexing Distribution
-                  </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-slate-100">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+                      Journal Quartile &amp; Indexing Distribution
+                    </h2>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Click any category chip to instantly filter the publication portfolio
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400 self-start sm:self-auto">
+                    100% of Verified Corpus
+                  </span>
                 </div>
 
-                {/* 6 Percentage Cards: Q1, Q2, Q3, Q4, Conference, Others (Above Colorbar Line) */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                  {/* 1. Q1 Share - Royal Blue */}
+                {/* 6 Category Interactive Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                  {/* 1. Q1 */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q1')}
-                    className="text-left p-3.5 bg-blue-50/70 hover:bg-blue-50 border border-blue-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3 rounded-lg border border-slate-200/90 bg-slate-50/60 hover:bg-blue-50/80 hover:border-blue-300 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-blue-900">
+                      <span className="text-xs font-semibold text-slate-700 group-hover:text-blue-900">
                         Q1 Journals
                       </span>
                       <span className="w-2 h-2 rounded-full bg-blue-600" />
                     </div>
                     <div
                       data-testid="kpi-q1-percentage"
-                      className="text-2xl font-bold font-mono text-blue-700 tabular-nums mt-1"
+                      className="text-xl font-bold font-mono text-slate-900 group-hover:text-blue-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q1.percentage}%
                     </div>
+                    <div className="text-[10.5px] text-slate-400 group-hover:text-blue-600/80 font-medium mt-0.5">
+                      {stats.portfolioDistribution.Q1.count} papers
+                    </div>
                   </button>
 
-                  {/* 2. Q2 Share - Emerald Green */}
+                  {/* 2. Q2 */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q2')}
-                    className="text-left p-3.5 bg-emerald-50/70 hover:bg-emerald-50 border border-emerald-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3 rounded-lg border border-slate-200/90 bg-slate-50/60 hover:bg-emerald-50/80 hover:border-emerald-300 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-emerald-900">
+                      <span className="text-xs font-semibold text-slate-700 group-hover:text-emerald-900">
                         Q2 Journals
                       </span>
                       <span className="w-2 h-2 rounded-full bg-emerald-600" />
                     </div>
                     <div
                       data-testid="kpi-q2-percentage"
-                      className="text-2xl font-bold font-mono text-emerald-700 tabular-nums mt-1"
+                      className="text-xl font-bold font-mono text-slate-900 group-hover:text-emerald-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q2.percentage}%
                     </div>
+                    <div className="text-[10.5px] text-slate-400 group-hover:text-emerald-600/80 font-medium mt-0.5">
+                      {stats.portfolioDistribution.Q2.count} papers
+                    </div>
                   </button>
 
-                  {/* 3. Q3 Share - Amber Gold */}
+                  {/* 3. Q3 */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q3')}
-                    className="text-left p-3.5 bg-amber-50/70 hover:bg-amber-50 border border-amber-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3 rounded-lg border border-slate-200/90 bg-slate-50/60 hover:bg-amber-50/80 hover:border-amber-300 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-amber-900">
+                      <span className="text-xs font-semibold text-slate-700 group-hover:text-amber-900">
                         Q3 Journals
                       </span>
                       <span className="w-2 h-2 rounded-full bg-amber-500" />
                     </div>
                     <div
                       data-testid="kpi-q3-percentage"
-                      className="text-2xl font-bold font-mono text-amber-700 tabular-nums mt-1"
+                      className="text-xl font-bold font-mono text-slate-900 group-hover:text-amber-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q3.percentage}%
                     </div>
+                    <div className="text-[10.5px] text-slate-400 group-hover:text-amber-600/80 font-medium mt-0.5">
+                      {stats.portfolioDistribution.Q3.count} papers
+                    </div>
                   </button>
 
-                  {/* 4. Q4 Share - Rose / Crimson Red */}
+                  {/* 4. Q4 */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Q4')}
-                    className="text-left p-3.5 bg-rose-50/70 hover:bg-rose-50 border border-rose-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3 rounded-lg border border-slate-200/90 bg-slate-50/60 hover:bg-rose-50/80 hover:border-rose-300 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-rose-900">
+                      <span className="text-xs font-semibold text-slate-700 group-hover:text-rose-900">
                         Q4 Journals
                       </span>
                       <span className="w-2 h-2 rounded-full bg-rose-600" />
                     </div>
                     <div
                       data-testid="kpi-q4-percentage"
-                      className="text-2xl font-bold font-mono text-rose-700 tabular-nums mt-1"
+                      className="text-xl font-bold font-mono text-slate-900 group-hover:text-rose-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Q4.percentage}%
                     </div>
+                    <div className="text-[10.5px] text-slate-400 group-hover:text-rose-600/80 font-medium mt-0.5">
+                      {stats.portfolioDistribution.Q4.count} papers
+                    </div>
                   </button>
 
-                  {/* 5. Conference Share - Royal Purple */}
+                  {/* 5. Conference */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterType('Conference')}
-                    className="text-left p-3.5 bg-purple-50/70 hover:bg-purple-50 border border-purple-200/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3 rounded-lg border border-slate-200/90 bg-slate-50/60 hover:bg-purple-50/80 hover:border-purple-300 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-purple-900">
+                      <span className="text-xs font-semibold text-slate-700 group-hover:text-purple-900">
                         Conference
                       </span>
                       <span className="w-2 h-2 rounded-full bg-purple-600" />
                     </div>
                     <div
                       data-testid="kpi-conference-percentage"
-                      className="text-2xl font-bold font-mono text-purple-700 tabular-nums mt-1"
+                      className="text-xl font-bold font-mono text-slate-900 group-hover:text-purple-700 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution.Conference.percentage}%
                     </div>
+                    <div className="text-[10.5px] text-slate-400 group-hover:text-purple-600/80 font-medium mt-0.5">
+                      {stats.portfolioDistribution.Conference.count} papers
+                    </div>
                   </button>
 
-                  {/* 6. Others Share - Dark Slate */}
+                  {/* 6. Others / Non-Indexed */}
                   <button
                     type="button"
                     onClick={() => handleQuickFilterQuartile('Unranked')}
-                    className="text-left p-3.5 bg-slate-100/70 hover:bg-slate-100 border border-slate-300/80 rounded-lg transition-colors cursor-pointer"
+                    className="text-left p-3 rounded-lg border border-slate-200/90 bg-slate-50/60 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-800">
+                      <span className="text-xs font-semibold text-slate-700 group-hover:text-slate-900">
                         Others
                       </span>
-                      <span className="w-2 h-2 rounded-full bg-slate-600" />
+                      <span className="w-2 h-2 rounded-full bg-slate-500" />
                     </div>
                     <div
                       data-testid="kpi-others-percentage"
-                      className="text-2xl font-bold font-mono text-slate-800 tabular-nums mt-1"
+                      className="text-xl font-bold font-mono text-slate-900 group-hover:text-slate-900 tabular-nums mt-1"
                     >
                       {stats.portfolioDistribution['Non-Indexed'].percentage}%
+                    </div>
+                    <div className="text-[10.5px] text-slate-400 group-hover:text-slate-600 font-medium mt-0.5">
+                      {stats.portfolioDistribution['Non-Indexed'].count} papers
                     </div>
                   </button>
                 </div>
 
-                {/* Stacked Proportional Progress Bar */}
+                {/* Modern Sleek Segmented Color Progress Bar */}
                 <div
                   aria-label="100% Portfolio Distribution Bar"
-                  className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex"
+                  className="h-3 w-full rounded-full bg-slate-100 overflow-hidden flex gap-0.5 p-0.5 border border-slate-200/60"
                 >
                   <div
                     style={{
                       width: `${stats.portfolioDistribution.Q1.percentage}%`,
                     }}
-                    className="bg-blue-600 h-full"
-                    title={`Q1 Journals: ${stats.portfolioDistribution.Q1.percentage}%`}
+                    className="bg-blue-600 h-full rounded-sm"
+                    title={`Q1 Journals: ${stats.portfolioDistribution.Q1.percentage}% (${stats.portfolioDistribution.Q1.count} papers)`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution.Q2.percentage}%`,
                     }}
-                    className="bg-emerald-600 h-full"
-                    title={`Q2 Journals: ${stats.portfolioDistribution.Q2.percentage}%`}
+                    className="bg-emerald-600 h-full rounded-sm"
+                    title={`Q2 Journals: ${stats.portfolioDistribution.Q2.percentage}% (${stats.portfolioDistribution.Q2.count} papers)`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution.Q3.percentage}%`,
                     }}
-                    className="bg-amber-500 h-full"
-                    title={`Q3 Journals: ${stats.portfolioDistribution.Q3.percentage}%`}
+                    className="bg-amber-500 h-full rounded-sm"
+                    title={`Q3 Journals: ${stats.portfolioDistribution.Q3.percentage}% (${stats.portfolioDistribution.Q3.count} papers)`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution.Q4.percentage}%`,
                     }}
-                    className="bg-rose-600 h-full"
-                    title={`Q4 Journals: ${stats.portfolioDistribution.Q4.percentage}%`}
+                    className="bg-rose-600 h-full rounded-sm"
+                    title={`Q4 Journals: ${stats.portfolioDistribution.Q4.percentage}% (${stats.portfolioDistribution.Q4.count} papers)`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution.Conference.percentage}%`,
                     }}
-                    className="bg-purple-600 h-full"
-                    title={`Conference: ${stats.portfolioDistribution.Conference.percentage}%`}
+                    className="bg-purple-600 h-full rounded-sm"
+                    title={`Conference: ${stats.portfolioDistribution.Conference.percentage}% (${stats.portfolioDistribution.Conference.count} papers)`}
                   />
                   <div
                     style={{
                       width: `${stats.portfolioDistribution['Non-Indexed'].percentage}%`,
                     }}
-                    className="bg-slate-600 h-full"
-                    title={`Others: ${stats.portfolioDistribution['Non-Indexed'].percentage}%`}
+                    className="bg-slate-500 h-full rounded-sm"
+                    title={`Others: ${stats.portfolioDistribution['Non-Indexed'].percentage}% (${stats.portfolioDistribution['Non-Indexed'].count} papers)`}
                   />
                 </div>
               </section>
@@ -1192,7 +1265,7 @@ export default function App() {
                 <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-bold text-slate-900">
-                      Leading Collaborating Institutions ({universities.length})
+                      Leading Collaborating Institutions ({collaboratingUnis.length})
                     </h3>
                     <button
                       type="button"
@@ -1203,7 +1276,7 @@ export default function App() {
                     </button>
                   </div>
                   <div className="divide-y divide-slate-100">
-                    {universities.slice(0, 5).map((uni) => (
+                    {collaboratingUnis.slice(0, 5).map((uni) => (
                       <div
                         key={uni.universityId}
                         className="py-2.5 flex items-center justify-between gap-3"
@@ -1303,6 +1376,7 @@ export default function App() {
               <PortfolioBreakdownSection
                 stats={stats}
                 countries={countries}
+                journals={journals}
                 onQuickFilterQuartile={handleQuickFilterQuartile}
                 onQuickFilterType={handleQuickFilterType}
                 onExportChartPng={handleRequestChartPng}

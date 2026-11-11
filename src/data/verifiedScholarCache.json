@@ -51,7 +51,7 @@
         "year": 2019,
         "citations": 352,
         "venue": "Energies",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -142,7 +142,8 @@
             "lng": 12.50378,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-1",
@@ -265,7 +266,8 @@
             "lng": 101.78333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 10.7
       },
       {
         "id": "gs-2",
@@ -340,7 +342,8 @@
             "lng": -3.60667,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 9.4
       },
       {
         "id": "gs-3",
@@ -348,7 +351,7 @@
         "year": 2022,
         "citations": 182,
         "venue": "IEEE Access",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -403,7 +406,8 @@
             "lng": 90.40744,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 4.2
       },
       {
         "id": "gs-4",
@@ -466,7 +470,8 @@
             "lng": -80.26838,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 4.2
       },
       {
         "id": "gs-5",
@@ -517,7 +522,8 @@
             "lng": 90.37438201904297,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 9.4
       },
       {
         "id": "gs-6",
@@ -1144,7 +1150,8 @@
             "lng": 2.3488,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 16.9
       },
       {
         "id": "gs-7",
@@ -1152,7 +1159,7 @@
         "year": 2021,
         "citations": 138,
         "venue": "Sustainability",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -1195,7 +1202,8 @@
             "lng": 116.39723,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.9
       },
       {
         "id": "gs-8",
@@ -1203,7 +1211,7 @@
         "year": 2023,
         "citations": 125,
         "venue": "Vehicles",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -1306,7 +1314,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-9",
@@ -1993,7 +2002,8 @@
             "lng": 2.3488,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 14.7
       },
       {
         "id": "gs-10",
@@ -2001,7 +2011,7 @@
         "year": 2021,
         "citations": 105,
         "venue": "Energy Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -2080,7 +2090,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5.2
       },
       {
         "id": "gs-11",
@@ -2431,7 +2442,8 @@
             "lng": 2.3488,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 4.6
       },
       {
         "id": "gs-12",
@@ -2878,7 +2890,8 @@
             "lng": 2.3488,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 44.7
       },
       {
         "id": "gs-13",
@@ -2953,7 +2966,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 7.5
       },
       {
         "id": "gs-14",
@@ -2961,7 +2975,7 @@
         "year": 2023,
         "citations": 80,
         "venue": "Energies",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -3064,7 +3078,8 @@
             "lng": 101.78333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-15",
@@ -3670,7 +3685,8 @@
             "lng": 2.3488,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 14.7
       },
       {
         "id": "gs-17",
@@ -3678,7 +3694,7 @@
         "year": 2020,
         "citations": 71,
         "venue": "Energy Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -3733,7 +3749,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5.2
       },
       {
         "id": "gs-18",
@@ -3820,7 +3837,8 @@
             "lng": 103.39959716796875,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 8
       },
       {
         "id": "gs-19",
@@ -4115,7 +4133,7 @@
         "year": 2022,
         "citations": 46,
         "venue": "Applied Sciences",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -4170,7 +4188,8 @@
             "lng": 90.40744,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-24",
@@ -4178,7 +4197,7 @@
         "year": 2021,
         "citations": 45,
         "venue": "Wind Energy",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -4245,7 +4264,8 @@
             "lng": 12.50378,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.6
       },
       {
         "id": "gs-25",
@@ -4316,7 +4336,7 @@
         "year": 2022,
         "citations": 36,
         "venue": "Physica Scripta",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -4467,7 +4487,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.9
       },
       {
         "id": "gs-27",
@@ -4605,7 +4626,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 6.8
       },
       {
         "id": "gs-29",
@@ -4821,7 +4843,8 @@
             "lng": 12.50378,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 6.6
       },
       {
         "id": "gs-33",
@@ -4829,7 +4852,7 @@
         "year": 2022,
         "citations": 26,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -4920,7 +4943,8 @@
             "lng": 31.431650161743164,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-34",
@@ -5007,7 +5031,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 7.5
       },
       {
         "id": "gs-35",
@@ -5114,7 +5139,7 @@
         "year": 2022,
         "citations": 23,
         "venue": "Energy Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -5193,7 +5218,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5.2
       },
       {
         "id": "gs-37",
@@ -5323,7 +5349,7 @@
         "year": 2008,
         "citations": 21,
         "venue": "International Journal of Computer Science and Network Security",
-        "quartile": "Q4",
+        "quartile": "Unranked",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -5511,7 +5537,7 @@
         "year": 2024,
         "citations": 19,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -5590,7 +5616,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-42",
@@ -5733,7 +5760,7 @@
         "year": 2022,
         "citations": 18,
         "venue": "International Journal of Electronics",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -5788,7 +5815,8 @@
             "lng": 90.37980651855469,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.4
       },
       {
         "id": "gs-44",
@@ -5796,7 +5824,7 @@
         "year": 2022,
         "citations": 18,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -5887,7 +5915,8 @@
             "lng": 90.37980651855469,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-45",
@@ -5895,7 +5924,7 @@
         "year": 2008,
         "citations": 17,
         "venue": "International Journal of Computer Science and Network Security",
-        "quartile": "Q4",
+        "quartile": "Unranked",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -5933,7 +5962,7 @@
         "year": 2023,
         "citations": 16,
         "venue": "Sustainability",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -6036,7 +6065,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.9
       },
       {
         "id": "gs-47",
@@ -6044,7 +6074,7 @@
         "year": 2023,
         "citations": 15,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -6087,7 +6117,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-48",
@@ -6158,7 +6189,7 @@
         "year": 2023,
         "citations": 14,
         "venue": "Sustainability",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -6261,7 +6292,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.9
       },
       {
         "id": "gs-50",
@@ -6467,7 +6499,7 @@
         "year": 2021,
         "citations": 13,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -6582,7 +6614,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-53",
@@ -6701,7 +6734,7 @@
         "year": 2021,
         "citations": 12,
         "venue": "Applied Sciences",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -6756,7 +6789,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-55",
@@ -6764,7 +6798,7 @@
         "year": 2010,
         "citations": 12,
         "venue": "International Journal of Computer Science and Network Security",
-        "quartile": "Q4",
+        "quartile": "Unranked",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -7399,7 +7433,7 @@
         "year": 2021,
         "citations": 8,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -7502,7 +7536,8 @@
             "lng": 90.40744,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-64",
@@ -7510,7 +7545,7 @@
         "year": 2020,
         "citations": 8,
         "venue": "Symmetry",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -7577,7 +7612,8 @@
             "lng": 103.7578,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-65",
@@ -7585,7 +7621,7 @@
         "year": 2014,
         "citations": 8,
         "venue": "Marine Technology Society Journal",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -7652,7 +7688,8 @@
             "lng": -80.26838,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1
       },
       {
         "id": "gs-66",
@@ -7660,7 +7697,7 @@
         "year": 2024,
         "citations": 7,
         "venue": "International Journal of Electronics Letters",
-        "quartile": "Q3",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -7715,7 +7752,8 @@
             "lng": 90.37980651855469,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.2
       },
       {
         "id": "gs-67",
@@ -7723,7 +7761,7 @@
         "year": 2022,
         "citations": 7,
         "venue": "International Journal of Thermofluids",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -7778,7 +7816,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 4.2
       },
       {
         "id": "gs-68",
@@ -8240,7 +8279,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 7.5
       },
       {
         "id": "gs-74",
@@ -8402,7 +8442,8 @@
             "lng": 103.39959716796875,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 8
       },
       {
         "id": "gs-76",
@@ -10201,7 +10242,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 7.5
       },
       {
         "id": "gs-94",
@@ -10346,7 +10388,7 @@
         "year": 2023,
         "citations": 2,
         "venue": "Vehicles",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -10424,7 +10466,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-97",
@@ -10634,7 +10677,8 @@
             "lng": 101.78333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 10.7
       },
       {
         "id": "gs-99",
@@ -10681,7 +10725,7 @@
         "year": 2020,
         "citations": 2,
         "venue": "Energy Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -10736,7 +10780,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5.2
       },
       {
         "id": "gs-100",
@@ -11133,7 +11178,7 @@
         "year": 2019,
         "citations": 2,
         "venue": "Energies",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -11224,7 +11269,8 @@
             "lng": 12.50378,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-102",
@@ -11518,7 +11564,7 @@
         "year": 2026,
         "citations": 1,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -11585,7 +11631,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-109",
@@ -11806,7 +11853,7 @@
         "year": 2023,
         "citations": 1,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -11873,7 +11920,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-113",
@@ -12444,7 +12492,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -12475,7 +12523,8 @@
             "lng": 12.50378,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-123",
@@ -13155,7 +13204,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Results in Engineering",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -13174,7 +13223,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5
       },
       {
         "id": "gs-132",
@@ -15021,7 +15071,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -15052,7 +15102,8 @@
             "lng": 12.50378,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.5
       }
     ]
   },
@@ -15402,7 +15453,8 @@
             "lng": -79.39864,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 44.7
       },
       {
         "id": "gs-9",
@@ -16583,7 +16635,8 @@
             "lng": -79.39864,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 44.7
       },
       {
         "id": "gs-46",
@@ -17642,7 +17695,8 @@
             "lng": -73.58781,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 44.7
       },
       {
         "id": "gs-70",
@@ -23980,7 +24034,7 @@
         "year": 2023,
         "citations": 224,
         "venue": "Energies",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -24071,7 +24125,8 @@
             "lng": -116.20345306396484,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-1",
@@ -24079,7 +24134,7 @@
         "year": 2021,
         "citations": 100,
         "venue": "Energy Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -24158,7 +24213,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5.2
       },
       {
         "id": "gs-2",
@@ -24317,7 +24373,8 @@
             "lng": 39.186241149902344,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 7.5
       },
       {
         "id": "gs-3",
@@ -24325,7 +24382,7 @@
         "year": 2023,
         "citations": 80,
         "venue": "Energies",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -24428,7 +24485,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-4",
@@ -24498,7 +24556,7 @@
         "year": 2020,
         "citations": 70,
         "venue": "Energy Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -24553,7 +24611,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5.2
       },
       {
         "id": "gs-6",
@@ -24604,7 +24663,8 @@
             "lng": 43.974971771240234,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 7.5
       },
       {
         "id": "gs-7",
@@ -24612,7 +24672,7 @@
         "year": 2024,
         "citations": 65,
         "venue": "Sustainability",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -24703,7 +24763,8 @@
             "lng": -3.18,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.9
       },
       {
         "id": "gs-8",
@@ -24790,7 +24851,8 @@
             "lng": 103.39959716796875,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 8
       },
       {
         "id": "gs-9",
@@ -24798,7 +24860,7 @@
         "year": 2019,
         "citations": 61,
         "venue": "Energies",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -24829,7 +24891,8 @@
             "lng": 90.40263366699219,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-10",
@@ -25039,7 +25102,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 6.8
       },
       {
         "id": "gs-12",
@@ -25141,7 +25205,8 @@
             "lng": 103.39959716796875,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 9.5
       },
       {
         "id": "gs-14",
@@ -25149,7 +25214,7 @@
         "year": 2023,
         "citations": 28,
         "venue": "Sustainability",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -25228,7 +25293,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.9
       },
       {
         "id": "gs-15",
@@ -25311,7 +25377,7 @@
         "year": 2022,
         "citations": 26,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -25377,7 +25443,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-17",
@@ -25464,7 +25531,8 @@
             "lng": 90.41734313964844,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 7.5
       },
       {
         "id": "gs-18",
@@ -25610,7 +25678,7 @@
         "year": 2022,
         "citations": 23,
         "venue": "Energy Reports",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -25689,7 +25757,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 5.2
       },
       {
         "id": "gs-21",
@@ -25798,7 +25867,7 @@
         "year": 2025,
         "citations": 20,
         "venue": "Energy Exploration & Exploitation",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -25877,7 +25946,8 @@
             "lng": 140.38333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.1
       },
       {
         "id": "gs-24",
@@ -25885,7 +25955,7 @@
         "year": 2024,
         "citations": 20,
         "venue": "The Journal of Engineering",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -25952,7 +26022,8 @@
             "lng": 140.38333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-25",
@@ -26046,7 +26117,7 @@
         "year": 2024,
         "citations": 19,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -26125,7 +26196,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-27",
@@ -26160,7 +26232,7 @@
         "year": 2022,
         "citations": 18,
         "venue": "International Journal of Electronics",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -26214,7 +26286,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.4
       },
       {
         "id": "gs-29",
@@ -26222,7 +26295,7 @@
         "year": 2022,
         "citations": 18,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -26313,7 +26386,8 @@
             "lng": 90.37980651855469,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-30",
@@ -26518,7 +26592,7 @@
         "year": 2023,
         "citations": 16,
         "venue": "Sustainability",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -26621,7 +26695,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.9
       },
       {
         "id": "gs-33",
@@ -26974,7 +27049,7 @@
         "year": 2023,
         "citations": 15,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "First Author",
         "openAccess": true,
@@ -27017,7 +27092,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-37",
@@ -27253,7 +27329,8 @@
             "lng": 43.974971771240234,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 10.7
       },
       {
         "id": "gs-40",
@@ -27261,7 +27338,7 @@
         "year": 2026,
         "citations": 14,
         "venue": "Energy Exploration & Exploitation",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -27340,7 +27417,8 @@
             "lng": 140.38333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.1
       },
       {
         "id": "gs-41",
@@ -27348,7 +27426,7 @@
         "year": 2024,
         "citations": 14,
         "venue": "Data in Brief",
-        "quartile": "Q1",
+        "quartile": "Q4",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -27415,7 +27493,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 1.5
       },
       {
         "id": "gs-42",
@@ -27423,7 +27502,7 @@
         "year": 2024,
         "citations": 14,
         "venue": "World Electric Vehicle Journal",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -27502,7 +27581,8 @@
             "lng": 140.11667,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.6
       },
       {
         "id": "gs-43",
@@ -27708,7 +27788,7 @@
         "year": 2021,
         "citations": 13,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -27823,7 +27903,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-46",
@@ -28917,7 +28998,7 @@
         "year": 2021,
         "citations": 8,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -28995,7 +29076,8 @@
             "lng": 0,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-62",
@@ -29003,7 +29085,7 @@
         "year": 2020,
         "citations": 8,
         "venue": "Symmetry",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -29070,7 +29152,8 @@
             "lng": 103.7578,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.7
       },
       {
         "id": "gs-63",
@@ -29263,7 +29346,7 @@
         "year": 2022,
         "citations": 7,
         "venue": "International Journal of Thermofluids",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -29329,7 +29412,8 @@
             "lng": 90.3744,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 4.2
       },
       {
         "id": "gs-66",
@@ -29387,7 +29471,7 @@
         "year": 2025,
         "citations": 6,
         "venue": "Energy Exploration & Exploitation",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -29442,7 +29526,8 @@
             "lng": 140.38333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.1
       },
       {
         "id": "gs-68",
@@ -30645,7 +30730,7 @@
         "year": 2026,
         "citations": 4,
         "venue": "Energy Science & Engineering",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -30748,7 +30833,8 @@
             "lng": 140.38333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 4
       },
       {
         "id": "gs-85",
@@ -31303,7 +31389,7 @@
         "year": 2026,
         "citations": 3,
         "venue": "Journal of Renewable and Sustainable Energy",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": false,
@@ -31382,7 +31468,8 @@
             "lng": 140.38333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.5
       },
       {
         "id": "gs-93",
@@ -32475,7 +32562,7 @@
         "year": 2025,
         "citations": 2,
         "venue": "Energy Exploration & Exploitation",
-        "quartile": "Q1",
+        "quartile": "Q3",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -32566,7 +32653,8 @@
             "lng": 144.96331787109375,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.1
       },
       {
         "id": "gs-109",
@@ -35106,7 +35194,7 @@
         "year": 2023,
         "citations": 1,
         "venue": "Electronics",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Co-Author",
         "openAccess": true,
@@ -35173,7 +35261,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": true
           }
-        ]
+        ],
+        "impactFactor": 3.2
       },
       {
         "id": "gs-144",
@@ -35903,7 +35992,7 @@
         "year": 2026,
         "citations": 0,
         "venue": "Results in Engineering",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -35946,7 +36035,8 @@
             "lng": 90.40744018554688,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 5
       },
       {
         "id": "gs-156",
@@ -38234,7 +38324,7 @@
         "year": 2024,
         "citations": 0,
         "venue": "IET Generation Transmission & Distribution",
-        "quartile": "Q1",
+        "quartile": "Q2",
         "type": "Journal",
         "authorshipRole": "Corresponding Author",
         "openAccess": true,
@@ -38301,7 +38391,8 @@
             "lng": 140.38333,
             "isHomeInstitution": false
           }
-        ]
+        ],
+        "impactFactor": 2.5
       },
       {
         "id": "gs-189",

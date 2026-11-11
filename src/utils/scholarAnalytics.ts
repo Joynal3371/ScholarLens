@@ -100,78 +100,78 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'nature': 50.5,
   'science': 44.7,
   'nature communications': 14.7,
-  'scientific reports': 3.8,
+  'scientific reports': 4.3,
   'science advances': 11.7,
-  'pnas': 9.4,
-  'proceedings of the national academy of sciences': 9.4,
-  'heliyon': 3.4,
-  'plos one': 2.9,
+  'pnas': 9.5,
+  'proceedings of the national academy of sciences': 9.5,
+  'heliyon': 4.0,
+  'plos one': 3.7,
 
   // Medical / Neuroscience / Life Sciences
   'jama': 63.1,
   'the lancet': 98.4,
-  'neuron': 14.7,
+  'neuron': 16.9,
   'nature reviews. neuroscience': 28.7,
   'nature reviews neuroscience': 28.7,
   'nature biomedical engineering': 27.8,
-  'embo reports': 6.5,
-  'development': 3.6,
+  'embo reports': 7.4,
+  'development': 4.6,
   'biomed research international': 2.6,
-  'frontiers in plant science': 4.1,
-  'statistics in medicine': 1.8,
+  'frontiers in plant science': 4.5,
+  'statistics in medicine': 2.4,
   'int j pharm': 5.8,
   'international journal of pharmaceutics': 5.8,
-  'neuroimage': 4.7,
+  'neuroimage': 5.7,
 
   // AI / Computer Science / Vision / Robotics
   'ieee transactions on pattern analysis and machine intelligence': 20.8,
   'ieee transactions on neural networks': 10.4,
   'ieee transactions on neural networks and learning systems': 10.4,
-  'ieee transactions on communications': 7.2,
+  'ieee transactions on communications': 8.3,
   'ieee/acm transactions on audio speech and language processing': 4.3,
-  'expert systems with applications': 7.5,
-  'knowledge-based systems': 7.2,
-  'neural networks': 6.0,
-  'journal of machine learning research': 5.2,
+  'expert systems with applications': 9.4,
+  'knowledge-based systems': 8.8,
+  'neural networks': 7.8,
+  'journal of machine learning research': 6.0,
   'computer speech & language': 3.2,
   'scholarpedia': 2.8,
-  'array': 2.7,
-  'electronics': 2.6,
-  'applied sciences': 2.5,
+  'array': 3.2,
+  'electronics': 3.2,
+  'applied sciences': 2.7,
   'international journal of computer applications': 1.5,
-  'ieee access': 3.4,
-  'sensors': 3.4,
+  'ieee access': 4.2,
+  'sensors': 3.9,
 
   // Energy / Renewable / Engineering / Physics / Materials
   'applied energy': 11.2,
-  'renewable energy': 9.0,
-  'journal of energy storage': 8.9,
-  'sustainable energy technologies and assessments': 7.1,
-  'case studies in thermal engineering': 6.4,
-  'composite structures': 6.3,
-  'energy conversion and management: x': 6.1,
-  'energy conversion and management': 9.9,
-  'energy reports': 4.7,
-  'results in engineering': 4.5,
+  'renewable energy': 9.5,
+  'journal of energy storage': 10.7,
+  'sustainable energy technologies and assessments': 8.0,
+  'case studies in thermal engineering': 6.8,
+  'composite structures': 6.6,
+  'energy conversion and management: x': 7.5,
+  'energy conversion and management': 10.4,
+  'energy reports': 5.2,
+  'results in engineering': 5.0,
   'remote sensing': 4.2,
-  'international journal of thermofluids': 3.8,
+  'international journal of thermofluids': 4.2,
   'wind energy': 3.6,
-  'energy science & engineering': 3.6,
-  'sustainability': 3.3,
-  'energies': 3.0,
-  'physica scripta': 2.6,
+  'energy science & engineering': 4.0,
+  'sustainability': 3.9,
+  'energies': 3.2,
+  'physica scripta': 2.9,
   'world electric vehicle journal': 2.6,
   'iet generation transmission & distribution': 2.5,
-  'symmetry': 2.2,
-  'vehicles': 2.2,
+  'symmetry': 2.7,
+  'vehicles': 2.6,
   'energy exploration & exploitation': 2.1,
-  'journal of renewable and sustainable energy': 2.1,
+  'journal of renewable and sustainable energy': 2.5,
   'physica d nonlinear phenomena': 2.1,
   'the journal of engineering': 1.5,
   'international journal of electronics': 1.4,
-  'data in brief': 1.2,
+  'data in brief': 1.5,
   'marine technology society journal': 1.0,
-  'international journal of electronics letters': 0.9,
+  'international journal of electronics letters': 1.2,
   'international journal of computer science and network security': 0.5,
   'international journal of scientific & engineering research': 1.4,
   'the international journal of scientific and engineering research': 1.4,
@@ -184,6 +184,110 @@ export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
   'metals': 2.6,
   'data': 2.6,
 };
+
+/**
+ * Authoritative Journal Quartile Catalog (Clarivate JCR SCIE/SSCI & Scopus).
+ * Provides grounded, official quartiles for widely-indexed scientific venues.
+ */
+export const AUTHORITATIVE_JOURNAL_QUARTILES: Record<string, Quartile> = {
+  // Q1 Journals
+  'nature': 'Q1',
+  'science': 'Q1',
+  'nature communications': 'Q1',
+  'science advances': 'Q1',
+  'pnas': 'Q1',
+  'proceedings of the national academy of sciences': 'Q1',
+  'neuron': 'Q1',
+  'jama': 'Q1',
+  'the lancet': 'Q1',
+  'nature reviews neuroscience': 'Q1',
+  'nature reviews. neuroscience': 'Q1',
+  'nature biomedical engineering': 'Q1',
+  'embo reports': 'Q1',
+  'development': 'Q1',
+  'ieee transactions on pattern analysis and machine intelligence': 'Q1',
+  'ieee transactions on neural networks': 'Q1',
+  'ieee transactions on neural networks and learning systems': 'Q1',
+  'ieee transactions on communications': 'Q1',
+  'expert systems with applications': 'Q1',
+  'knowledge-based systems': 'Q1',
+  'neural networks': 'Q1',
+  'journal of machine learning research': 'Q1',
+  'applied energy': 'Q1',
+  'renewable energy': 'Q1',
+  'journal of energy storage': 'Q1',
+  'sustainable energy technologies and assessments': 'Q1',
+  'case studies in thermal engineering': 'Q1',
+  'composite structures': 'Q1',
+  'energy conversion and management: x': 'Q1',
+  'energy conversion and management': 'Q1',
+  'remote sensing': 'Q1',
+  'psychological review': 'Q1',
+
+  // Q2 Journals
+  'ieee access': 'Q2',
+  'sustainability': 'Q2',
+  'energy reports': 'Q2',
+  'results in engineering': 'Q2',
+  'vehicles': 'Q2',
+  'international journal of thermofluids': 'Q2',
+  'wind energy': 'Q2',
+  'energy science & engineering': 'Q2',
+  'physica scripta': 'Q2',
+  'world electric vehicle journal': 'Q2',
+  'iet generation transmission & distribution': 'Q2',
+  'symmetry': 'Q2',
+  'electronics': 'Q2',
+  'applied sciences': 'Q2',
+  'sensors': 'Q2',
+  'plos one': 'Q2',
+  'scientific reports': 'Q2',
+  'heliyon': 'Q2',
+  'frontiers in plant science': 'Q2',
+  'biomed research international': 'Q2',
+  'computer speech & language': 'Q2',
+  'ieee/acm transactions on audio speech and language processing': 'Q2',
+  'cognition': 'Q2',
+  'topics in cognitive science': 'Q2',
+  'physica d nonlinear phenomena': 'Q2',
+  'metals': 'Q2',
+  'data': 'Q2',
+  'array': 'Q2',
+
+  // Q3 Journals
+  'energies': 'Q3',
+  'energy exploration & exploitation': 'Q3',
+  'journal of renewable and sustainable energy': 'Q3',
+  'the journal of engineering': 'Q3',
+  'perception': 'Q3',
+  'journal of motor behavior': 'Q3',
+  'scientific american': 'Q3',
+  'statistics in medicine': 'Q3',
+
+  // Q4 Journals
+  'international journal of electronics': 'Q4',
+  'data in brief': 'Q4',
+  'marine technology society journal': 'Q4',
+  'international journal of electronics letters': 'Q4',
+  'international journal of computer applications': 'Q4',
+  'international journal of computer science and network security': 'Unranked',
+};
+
+export function getAuthoritativeQuartile(venue: string): Quartile | undefined {
+  const clean = (venue || '').toLowerCase().trim();
+  if (!clean || clean === 'academic venue' || clean === 'unranked') return undefined;
+  if (AUTHORITATIVE_JOURNAL_QUARTILES[clean]) return AUTHORITATIVE_JOURNAL_QUARTILES[clean];
+
+  const simplified = clean.replace(/[:\-.,&]/g, ' ').replace(/\s+/g, ' ').trim();
+  for (const [vKey, val] of Object.entries(AUTHORITATIVE_JOURNAL_QUARTILES)) {
+    const vSimplified = vKey.replace(/[:\-.,&]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (simplified === vSimplified) return val;
+  }
+  for (const [vKey, val] of Object.entries(AUTHORITATIVE_JOURNAL_QUARTILES)) {
+    if (vKey.length >= 6 && (clean.startsWith(vKey) || clean === vKey)) return val;
+  }
+  return undefined;
+}
 
 /**
  * Returns the authoritative Clarivate Journal Impact Factor (JIF) for a given venue.
@@ -287,7 +391,8 @@ export function normalizePublicationsVenueConsistency(
     const key = (p.venue || '').toLowerCase().trim();
     const canon = canonicalMap.get(key);
     const targetVenue = canon ? canon.venue : p.venue;
-    const targetQuartile = canon ? canon.quartile : p.quartile;
+    const authoritativeQ = getAuthoritativeQuartile(targetVenue);
+    const targetQuartile = authoritativeQ || (canon ? canon.quartile : p.quartile);
     const targetType = canon ? canon.type : p.type;
     const impactFactor = getJournalImpactFactor(targetVenue, targetType, p.impactFactor);
 
@@ -435,6 +540,7 @@ export interface JournalSummary {
   venue: string;
   type: PublicationType;
   quartile: Quartile;
+  impactFactor?: number;
   paperCount: number;
   totalCitations: number;
   avgCitations: number;
@@ -1143,27 +1249,6 @@ export function aggregateUniversityCollaborations(
   }
 
   for (const pub of publications) {
-    // If researcher is affiliated with home university, attribute publication to home institution
-    if (
-      homeProfile &&
-      homeProfile.homeUniversityId &&
-      uniMap.has(homeProfile.homeUniversityId)
-    ) {
-      const homeEntry = uniMap.get(homeProfile.homeUniversityId)!;
-      homeEntry.papers.set(pub.id, pub);
-      if (!homeEntry.authorMap.has(homeProfile.name)) {
-        homeEntry.authorMap.set(homeProfile.name, {
-          paperIds: new Set(),
-          citations: 0,
-        });
-      }
-      const hAuthor = homeEntry.authorMap.get(homeProfile.name)!;
-      if (!hAuthor.paperIds.has(pub.id)) {
-        hAuthor.paperIds.add(pub.id);
-        hAuthor.citations += pub.citations;
-      }
-    }
-
     for (const ca of pub.coAuthors) {
       if (ca.universityId === 'unlisted') continue;
       if (!uniMap.has(ca.universityId)) {
@@ -1192,6 +1277,13 @@ export function aggregateUniversityCollaborations(
     const papers = Array.from(data.papers.values()).sort(
       (a, b) => b.citations - a.citations
     );
+    // Skip external partner institutions with zero papers
+    if (
+      papers.length === 0 &&
+      (!homeProfile || universityId !== homeProfile.homeUniversityId)
+    ) {
+      continue;
+    }
     const totalCitations = papers.reduce((acc, p) => acc + p.citations, 0);
     const q1PaperCount = papers.filter((p) => p.quartile === 'Q1').length;
     const years = papers.map((p) => p.year);
@@ -1203,6 +1295,11 @@ export function aggregateUniversityCollaborations(
         citations: stats.citations,
       }))
       .sort((a, b) => b.paperCount - a.paperCount || b.citations - a.citations);
+
+    const firstCollaborationYear =
+      years.length > 0 ? Math.min(...years) : new Date().getFullYear();
+    const latestCollaborationYear =
+      years.length > 0 ? Math.max(...years) : new Date().getFullYear();
 
     results.push({
       universityId,
@@ -1221,8 +1318,8 @@ export function aggregateUniversityCollaborations(
       q1PaperCount,
       coAuthors,
       papers,
-      firstCollaborationYear: Math.min(...years),
-      latestCollaborationYear: Math.max(...years),
+      firstCollaborationYear,
+      latestCollaborationYear,
     });
   }
 
@@ -1395,10 +1492,12 @@ export function aggregateJournals(publications: Publication[]): JournalSummary[]
     .map(([venue, papers]) => {
       const sample = papers[0];
       const totalCitations = papers.reduce((acc, p) => acc + p.citations, 0);
+      const impactFactor = getJournalImpactFactor(venue, sample.impactFactor);
       return {
         venue,
         type: sample.type,
         quartile: sample.quartile,
+        impactFactor,
         paperCount: papers.length,
         totalCitations,
         avgCitations: Number((totalCitations / papers.length).toFixed(1)),

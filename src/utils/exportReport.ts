@@ -358,17 +358,27 @@ export async function generateResearcherPdfReport(params: {
   // =========================================================================
 
   // Academic Dossier Header Banner (Enlarged with Name, Affiliation, and Google Scholar)
+  const hasAvatar = Boolean(avatarPngUrl);
+  const textLeftX = hasAvatar ? margin + 28.5 : margin;
+  const maxLeftTextW = pageW - textLeftX - margin;
+
+  const affilStr = profile.affiliation
+    ? profile.affiliation
+    : 'Google Scholar Profile';
+  const affilLines = doc.splitTextToSize(affilStr, maxLeftTextW);
+  const isMultiLineAffil = affilLines.length > 1;
+  const headerBannerH = isMultiLineAffil ? 39.5 : 35.5;
+
   doc.setFillColor(248, 250, 252);
-  doc.rect(0, 0, pageW, 35.5, 'F');
+  doc.rect(0, 0, pageW, headerBannerH, 'F');
   doc.setFillColor(15, 23, 42);
   doc.rect(0, 0, pageW, 2.0, 'F');
   doc.setDrawColor(203, 213, 225);
-  doc.line(0, 35.3, pageW, 35.3);
+  doc.line(0, headerBannerH - 0.2, pageW, headerBannerH - 0.2);
   doc.setFillColor(30, 58, 138);
-  doc.rect(0, 34.5, pageW, 0.8, 'F');
+  doc.rect(0, headerBannerH - 1.0, pageW, 0.8, 'F');
 
   // Draw Google Scholar Researcher Portrait on Left
-  const hasAvatar = Boolean(avatarPngUrl);
   if (avatarPngUrl) {
     try {
       doc.addImage(avatarPngUrl, 'PNG', margin, 5.2, 24.5, 24.5);
@@ -377,22 +387,19 @@ export async function generateResearcherPdfReport(params: {
     }
   }
 
-  const textLeftX = hasAvatar ? margin + 28.5 : margin;
-  const maxLeftTextW = pageW - textLeftX - margin;
-
   doc.setTextColor(15, 23, 42);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16.5);
-  doc.text(profile.name, textLeftX, 13.0);
+  doc.text(profile.name, textLeftX, 12.5);
 
-  const affilStr = profile.affiliation
-    ? profile.affiliation
-    : 'Google Scholar Profile';
-  const affilLines = doc.splitTextToSize(affilStr, maxLeftTextW);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.0);
+  doc.setFontSize(8.8);
   doc.setTextColor(51, 65, 85);
-  doc.text(affilLines[0], textLeftX, 19.0);
+  let curHeaderY = 17.5;
+  for (let i = 0; i < Math.min(2, affilLines.length); i++) {
+    doc.text(affilLines[i], textLeftX, curHeaderY);
+    curHeaderY += 4.0;
+  }
 
   // Research Areas directly under Affiliation (ABOVE Google Scholar link)
   const domainStr =
@@ -402,9 +409,12 @@ export async function generateResearcherPdfReport(params: {
   if (domainStr) {
     const domainLines = doc.splitTextToSize(domainStr, maxLeftTextW);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.6);
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text(domainLines[0], textLeftX, 23.8);
+    doc.text(domainLines[0], textLeftX, curHeaderY + 0.5);
+    curHeaderY += 4.5;
+  } else {
+    curHeaderY += 1.0;
   }
 
   // Google Scholar Profile Link BELOW Research Areas
@@ -412,11 +422,11 @@ export async function generateResearcherPdfReport(params: {
   doc.setFontSize(8.2);
   doc.setTextColor(29, 78, 216);
   const scholarLabel = 'Google Scholar Profile';
-  doc.textWithLink(scholarLabel, textLeftX, 29.5, { url: profile.scholarUrl });
+  doc.textWithLink(scholarLabel, textLeftX, curHeaderY + 1.0, { url: profile.scholarUrl });
   const scholarW = (doc.getStringUnitWidth(scholarLabel) * 8.2) / (72 / 25.4);
-  doc.link(textLeftX, 26.5, scholarW, 4.2, { url: profile.scholarUrl });
+  doc.link(textLeftX, curHeaderY - 2.0, scholarW, 4.2, { url: profile.scholarUrl });
 
-  y = 39.5;
+  y = headerBannerH + 4.5;
 
   // -------------------------------------------------------------------------
   // SECTION 1: CORE BIBLIOMETRIC INDICATORS (KPI GRID WITHOUT Q1+Q2 COMBINED)
@@ -772,6 +782,10 @@ export async function generateResearcherPdfReport(params: {
 
   const siteAnalyticsCharts: { id: string; title: string }[] = [
     {
+      id: 'chart-top-impact-journals',
+      title: 'Top 5 High-Impact Publishing Venues',
+    },
+    {
       id: 'chart-quartile-donut',
       title: 'Quartile & Indexing Distribution',
     },
@@ -801,14 +815,22 @@ export async function generateResearcherPdfReport(params: {
   const chartGapX = 5.0;
   const chartGapY = 4.5;
   const chartCardW = (contentW - chartGapX * (chartCols - 1)) / chartCols;
-  const chartCardH = 81.0;
+  const chartCardH = 75.0;
 
+  let chartRowOnPage = 0;
   for (let i = 0; i < siteAnalyticsCharts.length; i++) {
     const item = siteAnalyticsCharts[i];
     const col = i % chartCols;
-    const row = Math.floor(i / chartCols);
+    if (col === 0 && i > 0) {
+      chartRowOnPage++;
+      if (y + (chartRowOnPage + 1) * (chartCardH + chartGapY) > 284) {
+        doc.addPage();
+        y = 14;
+        chartRowOnPage = 0;
+      }
+    }
     const cardX = margin + col * (chartCardW + chartGapX);
-    const cardY = y + row * (chartCardH + chartGapY);
+    const cardY = y + chartRowOnPage * (chartCardH + chartGapY);
 
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(226, 232, 240);
@@ -1082,8 +1104,13 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.8);
     doc.setTextColor(15, 23, 42);
+    const ifVal = j.impactFactor;
+    const ifLabel = ifVal ? ` [JIF ${ifVal.toFixed(1)}]` : '';
+    const baseName = j.venue;
     const venueFullName =
-      j.venue.length > 52 ? j.venue.slice(0, 51) + '…' : j.venue;
+      (baseName + ifLabel).length > 52
+        ? baseName.slice(0, Math.max(10, 50 - ifLabel.length)) + '…' + ifLabel
+        : baseName + ifLabel;
     doc.text(venueFullName, rightCardX + 8.5, ry + 3.0);
 
     // Line 2: Proportional Color Bar Line (1.6mm below text, never touching)
@@ -1096,6 +1123,14 @@ export async function generateResearcherPdfReport(params: {
 
     // Line 3: Paper and Citation Numbers (2.4mm below the bar, never touching)
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.8);
+    doc.setTextColor(100, 116, 139);
+    const ifText = ifVal ? ` · Clarivate JIF: ${ifVal.toFixed(1)}` : '';
+    doc.text(
+      `${j.paperCount} ${j.paperCount === 1 ? 'paper' : 'papers'} · ${j.totalCitations.toLocaleString()} citations${ifText}`,
+      rightCardX + 8.5,
+      ry + 8.6
+    );
     doc.setFontSize(5.8);
     doc.setTextColor(100, 116, 139);
     doc.text(

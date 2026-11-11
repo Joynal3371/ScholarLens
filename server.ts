@@ -13,6 +13,7 @@ import {
   OfficialScholarMetrics,
   normalizePublicationsVenueConsistency,
   getJournalImpactFactor,
+  getAuthoritativeQuartile,
 } from './src/utils/scholarAnalytics';
 
 dotenv.config();
@@ -1665,6 +1666,11 @@ function classifyQuartileFromOfficialMetrics(
     return 'Unranked';
   }
 
+  const authQ = getAuthoritativeQuartile(venue);
+  if (authQ) {
+    return authQ;
+  }
+
   if (!sourceMetrics) {
     return 'Unranked';
   }
@@ -1699,16 +1705,16 @@ function classifyQuartileFromOfficialMetrics(
 
   // If computed via OpenAlex / Scopus 2-year mean citedness & h-index
   if (
-    impact2Yr >= 2.5 ||
-    hIdx >= 55 ||
-    (worksCount >= 1000 && impact2Yr >= 2.0)
+    impact2Yr >= 6.0 ||
+    hIdx >= 100 ||
+    (worksCount >= 1000 && impact2Yr >= 4.8)
   ) {
     return 'Q1';
   }
-  if (impact2Yr >= 1.4 || hIdx >= 28) {
+  if (impact2Yr >= 3.0 || hIdx >= 45) {
     return 'Q2';
   }
-  if (impact2Yr >= 0.7 || hIdx >= 14) {
+  if (impact2Yr >= 1.4 || hIdx >= 18) {
     return 'Q3';
   }
   if (hasIssn || impact2Yr >= 0.2 || hIdx >= 5 || sourceMetrics.is_core) {
@@ -3882,8 +3888,14 @@ app.get('/api/scholar/analyze', async (req, res) => {
     }
 
     if (snapMatch) {
+      const normalizedPubs = normalizePublicationsVenueConsistency(
+        snapMatch.publications || []
+      );
       const snapPayload = {
-        profile: snapMatch,
+        profile: {
+          ...snapMatch,
+          publications: normalizedPubs,
+        },
         source: 'scholar-verified-official-snapshot',
       };
       profileCache.set(cacheKey, {
