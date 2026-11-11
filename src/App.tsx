@@ -384,7 +384,9 @@ export default function App() {
 
   const coAuthors = useMemo(
     () =>
-      activeProfile ? aggregateCoAuthors(activeProfile.publications) : [],
+      activeProfile
+        ? aggregateCoAuthors(activeProfile.publications, activeProfile.name)
+        : [],
     [activeProfile]
   );
 

@@ -1431,7 +1431,13 @@ export function aggregateUniversityCollaborations(
       const entry = uniMap.get(cKey)!;
       entry.papers.set(pub.id, pub);
 
-      // Add ca STRICTLY to ca's own university (never to another institution):
+      // Add ca STRICTLY to ca's own university (never to another institution),
+      // and DO NOT add the primary target researcher as a co-author of themselves:
+      const selfName = homeProfile?.name || pub.authorAffiliation?.name || '';
+      if (selfName && isSameResearcherName(ca.name, selfName)) {
+        continue;
+      }
+
       if (!entry.authorMap.has(ca.name)) {
         entry.authorMap.set(ca.name, { paperIds: new Set(), citations: 0 });
       }
@@ -1565,10 +1571,89 @@ export function aggregateUniversityCollaborations(
 }
 
 /**
- * Aggregates complete list of co-authors across all publications.
+ * Strips common academic honorifics and titles for accurate researcher identity matching.
+ */
+export function stripAcademicHonorifics(rawName: string): string {
+  return rawName
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(
+      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee)\b\.?/gi,
+      ' '
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Checks whether candidate name refers to the same researcher, tolerating transliterations,
+ * middle initials, and title prefixes.
+ */
+export function isSameResearcherName(
+  candidateName: string,
+  targetName: string
+): boolean {
+  if (!candidateName || !targetName) return false;
+  const c = stripAcademicHonorifics(candidateName)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const t = stripAcademicHonorifics(targetName)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!c || !t) return false;
+  if (c === t) return true;
+
+  // Normalized phonetic comparison for common international transliteration variants (v/b, w/v)
+  const cNorm = c.replace(/v|w/g, 'b');
+  const tNorm = t.replace(/v|w/g, 'b');
+  if (cNorm === tNorm) return true;
+
+  const cTokens = c.split(/\s+/).filter(Boolean);
+  const tTokens = t.split(/\s+/).filter(Boolean);
+
+  // Support reversed name order (e.g. East Asian "Li Fei-Fei" <-> "Fei-Fei Li")
+  if (
+    cTokens.length >= 2 &&
+    cTokens.length === tTokens.length &&
+    [...cTokens].sort().join(' ') === [...tTokens].sort().join(' ')
+  ) {
+    return true;
+  }
+
+  // Handle first initial + surname (e.g. "F Blaabjerg" vs "Frede Blaabjerg")
+  const tLast = tTokens[tTokens.length - 1];
+  const cLast = cTokens[cTokens.length - 1];
+  if (
+    tLast &&
+    cLast &&
+    (tLast === cLast || tLast.replace(/v|w/g, 'b') === cLast.replace(/v|w/g, 'b'))
+  ) {
+    const tFirst = tTokens[0] || '';
+    const cFirst = cTokens[0] || '';
+    if (tFirst && cFirst) {
+      if (tFirst === cFirst) return true;
+      if (tFirst[0] === cFirst[0] && (tFirst.length === 1 || cFirst.length === 1)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Aggregates complete list of co-authors across all publications, excluding the primary researcher.
  */
 export function aggregateCoAuthors(
-  publications: Publication[]
+  publications: Publication[],
+  primaryResearcherName?: string
 ): CoAuthorSummary[] {
   const authorMap = new Map<
     string,
@@ -1578,8 +1663,14 @@ export function aggregateCoAuthors(
     }
   >();
 
+  const targetName = primaryResearcherName?.trim() || '';
+
   for (const pub of publications) {
+    const selfName = targetName || pub.authorAffiliation?.name || '';
     for (const ca of pub.coAuthors) {
+      if (selfName && isSameResearcherName(ca.name, selfName)) {
+        continue;
+      }
       if (!authorMap.has(ca.name)) {
         authorMap.set(ca.name, { meta: ca, papers: new Map() });
       } else if (

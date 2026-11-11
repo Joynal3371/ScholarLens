@@ -40933,18 +40933,6 @@ var verifiedScholarCache_default = {
         ],
         coAuthors: [
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Remus Teodorescu",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -41039,18 +41027,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Pedro Rodr\xEDguez",
             universityId: "abengoa-spain",
             universityName: "Abengoa (Spain)",
@@ -41118,18 +41094,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -41187,18 +41151,6 @@ var verifiedScholarCache_default = {
             lat: 30.6187,
             lng: -96.3365,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -41233,18 +41185,6 @@ var verifiedScholarCache_default = {
           "S\xF8ren B\xE6kh\xF8j Kj\xE6r"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Zhe Chen",
             universityId: "aalborg-university",
@@ -41313,18 +41253,6 @@ var verifiedScholarCache_default = {
             lat: 41.1207,
             lng: 16.8698,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Steffan Hansen",
@@ -41410,18 +41338,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Brad Lehman",
             universityId: "northeastern-university",
             universityName: "Northeastern University",
@@ -41468,18 +41384,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Remus Teodorescu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -41570,18 +41474,6 @@ var verifiedScholarCache_default = {
             lat: 41.3879,
             lng: 2.1154,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -41617,18 +41509,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Huai Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -41695,18 +41575,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -41742,18 +41610,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Xiongfei Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -41811,18 +41667,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Remus Teodorescu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -41928,18 +41772,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -41997,18 +41829,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -42045,18 +41865,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Shuai Zhao",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -42135,18 +41943,6 @@ var verifiedScholarCache_default = {
             lat: 41.1207,
             lng: 16.8698,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -42230,18 +42026,6 @@ var verifiedScholarCache_default = {
             lat: 41.3879,
             lng: 2.1154,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -42276,18 +42060,6 @@ var verifiedScholarCache_default = {
           "Ke Ma"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Marco Liserre",
             universityId: "polytechnic-university-of-bari",
@@ -42397,18 +42169,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Lennart Harnefors",
             universityId: "abb-sweden",
             universityName: "ABB (Sweden)",
@@ -42476,18 +42236,6 @@ var verifiedScholarCache_default = {
             lat: 47.3769,
             lng: 8.5417,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -42521,18 +42269,6 @@ var verifiedScholarCache_default = {
           "Ke Ma"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Ke Ma",
             universityId: "aalborg-university",
@@ -42640,18 +42376,6 @@ var verifiedScholarCache_default = {
             lat: 41.1207,
             lng: 16.8698,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -42688,18 +42412,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Xiongfei Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -42782,18 +42494,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yi Chai",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -42886,18 +42586,6 @@ var verifiedScholarCache_default = {
             lat: 41.1207,
             lng: 16.8698,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -42959,18 +42647,6 @@ var verifiedScholarCache_default = {
             lat: 54.3468,
             lng: 10.1224,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Peter de Place Rimmen",
@@ -43066,18 +42742,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Kyo\u2010Beum Lee",
             universityId: "ajou-university",
             universityName: "Ajou University",
@@ -43133,18 +42797,6 @@ var verifiedScholarCache_default = {
             lat: 41.0255,
             lng: 40.5177,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Ariya Sangwongwanich",
@@ -43253,18 +42905,6 @@ var verifiedScholarCache_default = {
             lat: 2.9691,
             lng: 101.7317,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -43322,18 +42962,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Poh Chiang Loh",
@@ -43426,18 +43054,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -43473,18 +43089,6 @@ var verifiedScholarCache_default = {
           "Xiongfei Wang"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Yongheng Yang",
             universityId: "aalborg-university",
@@ -43590,18 +43194,6 @@ var verifiedScholarCache_default = {
             lat: 1.3483,
             lng: 103.6831,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -43697,18 +43289,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -43766,18 +43346,6 @@ var verifiedScholarCache_default = {
             lat: 45.4215,
             lng: -75.6972,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Poh Chiang Loh",
@@ -43838,18 +43406,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Remus Teodorescu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -43930,18 +43486,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Gil Domingos Marques",
             universityId: "instituto-superior-t-cnico",
             universityName: "Instituto Superior T\xE9cnico",
@@ -44002,18 +43546,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Marco Liserre",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -44115,18 +43647,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -44235,18 +43755,6 @@ var verifiedScholarCache_default = {
             lat: -33.8886,
             lng: 151.1873,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -44317,18 +43825,6 @@ var verifiedScholarCache_default = {
             lat: 1.3483,
             lng: 103.6831,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -44535,18 +44031,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Tobias Geyer",
             universityId: "abb-switzerland",
             universityName: "ABB (Switzerland)",
@@ -44721,18 +44205,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -44806,18 +44278,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Claus Leth Bak",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -44872,18 +44332,6 @@ var verifiedScholarCache_default = {
             lat: 55.7704,
             lng: 12.5038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -44929,18 +44377,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "O. Garc\xEDa",
@@ -45034,18 +44470,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Gil Domingos Marques",
             universityId: "instituto-superior-t-cnico",
             universityName: "Instituto Superior T\xE9cnico",
@@ -45125,18 +44549,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -45254,18 +44666,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -45317,18 +44717,6 @@ var verifiedScholarCache_default = {
             lat: 41.3879,
             lng: 2.1154,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Toshko K. Zhelev",
@@ -45478,18 +44866,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -45550,18 +44926,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Josep Maria Guerrero",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -45653,18 +45017,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -45747,18 +45099,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -45808,18 +45148,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Marco Liserre",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -45927,18 +45255,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Pierluigi Siano",
             universityId: "university-of-salerno",
             universityName: "University of Salerno",
@@ -46019,18 +45335,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -46067,18 +45371,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Lucian Asiminoael",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -46195,18 +45487,6 @@ var verifiedScholarCache_default = {
             lat: 1.3483,
             lng: 103.6831,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -46250,18 +45530,6 @@ var verifiedScholarCache_default = {
             lat: 37.9838,
             lng: 23.7275,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -46297,18 +45565,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Remus Teodorescu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -46401,18 +45657,6 @@ var verifiedScholarCache_default = {
             lat: -33.8886,
             lng: 151.1873,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -46473,18 +45717,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "H. Nielsen",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -46556,18 +45788,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Jens Bo Holm\u2010Nielsen",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -46659,18 +45879,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -46708,18 +45916,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Remus Teodorescu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -46848,18 +46044,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -46929,18 +46113,6 @@ var verifiedScholarCache_default = {
             lat: 1.3521,
             lng: 103.8198,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -47024,18 +46196,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Natarajan Rajasekar",
             universityId: "vellore-institute-of-technology-university",
             universityName: "Vellore Institute of Technology University",
@@ -47093,18 +46253,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yuanbin He",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -47210,18 +46358,6 @@ var verifiedScholarCache_default = {
             lat: 54.3468,
             lng: 10.1224,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -47304,18 +46440,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -47454,18 +46578,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Josep Maria Guerrero",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -47524,18 +46636,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Xiongfei Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -47638,18 +46738,6 @@ var verifiedScholarCache_default = {
             lat: -23.5505,
             lng: -46.6333,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -47719,18 +46807,6 @@ var verifiedScholarCache_default = {
             lat: 30.6187,
             lng: -96.3365,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -47766,18 +46842,6 @@ var verifiedScholarCache_default = {
           "Jos\xE9 Rodr\xEDguez"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Yongheng Yang",
             universityId: "zhejiang-university",
@@ -47870,18 +46934,6 @@ var verifiedScholarCache_default = {
             lat: 41.1207,
             lng: 16.8698,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -47921,18 +46973,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Xiongfei Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -48024,18 +47064,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Yongheng Yang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -48143,18 +47171,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Asheesh Kumar Singh",
             universityId: "motilal-nehru-national-institute-of-technology",
             universityName: "Motilal Nehru National Institute of Technology",
@@ -48235,18 +47251,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "polytechnic-university-of-bari",
-            universityName: "Polytechnic University of Bari",
-            city: "Bari",
-            country: "Italy",
-            countryCode: "IT",
-            continent: "Europe",
-            lat: 41.1207,
-            lng: 16.8698,
-            isHomeInstitution: false
           }
         ],
         openAccess: false,
@@ -48331,18 +47335,6 @@ var verifiedScholarCache_default = {
             lat: 54.3468,
             lng: 10.1224,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Marco Liserre",
@@ -48463,18 +47455,6 @@ var verifiedScholarCache_default = {
             lat: -33.8688,
             lng: 151.2093,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -48534,18 +47514,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Poh Chiang Loh",
@@ -48650,18 +47618,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -48733,18 +47689,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Poh Chiang Loh",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -48799,18 +47743,6 @@ var verifiedScholarCache_default = {
             lat: -33.8886,
             lng: 151.1873,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -48858,18 +47790,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Ke Ma",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -48934,18 +47854,6 @@ var verifiedScholarCache_default = {
             lat: 45.4215,
             lng: -75.6972,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -49001,18 +47909,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Lars Helle",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -49165,18 +48061,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Prasad N Enjeti",
             universityId: "texas-a-m-university",
             universityName: "Texas A&M University",
@@ -49296,18 +48180,6 @@ var verifiedScholarCache_default = {
             lat: -33.8886,
             lng: 151.1873,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -49376,18 +48248,6 @@ var verifiedScholarCache_default = {
             lat: -33.8688,
             lng: 151.2093,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -49445,18 +48305,6 @@ var verifiedScholarCache_default = {
             lat: 41.1207,
             lng: 16.8698,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "polytechnic-university-of-bari",
-            universityName: "Polytechnic University of Bari",
-            city: "Bari",
-            country: "Italy",
-            countryCode: "IT",
-            continent: "Europe",
-            lat: 41.1207,
-            lng: 16.8698,
-            isHomeInstitution: false
           }
         ],
         openAccess: false,
@@ -49493,18 +48341,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Xiongfei Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -49578,18 +48414,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Xiongfei Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -49696,18 +48520,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Poh Chiang Loh",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -49794,18 +48606,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Remus Teodorescu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -49920,18 +48720,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -49989,18 +48777,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -50058,18 +48834,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -50118,18 +48882,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yongheng Yang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -50235,18 +48987,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -50316,18 +49056,6 @@ var verifiedScholarCache_default = {
             lat: 1.3521,
             lng: 103.8198,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Yam Prasad Siwakoti",
@@ -50432,18 +49160,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -50501,18 +49217,6 @@ var verifiedScholarCache_default = {
             lat: 1.3483,
             lng: 103.6831,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -50580,18 +49284,6 @@ var verifiedScholarCache_default = {
             lat: -33.8688,
             lng: 151.2093,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -50626,18 +49318,6 @@ var verifiedScholarCache_default = {
           "Stig Munk\u2010Nielsen"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "U. Jaeger",
             universityId: "aalborg-university",
@@ -50728,18 +49408,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -50790,18 +49458,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Xiongfei Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -50916,18 +49572,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -50988,18 +49632,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Uffe Borup",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -51046,18 +49678,6 @@ var verifiedScholarCache_default = {
           "Pooya Davari"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Huai Wang",
             universityId: "aalborg-university",
@@ -51204,18 +49824,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Shahrokh Farhangi",
             universityId: "university-of-tehran",
             universityName: "University of Tehran",
@@ -51286,18 +49894,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Huai Wang",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -51352,18 +49948,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Ned Mohan",
@@ -51433,18 +50017,6 @@ var verifiedScholarCache_default = {
             lat: 54.3468,
             lng: 10.1224,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Martin Ordonez",
@@ -51525,18 +50097,6 @@ var verifiedScholarCache_default = {
             lat: 30.2638,
             lng: 120.1219,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -51640,18 +50200,6 @@ var verifiedScholarCache_default = {
             lat: 41.9028,
             lng: 12.4964,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -51709,18 +50257,6 @@ var verifiedScholarCache_default = {
             lat: 37.2829,
             lng: 127.0463,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -51816,18 +50352,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -51864,18 +50388,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Ui\u2010Min Choi",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -51957,18 +50469,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Zhe Chen",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -52015,18 +50515,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Ui\u2010Min Choi",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -52118,18 +50606,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -52176,18 +50652,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "John K. Pedersen",
@@ -52292,18 +50756,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -52362,18 +50814,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Tomislav Dragi\u010Devi\u0107",
@@ -52444,18 +50884,6 @@ var verifiedScholarCache_default = {
             lat: 37.2829,
             lng: 127.0463,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Kyo\u2010Beum Lee",
@@ -52536,18 +50964,6 @@ var verifiedScholarCache_default = {
             lat: 55.7704,
             lng: 12.5038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -52583,18 +50999,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Huai Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -52655,18 +51059,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Marco Liserre",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -52769,18 +51161,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Xiongfei Wang",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -52828,18 +51208,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Hyosung Kim",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -52929,18 +51297,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -52998,18 +51354,6 @@ var verifiedScholarCache_default = {
             lat: 52.0116,
             lng: 4.3571,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -53057,18 +51401,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Zhe Chen",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -53172,18 +51504,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -53232,18 +51552,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Kaiyuan Lu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -53310,18 +51618,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -53378,18 +51674,6 @@ var verifiedScholarCache_default = {
             lat: 28.6139,
             lng: 77.209,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -53427,18 +51711,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "P.D. Chandana Perera",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -53532,18 +51804,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Fang Zheng Peng",
             universityId: "michigan-state-university",
             universityName: "Michigan State University",
@@ -53601,18 +51861,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "John K. Pedersen",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -53680,18 +51928,6 @@ var verifiedScholarCache_default = {
             lat: 52.9388,
             lng: -1.1963,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Ion G. Boldea",
@@ -53774,18 +52010,6 @@ var verifiedScholarCache_default = {
             lat: 37.2829,
             lng: 127.0463,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -53819,18 +52043,6 @@ var verifiedScholarCache_default = {
           "Zhe Chen"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Zhe Chen",
             universityId: "aalborg-university",
@@ -53879,18 +52091,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Rui Lin Wu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -54005,18 +52205,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -54079,18 +52267,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Zhipeng Li",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -54203,18 +52379,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -54306,18 +52470,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -54409,18 +52561,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -54452,20 +52592,7 @@ var verifiedScholarCache_default = {
         authors: [
           "Frede Blaabjerg"
         ],
-        coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          }
-        ],
+        coAuthors: [],
         openAccess: true,
         authorshipRole: "Co-Author",
         internationalCollab: false,
@@ -54539,18 +52666,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Pooya Davari",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -54638,18 +52753,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Arman Oshnoei",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -54846,18 +52949,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -54939,18 +53030,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -55007,18 +53086,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Lucas Frizera Encarna\xE7\xE3o",
@@ -55155,18 +53222,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Daniel\u2010Ioan Stroe",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -55212,18 +53267,6 @@ var verifiedScholarCache_default = {
           "Edivan La\xE9rcio Carvalho"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Niwton Gabriel Feliciani dos Santos",
             universityId: "aalborg-university",
@@ -55294,18 +53337,6 @@ var verifiedScholarCache_default = {
           "Edivan La\xE9rcio Carvalho"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Niwton Gabriel Feliciani dos Santos",
             universityId: "aalborg-university",
@@ -55457,18 +53488,6 @@ var verifiedScholarCache_default = {
             lat: 41.9028,
             lng: 12.4964,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -55549,18 +53568,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -55635,18 +53642,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Pooya Davari",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -55747,18 +53742,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -55829,18 +53812,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -55908,18 +53879,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -55975,18 +53934,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -56093,18 +54040,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -56211,18 +54146,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Duncan Paul Fagg",
             universityId: "centro-de-tecnologia-mec-nica-e-automa-o",
             universityName: "Centro de Tecnologia Mec\xE2nica e Automa\xE7\xE3o",
@@ -56323,18 +54246,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -56438,18 +54349,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -56533,18 +54432,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -56651,18 +54538,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -56733,18 +54608,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -56779,18 +54642,6 @@ var verifiedScholarCache_default = {
           "Lan Ma"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Xiaoqiong He",
             universityId: "aalborg-university",
@@ -56874,18 +54725,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Pooya Davari",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -56953,18 +54792,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -57013,18 +54840,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Huai Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -57104,18 +54919,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -57177,18 +54980,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Saeed Peyghami",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -57268,18 +55059,6 @@ var verifiedScholarCache_default = {
             lat: 30.2638,
             lng: 120.1219,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -57355,18 +55134,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Jiahong Liu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -57471,18 +55238,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -57553,18 +55308,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -57627,18 +55370,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Bo Yao",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -57756,18 +55487,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -57830,18 +55549,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Chen Liu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -57920,18 +55627,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -57991,18 +55686,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Saeed Peyghami",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -58123,18 +55806,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Huai Wang",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -58228,18 +55899,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -58323,18 +55982,6 @@ var verifiedScholarCache_default = {
             lat: 52.9388,
             lng: -1.1963,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -58418,18 +56065,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -58560,18 +56195,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Huai Wang",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -58656,18 +56279,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Changjiang Zhan",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -58785,18 +56396,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -58889,18 +56488,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -58992,18 +56579,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -59052,18 +56627,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Huai Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -59164,18 +56727,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -59251,18 +56802,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Chen Liu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -59363,18 +56902,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -59478,18 +57005,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -59552,18 +57067,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Ning Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -59673,18 +57176,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Nikos Hatziargyriou",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -59809,18 +57300,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -59921,18 +57400,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Mohamed Orabi",
             universityId: "aswan-university",
             universityName: "Aswan University",
@@ -60027,18 +57494,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Rui Kong",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -60160,18 +57615,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Aoife M Foley",
@@ -60304,18 +57747,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Amin Hajizadeh",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -60431,18 +57862,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -60498,18 +57917,6 @@ var verifiedScholarCache_default = {
             lat: 37.5665,
             lng: 126.978,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -60557,18 +57964,6 @@ var verifiedScholarCache_default = {
             lat: 39.9334,
             lng: 32.8597,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Hasan Hata\u015F",
@@ -60670,18 +58065,6 @@ var verifiedScholarCache_default = {
             lat: 28.6139,
             lng: 77.209,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Subham Sahoo",
@@ -60788,18 +58171,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -60841,18 +58212,6 @@ var verifiedScholarCache_default = {
           "Huai Wang"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Kaichen Zhang",
             universityId: "aalborg-university",
@@ -61051,18 +58410,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61144,18 +58491,6 @@ var verifiedScholarCache_default = {
             lat: 39.9334,
             lng: 32.8597,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61261,18 +58596,6 @@ var verifiedScholarCache_default = {
             lat: 48.8566,
             lng: 2.3522,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61340,18 +58663,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61455,18 +58766,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61524,18 +58823,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61641,18 +58928,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61723,18 +58998,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61818,18 +59081,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -61946,18 +59197,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -62037,18 +59276,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -62145,18 +59372,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -62201,18 +59416,6 @@ var verifiedScholarCache_default = {
             lat: 45.4215,
             lng: -75.6972,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Arman Oshnoei",
@@ -62321,18 +59524,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -62427,18 +59618,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -62599,18 +59778,6 @@ var verifiedScholarCache_default = {
             lat: 50.7753,
             lng: 6.0839,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -62714,18 +59881,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -62787,18 +59942,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yubo Song",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -62875,18 +60018,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -62996,18 +60127,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -63102,18 +60221,6 @@ var verifiedScholarCache_default = {
             lat: 60.1699,
             lng: 24.9384,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Lassi Aarniovuori",
@@ -63214,18 +60321,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -63283,18 +60378,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Lin Cheng",
@@ -63373,18 +60456,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -63468,18 +60539,6 @@ var verifiedScholarCache_default = {
             lat: 30.2638,
             lng: 120.1219,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -63589,18 +60648,6 @@ var verifiedScholarCache_default = {
             lat: 30.2638,
             lng: 120.1219,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -63705,18 +60752,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -63820,18 +60855,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -63897,18 +60920,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Ariya Sangwongwanich",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -64036,18 +61047,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -64151,18 +61150,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -64246,18 +61233,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -64317,18 +61292,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Deniss Stepins",
@@ -64449,18 +61412,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -64529,18 +61480,6 @@ var verifiedScholarCache_default = {
             lat: 48.2082,
             lng: 16.3738,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -64581,18 +61520,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Varaha Satya Bharath Kurukuru",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -64743,18 +61670,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -64814,18 +61729,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Huai Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -64915,18 +61818,6 @@ var verifiedScholarCache_default = {
             lat: 47.3769,
             lng: 8.5417,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -65020,18 +61911,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -65115,18 +61994,6 @@ var verifiedScholarCache_default = {
             lat: 30.2638,
             lng: 120.1219,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -65185,18 +62052,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Huai Wang",
@@ -65312,18 +62167,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -65415,18 +62258,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -65519,18 +62350,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -65625,18 +62444,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -65752,18 +62559,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -65807,18 +62602,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -65893,18 +62676,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Chen Liu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -66006,18 +62777,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -66086,18 +62845,6 @@ var verifiedScholarCache_default = {
             lat: -37.8222,
             lng: 145.0381,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -66180,18 +62927,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -66301,18 +63036,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -66381,18 +63104,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Zeliang Shu",
@@ -66477,18 +63188,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Daniel\u2010Ioan Stroe",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -66666,18 +63365,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Seyed Mohammad Taghi Bathaee",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -67283,18 +63970,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -67377,18 +64052,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -67472,18 +64135,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Ziheng Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -67615,18 +64266,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -67722,18 +64361,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -67795,18 +64422,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Henry Shu-Hung Chung",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -67911,18 +64526,6 @@ var verifiedScholarCache_default = {
             lat: 59.9139,
             lng: 10.7522,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -68002,18 +64605,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -68108,18 +64699,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -68155,18 +64734,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Sara Hasanpour",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -68246,18 +64813,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -68332,18 +64887,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Poh Chiang Loh",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -68449,18 +64992,6 @@ var verifiedScholarCache_default = {
             lat: 30.2638,
             lng: 120.1219,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -68520,18 +65051,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Saeed Peyghami",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -68610,18 +65129,6 @@ var verifiedScholarCache_default = {
             lat: 42.3398,
             lng: -71.0892,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Tianyou Chai",
@@ -68743,18 +65250,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -68834,18 +65329,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -68929,18 +65412,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -69044,18 +65515,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -69163,18 +65622,6 @@ var verifiedScholarCache_default = {
             lat: 59.3293,
             lng: 18.0686,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -69258,18 +65705,6 @@ var verifiedScholarCache_default = {
             lat: -33.8886,
             lng: 151.1873,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -69341,18 +65776,6 @@ var verifiedScholarCache_default = {
             lat: -33.8886,
             lng: 151.1873,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Georgios S. Konstantinou",
@@ -69435,18 +65858,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -69543,18 +65954,6 @@ var verifiedScholarCache_default = {
             lat: 55.0333,
             lng: 9.8,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -69646,18 +66045,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -69749,18 +66136,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -69831,18 +66206,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -69904,18 +66267,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Hongbo Zhao",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -70033,18 +66384,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -70136,18 +66475,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -70267,18 +66594,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Remus Teodorescu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -70410,18 +66725,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -70501,18 +66804,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -70584,18 +66875,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Tomislav Dragi\u010Devi\u0107",
@@ -70712,18 +66991,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -70799,18 +67066,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Jie Kong",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -70917,18 +67172,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Jos\xE9 Rodr\xEDguez",
             universityId: "universidad-san-sebasti-n",
             universityName: "Universidad San Sebasti\xE1n",
@@ -71006,18 +67249,6 @@ var verifiedScholarCache_default = {
             lat: 59.9139,
             lng: 10.7522,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -71097,18 +67328,6 @@ var verifiedScholarCache_default = {
             lat: 52.2297,
             lng: 21.0122,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -71156,18 +67375,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Arman Oshnoei",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -71247,18 +67454,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -71333,18 +67528,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Lasse Bork",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -71437,18 +67620,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -71497,18 +67668,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Ariya Sangwongwanich",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -71625,18 +67784,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -71728,18 +67875,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -71819,18 +67954,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -71953,18 +68076,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -72008,18 +68119,6 @@ var verifiedScholarCache_default = {
             lat: 38.7223,
             lng: -9.1393,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Joao Luiz Afonso",
@@ -72100,18 +68199,6 @@ var verifiedScholarCache_default = {
             lat: 55.7704,
             lng: 12.5038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -72178,18 +68265,6 @@ var verifiedScholarCache_default = {
             lat: 59.9139,
             lng: 10.7522,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -72295,18 +68370,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -72377,18 +68440,6 @@ var verifiedScholarCache_default = {
             lat: 30.2638,
             lng: 120.1219,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -72449,18 +68500,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Arman Oshnoei",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -72540,18 +68579,6 @@ var verifiedScholarCache_default = {
             lat: 55.7704,
             lng: 12.5038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -72633,18 +68660,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Liang Yuan",
@@ -72739,18 +68754,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Liang Yuan",
             universityId: "anhui-university-of-science-and-technology",
             universityName: "Anhui University of Science and Technology",
@@ -72839,18 +68842,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -72924,18 +68915,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: true
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Pooya Davari",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -72994,18 +68973,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Pooya Davari",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -73118,18 +69085,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -73213,18 +69168,6 @@ var verifiedScholarCache_default = {
             lat: 1.3483,
             lng: 103.6831,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -73282,18 +69225,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Yongheng Yang",
@@ -73355,18 +69286,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Rui Kong",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -73471,18 +69390,6 @@ var verifiedScholarCache_default = {
             lat: 37.5665,
             lng: 126.978,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Youngwoo Lee",
@@ -73635,18 +69542,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -73728,18 +69623,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Josep M. Guerrero",
@@ -73833,18 +69716,6 @@ var verifiedScholarCache_default = {
             lat: 52.0116,
             lng: 4.3571,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -73973,18 +69844,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -74081,18 +69940,6 @@ var verifiedScholarCache_default = {
             lat: -33.8886,
             lng: 151.1873,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -74189,18 +70036,6 @@ var verifiedScholarCache_default = {
             lat: 55.0333,
             lng: 9.8,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -74282,18 +70117,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Liang Yuan",
@@ -74388,18 +70211,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Liang Yuan",
             universityId: "anhui-university-of-science-and-technology",
             universityName: "Anhui University of Science and Technology",
@@ -74448,18 +70259,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Liang Huang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -74600,18 +70399,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Liang Yuan",
             universityId: "anhui-university-of-science-and-technology",
             universityName: "Anhui University of Science and Technology",
@@ -74704,18 +70491,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Liang Yuan",
             universityId: "anhui-university-of-science-and-technology",
             universityName: "Anhui University of Science and Technology",
@@ -74799,18 +70574,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yanbo Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -74928,18 +70691,6 @@ var verifiedScholarCache_default = {
             lat: 59.9139,
             lng: 10.7522,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "K. H. Loo",
@@ -75071,18 +70822,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -75174,18 +70913,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -75277,18 +71004,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -75324,18 +71039,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Liang Huang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -75441,18 +71144,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -75544,18 +71235,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -75643,18 +71322,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yubo Song",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -75755,18 +71422,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -75828,18 +71483,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Dao Zhou",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -75917,18 +71560,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -75965,18 +71596,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Sijia Li",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -76103,18 +71722,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -76198,18 +71805,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Zhe Chen",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -76325,18 +71920,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -76397,18 +71980,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Mohammad Kazem Bakhshizadeh",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -76525,18 +72096,6 @@ var verifiedScholarCache_default = {
             lat: 45.7428,
             lng: 126.6322,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -76607,18 +72166,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -76689,18 +72236,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -76750,18 +72285,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yonjie Liu",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -76850,18 +72373,6 @@ var verifiedScholarCache_default = {
             lat: 40.4168,
             lng: -3.7038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -76931,18 +72442,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Carlos Fern\xE1ndez",
@@ -77068,18 +72567,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -77163,18 +72650,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -77260,18 +72735,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Zhe Chen",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -77398,18 +72861,6 @@ var verifiedScholarCache_default = {
             lat: 54.3468,
             lng: 10.1224,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -77493,18 +72944,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Leo Lorenz",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -77573,18 +73012,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Feixiang Shan",
@@ -77701,18 +73128,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -77796,18 +73211,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -77865,18 +73268,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -77994,18 +73385,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -78097,18 +73476,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -78169,18 +73536,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Amjad Anvari\u2010Moghaddam",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -78255,18 +73610,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Ariya Sangwongwanich",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -78416,18 +73759,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -78561,18 +73892,6 @@ var verifiedScholarCache_default = {
             lat: 37.5665,
             lng: 126.978,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -78665,18 +73984,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Peng Wang",
@@ -78781,18 +74088,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -78826,18 +74121,6 @@ var verifiedScholarCache_default = {
           "Guoqing Gao"
         ],
         coAuthors: [
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
           {
             name: "Guoqing Gao",
             universityId: "aalborg-university",
@@ -78942,18 +74225,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -79022,18 +74293,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Carlos Fern\xE1ndez",
@@ -79140,18 +74399,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -79221,18 +74468,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -79292,18 +74527,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Mateja Novak",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -79380,18 +74603,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -79459,18 +74670,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -79553,18 +74752,6 @@ var verifiedScholarCache_default = {
             lat: 31.2304,
             lng: 121.4737,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -79648,18 +74835,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -79751,18 +74926,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -79811,18 +74974,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Huai Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -79893,18 +75044,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Yubo Song",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -79997,18 +75136,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -80079,18 +75206,6 @@ var verifiedScholarCache_default = {
             lat: 55.7704,
             lng: 12.5038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -80213,18 +75328,6 @@ var verifiedScholarCache_default = {
             lat: 54.3468,
             lng: 10.1224,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -80318,18 +75421,6 @@ var verifiedScholarCache_default = {
             lat: 22.3364,
             lng: 114.1724,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -80398,18 +75489,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Carlos Fern\xE1ndez",
@@ -80512,18 +75591,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -80584,18 +75651,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Leo Lorenz",
@@ -80739,18 +75794,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Pooya Davari",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -80918,18 +75961,6 @@ var verifiedScholarCache_default = {
             lat: 37.5665,
             lng: 126.978,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -80992,18 +76023,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Jie Kong",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -81131,18 +76150,6 @@ var verifiedScholarCache_default = {
             lat: 38.8951,
             lng: -77.0364,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Xu Zhang",
@@ -81335,18 +76342,6 @@ var verifiedScholarCache_default = {
             lat: 37.5665,
             lng: 126.978,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -81391,18 +76386,6 @@ var verifiedScholarCache_default = {
             lat: 55.7704,
             lng: 12.5038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Gert Karmisholt Andersen",
@@ -81470,18 +76453,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -81565,18 +76536,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Zhe Chen",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -81690,18 +76649,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -81793,18 +76740,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -81899,18 +76834,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -81990,18 +76913,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -82071,18 +76982,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -82140,18 +77039,6 @@ var verifiedScholarCache_default = {
             lat: 37.2829,
             lng: 127.0463,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -82245,18 +77132,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -82358,18 +77233,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Amjad Anvari\u2010Moghaddam",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -82509,18 +77372,6 @@ var verifiedScholarCache_default = {
             lat: 50.8503,
             lng: 4.3517,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -82636,18 +77487,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -82718,18 +77557,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -82846,18 +77673,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -82949,18 +77764,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83055,18 +77858,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83137,18 +77928,6 @@ var verifiedScholarCache_default = {
             lat: 55.6761,
             lng: 12.5683,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -83240,18 +78019,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83343,18 +78110,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83446,18 +78201,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83538,18 +78281,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Junjie Tao",
@@ -83640,18 +78371,6 @@ var verifiedScholarCache_default = {
             lat: 59.9139,
             lng: 10.7522,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83743,18 +78462,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83858,18 +78565,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -83973,18 +78668,6 @@ var verifiedScholarCache_default = {
             lat: 39.9042,
             lng: 116.4074,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: true,
@@ -84055,18 +78738,6 @@ var verifiedScholarCache_default = {
             lat: 55.7704,
             lng: 12.5038,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -84116,18 +78787,6 @@ var verifiedScholarCache_default = {
           },
           {
             name: "Huai Wang",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
             city: "Aalborg",
@@ -84207,18 +78866,6 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           },
           {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
-          },
-          {
             name: "Saeed Peyghami",
             universityId: "aalborg-university",
             universityName: "Aalborg University",
@@ -84267,17 +78914,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Huai Wang",
-            universityId: "united-states-department-of-energy",
-            universityName: "United States Department of Energy",
-            city: "Washington",
-            country: "United States",
-            continent: "North America",
-            lat: 38.8951,
-            lng: -77.0364,
-            isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "united-states-department-of-energy",
             universityName: "United States Department of Energy",
             city: "Washington",
@@ -84356,18 +78992,6 @@ var verifiedScholarCache_default = {
         coAuthors: [
           {
             name: "Yongheng Yang",
-            universityId: "shanghai-jiao-tong-university",
-            universityName: "Shanghai Jiao Tong University",
-            city: "Shanghai",
-            country: "China",
-            countryCode: "CN",
-            continent: "Asia",
-            lat: 31.2304,
-            lng: 121.4737,
-            isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
             universityId: "shanghai-jiao-tong-university",
             universityName: "Shanghai Jiao Tong University",
             city: "Shanghai",
@@ -84484,18 +79108,6 @@ var verifiedScholarCache_default = {
             lat: 57.0143,
             lng: 9.9854,
             isHomeInstitution: true
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           }
         ],
         openAccess: false,
@@ -84576,18 +79188,6 @@ var verifiedScholarCache_default = {
             lat: 51.5074,
             lng: -0.1278,
             isHomeInstitution: false
-          },
-          {
-            name: "Frede Blaabjerg",
-            universityId: "aalborg-university",
-            universityName: "Aalborg University",
-            city: "Aalborg",
-            country: "Denmark",
-            countryCode: "DK",
-            continent: "Europe",
-            lat: 57.0143,
-            lng: 9.9854,
-            isHomeInstitution: true
           },
           {
             name: "Liangwei Cheng",

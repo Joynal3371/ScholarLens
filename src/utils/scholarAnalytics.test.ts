@@ -200,3 +200,33 @@ test('computeProfileStatistics uses officialMetrics and aggregators exclude unli
   const unis = aggregateUniversityCollaborations(pubs);
   assert.ok(unis.every((u) => u.universityId !== 'unlisted'));
 });
+
+test('aggregateCoAuthors and aggregateUniversityCollaborations strictly exclude the primary researcher from co-authors', () => {
+  const profile = PRESET_PROFILES[0];
+  const primaryName = profile.name;
+  const pubsWithSelf = profile.publications.map((p) => ({
+    ...p,
+    coAuthors: [
+      ...p.coAuthors,
+      {
+        name: primaryName,
+        universityId: 'home-uni',
+        universityName: 'Home University',
+        city: 'City',
+        country: 'Country',
+        countryCode: 'BD',
+        continent: 'Asia' as const,
+        lat: 23,
+        lng: 90,
+      },
+    ],
+  }));
+
+  const coAuthors = aggregateCoAuthors(pubsWithSelf, primaryName);
+  assert.ok(!coAuthors.some((ca) => ca.name.toLowerCase().includes(primaryName.toLowerCase())));
+
+  const unis = aggregateUniversityCollaborations(pubsWithSelf, profile);
+  for (const u of unis) {
+    assert.ok(!u.coAuthors.some((ca) => ca.name.toLowerCase().includes(primaryName.toLowerCase())));
+  }
+});
