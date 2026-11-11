@@ -805,17 +805,13 @@ export async function generateResearcherPdfReport(params: {
       id: 'chart-quartile-yearly',
       title: 'Quartile Composition by Year',
     },
-    {
-      id: 'chart-top-countries',
-      title: 'Leading Collaborating Nations',
-    },
   ];
 
   const chartCols = 2;
   const chartGapX = 5.0;
   const chartGapY = 4.5;
   const chartCardW = (contentW - chartGapX * (chartCols - 1)) / chartCols;
-  const chartCardH = 75.0;
+  const chartCardH = 74.0;
 
   let chartRowOnPage = 0;
   for (let i = 0; i < siteAnalyticsCharts.length; i++) {
@@ -1128,13 +1124,6 @@ export async function generateResearcherPdfReport(params: {
     const ifText = ifVal ? ` · Clarivate JIF: ${ifVal.toFixed(1)}` : '';
     doc.text(
       `${j.paperCount} ${j.paperCount === 1 ? 'paper' : 'papers'} · ${j.totalCitations.toLocaleString()} citations${ifText}`,
-      rightCardX + 8.5,
-      ry + 8.6
-    );
-    doc.setFontSize(5.8);
-    doc.setTextColor(100, 116, 139);
-    doc.text(
-      `${j.paperCount} ${j.paperCount === 1 ? 'paper' : 'papers'} · ${j.totalCitations.toLocaleString()} citations`,
       rightCardX + 8.5,
       ry + 8.6
     );

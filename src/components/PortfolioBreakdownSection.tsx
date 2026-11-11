@@ -854,16 +854,16 @@ export const PortfolioBreakdownSection: React.FC<
             <div className="my-1 overflow-x-auto">
               <svg
                 data-chart-svg="true"
-                viewBox="0 0 680 220"
-                className="w-full h-auto min-w-[540px] max-h-[220px] scholar-chart-svg"
+                viewBox="0 0 720 220"
+                className="w-full h-auto min-w-[560px] max-h-[220px] scholar-chart-svg"
                 role="img"
                 aria-label="Top 5 High-Impact Publishing Venues horizontal bar chart"
               >
                 {topImpactJournals.map((j, idx) => {
                   const maxIf = topImpactJournals[0]?.impactFactor || 10;
                   const ifVal = j.impactFactor || 0;
-                  const barMaxW = 280;
-                  const barW = Math.max(16, (ifVal / maxIf) * barMaxW);
+                  const barMaxW = 200;
+                  const barW = Math.max(12, (ifVal / maxIf) * barMaxW);
                   const y = 8 + idx * 42;
                   const rankColors = [
                     '#2563eb',
@@ -876,7 +876,7 @@ export const PortfolioBreakdownSection: React.FC<
 
                   return (
                     <g key={j.venue} transform={`translate(0, ${y})`}>
-                      {/* Rank Badge */}
+                      {/* 1. Rank Badge */}
                       <rect
                         x="4"
                         y="2"
@@ -896,20 +896,20 @@ export const PortfolioBreakdownSection: React.FC<
                         #{idx + 1}
                       </text>
 
-                      {/* Venue Name */}
+                      {/* 2. Venue Name */}
                       <text
-                        x="38"
+                        x="36"
                         y="16"
                         fill="#0f172a"
                         fontSize="12"
                         fontWeight="600"
                       >
-                        {j.venue.length > 34 ? j.venue.slice(0, 33) + '…' : j.venue}
+                        {j.venue.length > 28 ? j.venue.slice(0, 27) + '…' : j.venue}
                       </text>
 
-                      {/* Quartile Pill */}
+                      {/* 3. Quartile Pill */}
                       <rect
-                        x="270"
+                        x="234"
                         y="3"
                         width="30"
                         height="18"
@@ -917,7 +917,7 @@ export const PortfolioBreakdownSection: React.FC<
                         fill={j.quartile === 'Q1' ? '#eff6ff' : '#ecfdf5'}
                       />
                       <text
-                        x="285"
+                        x="249"
                         y="15.5"
                         fill={j.quartile === 'Q1' ? '#1d4ed8' : '#047857'}
                         fontSize="10"
@@ -927,9 +927,32 @@ export const PortfolioBreakdownSection: React.FC<
                         {j.quartile}
                       </text>
 
-                      {/* Bar Track & Fill */}
+                      {/* 4. Clarivate JIF Metric Badge */}
                       <rect
-                        x="315"
+                        x="272"
+                        y="3"
+                        width="60"
+                        height="18"
+                        rx="4"
+                        fill="#f8fafc"
+                        stroke="#e2e8f0"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x="302"
+                        y="15.5"
+                        fill="#0f172a"
+                        fontSize="10"
+                        fontWeight="700"
+                        fontFamily="JetBrains Mono, monospace"
+                        textAnchor="middle"
+                      >
+                        IF {ifVal.toFixed(1)}
+                      </text>
+
+                      {/* 5. Proportional Impact Bar Track & Fill */}
+                      <rect
+                        x="342"
                         y="7"
                         width={barMaxW}
                         height="10"
@@ -937,7 +960,7 @@ export const PortfolioBreakdownSection: React.FC<
                         fill="#f1f5f9"
                       />
                       <rect
-                        x="315"
+                        x="342"
                         y="7"
                         width={barW}
                         height="10"
@@ -945,27 +968,15 @@ export const PortfolioBreakdownSection: React.FC<
                         fill={barColor}
                       />
 
-                      {/* JIF Value Text */}
+                      {/* 6. Publications & Citations */}
                       <text
-                        x={Math.min(610, 325 + barW)}
-                        y="16"
-                        fill="#0f172a"
-                        fontSize="11"
-                        fontWeight="700"
-                        fontFamily="JetBrains Mono, monospace"
-                      >
-                        IF {ifVal.toFixed(1)}
-                      </text>
-
-                      {/* Publications & Citations */}
-                      <text
-                        x="675"
-                        y="16"
+                        x="712"
+                        y="15.5"
                         fill="#64748b"
                         fontSize="10"
                         textAnchor="end"
                       >
-                        {j.paperCount} {j.paperCount === 1 ? 'pub' : 'pubs'} · {j.totalCitations} cites
+                        {j.paperCount} {j.paperCount === 1 ? 'pub' : 'pubs'} · {j.totalCitations.toLocaleString()} cites
                       </text>
                     </g>
                   );
