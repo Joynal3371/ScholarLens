@@ -602,12 +602,12 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
               </div>
             </div>
 
-            {/* Row 3: Journal Impact Factor (JIF) Filter */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-200/70">
-              <div className="lg:col-span-7">
+            {/* Row 3: Custom Impact Factor Range Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-200/70">
+              <div className="md:col-span-6 lg:col-span-5">
                 <div className="flex items-center justify-between mb-1">
                   <span className="block text-xs font-semibold text-slate-700">
-                    Journal Impact Factor (JIF) Thresholds
+                    Custom Impact Factor Range
                   </span>
                   {(filter.minImpactFactor !== '' ||
                     filter.maxImpactFactor !== '') && (
@@ -626,46 +626,6 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
                     </button>
                   )}
                 </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {[
-                    { label: 'All Venues', min: '' },
-                    { label: 'IF ≥ 1.0', min: '1' },
-                    { label: 'IF ≥ 3.0', min: '3' },
-                    { label: 'IF ≥ 5.0', min: '5' },
-                    { label: 'IF ≥ 10.0', min: '10' },
-                  ].map((preset) => {
-                    const isActive =
-                      filter.minImpactFactor === preset.min &&
-                      filter.maxImpactFactor === '';
-                    return (
-                      <button
-                        key={preset.label}
-                        type="button"
-                        onClick={() =>
-                          onChangeFilter((prev) => ({
-                            ...prev,
-                            minImpactFactor: preset.min,
-                            maxImpactFactor: '',
-                          }))
-                        }
-                        aria-pressed={isActive}
-                        className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                          isActive
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="lg:col-span-5">
-                <span className="block text-xs font-semibold text-slate-700 mb-1">
-                  Custom Impact Factor Range (2-Yr JCR Metrics)
-                </span>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     id="min-if-input"
