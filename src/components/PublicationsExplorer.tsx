@@ -283,6 +283,8 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
     filter.maxCitations !== '' ||
     filter.minYear !== '' ||
     filter.maxYear !== '' ||
+    filter.minImpactFactor !== '' ||
+    filter.maxImpactFactor !== '' ||
     filter.quartiles.length > 0 ||
     filter.types.length > 0 ||
     filter.authorshipRole !== 'All' ||
@@ -296,6 +298,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
     let count = 0;
     if (filter.minCitations !== '' || filter.maxCitations !== '') count++;
     if (filter.minYear !== '' || filter.maxYear !== '') count++;
+    if (filter.minImpactFactor !== '' || filter.maxImpactFactor !== '') count++;
     if (filter.quartiles.length > 0) count += filter.quartiles.length;
     if (filter.types.length > 0) count += filter.types.length;
     if (filter.authorshipRole !== 'All') count++;
@@ -434,6 +437,8 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
             >
               <option value="citations-desc">Citations: High to Low</option>
               <option value="citations-asc">Citations: Low to High</option>
+              <option value="impact-factor-desc">Impact Factor: High to Low</option>
+              <option value="impact-factor-asc">Impact Factor: Low to High</option>
               <option value="year-desc">Year: Newest First</option>
               <option value="year-asc">Year: Oldest First</option>
               <option value="quartile-asc">Quartile: Q1 to Q4</option>
@@ -597,7 +602,108 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
               </div>
             </div>
 
-            {/* Row 3: Citations, Authorship Role, and Open Access */}
+            {/* Row 3: Journal Impact Factor (JIF) Filter */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-200/70">
+              <div className="lg:col-span-7">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="block text-xs font-semibold text-slate-700">
+                    Journal Impact Factor (JIF) Thresholds
+                  </span>
+                  {(filter.minImpactFactor !== '' ||
+                    filter.maxImpactFactor !== '') && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChangeFilter((prev) => ({
+                          ...prev,
+                          minImpactFactor: '',
+                          maxImpactFactor: '',
+                        }))
+                      }
+                      className="text-[10px] text-blue-600 hover:text-blue-800 font-semibold cursor-pointer"
+                    >
+                      Clear IF Filter
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[
+                    { label: 'All Venues', min: '' },
+                    { label: 'IF ≥ 1.0', min: '1' },
+                    { label: 'IF ≥ 3.0', min: '3' },
+                    { label: 'IF ≥ 5.0', min: '5' },
+                    { label: 'IF ≥ 10.0', min: '10' },
+                  ].map((preset) => {
+                    const isActive =
+                      filter.minImpactFactor === preset.min &&
+                      filter.maxImpactFactor === '';
+                    return (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() =>
+                          onChangeFilter((prev) => ({
+                            ...prev,
+                            minImpactFactor: preset.min,
+                            maxImpactFactor: '',
+                          }))
+                        }
+                        aria-pressed={isActive}
+                        className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                          isActive
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="lg:col-span-5">
+                <span className="block text-xs font-semibold text-slate-700 mb-1">
+                  Custom Impact Factor Range (2-Yr JCR Metrics)
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    id="min-if-input"
+                    type="number"
+                    min={0}
+                    step="0.1"
+                    value={filter.minImpactFactor}
+                    onChange={(e) =>
+                      onChangeFilter((prev) => ({
+                        ...prev,
+                        minImpactFactor: e.target.value,
+                      }))
+                    }
+                    placeholder="Min IF (e.g. 2.5)"
+                    aria-label="Minimum Impact Factor"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 tabular-nums"
+                  />
+                  <input
+                    id="max-if-input"
+                    type="number"
+                    min={0}
+                    step="0.1"
+                    value={filter.maxImpactFactor}
+                    onChange={(e) =>
+                      onChangeFilter((prev) => ({
+                        ...prev,
+                        maxImpactFactor: e.target.value,
+                      }))
+                    }
+                    placeholder="Max IF (e.g. 15.0)"
+                    aria-label="Maximum Impact Factor"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 tabular-nums"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Row 4: Citations, Authorship Role, and Open Access */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end pt-2 border-t border-slate-200/70">
               <div className="md:col-span-6">
                 <span className="block text-xs font-semibold text-slate-700 mb-1">
@@ -693,6 +799,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
                 <th className="py-2.5 px-3 whitespace-nowrap">Venue</th>
                 <th className="py-2.5 px-3 whitespace-nowrap">Type</th>
                 <th className="py-2.5 px-3 whitespace-nowrap">Quartile</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Impact Factor</th>
                 <th className="py-2.5 px-3 text-right whitespace-nowrap">Year</th>
                 <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap">
                   Citations
@@ -765,6 +872,17 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
                       >
                         {cat === 'Non-Indexed' ? 'Others' : cat}
                       </span>
+                    </td>
+
+                    <td className="py-3 px-3 align-top whitespace-nowrap font-mono">
+                      {pub.impactFactor !== undefined &&
+                      pub.impactFactor !== null ? (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/80 tabular-nums">
+                          {pub.impactFactor.toFixed(1)}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 text-[11px]">—</span>
+                      )}
                     </td>
 
                     <td className="py-3 px-3 align-top text-right whitespace-nowrap font-mono text-slate-700 tabular-nums">

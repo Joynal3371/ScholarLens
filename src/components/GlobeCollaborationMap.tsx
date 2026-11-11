@@ -210,10 +210,14 @@ export const FlatWorldCollaborationMap: React.FC<
           Global Collaboration Map
         </h2>
       </div>
-      <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-[#091526]">
+      <div
+        id="chart-collaboration-globe-flat-overview"
+        className="w-full overflow-hidden rounded-lg border border-slate-800 bg-[#091526]"
+      >
         <svg
+          data-chart-svg="true"
           viewBox={`0 0 ${FLAT_WIDTH} ${FLAT_HEIGHT}`}
-          className="w-full h-auto block"
+          className="w-full h-auto block scholar-chart-svg"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>

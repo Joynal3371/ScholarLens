@@ -154,6 +154,9 @@ async function svgElementToRawPngDataUrl(
 
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = 'anonymous';
+    let triedDataUri = false;
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
       canvas.width = svgW * scale;
@@ -174,8 +177,14 @@ async function svgElementToRawPngDataUrl(
       });
     };
     img.onerror = (err) => {
-      URL.revokeObjectURL(url);
-      reject(err);
+      if (!triedDataUri) {
+        triedDataUri = true;
+        img.src =
+          'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+      } else {
+        URL.revokeObjectURL(url);
+        reject(err);
+      }
     };
     img.src = url;
   });
@@ -544,12 +553,15 @@ export async function generateResearcherPdfReport(params: {
   // SECTION 2: GLOBAL COLLABORATION NETWORK MAP (EXPANDED TO FULL WIDTH ON PAGE 1)
   // -------------------------------------------------------------------------
   try {
-    const flatMapContainer = document.getElementById(
-      'chart-collaboration-globe-flat'
-    );
-    const flatMapSvg = flatMapContainer?.querySelector(
-      'svg'
-    ) as SVGSVGElement | null;
+    const flatMapContainer =
+      document.getElementById('chart-collaboration-globe-flat') ||
+      document.getElementById('chart-collaboration-globe-flat-overview') ||
+      document.querySelector('[aria-label="Global Collaboration Map"]');
+    const flatMapSvg =
+      flatMapContainer?.querySelector('svg') ||
+      document.querySelector(
+        '#chart-collaboration-globe-flat-overview svg'
+      ) as SVGSVGElement | null;
     if (flatMapSvg) {
       y = drawSectionHeader(
         doc,
@@ -590,6 +602,159 @@ export async function generateResearcherPdfReport(params: {
     // Continue if offscreen SVG serialization is skipped
   }
 
+  // Key International Collaboration Highlights on Page 1 (Fills remaining space cleanly)
+  const p1ColW = (contentW - 5.0) / 3;
+  const p1CardH = 58.0;
+  const p1CardY = y + 1.0;
+
+  // Card 1: Top 4 Collaborating Countries
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(margin, p1CardY, p1ColW, p1CardH, 1.5, 1.5, 'FD');
+  doc.setFillColor(14, 165, 233);
+  doc.rect(margin, p1CardY, p1ColW, 1.2, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Top Partner Nations', margin + 3.0, p1CardY + 5.0);
+
+  const p1Countries = countries.slice(0, 4);
+  const p1MaxCountryPapers = Math.max(
+    1,
+    ...p1Countries.map((c) => c.paperCount)
+  );
+  p1Countries.forEach((c, idx) => {
+    const ry = p1CardY + 7.5 + idx * 12.0;
+    // Rank Badge
+    doc.setFillColor(239, 246, 255);
+    doc.roundedRect(margin + 2.5, ry + 0.5, 4.8, 5.0, 0.8, 0.8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.2);
+    doc.setTextColor(37, 99, 235);
+    doc.text(`#${idx + 1}`, margin + 4.9, ry + 4.0, { align: 'center' });
+
+    // Name
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(15, 23, 42);
+    const cName =
+      c.country.length > 28 ? c.country.slice(0, 27) + '…' : c.country;
+    doc.text(cName, margin + 8.5, ry + 2.2);
+
+    // Bar
+    const barW = p1ColW - 11.5;
+    const fillW = Math.max(2.5, (c.paperCount / p1MaxCountryPapers) * barW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(margin + 8.5, ry + 3.6, barW, 1.2, 'F');
+    doc.setFillColor(14, 165, 233);
+    doc.rect(margin + 8.5, ry + 3.6, fillW, 1.2, 'F');
+
+    // Counts
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.6);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${c.paperCount} ${c.paperCount === 1 ? 'paper' : 'papers'} · ${c.totalCitations.toLocaleString()} citations`,
+      margin + 8.5,
+      ry + 7.2
+    );
+  });
+
+  // Card 2: Top 4 Collaborating Institutions
+  const c2X = margin + p1ColW + 2.5;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(c2X, p1CardY, p1ColW, p1CardH, 1.5, 1.5, 'FD');
+  doc.setFillColor(37, 99, 235);
+  doc.rect(c2X, p1CardY, p1ColW, 1.2, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Top Partner Institutions', c2X + 3.0, p1CardY + 5.0);
+
+  const p1Unis = universities.slice(0, 4);
+  const p1MaxUniPapers = Math.max(1, ...p1Unis.map((u) => u.paperCount));
+  p1Unis.forEach((u, idx) => {
+    const ry = p1CardY + 7.5 + idx * 12.0;
+    doc.setFillColor(239, 246, 255);
+    doc.roundedRect(c2X + 2.5, ry + 0.5, 4.8, 5.0, 0.8, 0.8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.2);
+    doc.setTextColor(37, 99, 235);
+    doc.text(`#${idx + 1}`, c2X + 4.9, ry + 4.0, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(15, 23, 42);
+    const uName =
+      u.universityName.length > 28
+        ? u.universityName.slice(0, 27) + '…'
+        : u.universityName;
+    doc.text(uName, c2X + 8.5, ry + 2.2);
+
+    const barW = p1ColW - 11.5;
+    const fillW = Math.max(2.5, (u.paperCount / p1MaxUniPapers) * barW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(c2X + 8.5, ry + 3.6, barW, 1.2, 'F');
+    doc.setFillColor(37, 99, 235);
+    doc.rect(c2X + 8.5, ry + 3.6, fillW, 1.2, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.6);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${u.paperCount} ${u.paperCount === 1 ? 'paper' : 'papers'} · ${u.totalCitations.toLocaleString()} citations`,
+      c2X + 8.5,
+      ry + 7.2
+    );
+  });
+
+  // Card 3: Top 4 Research Co-Authors
+  const c3X = margin + (p1ColW + 2.5) * 2;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(c3X, p1CardY, p1ColW, p1CardH, 1.5, 1.5, 'FD');
+  doc.setFillColor(79, 70, 229);
+  doc.rect(c3X, p1CardY, p1ColW, 1.2, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Key Research Co-Authors', c3X + 3.0, p1CardY + 5.0);
+
+  const p1Authors = coAuthors.slice(0, 4);
+  const p1MaxAuthorPapers = Math.max(1, ...p1Authors.map((a) => a.paperCount));
+  p1Authors.forEach((a, idx) => {
+    const ry = p1CardY + 7.5 + idx * 12.0;
+    doc.setFillColor(238, 242, 255);
+    doc.roundedRect(c3X + 2.5, ry + 0.5, 4.8, 5.0, 0.8, 0.8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.2);
+    doc.setTextColor(79, 70, 229);
+    doc.text(`#${idx + 1}`, c3X + 4.9, ry + 4.0, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(15, 23, 42);
+    const aName = a.name.length > 28 ? a.name.slice(0, 27) + '…' : a.name;
+    doc.text(aName, c3X + 8.5, ry + 2.2);
+
+    const barW = p1ColW - 11.5;
+    const fillW = Math.max(2.5, (a.paperCount / p1MaxAuthorPapers) * barW);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(c3X + 8.5, ry + 3.6, barW, 1.2, 'F');
+    doc.setFillColor(79, 70, 229);
+    doc.rect(c3X + 8.5, ry + 3.6, fillW, 1.2, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.6);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `${a.paperCount} ${a.paperCount === 1 ? 'paper' : 'papers'} · ${a.totalCitations.toLocaleString()} citations`,
+      c3X + 8.5,
+      ry + 7.2
+    );
+  });
+
   // =========================================================================
   // PAGE 2: BIBLIOMETRIC & IMPACT ANALYTICS GRAPHS (LARGE 2x3 GRID)
   // =========================================================================
@@ -620,7 +785,7 @@ export async function generateResearcherPdfReport(params: {
     },
     {
       id: 'chart-yearly-trend',
-      title: 'Annual Citation & Publication Trajectory',
+      title: 'Annual Citation & Trajectory Trend',
     },
     {
       id: 'chart-quartile-yearly',
@@ -636,7 +801,7 @@ export async function generateResearcherPdfReport(params: {
   const chartGapX = 5.0;
   const chartGapY = 4.5;
   const chartCardW = (contentW - chartGapX * (chartCols - 1)) / chartCols;
-  const chartCardH = 75.0;
+  const chartCardH = 81.0;
 
   for (let i = 0; i < siteAnalyticsCharts.length; i++) {
     const item = siteAnalyticsCharts[i];
@@ -710,10 +875,10 @@ export async function generateResearcherPdfReport(params: {
     ...top10CoAuthors.map((a) => a.paperCount)
   );
 
-  // Generous card height so country names and co-author names are completely spelled out without truncation
-  const rowItemH1 = 7.5;
+  // Generous card height so country names, co-author names, bars, and stats are completely uncrowded with ZERO overlap
+  const rowItemH1 = 10.2;
   const listCardH = Math.max(
-    38,
+    45,
     Math.max(top10Countries.length, top10CoAuthors.length) * rowItemH1 + 7.5
   );
 
@@ -727,7 +892,7 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Collaborating Countries', margin + 3, y + 5.2);
 
   top10Countries.forEach((c, idx) => {
-    const ry = y + 7.2 + idx * rowItemH1;
+    const ry = y + 7.5 + idx * rowItemH1;
 
     // Rank Badge
     doc.setFillColor(239, 246, 255);
@@ -735,33 +900,33 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 5.0, ry + 4.4, { align: 'center' });
+    doc.text(`#${idx + 1}`, margin + 5.0, ry + 4.5, { align: 'center' });
 
-    // Line 1: Full Country Name
+    // Line 1: Full Country Name (Cleanly separated above the bar)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.8);
     doc.setTextColor(15, 23, 42);
     const countryFullName =
       c.country.length > 52 ? c.country.slice(0, 51) + '…' : c.country;
-    doc.text(countryFullName, margin + 8.5, ry + 2.4);
+    doc.text(countryFullName, margin + 8.5, ry + 3.0);
 
-    // Line 2: Proportional Color Bar Line
+    // Line 2: Proportional Color Bar Line (1.6mm below text, never touching)
     const barMaxW = 76;
     const barFillW =
       Math.max(3.0, (c.paperCount / maxTopCountryPapers) * barMaxW);
     doc.setFillColor(241, 245, 249);
-    doc.rect(margin + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
+    doc.rect(margin + 8.5, ry + 4.6, barMaxW, 1.3, 'F');
     doc.setFillColor(14, 165, 233);
-    doc.rect(margin + 8.5, ry + 3.6, barFillW, 1.2, 'F');
+    doc.rect(margin + 8.5, ry + 4.6, barFillW, 1.3, 'F');
 
-    // Line 3: Paper and Citation Numbers BELOW the Color Line
+    // Line 3: Paper and Citation Numbers (2.4mm below the bar, never touching)
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.6);
+    doc.setFontSize(5.8);
     doc.setTextColor(100, 116, 139);
     doc.text(
       `${c.paperCount} ${c.paperCount === 1 ? 'paper' : 'papers'} · ${c.totalCitations.toLocaleString()} citations`,
       margin + 8.5,
-      ry + 6.8
+      ry + 8.6
     );
   });
 
@@ -776,7 +941,7 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Research Co-Authors', rightCardX + 3, y + 5.2);
 
   top10CoAuthors.forEach((ca, idx) => {
-    const ry = y + 7.2 + idx * rowItemH1;
+    const ry = y + 7.5 + idx * rowItemH1;
 
     // Rank Badge
     doc.setFillColor(238, 242, 255);
@@ -784,38 +949,38 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(79, 70, 229);
-    doc.text(`#${idx + 1}`, rightCardX + 5.0, ry + 4.4, { align: 'center' });
+    doc.text(`#${idx + 1}`, rightCardX + 5.0, ry + 4.5, { align: 'center' });
 
-    // Line 1: Full Co-Author Name (No country suffix beside author name)
+    // Line 1: Full Co-Author Name (Cleanly separated above the bar)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.8);
     doc.setTextColor(15, 23, 42);
     const authorLabel = ca.name;
     const authorFullLabel =
       authorLabel.length > 52 ? authorLabel.slice(0, 51) + '…' : authorLabel;
-    doc.text(authorFullLabel, rightCardX + 8.5, ry + 2.4);
+    doc.text(authorFullLabel, rightCardX + 8.5, ry + 3.0);
 
-    // Line 2: Proportional Color Bar Line
+    // Line 2: Proportional Color Bar Line (1.6mm below text, never touching)
     const barMaxW = 76;
     const barFillW =
       Math.max(3.0, (ca.paperCount / maxTopAuthorPapers) * barMaxW);
     doc.setFillColor(241, 245, 249);
-    doc.rect(rightCardX + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
+    doc.rect(rightCardX + 8.5, ry + 4.6, barMaxW, 1.3, 'F');
     doc.setFillColor(79, 70, 229);
-    doc.rect(rightCardX + 8.5, ry + 3.6, barFillW, 1.2, 'F');
+    doc.rect(rightCardX + 8.5, ry + 4.6, barFillW, 1.3, 'F');
 
-    // Line 3: Paper and Citation Numbers BELOW the Color Line
+    // Line 3: Paper and Citation Numbers (2.4mm below the bar, never touching)
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.6);
+    doc.setFontSize(5.8);
     doc.setTextColor(100, 116, 139);
     doc.text(
       `${ca.paperCount} ${ca.paperCount === 1 ? 'paper' : 'papers'} · ${ca.totalCitations.toLocaleString()} citations`,
       rightCardX + 8.5,
-      ry + 6.8
+      ry + 8.6
     );
   });
 
-  y += listCardH + 3.5;
+  y += listCardH + 4.5;
 
   // -------------------------------------------------------------------------
   // SECTION 5: TOP 10 PARTNER INSTITUTIONS & TOP 10 PUBLICATION VENUES
@@ -837,10 +1002,10 @@ export async function generateResearcherPdfReport(params: {
     ...top10Journals.map((j) => j.paperCount)
   );
 
-  // Generous card height so institution names are completely spelled out without truncation
-  const rowItemH = 7.5;
+  // Generous card height so institution names are completely uncrowded with ZERO overlap
+  const rowItemH = 10.2;
   const listCard2H = Math.max(
-    36,
+    45,
     Math.max(top10Unis.length, top10Journals.length) * rowItemH + 7.5
   );
 
@@ -854,7 +1019,7 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Collaborating Institutions', margin + 3, y + 5.2);
 
   top10Unis.forEach((u, idx) => {
-    const ry = y + 7.2 + idx * rowItemH;
+    const ry = y + 7.5 + idx * rowItemH;
 
     // Rank Badge
     doc.setFillColor(239, 246, 255);
@@ -862,34 +1027,34 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 5.0, ry + 4.4, { align: 'center' });
+    doc.text(`#${idx + 1}`, margin + 5.0, ry + 4.5, { align: 'center' });
 
-    // Line 1: Full University Name (up to 55 characters displayed across full width)
+    // Line 1: Full University Name (Cleanly separated above the bar)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.8);
     doc.setTextColor(15, 23, 42);
     const uniFullName =
       u.universityName.length > 52
         ? u.universityName.slice(0, 51) + '…'
         : u.universityName;
-    doc.text(uniFullName, margin + 8.5, ry + 2.4);
+    doc.text(uniFullName, margin + 8.5, ry + 3.0);
 
-    // Line 2: Proportional Color Bar Line
+    // Line 2: Proportional Color Bar Line (1.6mm below text, never touching)
     const barMaxW = 76;
     const barFillW = Math.max(3.0, (u.paperCount / maxUniPapers) * barMaxW);
     doc.setFillColor(241, 245, 249);
-    doc.rect(margin + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
+    doc.rect(margin + 8.5, ry + 4.6, barMaxW, 1.3, 'F');
     doc.setFillColor(37, 99, 235);
-    doc.rect(margin + 8.5, ry + 3.6, barFillW, 1.2, 'F');
+    doc.rect(margin + 8.5, ry + 4.6, barFillW, 1.3, 'F');
 
-    // Line 3: Paper and Citation Numbers BELOW the Color Line
+    // Line 3: Paper and Citation Numbers (2.4mm below the bar, never touching)
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.6);
+    doc.setFontSize(5.8);
     doc.setTextColor(100, 116, 139);
     doc.text(
       `${u.paperCount} ${u.paperCount === 1 ? 'paper' : 'papers'} · ${u.totalCitations.toLocaleString()} citations`,
       margin + 8.5,
-      ry + 6.8
+      ry + 8.6
     );
   });
 
@@ -903,7 +1068,7 @@ export async function generateResearcherPdfReport(params: {
   doc.text('Top 10 Journals & Conference Venues', rightCardX + 3, y + 5.2);
 
   top10Journals.forEach((j, idx) => {
-    const ry = y + 7.2 + idx * rowItemH;
+    const ry = y + 7.5 + idx * rowItemH;
 
     // Rank Badge
     doc.setFillColor(240, 253, 244);
@@ -911,39 +1076,37 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.2);
     doc.setTextColor(5, 150, 105);
-    doc.text(`#${idx + 1}`, rightCardX + 5.0, ry + 4.4, { align: 'center' });
+    doc.text(`#${idx + 1}`, rightCardX + 5.0, ry + 4.5, { align: 'center' });
 
-    // Line 1: Full Venue Name
+    // Line 1: Full Venue Name (Cleanly separated above the bar)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.8);
     doc.setTextColor(15, 23, 42);
     const venueFullName =
       j.venue.length > 52 ? j.venue.slice(0, 51) + '…' : j.venue;
-    doc.text(venueFullName, rightCardX + 8.5, ry + 2.4);
+    doc.text(venueFullName, rightCardX + 8.5, ry + 3.0);
 
-    // Line 2: Proportional Color Bar Line
+    // Line 2: Proportional Color Bar Line (1.6mm below text, never touching)
     const barMaxW = 76;
     const barFillW = Math.max(3.0, (j.paperCount / maxJournalPapers) * barMaxW);
     doc.setFillColor(241, 245, 249);
-    doc.rect(rightCardX + 8.5, ry + 3.6, barMaxW, 1.2, 'F');
+    doc.rect(rightCardX + 8.5, ry + 4.6, barMaxW, 1.3, 'F');
     doc.setFillColor(16, 185, 129);
-    doc.rect(rightCardX + 8.5, ry + 3.6, barFillW, 1.2, 'F');
+    doc.rect(rightCardX + 8.5, ry + 4.6, barFillW, 1.3, 'F');
 
-    // Line 3: Paper and Citation Numbers BELOW the Color Line
+    // Line 3: Paper and Citation Numbers (2.4mm below the bar, never touching)
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.6);
+    doc.setFontSize(5.8);
     doc.setTextColor(100, 116, 139);
     doc.text(
       `${j.paperCount} ${j.paperCount === 1 ? 'paper' : 'papers'} · ${j.totalCitations.toLocaleString()} citations`,
       rightCardX + 8.5,
-      ry + 6.8
+      ry + 8.6
     );
   });
 
-  y += listCard2H + 3.5;
-
   // =========================================================================
-  // PAGE 4+: TOP 10 MOST CITED PUBLICATIONS & COMPLETE INVENTORY
+  // PAGE 4: TOP 10 MOST CITED PUBLICATIONS & COMPLETE INVENTORY
   // =========================================================================
   doc.addPage();
   y = 14;
@@ -965,20 +1128,20 @@ export async function generateResearcherPdfReport(params: {
     .slice(0, 10);
 
   doc.setFillColor(15, 23, 42);
-  doc.rect(margin, y, contentW, 5.2, 'F');
+  doc.rect(margin, y, contentW, 5.5, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.8);
+  doc.setFontSize(7.0);
   doc.setTextColor(255, 255, 255);
-  doc.text('Rank', margin + 2, y + 3.6);
-  doc.text('Publication Title', margin + 10, y + 3.6);
-  doc.text('Journal / Conference Venue', margin + 100, y + 3.6);
-  doc.text('Tier', margin + 140, y + 3.6);
-  doc.text('Year', margin + 162, y + 3.6, { align: 'center' });
-  doc.text('Citations', margin + contentW - 2, y + 3.6, { align: 'right' });
-  y += 5.2;
+  doc.text('Rank', margin + 2, y + 3.8);
+  doc.text('Publication Title', margin + 10, y + 3.8);
+  doc.text('Journal / Conference Venue', margin + 100, y + 3.8);
+  doc.text('Tier', margin + 140, y + 3.8);
+  doc.text('Year', margin + 162, y + 3.8, { align: 'center' });
+  doc.text('Citations', margin + contentW - 2, y + 3.8, { align: 'right' });
+  y += 5.5;
 
   top10Papers.forEach((pub, idx) => {
-    const rowH = 5.4;
+    const rowH = 6.2;
     if (idx % 2 === 0) {
       doc.setFillColor(248, 250, 252);
       doc.rect(margin, y, contentW, rowH, 'F');
@@ -990,7 +1153,7 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.8);
     doc.setTextColor(37, 99, 235);
-    doc.text(`#${idx + 1}`, margin + 2, y + 4.2);
+    doc.text(`#${idx + 1}`, margin + 2, y + 4.4);
 
     // Clickable Publication Title
     const paperUrl = getPublicationUrl(pub);
@@ -999,9 +1162,9 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.8);
     doc.setTextColor(29, 78, 216); // High-contrast academic blue for clickable link
-    doc.textWithLink(titleText, margin + 10, y + 4.2, { url: paperUrl });
+    doc.textWithLink(titleText, margin + 10, y + 4.4, { url: paperUrl });
     const titleW = (doc.getStringUnitWidth(titleText) * 6.8) / (72 / 25.4);
-    doc.link(margin + 10, y + 0.6, titleW, 5.0, { url: paperUrl });
+    doc.link(margin + 10, y + 0.6, titleW, 5.2, { url: paperUrl });
 
     // Journal / Conference Venue
     doc.setFont('helvetica', 'normal');
@@ -1009,7 +1172,7 @@ export async function generateResearcherPdfReport(params: {
     doc.setTextColor(71, 85, 105);
     const venueText =
       pub.venue.length > 22 ? pub.venue.slice(0, 21) + '…' : pub.venue;
-    doc.text(venueText, margin + 100, y + 4.2);
+    doc.text(venueText, margin + 100, y + 4.4);
 
     // Tier / Category
     const cat = getPublicationPortfolioCategory(pub);
@@ -1017,30 +1180,28 @@ export async function generateResearcherPdfReport(params: {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(cr, cg, cb);
-    doc.text(cat === 'Non-Indexed' ? 'Others' : cat, margin + 140, y + 4.2);
+    doc.text(cat === 'Non-Indexed' ? 'Others' : cat, margin + 140, y + 4.4);
 
     // Year (Centered at margin + 162 with 7mm clear margin on both sides)
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text(String(pub.year), margin + 162, y + 4.2, { align: 'center' });
+    doc.text(String(pub.year), margin + 162, y + 4.4, { align: 'center' });
 
     // Citations (Right-aligned)
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text(pub.citations.toLocaleString(), margin + contentW - 2, y + 4.2, {
+    doc.text(pub.citations.toLocaleString(), margin + contentW - 2, y + 4.4, {
       align: 'right',
     });
 
     y += rowH;
   });
 
-  y += 4;
+  y += 5.0;
 
-  // =========================================================================
-  // PAGE 3+: COMPLETE VERIFIED PUBLICATION INVENTORY
-  // =========================================================================
-  doc.addPage();
-  y = 14;
+  // -------------------------------------------------------------------------
+  // SECTION 7: COMPLETE VERIFIED PUBLICATION PORTFOLIO (CONTINUES DIRECTLY ON PAGE 4)
+  // -------------------------------------------------------------------------
   y = drawSectionHeader(
     doc,
     '07',

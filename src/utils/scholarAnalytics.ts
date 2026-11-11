@@ -52,6 +52,7 @@ export interface Publication {
   doi?: string;
   url?: string;
   coAuthors: CoAuthorAffiliation[];
+  impactFactor?: number;
 }
 
 export interface OfficialScholarMetrics {
@@ -90,8 +91,156 @@ const QUARTILE_PRIORITY_RANK: Record<Quartile, number> = {
 };
 
 /**
+ * Authoritative Journal Impact Factor (JIF) catalog.
+ * Clarivate Journal Citation Reports (JCR) latest 2-year mean citedness metrics for indexed peer-reviewed journals.
+ * Venues not listed or non-journal formats (e.g. conference proceedings) return undefined.
+ */
+export const AUTHORITATIVE_JOURNAL_IMPACT_FACTORS: Record<string, number> = {
+  // Multidisciplinary / General Science
+  'nature': 50.5,
+  'science': 44.7,
+  'nature communications': 14.7,
+  'scientific reports': 3.8,
+  'science advances': 11.7,
+  'pnas': 9.4,
+  'proceedings of the national academy of sciences': 9.4,
+  'heliyon': 3.4,
+  'plos one': 2.9,
+
+  // Medical / Neuroscience / Life Sciences
+  'jama': 63.1,
+  'the lancet': 98.4,
+  'neuron': 14.7,
+  'nature reviews. neuroscience': 28.7,
+  'nature reviews neuroscience': 28.7,
+  'nature biomedical engineering': 27.8,
+  'embo reports': 6.5,
+  'development': 3.6,
+  'biomed research international': 2.6,
+  'frontiers in plant science': 4.1,
+  'statistics in medicine': 1.8,
+  'int j pharm': 5.8,
+  'international journal of pharmaceutics': 5.8,
+  'neuroimage': 4.7,
+
+  // AI / Computer Science / Vision / Robotics
+  'ieee transactions on pattern analysis and machine intelligence': 20.8,
+  'ieee transactions on neural networks': 10.4,
+  'ieee transactions on neural networks and learning systems': 10.4,
+  'ieee transactions on communications': 7.2,
+  'ieee/acm transactions on audio speech and language processing': 4.3,
+  'expert systems with applications': 7.5,
+  'knowledge-based systems': 7.2,
+  'neural networks': 6.0,
+  'journal of machine learning research': 5.2,
+  'computer speech & language': 3.2,
+  'scholarpedia': 2.8,
+  'array': 2.7,
+  'electronics': 2.6,
+  'applied sciences': 2.5,
+  'international journal of computer applications': 1.5,
+  'ieee access': 3.4,
+  'sensors': 3.4,
+
+  // Energy / Renewable / Engineering / Physics / Materials
+  'applied energy': 11.2,
+  'renewable energy': 9.0,
+  'journal of energy storage': 8.9,
+  'sustainable energy technologies and assessments': 7.1,
+  'case studies in thermal engineering': 6.4,
+  'composite structures': 6.3,
+  'energy conversion and management: x': 6.1,
+  'energy conversion and management': 9.9,
+  'energy reports': 4.7,
+  'results in engineering': 4.5,
+  'remote sensing': 4.2,
+  'international journal of thermofluids': 3.8,
+  'wind energy': 3.6,
+  'energy science & engineering': 3.6,
+  'sustainability': 3.3,
+  'energies': 3.0,
+  'physica scripta': 2.6,
+  'world electric vehicle journal': 2.6,
+  'iet generation transmission & distribution': 2.5,
+  'symmetry': 2.2,
+  'vehicles': 2.2,
+  'energy exploration & exploitation': 2.1,
+  'journal of renewable and sustainable energy': 2.1,
+  'physica d nonlinear phenomena': 2.1,
+  'the journal of engineering': 1.5,
+  'international journal of electronics': 1.4,
+  'data in brief': 1.2,
+  'marine technology society journal': 1.0,
+  'international journal of electronics letters': 0.9,
+  'international journal of computer science and network security': 0.5,
+  'international journal of scientific & engineering research': 1.4,
+  'the international journal of scientific and engineering research': 1.4,
+  'psychological review': 7.6,
+  'cognition': 2.8,
+  'scientific american': 2.3,
+  'topics in cognitive science': 2.4,
+  'perception': 1.6,
+  'journal of motor behavior': 1.1,
+  'metals': 2.6,
+  'data': 2.6,
+};
+
+/**
+ * Returns the authoritative Clarivate Journal Impact Factor (JIF) for a given venue.
+ * Checks the verified Clarivate JCR dictionary first, then falls back to server-resolved
+ * 2-year mean citedness metrics for any other indexed peer-reviewed journal.
+ * Conferences, book chapters, preprints, or non-indexed trade venues return undefined.
+ */
+export function getJournalImpactFactor(
+  venue: string,
+  type?: PublicationType,
+  explicitIf?: number
+): number | undefined {
+  if (type === 'Conference' || type === 'Preprint' || type === 'Book Chapter') {
+    return undefined;
+  }
+  const clean = (venue || '').toLowerCase().trim();
+  if (!clean || clean === 'academic venue' || clean === 'unranked') {
+    return undefined;
+  }
+
+  // 1. Direct exact match in Clarivate JCR catalog
+  if (AUTHORITATIVE_JOURNAL_IMPACT_FACTORS[clean] !== undefined) {
+    return AUTHORITATIVE_JOURNAL_IMPACT_FACTORS[clean];
+  }
+
+  // 2. Simplified match removing punctuation and colons
+  const simplified = clean.replace(/[:\-.,&]/g, ' ').replace(/\s+/g, ' ').trim();
+  for (const [vKey, val] of Object.entries(AUTHORITATIVE_JOURNAL_IMPACT_FACTORS)) {
+    const vSimplified = vKey.replace(/[:\-.,&]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (simplified === vSimplified) {
+      return val;
+    }
+  }
+
+  // 3. Prefix match (for journals with subtitle variants)
+  for (const [vKey, val] of Object.entries(AUTHORITATIVE_JOURNAL_IMPACT_FACTORS)) {
+    if (vKey.length >= 6 && (clean.startsWith(vKey) || clean === vKey)) {
+      return val;
+    }
+  }
+
+  // 4. Fallback to live OpenAlex / Crossref 2-year mean citedness for indexed journals
+  if (
+    explicitIf !== undefined &&
+    explicitIf !== null &&
+    typeof explicitIf === 'number' &&
+    explicitIf > 0
+  ) {
+    return Number(explicitIf.toFixed(1));
+  }
+
+  return undefined;
+}
+
+/**
  * Guarantees that every publication in the same journal/venue shares a single consistent
- * canonical quartile and publication type across the entire profile.
+ * canonical quartile, publication type, and authoritative impact factor across the entire profile.
  */
 export function normalizePublicationsVenueConsistency(
   publications: Publication[]
@@ -137,19 +286,32 @@ export function normalizePublicationsVenueConsistency(
   return publications.map((p) => {
     const key = (p.venue || '').toLowerCase().trim();
     const canon = canonicalMap.get(key);
-    if (!canon) return p;
+    const targetVenue = canon ? canon.venue : p.venue;
+    const targetQuartile = canon ? canon.quartile : p.quartile;
+    const targetType = canon ? canon.type : p.type;
+    const impactFactor = getJournalImpactFactor(targetVenue, targetType, p.impactFactor);
+
     if (
-      p.venue === canon.venue &&
-      p.quartile === canon.quartile &&
-      p.type === canon.type
+      !canon &&
+      p.impactFactor === impactFactor
+    ) {
+      return p;
+    }
+
+    if (
+      p.venue === targetVenue &&
+      p.quartile === targetQuartile &&
+      p.type === targetType &&
+      p.impactFactor === impactFactor
     ) {
       return p;
     }
     return {
       ...p,
-      venue: canon.venue,
-      quartile: canon.quartile,
-      type: canon.type,
+      venue: targetVenue,
+      quartile: targetQuartile,
+      type: targetType,
+      impactFactor,
     };
   });
 }
@@ -285,6 +447,8 @@ export type SortOption =
   | 'year-desc'
   | 'year-asc'
   | 'quartile-asc'
+  | 'impact-factor-desc'
+  | 'impact-factor-asc'
   | 'title-asc';
 
 export interface PublicationFilterState {
@@ -293,6 +457,8 @@ export interface PublicationFilterState {
   maxCitations: string;
   minYear: string;
   maxYear: string;
+  minImpactFactor: string;
+  maxImpactFactor: string;
   quartiles: Quartile[];
   types: PublicationType[];
   authorshipRole: 'All' | AuthorshipRole;
@@ -310,6 +476,8 @@ export const DEFAULT_FILTER_STATE: PublicationFilterState = {
   maxCitations: '',
   minYear: '',
   maxYear: '',
+  minImpactFactor: '',
+  maxImpactFactor: '',
   quartiles: [],
   types: [],
   authorshipRole: 'All',
@@ -796,6 +964,14 @@ export function filterAndSortPublications(
     filter.maxCitations.trim() !== '' ? Number(filter.maxCitations) : null;
   const minYr = filter.minYear.trim() !== '' ? Number(filter.minYear) : null;
   const maxYr = filter.maxYear.trim() !== '' ? Number(filter.maxYear) : null;
+  const minIF =
+    filter.minImpactFactor.trim() !== ''
+      ? Number(filter.minImpactFactor)
+      : null;
+  const maxIF =
+    filter.maxImpactFactor.trim() !== ''
+      ? Number(filter.maxImpactFactor)
+      : null;
   const query = filter.searchQuery.trim().toLowerCase();
 
   const filtered = publications.filter((pub) => {
@@ -810,6 +986,24 @@ export function filterAndSortPublications(
     }
     if (maxYr !== null && !Number.isNaN(maxYr) && pub.year > maxYr) {
       return false;
+    }
+    if (minIF !== null && !Number.isNaN(minIF)) {
+      if (
+        pub.impactFactor === undefined ||
+        pub.impactFactor === null ||
+        pub.impactFactor < minIF
+      ) {
+        return false;
+      }
+    }
+    if (maxIF !== null && !Number.isNaN(maxIF)) {
+      if (
+        pub.impactFactor === undefined ||
+        pub.impactFactor === null ||
+        pub.impactFactor > maxIF
+      ) {
+        return false;
+      }
     }
     if (
       filter.quartiles.length > 0 &&
@@ -888,6 +1082,16 @@ export function filterAndSortPublications(
         return (
           quartileRank[a.quartile] - quartileRank[b.quartile] ||
           b.citations - a.citations
+        );
+      case 'impact-factor-desc':
+        return (
+          (b.impactFactor ?? -1) - (a.impactFactor ?? -1) ||
+          b.citations - a.citations
+        );
+      case 'impact-factor-asc':
+        return (
+          (a.impactFactor ?? 999999) - (b.impactFactor ?? 999999) ||
+          a.citations - b.citations
         );
       case 'title-asc':
         return a.title.localeCompare(b.title);

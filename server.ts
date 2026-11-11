@@ -12,6 +12,7 @@ import {
   ResearcherProfile,
   OfficialScholarMetrics,
   normalizePublicationsVenueConsistency,
+  getJournalImpactFactor,
 } from './src/utils/scholarAnalytics';
 
 dotenv.config();
@@ -3066,6 +3067,11 @@ export async function buildLiveResearcherProfile(
           doi: oaDetails.doi,
           url: paperUrl,
           coAuthors: oaDetails.coAuthors,
+          impactFactor: getJournalImpactFactor(
+            venue,
+            type,
+            srcMetrics?.twoYrMeanCitedness
+          ),
         });
       } else {
         const crossref = allowPerPaperCrossref
@@ -3130,6 +3136,11 @@ export async function buildLiveResearcherProfile(
           doi: crossref?.doi,
           url: paperUrl,
           coAuthors,
+          impactFactor: getJournalImpactFactor(
+            cleanVenue,
+            type,
+            srcMetrics?.twoYrMeanCitedness
+          ),
         });
       }
     }
@@ -3191,6 +3202,11 @@ export async function buildLiveResearcherProfile(
         doi: oaDetails.doi,
         url: paperUrl,
         coAuthors: oaDetails.coAuthors,
+        impactFactor: getJournalImpactFactor(
+          oaDetails.venue,
+          type,
+          srcMetrics?.twoYrMeanCitedness
+        ),
       });
     }
   }

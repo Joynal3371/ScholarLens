@@ -11,6 +11,8 @@ import {
   aggregateCountries,
   aggregateJournals,
   DEFAULT_FILTER_STATE,
+  normalizePublicationsVenueConsistency,
+  getJournalImpactFactor,
 } from './scholarAnalytics';
 import { PRESET_PROFILES, findVerifiedPresetProfile } from './scholarPresets';
 import { projectOrthographic, interpolateGreatCircle } from './globeProjection';
@@ -95,6 +97,35 @@ test('filterAndSortPublications filters by custom citation range, quartile, type
   for (const p of q1Journals) {
     assert.equal(p.quartile, 'Q1');
     assert.equal(p.type, 'Journal');
+  }
+
+  assert.equal(getJournalImpactFactor('Energies', 'Journal'), 3.0);
+  assert.equal(getJournalImpactFactor('Nature', 'Journal'), 50.5);
+  assert.equal(
+    getJournalImpactFactor('IEEE International Conference', 'Conference'),
+    undefined
+  );
+
+  const normalizedPubs = normalizePublicationsVenueConsistency(pubs);
+  const highIfJournals = filterAndSortPublications(normalizedPubs, {
+    ...DEFAULT_FILTER_STATE,
+    minImpactFactor: '10',
+    maxImpactFactor: '60',
+    sortBy: 'impact-factor-desc',
+  });
+  assert.ok(highIfJournals.length > 0);
+  for (let i = 0; i < highIfJournals.length; i++) {
+    const p = highIfJournals[i];
+    assert.ok(
+      p.impactFactor !== undefined &&
+        p.impactFactor >= 10 &&
+        p.impactFactor <= 60
+    );
+    if (i > 0) {
+      assert.ok(
+        (highIfJournals[i - 1].impactFactor ?? 0) >= (p.impactFactor ?? 0)
+      );
+    }
   }
 });
 
