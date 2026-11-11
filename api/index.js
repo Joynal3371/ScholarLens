@@ -163,7 +163,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 3.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I96673099",
+          universityName: "Technical University of Denmark",
+          city: "Kongens Lyngby",
+          country: "Denmark",
+          countryCode: "DK",
+          continent: "Europe",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-1",
@@ -188,7 +200,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shaheer Ansari",
@@ -212,7 +224,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sazal Miah",
@@ -287,7 +299,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 10.7
+        impactFactor: 10.7,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-2",
@@ -363,7 +387,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 9.4
+        impactFactor: 9.4,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I96673099",
+          universityName: "Technical University of Denmark",
+          city: "Kongens Lyngby",
+          country: "Denmark",
+          countryCode: "DK",
+          continent: "Europe",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-3",
@@ -427,7 +463,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 4.2
+        impactFactor: 4.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-4",
@@ -491,7 +539,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 4.2
+        impactFactor: 4.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I251424209",
+          universityName: "Universitat de Girona",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "ES",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-5",
@@ -540,10 +600,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.741004943847656,
             lng: 90.37438201904297,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ],
-        impactFactor: 9.4
+        impactFactor: 9.4,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-6",
@@ -1171,7 +1243,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 16.9
+        impactFactor: 16.9,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I1294671590",
+          universityName: "Centre National de la Recherche Scientifique",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "FR",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-7",
@@ -1223,7 +1307,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9
+        impactFactor: 3.9,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-8",
@@ -1248,7 +1344,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sazal Miah",
@@ -1284,7 +1380,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shaheer Ansari",
@@ -1320,7 +1416,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammed Nazmus Shakib",
@@ -1332,10 +1428,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 2.6
+        impactFactor: 2.6,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-9",
@@ -2023,7 +2131,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 14.7
+        impactFactor: 14.7,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I1294671590",
+          universityName: "Centre National de la Recherche Scientifique",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "FR",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-10",
@@ -2048,7 +2168,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.741004943847656,
             lng: 90.37438201904297,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Hasan Maruf",
@@ -2060,7 +2180,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abul Hasan",
@@ -2072,7 +2192,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.741004943847656,
             lng: 90.37438201904297,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -2084,7 +2204,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -2096,7 +2216,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -2108,10 +2228,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 5.2
+        impactFactor: 5.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-11",
@@ -2911,7 +3043,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 44.7
+        impactFactor: 44.7,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I1294671590",
+          universityName: "Centre National de la Recherche Scientifique",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "FR",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-13",
@@ -2936,7 +3080,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -2948,7 +3092,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdulla Al Mamun",
@@ -2960,7 +3104,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -2972,7 +3116,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -2984,10 +3128,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 7.5
+        impactFactor: 7.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-14",
@@ -3036,7 +3192,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Nor Azwan Mohamed Kamari",
@@ -3072,7 +3228,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Nurulakla Mohd Azlan",
@@ -3099,7 +3255,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 3.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-15",
@@ -3150,7 +3318,19 @@ var verifiedScholarCache_default = {
             lng: 126.9784,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I251424209",
+          universityName: "Universitat de Girona",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "ES",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-16",
@@ -3706,7 +3886,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 14.7
+        impactFactor: 14.7,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I1294671590",
+          universityName: "Centre National de la Recherche Scientifique",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "FR",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-17",
@@ -3731,7 +3923,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -3743,7 +3935,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Suman Kumar Dey",
@@ -3755,7 +3947,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -3767,10 +3959,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 5.2
+        impactFactor: 5.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-18",
@@ -3795,7 +3999,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -3807,7 +4011,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -3819,7 +4023,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -3831,7 +4035,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -3843,7 +4047,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -3858,7 +4062,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 8
+        impactFactor: 8,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-19",
@@ -3921,7 +4137,19 @@ var verifiedScholarCache_default = {
             lng: -3.60667,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I96673099",
+          universityName: "Technical University of Denmark",
+          city: "Kongens Lyngby",
+          country: "Denmark",
+          countryCode: "DK",
+          continent: "Europe",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-20",
@@ -4008,7 +4236,19 @@ var verifiedScholarCache_default = {
             lng: 10.21076,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-21",
@@ -4059,7 +4299,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdulla Al Mamun",
@@ -4071,7 +4311,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -4083,7 +4323,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -4095,7 +4335,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abul Hasan",
@@ -4107,7 +4347,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Majedul Hoque",
@@ -4119,7 +4359,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -4131,7 +4371,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -4143,9 +4383,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-23",
@@ -4209,7 +4461,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 2.7
+        impactFactor: 2.7,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-24",
@@ -4285,7 +4549,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.6
+        impactFactor: 3.6,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-25",
@@ -4348,7 +4624,19 @@ var verifiedScholarCache_default = {
             lng: 151.66553,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I251424209",
+          universityName: "Universitat de Girona",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "ES",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-26",
@@ -4505,10 +4793,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 2.9
+        impactFactor: 2.9,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-27",
@@ -4547,7 +4847,19 @@ var verifiedScholarCache_default = {
             lng: 12.50378,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-28",
@@ -4572,7 +4884,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mamun Rabbani",
@@ -4596,7 +4908,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tariqul Islam",
@@ -4608,7 +4920,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Murad Kabir Nipun",
@@ -4632,7 +4944,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -4644,10 +4956,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 6.8
+        impactFactor: 6.8,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-29",
@@ -4711,7 +5035,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -4723,7 +5047,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -4735,7 +5059,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -4747,7 +5071,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -4761,7 +5085,19 @@ var verifiedScholarCache_default = {
             lng: 90.37980651855469,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-31",
@@ -4824,7 +5160,19 @@ var verifiedScholarCache_default = {
             lng: 5.32415,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I251424209",
+          universityName: "Universitat de Girona",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "ES",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-32",
@@ -4864,7 +5212,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 6.6
+        impactFactor: 6.6,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-33",
@@ -4889,7 +5249,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Zainal Salam",
@@ -4913,7 +5273,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tariqul Islam",
@@ -4925,7 +5285,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayzur Rahman",
@@ -4937,7 +5297,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Panos C. Kotsampopoulos",
@@ -4964,7 +5324,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 3.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-34",
@@ -4989,7 +5361,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -5001,7 +5373,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tahia Fahrin Karim",
@@ -5037,7 +5409,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -5049,10 +5421,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 7.5
+        impactFactor: 7.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I4210132279",
+          universityName: "Presidency University",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-35",
@@ -5077,7 +5461,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -5089,7 +5473,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -5101,7 +5485,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -5113,7 +5497,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -5125,7 +5509,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -5137,7 +5521,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -5149,9 +5533,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-36",
@@ -5176,7 +5572,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -5200,7 +5596,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -5212,7 +5608,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Mozaharul Mottalib",
@@ -5224,7 +5620,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -5236,10 +5632,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 5.2
+        impactFactor: 5.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-37",
@@ -5436,7 +5844,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -5448,7 +5856,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Jaudat Nahian",
@@ -5460,7 +5868,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -5472,7 +5880,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -5484,9 +5892,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-40",
@@ -5549,7 +5969,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I59805279",
+          universityName: "Islamic University of Technology",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-41",
@@ -5574,7 +6006,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -5598,7 +6030,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -5622,7 +6054,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -5634,10 +6066,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-42",
@@ -5772,7 +6216,19 @@ var verifiedScholarCache_default = {
             lng: 2.3488,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I29607241",
+          universityName: "\xC9cole Normale Sup\xE9rieure - PSL",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "FR",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-43",
@@ -5797,7 +6253,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -5821,7 +6277,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Syed Iftekhar Ali",
@@ -5836,7 +6292,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.4
+        impactFactor: 1.4,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-44",
@@ -5861,7 +6329,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -5873,7 +6341,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Kamrozzaman Kiron",
@@ -5885,7 +6353,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -5897,7 +6365,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -5909,7 +6377,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -5921,7 +6389,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -5936,7 +6404,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-45",
@@ -5999,7 +6479,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -6023,7 +6503,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -6047,7 +6527,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Zubaeer Bin Shams",
@@ -6071,7 +6551,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -6083,10 +6563,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9
+        impactFactor: 3.9,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-47",
@@ -6111,7 +6603,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -6135,10 +6627,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-48",
@@ -6163,7 +6667,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mamun Rabbani",
@@ -6187,7 +6691,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aminul Islam",
@@ -6201,7 +6705,19 @@ var verifiedScholarCache_default = {
             lng: 12.50378,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-49",
@@ -6226,7 +6742,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sameya Afrin July",
@@ -6238,7 +6754,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mamun Rabbani",
@@ -6274,7 +6790,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mahidur R. Sarker",
@@ -6298,7 +6814,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shahrial Kabir",
@@ -6310,10 +6826,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 3.9
+        impactFactor: 3.9,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-50",
@@ -6338,7 +6866,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Amdadull Kabir",
@@ -6350,7 +6878,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naim Al Hasan",
@@ -6362,7 +6890,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -6374,7 +6902,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -6386,7 +6914,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -6398,7 +6926,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -6410,9 +6938,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-51",
@@ -6437,7 +6977,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -6449,7 +6989,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -6461,7 +7001,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -6473,7 +7013,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -6485,7 +7025,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -6497,7 +7037,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -6509,9 +7049,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I4210132279",
+          universityName: "Presidency University",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-52",
@@ -6536,7 +7088,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Monirujjaman Khan",
@@ -6596,7 +7148,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -6608,7 +7160,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -6620,7 +7172,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ashraf Siddiquee",
@@ -6632,10 +7184,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 3.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-53",
@@ -6660,7 +7224,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Zia Islam",
@@ -6672,7 +7236,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Balakumar Muniandi",
@@ -6696,7 +7260,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashiqur Rahman",
@@ -6708,7 +7272,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -6720,7 +7284,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tuhibur Rahman",
@@ -6732,7 +7296,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tariqul Islam",
@@ -6744,9 +7308,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-54",
@@ -6783,7 +7359,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammed Imamul Hassan Bhuiyan",
@@ -6807,10 +7383,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 2.7
+        impactFactor: 2.7,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-55",
@@ -6897,7 +7485,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Monirujjaman Khan",
@@ -6921,7 +7509,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -6933,7 +7521,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -6945,7 +7533,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -6972,7 +7560,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sayed Tanveer",
@@ -6984,7 +7572,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammed Imamul Hassan Bhuiyan",
@@ -6998,7 +7586,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-58",
@@ -7023,7 +7623,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -7035,7 +7635,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -7047,9 +7647,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-59",
@@ -7160,7 +7772,19 @@ var verifiedScholarCache_default = {
             lng: 12.50378,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I96673099",
+          universityName: "Technical University of Denmark",
+          city: "Kongens Lyngby",
+          country: "Denmark",
+          countryCode: "DK",
+          continent: "Europe",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-60",
@@ -7185,7 +7809,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -7197,7 +7821,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Rashedul Islam Rashed",
@@ -7209,7 +7833,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shakib Ibne Ashrafi",
@@ -7221,7 +7845,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -7233,9 +7857,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I4210132279",
+          universityName: "Presidency University",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-61",
@@ -7284,7 +7920,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naiem-Ur-Rahman",
@@ -7296,7 +7932,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -7308,7 +7944,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Golam Mohiuddin",
@@ -7320,9 +7956,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-62",
@@ -7347,7 +7995,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -7359,7 +8007,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -7371,7 +8019,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tuhibur Rahman",
@@ -7383,7 +8031,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -7395,7 +8043,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -7407,7 +8055,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -7419,7 +8067,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -7431,7 +8079,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -7445,7 +8093,19 @@ var verifiedScholarCache_default = {
             lng: 90.37980651855469,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-63",
@@ -7470,7 +8130,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -7482,7 +8142,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Kazi Md Shahnawaz Habib Sourov",
@@ -7542,7 +8202,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Monirujjaman Khan",
@@ -7557,7 +8217,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 3.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-64",
@@ -7582,7 +8254,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aminul Islam",
@@ -7606,7 +8278,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -7618,7 +8290,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Yusri Hassan",
@@ -7633,7 +8305,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 2.7
+        impactFactor: 2.7,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-65",
@@ -7734,7 +8418,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -7746,7 +8430,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -7773,7 +8457,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.2
+        impactFactor: 1.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-67",
@@ -7798,7 +8494,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Hasan Jamil Apon",
@@ -7834,10 +8530,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 4.2
+        impactFactor: 4.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-68",
@@ -7900,7 +8608,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-69",
@@ -7987,7 +8707,19 @@ var verifiedScholarCache_default = {
             lng: 2.82493,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I251424209",
+          universityName: "Universitat de Girona",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "ES",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-70",
@@ -8038,7 +8770,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I59805279",
+          universityName: "Islamic University of Technology",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-71",
@@ -8063,7 +8807,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abu Hanif Emon",
@@ -8123,9 +8867,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-72",
@@ -8150,7 +8906,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -8162,7 +8918,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -8174,7 +8930,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -8186,7 +8942,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -8198,7 +8954,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -8210,7 +8966,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -8222,9 +8978,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-73",
@@ -8249,7 +9017,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -8261,7 +9029,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdulla Al Mamun",
@@ -8273,7 +9041,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -8285,7 +9053,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -8297,10 +9065,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 7.5
+        impactFactor: 7.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-74",
@@ -8361,7 +9141,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Istiac Ahmed",
@@ -8373,9 +9153,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-75",
@@ -8400,7 +9192,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -8412,7 +9204,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -8424,7 +9216,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -8436,7 +9228,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -8448,7 +9240,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -8463,7 +9255,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 8
+        impactFactor: 8,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-76",
@@ -8488,7 +9292,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Nazmul Akter Shahin",
@@ -8500,7 +9304,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shakib Ibne Ashrafi",
@@ -8512,7 +9316,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -8524,7 +9328,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -8536,7 +9340,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -8548,7 +9352,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Dewan Mohammad Saaduzzaman",
@@ -8560,9 +9364,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-77",
@@ -8587,7 +9403,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sajib Hossain",
@@ -8599,7 +9415,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Nazmul Haque",
@@ -8611,7 +9427,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M. M. Mahbubul Syeed",
@@ -8635,7 +9451,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -8647,9 +9463,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-79",
@@ -8772,7 +9600,19 @@ var verifiedScholarCache_default = {
             lng: -117.00016784667969,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I251424209",
+          universityName: "Universitat de Girona",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "ES",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-80",
@@ -9423,7 +10263,19 @@ var verifiedScholarCache_default = {
             lng: 2.3488,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I1294671590",
+          universityName: "Centre National de la Recherche Scientifique",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "FR",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-81",
@@ -9448,7 +10300,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M T Hasan Amin",
@@ -9472,7 +10324,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -9508,7 +10360,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -9520,9 +10372,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-83",
@@ -9609,7 +10473,19 @@ var verifiedScholarCache_default = {
             lng: -8.61097,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-84",
@@ -9634,7 +10510,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ordatun Jannat",
@@ -9646,7 +10522,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -9658,7 +10534,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -9670,9 +10546,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-85",
@@ -9697,7 +10585,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -9709,7 +10597,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -9721,7 +10609,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -9733,7 +10621,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahriar Mahmud Kabir",
@@ -9745,9 +10633,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-86",
@@ -9848,7 +10748,19 @@ var verifiedScholarCache_default = {
             lng: 90.37980651855469,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I59805279",
+          universityName: "Islamic University of Technology",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-88",
@@ -9873,7 +10785,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammed Imamul Hassan Bhuiyan",
@@ -9897,7 +10809,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Abdul Aziz Prodhan",
@@ -9909,7 +10821,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Faysal Miah",
@@ -9921,9 +10833,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-89",
@@ -9948,7 +10872,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayzur Rahman",
@@ -9960,7 +10884,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sourav Barua",
@@ -9972,7 +10896,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -9984,7 +10908,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -9996,9 +10920,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-90",
@@ -10023,7 +10959,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Monirujjaman Khan",
@@ -10062,7 +10998,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fahim Hasan",
@@ -10074,7 +11010,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -10086,7 +11022,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -10098,7 +11034,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -10110,9 +11046,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-92",
@@ -10137,7 +11085,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -10149,7 +11097,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdullah Al Mahfuz",
@@ -10161,7 +11109,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -10173,7 +11121,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -10185,9 +11133,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-93",
@@ -10212,7 +11172,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -10224,7 +11184,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdulla Al Mamun",
@@ -10236,7 +11196,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -10248,7 +11208,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -10260,10 +11220,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 7.5
+        impactFactor: 7.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-94",
@@ -10288,7 +11260,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "MAU Haq",
@@ -10300,7 +11272,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -10312,7 +11284,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -10338,7 +11310,19 @@ var verifiedScholarCache_default = {
             lng: 90.40263366699219,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-95",
@@ -10512,7 +11496,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayzur Rahman",
@@ -10524,7 +11508,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ali Hasan Ahmad",
@@ -10536,7 +11520,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Tariqul Islam",
@@ -10548,7 +11532,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ahsanul Alam",
@@ -10560,7 +11544,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sameya Afrin July",
@@ -10572,9 +11556,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-98",
@@ -10599,7 +11595,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shaheer Ansari",
@@ -10623,7 +11619,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sazal Miah",
@@ -10723,7 +11719,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Nurunnabi Mollah",
@@ -10737,7 +11733,19 @@ var verifiedScholarCache_default = {
             lng: 89.56439208984375,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-106",
@@ -10762,7 +11770,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -10774,7 +11782,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Suman Kumar Dey",
@@ -10786,7 +11794,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -10798,10 +11806,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 5.2
+        impactFactor: 5.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-100",
@@ -11190,7 +12210,19 @@ var verifiedScholarCache_default = {
             lng: 2.403320074081421,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I1294671590",
+          universityName: "Centre National de la Recherche Scientifique",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "FR",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-107",
@@ -11475,7 +12507,19 @@ var verifiedScholarCache_default = {
             lng: -80.26838,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I251424209",
+          universityName: "Universitat de Girona",
+          city: "Unlisted",
+          country: "Unlisted",
+          countryCode: "ES",
+          continent: "Asia",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-104",
@@ -11538,7 +12582,19 @@ var verifiedScholarCache_default = {
             lng: 90.37980651855469,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I59805279",
+          universityName: "Islamic University of Technology",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-105",
@@ -11601,7 +12657,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Abdul Kayum",
@@ -11613,7 +12669,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Islam",
@@ -11625,7 +12681,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Roman Nihal",
@@ -11637,7 +12693,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M Tasdik Hasan",
@@ -11649,10 +12705,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-109",
@@ -11677,7 +12745,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Dewan Mohammad Saaduzzaman",
@@ -11689,7 +12757,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Anwar Hossain",
@@ -11701,7 +12769,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shimul Chandra Das",
@@ -11713,7 +12781,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -11725,9 +12793,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-110",
@@ -11752,7 +12832,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Farzana Akter Moli",
@@ -11764,7 +12844,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Nayem Ahmed Noyon",
@@ -11776,7 +12856,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sameya Afrin July",
@@ -11802,7 +12882,19 @@ var verifiedScholarCache_default = {
             lng: 103.39959716796875,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-111",
@@ -11863,9 +12955,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-112",
@@ -11890,7 +12994,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M. Saad Bin Arif",
@@ -11926,7 +13030,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -11938,10 +13042,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 3.2
+        impactFactor: 3.2,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-113",
@@ -11990,7 +13106,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -12002,9 +13118,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-114",
@@ -12029,7 +13157,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shakib Ibne Ashrafi",
@@ -12041,7 +13169,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -12053,9 +13181,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-115",
@@ -12092,7 +13232,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M. M. Mahbubul Syeed",
@@ -12116,7 +13256,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ashraful Amin",
@@ -12142,7 +13282,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I31669788",
+          universityName: "Independent University, Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-116",
@@ -12167,7 +13319,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -12179,7 +13331,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -12191,7 +13343,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sourav Barua",
@@ -12203,7 +13355,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayzur Rahman",
@@ -12215,9 +13367,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-117",
@@ -12242,7 +13406,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -12254,7 +13418,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashiqur Rahman",
@@ -12266,7 +13430,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Jannatul Ferdousy",
@@ -12278,9 +13442,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-118",
@@ -12330,7 +13506,19 @@ var verifiedScholarCache_default = {
             lng: 12.50378,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I96673099",
+          universityName: "Technical University of Denmark",
+          city: "Kongens Lyngby",
+          country: "Denmark",
+          countryCode: "DK",
+          continent: "Europe",
+          lat: 55.7856,
+          lng: 12.5215,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-119",
@@ -12529,7 +13717,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aminul Islam",
@@ -12655,7 +13843,19 @@ var verifiedScholarCache_default = {
             lng: 22.15465,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-124",
@@ -12680,7 +13880,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mohi Uddin Mohin",
@@ -12692,7 +13892,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahriar Mahmud Kabir",
@@ -12704,7 +13904,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Abdullah Al Oafi Himon",
@@ -12716,7 +13916,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Istiac Ahmed",
@@ -12728,9 +13928,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-125",
@@ -12755,7 +13967,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Shoab Khan",
@@ -12767,7 +13979,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Hujaifa Ahmed Tanvir",
@@ -12779,7 +13991,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Rifat Ahmmad Rashid",
@@ -12803,9 +14015,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-126",
@@ -12830,7 +14054,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Faysal Miah",
@@ -12842,7 +14066,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Jahidul Hasan Rony",
@@ -12854,7 +14078,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M. M. Naushad Ali",
@@ -12866,7 +14090,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -12878,7 +14102,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -12904,7 +14128,19 @@ var verifiedScholarCache_default = {
             lng: 150.89344787597656,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-127",
@@ -12929,7 +14165,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shihab Ahmed",
@@ -12941,7 +14177,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Hasan Maruf",
@@ -12953,7 +14189,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Rashedul Islam Rashed",
@@ -12965,7 +14201,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Chayan Mondal",
@@ -12979,7 +14215,19 @@ var verifiedScholarCache_default = {
             lng: 90.06041,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-128",
@@ -13004,7 +14252,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abu Yusuf Nayeem",
@@ -13016,7 +14264,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdus Salam",
@@ -13028,7 +14276,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Roman Nihal",
@@ -13040,7 +14288,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abul Hasan",
@@ -13052,9 +14300,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-129",
@@ -13154,7 +14414,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashaduzzaman Niloy",
@@ -13166,7 +14426,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Roman Nihal",
@@ -13178,7 +14438,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Raiyan Gani",
@@ -13216,7 +14476,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-131",
@@ -13241,10 +14513,22 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
-        impactFactor: 5
+        impactFactor: 5,
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-132",
@@ -13269,7 +14553,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Rakib Mia",
@@ -13281,7 +14565,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "S M Asif Hossain",
@@ -13293,7 +14577,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "AKM Shahabuddin",
@@ -13305,7 +14589,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -13317,7 +14601,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -13344,7 +14628,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Rakibul Hasan",
@@ -13356,7 +14640,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tahmina Akter",
@@ -13368,7 +14652,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shihab Ahmed",
@@ -13380,7 +14664,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -13392,9 +14676,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-134",
@@ -13419,7 +14715,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -13431,7 +14727,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -13443,7 +14739,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mohi Uddin Mohin",
@@ -13455,7 +14751,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mst. Umme Habiba",
@@ -13467,7 +14763,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -13481,7 +14777,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-135",
@@ -13506,7 +14814,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -13530,7 +14838,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashaduzzaman Niloy",
@@ -13542,7 +14850,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -13578,9 +14886,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-136",
@@ -13605,7 +14925,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Carlos Tierno Jimenez",
@@ -13629,7 +14949,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -13641,7 +14961,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M. M. Naushad Ali",
@@ -13653,7 +14973,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Ashraful Islam",
@@ -13665,7 +14985,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -13677,7 +14997,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdulla Al Mamun",
@@ -13689,9 +15009,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-137",
@@ -13728,7 +15060,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Partho Singh",
@@ -13752,7 +15084,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashaduzzaman Niloy",
@@ -13764,7 +15096,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -13791,7 +15123,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -13803,7 +15135,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mohi Uddin Mohin",
@@ -13815,7 +15147,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -13827,7 +15159,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -13839,7 +15171,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mokarram Hossain",
@@ -13851,7 +15183,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Anorgul I. Ashirova",
@@ -13887,9 +15219,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-139",
@@ -13914,7 +15258,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Siful Islam Pranto",
@@ -13926,7 +15270,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shakib Ibne Ashrafi",
@@ -13938,7 +15282,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sadi Mohammad Moin",
@@ -13950,7 +15294,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohi Uddin Ahmed",
@@ -13962,7 +15306,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Murad Kabir Nipun",
@@ -13976,7 +15320,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I4210132279",
+          universityName: "Presidency University",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-140",
@@ -14001,7 +15357,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Minhaz Ul Karim Asif",
@@ -14013,7 +15369,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razaul Haque Rasham",
@@ -14025,7 +15381,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Dewan Mohammad Saaduzzaman",
@@ -14037,7 +15393,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -14049,7 +15405,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abul Hasan",
@@ -14061,9 +15417,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I4210132279",
+          universityName: "Presidency University",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-141",
@@ -14088,7 +15456,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayzur Rahman",
@@ -14100,7 +15468,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Kamran Ahmed",
@@ -14112,7 +15480,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tariqul Islam",
@@ -14124,7 +15492,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -14136,9 +15504,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-142",
@@ -14163,7 +15543,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Rukhshana Parvin",
@@ -14175,7 +15555,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Riday Hossen",
@@ -14187,7 +15567,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Avoy Roy",
@@ -14199,7 +15579,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ordatun Jannat",
@@ -14211,7 +15591,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahela Akter",
@@ -14223,9 +15603,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-143",
@@ -14250,7 +15642,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -14262,7 +15654,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Dewan Mohammad Saaduzzaman",
@@ -14274,7 +15666,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashiqur Rahman",
@@ -14286,7 +15678,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abul Hasan",
@@ -14298,9 +15690,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-144",
@@ -14325,7 +15729,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Dewan Mohammad Saaduzzaman",
@@ -14337,7 +15741,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -14349,7 +15753,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -14361,9 +15765,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-145",
@@ -14412,7 +15828,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Jaime S. Cardoso",
@@ -14438,7 +15854,19 @@ var verifiedScholarCache_default = {
             lng: -8.61097,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-146",
@@ -14525,7 +15953,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -14537,7 +15965,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mahmudul Hasan",
@@ -14549,7 +15977,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -14561,7 +15989,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ahmed Al Mansur",
@@ -14573,9 +16001,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-148",
@@ -14624,7 +16064,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -14636,9 +16076,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-149",
@@ -14751,7 +16203,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sayed Tanveer",
@@ -14763,7 +16215,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammed Imamul Hassan Bhuiyan",
@@ -14777,7 +16229,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-152",
@@ -14802,7 +16266,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahriar Mahmud Kabir",
@@ -14814,9 +16278,21 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I2802576217",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-153",
@@ -14879,7 +16355,19 @@ var verifiedScholarCache_default = {
             lng: 90.40744018554688,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I59805279",
+          universityName: "Islamic University of Technology",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-154",
@@ -14992,7 +16480,19 @@ var verifiedScholarCache_default = {
             lng: 90.37980651855469,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I59805279",
+          universityName: "Islamic University of Technology",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       },
       {
         id: "gs-156",
@@ -15055,7 +16555,19 @@ var verifiedScholarCache_default = {
             lng: 90.37980651855469,
             isHomeInstitution: false
           }
-        ]
+        ],
+        authorAffiliation: {
+          name: "ASM Shihavuddin",
+          universityId: "I59805279",
+          universityName: "Islamic University of Technology",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: false
+        }
       }
     ]
   },
@@ -15123,7 +16635,19 @@ var verifiedScholarCache_default = {
             isHomeInstitution: false
           }
         ],
-        impactFactor: 1.5
+        impactFactor: 1.5,
+        authorAffiliation: {
+          name: "Joynal Abadin",
+          universityId: "I130571618",
+          universityName: "Green University of Bangladesh",
+          city: "Dhaka",
+          country: "Bangladesh",
+          countryCode: "BD",
+          continent: "Asia",
+          lat: 23.8103,
+          lng: 90.4125,
+          isHomeInstitution: true
+        }
       }
     ]
   },
@@ -15228,7 +16752,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ilya Sutskever",
@@ -15252,7 +16776,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -15329,7 +16853,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Alex Krizhevsky",
@@ -15341,7 +16865,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ilya Sutskever",
@@ -15353,7 +16877,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ruslan Salakhutdinov",
@@ -15365,7 +16889,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -15444,7 +16968,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -15471,7 +16995,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ],
         impactFactor: 44.7
@@ -15499,7 +17023,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Yee\u2010Whye Teh",
@@ -15550,7 +17074,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 47.67399,
             lng: -122.12151,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "George E. Dahl",
@@ -15562,7 +17086,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Abdelrahman Mohamed",
@@ -15574,7 +17098,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Navdeep Jaitly",
@@ -15586,7 +17110,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andrew Senior",
@@ -15685,7 +17209,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Abdelrahman Mohamed",
@@ -15697,7 +17221,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -15748,7 +17272,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -15812,7 +17336,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "George E. Dahl",
@@ -15824,7 +17348,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16042,7 +17566,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16069,7 +17593,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16109,7 +17633,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16135,7 +17659,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Sam T. Roweis",
@@ -16147,7 +17671,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ruslan Salakhutdinov",
@@ -16159,7 +17683,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16213,7 +17737,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16266,7 +17790,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "George E. Dahl",
@@ -16278,7 +17802,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16304,7 +17828,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "James Martens",
@@ -16316,7 +17840,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16343,7 +17867,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Sida I. Wang",
@@ -16355,7 +17879,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16382,7 +17906,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Tara N. Sainath",
@@ -16433,7 +17957,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Radford M. Neal",
@@ -16445,7 +17969,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Richard S. Zemel",
@@ -16510,7 +18034,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16537,7 +18061,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -16564,7 +18088,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 47.67399,
             lng: -122.12151,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Brian E. D. Kingsbury",
@@ -16629,7 +18153,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Brendan J. Frey",
@@ -16641,7 +18165,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Radford M. Neal",
@@ -16653,7 +18177,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ],
         impactFactor: 44.7
@@ -16883,7 +18407,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -17081,7 +18605,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -17198,7 +18722,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -17264,7 +18788,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -17449,7 +18973,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Gillian K. Hadfield",
@@ -17497,7 +19021,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Tegan Maharaj",
@@ -17557,7 +19081,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Sheila A. McIlraith",
@@ -17904,7 +19428,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18091,7 +19615,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18197,7 +19721,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -18209,7 +19733,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18300,7 +19824,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 47.67399,
             lng: -122.12151,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Anoop Deoras",
@@ -18312,7 +19836,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 47.67399,
             lng: -122.12151,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -18338,7 +19862,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18365,7 +19889,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18392,7 +19916,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -18404,7 +19928,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18430,7 +19954,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18624,7 +20148,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 47.67399,
             lng: -122.12151,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Alex Acero",
@@ -18648,7 +20172,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18675,7 +20199,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Peter Dayan",
@@ -18699,7 +20223,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18791,7 +20315,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -18803,7 +20327,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18867,7 +20391,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18894,7 +20418,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -18976,7 +20500,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Tara N. Sainath",
@@ -19000,7 +20524,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Bhuvana Ramabhadran",
@@ -19486,7 +21010,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Gerald Penn",
@@ -19498,7 +21022,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -19564,7 +21088,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 47.67399,
             lng: -122.12151,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "George E. Dahl",
@@ -19576,7 +21100,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Abdelrahman Mohamed",
@@ -19588,7 +21112,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Navdeep Jaitly",
@@ -19600,7 +21124,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andrew Senior",
@@ -19839,7 +21363,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -19932,7 +21456,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -19944,7 +21468,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -19970,7 +21494,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -19997,7 +21521,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Joshua M. Susskind",
@@ -20021,7 +21545,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -20170,7 +21694,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -20197,7 +21721,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -20277,7 +21801,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -20289,7 +21813,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -20354,7 +21878,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -20952,7 +22476,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21005,7 +22529,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21136,7 +22660,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Christopher K. I. Williams",
@@ -21251,7 +22775,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ruslan Salakhutdinov",
@@ -21263,7 +22787,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21290,7 +22814,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -21302,7 +22826,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21431,7 +22955,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21470,7 +22994,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ilya Sutskever",
@@ -21494,7 +23018,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21547,7 +23071,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Simon Osindero",
@@ -21597,7 +23121,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21624,7 +23148,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Max Welling",
@@ -21636,7 +23160,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Yee\u2010Whye Teh",
@@ -21648,7 +23172,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21762,7 +23286,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21789,7 +23313,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21926,7 +23450,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -21953,7 +23477,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -21965,7 +23489,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22004,7 +23528,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Michael D. Revow",
@@ -22016,7 +23540,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22107,7 +23631,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22197,7 +23721,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22247,7 +23771,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22273,7 +23797,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22426,7 +23950,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Peter Dayan",
@@ -22438,7 +23962,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22464,7 +23988,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22519,7 +24043,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -22531,7 +24055,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22704,7 +24228,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "David Naylor",
@@ -22728,7 +24252,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Robert John Tibshirani",
@@ -22740,7 +24264,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22806,7 +24330,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Max Welling",
@@ -22926,7 +24450,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Andriy Mnih",
@@ -22938,7 +24462,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -22965,7 +24489,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 47.67399,
             lng: -122.12151,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Nelson H. Morgan",
@@ -23027,7 +24551,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Peter Dayan",
@@ -23039,7 +24563,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -23228,7 +24752,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Michael D. Revow",
@@ -23240,7 +24764,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Zoubin Ghahramani",
@@ -23302,7 +24826,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Steven L. Small",
@@ -23338,7 +24862,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -23390,7 +24914,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Volodymyr Mnih",
@@ -23402,7 +24926,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -23532,7 +25056,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Gregory Dudek",
@@ -23594,7 +25118,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -23688,7 +25212,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -23715,7 +25239,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Volodymyr Mnih",
@@ -23727,7 +25251,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Joshua M. Susskind",
@@ -23832,7 +25356,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Demetri Terzopoulos",
@@ -23948,7 +25472,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ruslan Salakhutdinov",
@@ -23960,7 +25484,7 @@ var verifiedScholarCache_default = {
             continent: "North America",
             lat: 43.70643,
             lng: -79.39864,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -24071,7 +25595,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -24083,7 +25607,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Siddikur Rahman",
@@ -24107,7 +25631,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohamad Abou Houran",
@@ -24171,7 +25695,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Rifat Ahmmad Rashid",
@@ -24195,7 +25719,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abul Hasan",
@@ -24219,7 +25743,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -24231,7 +25755,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 5.2
@@ -24259,7 +25783,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -24271,7 +25795,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tajrian Mollick",
@@ -24295,7 +25819,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ian B. Benitez",
@@ -24331,7 +25855,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aymen Flah",
@@ -24467,7 +25991,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Nurulakla Mohd Azlan",
@@ -24503,7 +26027,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 3.2
@@ -24593,7 +26117,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -24605,7 +26129,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Suman Kumar Dey",
@@ -24617,7 +26141,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -24629,7 +26153,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 5.2
@@ -24709,7 +26233,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -24733,7 +26257,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tahia Fahrin Karim",
@@ -24809,7 +26333,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -24821,7 +26345,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -24833,7 +26357,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -24845,7 +26369,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -24857,7 +26381,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -24937,7 +26461,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdulla Al Mamun",
@@ -24949,7 +26473,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -24961,7 +26485,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -24973,7 +26497,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abul Hasan",
@@ -24985,7 +26509,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Majedul Hoque",
@@ -24997,7 +26521,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -25009,7 +26533,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -25021,7 +26545,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -25048,7 +26572,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mamun Rabbani",
@@ -25072,7 +26596,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tariqul Islam",
@@ -25084,7 +26608,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Murad Kabir Nipun",
@@ -25108,7 +26632,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -25120,7 +26644,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 6.8
@@ -25275,7 +26799,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shabana Urooj",
@@ -25299,7 +26823,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tariqul Islam",
@@ -25311,7 +26835,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 3.9
@@ -25339,7 +26863,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -25351,7 +26875,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -25363,7 +26887,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -25375,7 +26899,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -25489,7 +27013,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -25501,7 +27025,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tahia Fahrin Karim",
@@ -25537,7 +27061,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -25577,7 +27101,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -25589,7 +27113,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -25616,7 +27140,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -25628,7 +27152,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -25640,7 +27164,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -25652,7 +27176,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -25664,7 +27188,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -25676,7 +27200,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -25688,7 +27212,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -25727,7 +27251,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -25739,7 +27263,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Mozaharul Mottalib",
@@ -25751,7 +27275,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -25763,7 +27287,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -25775,7 +27299,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 5.2
@@ -26166,7 +27690,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -26190,7 +27714,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -26202,7 +27726,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -26214,7 +27738,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 1.5
@@ -26332,7 +27856,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Kamrozzaman Kiron",
@@ -26344,7 +27868,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -26356,7 +27880,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -26368,7 +27892,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -26392,7 +27916,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -26432,7 +27956,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shaquar Islam Leyon",
@@ -26444,7 +27968,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sabbir Hasan Tohid",
@@ -26456,7 +27980,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Kamran Ahmmed",
@@ -26468,7 +27992,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahin Alom",
@@ -26480,7 +28004,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Chowdhury Shajjad Haider",
@@ -26492,7 +28016,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mostafizur Rahman",
@@ -26504,7 +28028,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Imamul Islam",
@@ -26641,7 +28165,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -26665,7 +28189,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Zubaeer Bin Shams",
@@ -26689,7 +28213,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -26701,7 +28225,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -26713,7 +28237,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 3.9
@@ -26741,7 +28265,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Khusbu Rahman",
@@ -26765,7 +28289,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mashfiq Ahasan Hridoy",
@@ -26852,7 +28376,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdulla Al Mamun",
@@ -26864,7 +28388,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashiqur Rahman",
@@ -26876,7 +28400,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -26888,7 +28412,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tuhibur Rahman",
@@ -26900,7 +28424,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shaheer Ansari",
@@ -26951,7 +28475,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shaquar Islam Leyon",
@@ -26963,7 +28487,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Zinat Sultana",
@@ -26975,7 +28499,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -26999,7 +28523,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sabbir Hasan Tohid",
@@ -27011,7 +28535,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mostafizur Rahman",
@@ -27023,7 +28547,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shahin Alom",
@@ -27035,7 +28559,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shafia Sultana",
@@ -27047,7 +28571,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Taha Selim Ustun",
@@ -27098,7 +28622,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -27110,7 +28634,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 1.5
@@ -27212,7 +28736,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -27224,7 +28748,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -27236,7 +28760,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -27248,7 +28772,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -27260,7 +28784,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -27272,7 +28796,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -27284,7 +28808,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -27311,7 +28835,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Islam Mohammed Mahbubul",
@@ -27475,7 +28999,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -27499,7 +29023,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naiem-Ur-Rahman",
@@ -27511,7 +29035,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 1.5
@@ -27627,7 +29151,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Amdadull Kabir",
@@ -27639,7 +29163,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naim Al Hasan",
@@ -27651,7 +29175,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -27663,7 +29187,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -27675,7 +29199,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -27687,7 +29211,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -27699,7 +29223,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -27726,7 +29250,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -27738,7 +29262,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -27750,7 +29274,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -27762,7 +29286,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -27774,7 +29298,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -27786,7 +29310,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -27825,7 +29349,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -27837,7 +29361,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Monirujjaman Khan",
@@ -27897,7 +29421,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -27909,7 +29433,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ashraf Siddiquee",
@@ -27921,7 +29445,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 3.2
@@ -27949,7 +29473,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -27961,7 +29485,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Diponker Chandra Paul",
@@ -27973,7 +29497,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Kamrul Hasan",
@@ -27985,7 +29509,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sazzad Hossain",
@@ -27997,7 +29521,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "MD. Daud Patowary Raju",
@@ -28009,7 +29533,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28048,7 +29572,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Mujtaba Hasan",
@@ -28099,7 +29623,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sheikh Forhad Rahman",
@@ -28111,7 +29635,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashikur Rahman",
@@ -28123,7 +29647,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -28135,7 +29659,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -28147,7 +29671,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Srijoy Majumder",
@@ -28159,7 +29683,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28225,7 +29749,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Amirul Islam",
@@ -28237,7 +29761,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -28249,7 +29773,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naimul Huda",
@@ -28261,7 +29785,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mashfiq Ahasan Hridoy",
@@ -28285,7 +29809,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28374,7 +29898,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Monirujjaman Khan",
@@ -28398,7 +29922,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -28410,7 +29934,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -28422,7 +29946,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28449,7 +29973,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -28461,7 +29985,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -28473,7 +29997,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28500,7 +30024,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Aliur Rahman",
@@ -28512,7 +30036,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Golam Mohiuddin",
@@ -28524,7 +30048,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ahsan Habib",
@@ -28536,7 +30060,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shamim Mondol",
@@ -28548,7 +30072,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28711,7 +30235,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Kamruzzaman",
@@ -28750,7 +30274,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ahsanul Alam",
@@ -28762,7 +30286,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayzur Rahman",
@@ -28774,7 +30298,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tariqul Islam",
@@ -28798,7 +30322,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28849,7 +30373,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -28861,7 +30385,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Golam Mohiuddin",
@@ -28873,7 +30397,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -28885,7 +30409,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -28912,7 +30436,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -28924,7 +30448,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tuhibur Rahman",
@@ -28936,7 +30460,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -28948,7 +30472,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -28960,7 +30484,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -28972,7 +30496,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -28984,7 +30508,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -28996,7 +30520,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -29122,7 +30646,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aminul Islam",
@@ -29146,7 +30670,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -29158,7 +30682,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Yusri Hassan",
@@ -29260,7 +30784,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mostafizur Rahman",
@@ -29272,7 +30796,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shahin Alom",
@@ -29284,7 +30808,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -29296,7 +30820,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shaquar Islam Leyon",
@@ -29308,7 +30832,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Chowdhury Shajjad Haider",
@@ -29320,7 +30844,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -29356,7 +30880,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -29572,7 +31096,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Bivas Sarkar",
@@ -29584,7 +31108,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -29596,7 +31120,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Mainul Hasan Abir",
@@ -29608,7 +31132,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Khawza Iftekhar Uddin Ahmed",
@@ -29620,7 +31144,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -29647,7 +31171,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -29659,7 +31183,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -29671,7 +31195,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -29683,7 +31207,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -29695,7 +31219,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -29722,7 +31246,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Aminul Islam Rifat",
@@ -29734,7 +31258,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Akbar Ali Mollik",
@@ -29746,7 +31270,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Anik Kumar Ghosh",
@@ -29758,7 +31282,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Soheb",
@@ -29770,7 +31294,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -29794,7 +31318,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -29821,7 +31345,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tuhibur Rahman",
@@ -29833,7 +31357,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -29857,7 +31381,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -29884,7 +31408,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -29896,7 +31420,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -29908,7 +31432,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -29920,7 +31444,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -29932,7 +31456,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -29944,7 +31468,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -29956,7 +31480,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -30095,7 +31619,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -30107,7 +31631,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Bivas Sarkar",
@@ -30119,7 +31643,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Towhidur Rahman",
@@ -30131,7 +31655,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -30158,7 +31682,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Arafat Hossain",
@@ -30170,7 +31694,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -30182,7 +31706,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -30209,7 +31733,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Anik Kumar Ghosh",
@@ -30221,7 +31745,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tuhibur Rahman",
@@ -30245,7 +31769,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Sadman Sakib",
@@ -30269,7 +31793,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -30281,7 +31805,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Taha Selim Ustun",
@@ -30356,7 +31880,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -30368,7 +31892,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -30555,7 +32079,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mir Mofajjal Hossain",
@@ -30567,7 +32091,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhibul Haque Bhuyan",
@@ -30740,7 +32264,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -30879,7 +32403,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Bivas Sarkar",
@@ -30891,7 +32415,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tonmoy Roy Akash",
@@ -30903,7 +32427,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Junaid Hossain",
@@ -30915,7 +32439,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -30927,7 +32451,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -30939,7 +32463,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Khawza Iftekhar Uddin Ahmed",
@@ -30951,7 +32475,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -30978,7 +32502,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -30990,7 +32514,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -31002,7 +32526,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mohi Uddin Mohin",
@@ -31014,7 +32538,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -31026,7 +32550,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -31053,7 +32577,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Rashedul Mondal",
@@ -31065,7 +32589,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abu Hasan Noyan",
@@ -31077,7 +32601,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -31089,7 +32613,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Talal Alharbi",
@@ -31128,7 +32652,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M T Hasan Amin",
@@ -31152,7 +32676,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -31188,7 +32712,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -31200,7 +32724,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -31227,7 +32751,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sourav Chandra Das",
@@ -31239,7 +32763,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Nahian Rabbi Ushan",
@@ -31426,7 +32950,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sheikh Forhad Rahman",
@@ -31438,7 +32962,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashikur Rahman",
@@ -31450,7 +32974,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -31462,7 +32986,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Mohd Shawal Jadin",
@@ -31514,7 +33038,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -31526,7 +33050,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Bivas Sarkar",
@@ -31538,7 +33062,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -31550,7 +33074,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mohi Uddin Mohin",
@@ -31562,7 +33086,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -31640,7 +33164,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -31652,7 +33176,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -31664,7 +33188,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -31676,7 +33200,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -31688,7 +33212,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -31700,7 +33224,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -31712,7 +33236,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -31739,7 +33263,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aklima Akter",
@@ -31751,7 +33275,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Khawza Iftekhar Uddin Ahmed",
@@ -31763,7 +33287,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Taha Selim Ustun",
@@ -31864,7 +33388,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -31876,7 +33400,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Taha Selim Ustun",
@@ -31948,7 +33472,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -31975,7 +33499,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -31987,7 +33511,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32014,7 +33538,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Toufik Imam Sourav",
@@ -32026,7 +33550,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -32038,7 +33562,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -32050,7 +33574,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Lusain Nima",
@@ -32062,7 +33586,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32175,7 +33699,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Nazmul Hossain",
@@ -32187,7 +33711,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Zia Ul Islam",
@@ -32199,7 +33723,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tahia Fahrin Karim",
@@ -32223,7 +33747,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sourav Barua",
@@ -32235,7 +33759,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -32247,7 +33771,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32286,7 +33810,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -32310,7 +33834,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -32322,7 +33846,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32425,7 +33949,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Appel Mahmud",
@@ -32437,7 +33961,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md Imran Khan",
@@ -32449,7 +33973,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Rezwan Kabir",
@@ -32461,7 +33985,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Sharifur Rahman",
@@ -32473,7 +33997,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32500,7 +34024,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sheikh Forhad Rahman",
@@ -32512,7 +34036,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashikur Rahman",
@@ -32524,7 +34048,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashikur Rahman",
@@ -32536,7 +34060,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Asadur Rahman",
@@ -32548,7 +34072,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Asadur Rahman",
@@ -32560,7 +34084,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Munshi Mahbubur Rahman",
@@ -32572,7 +34096,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -32699,7 +34223,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -32711,7 +34235,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -32723,7 +34247,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Junaid Hossain",
@@ -32735,7 +34259,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tanmoy Roy Akash",
@@ -32747,7 +34271,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32774,7 +34298,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -32798,7 +34322,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Tuhin Mollah",
@@ -32810,7 +34334,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -32834,7 +34358,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32861,7 +34385,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -32873,7 +34397,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Shahadat Hossen",
@@ -32897,7 +34421,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Ashraful Islam",
@@ -32909,7 +34433,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahela Akter",
@@ -32921,7 +34445,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -32984,7 +34508,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33086,7 +34610,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33113,7 +34637,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -33125,7 +34649,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fahim Hasan",
@@ -33137,7 +34661,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -33149,7 +34673,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -33161,7 +34685,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33188,7 +34712,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -33200,7 +34724,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Abdullah Al Mahfuz",
@@ -33212,7 +34736,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -33224,7 +34748,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -33236,7 +34760,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33263,7 +34787,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mir Nirzonur Rahman",
@@ -33275,7 +34799,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Abdul Masum",
@@ -33287,7 +34811,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -33299,7 +34823,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Dewan Mohammad Saaduzzaman",
@@ -33311,7 +34835,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -33323,7 +34847,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Ashraful Islam",
@@ -33335,7 +34859,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ts Ustun",
@@ -33374,7 +34898,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -33386,7 +34910,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -33398,7 +34922,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -33410,7 +34934,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -33422,7 +34946,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -33434,7 +34958,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -33446,7 +34970,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33559,7 +35083,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -33571,7 +35095,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sourav Barua",
@@ -33583,7 +35107,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33622,7 +35146,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -33646,7 +35170,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -33658,7 +35182,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33685,7 +35209,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ashikul Islam Shipon",
@@ -33697,7 +35221,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mst. Jannatul Ferdous",
@@ -33709,7 +35233,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -33721,7 +35245,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -33733,7 +35257,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -33988,7 +35512,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Bivas Sarkar",
@@ -34000,7 +35524,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tonmoy Roy Akash",
@@ -34012,7 +35536,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Junaid Hossain",
@@ -34024,7 +35548,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -34036,7 +35560,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -34048,7 +35572,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Khawza Iftekhar Uddin Ahmed",
@@ -34060,7 +35584,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -34087,7 +35611,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Tarakul Islam",
@@ -34099,7 +35623,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Hasan Masud",
@@ -34111,7 +35635,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Sarnali Mondal Soma",
@@ -34123,7 +35647,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Rezwana Kaniz Ritu",
@@ -34135,7 +35659,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Sharifur Rahman",
@@ -34147,7 +35671,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -34174,7 +35698,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aklima Akter",
@@ -34186,7 +35710,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Jahidul Hasan Rony",
@@ -34198,7 +35722,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Sabbir Alam",
@@ -34210,7 +35734,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -34237,7 +35761,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sheikh Forhad Rahman",
@@ -34249,7 +35773,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashikur Rahman",
@@ -34261,7 +35785,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Shahariare Mahamud",
@@ -34273,7 +35797,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Munshi Abdur Rahim",
@@ -34285,7 +35809,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -34312,7 +35836,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sheikh Forhad Rahman",
@@ -34324,7 +35848,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ashikur Rahman",
@@ -34336,7 +35860,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Kamran Ahmmed",
@@ -34348,7 +35872,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Munshi Mahbubur Rahman",
@@ -34360,7 +35884,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -34387,7 +35911,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Mohammadreza Lak",
@@ -34524,7 +36048,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif Ul Haq",
@@ -34536,7 +36060,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Rumki Akther Akhi",
@@ -34548,7 +36072,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aparna Sarker Saku",
@@ -34560,7 +36084,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M D Sahrial Alam",
@@ -34572,7 +36096,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -34599,7 +36123,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Tanvir Siam",
@@ -34611,7 +36135,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -34623,7 +36147,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Fazlul Karim",
@@ -34635,7 +36159,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Kiron Saha",
@@ -34647,7 +36171,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Jahidul Hasan Rony",
@@ -34659,7 +36183,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Nafiza Khanom Momo",
@@ -34671,7 +36195,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -34698,7 +36222,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Auvishak Basak",
@@ -34710,7 +36234,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Golam Mostofa",
@@ -34722,7 +36246,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Meherun Nesa",
@@ -34734,7 +36258,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ahsanul Alam",
@@ -34746,7 +36270,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Masroor Ali",
@@ -34758,7 +36282,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -34770,7 +36294,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ruhul Amin",
@@ -34809,7 +36333,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Rabiul Hasan",
@@ -34821,7 +36345,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ahsanul Alam",
@@ -34833,7 +36357,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mohi Uddin Mohin",
@@ -34845,7 +36369,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -34857,7 +36381,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -34869,7 +36393,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Meherun Nesa",
@@ -34881,7 +36405,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -34982,7 +36506,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Srijoy Majumder",
@@ -34994,7 +36518,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Hasibul Hasan Rahim",
@@ -35006,7 +36530,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -35018,7 +36542,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -35030,7 +36554,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -35192,7 +36716,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -35204,7 +36728,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -35231,7 +36755,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M. Saad Bin Arif",
@@ -35267,7 +36791,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -35279,7 +36803,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ],
         impactFactor: 3.2
@@ -35381,7 +36905,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Monirujjaman Khan",
@@ -35405,7 +36929,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Kamrozzaman Kiron",
@@ -35417,7 +36941,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -35518,7 +37042,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Abdullah Al Oafi Himon",
@@ -35530,7 +37054,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Sakib Abdul Ahad",
@@ -35542,7 +37066,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Hasan Rayhan Rabby",
@@ -35554,7 +37078,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -35667,7 +37191,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -35679,7 +37203,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Bivas Sarkar",
@@ -35691,7 +37215,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Khawza Iftekhar Uddin Ahmed",
@@ -35703,7 +37227,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -35966,7 +37490,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Dipta Kumar Ghoshe",
@@ -35978,7 +37502,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ragib Rowshon",
@@ -35990,7 +37514,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "K M Talha Nahiyan",
@@ -36029,7 +37553,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ashikur Rahman Ashik",
@@ -36041,7 +37565,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -36053,7 +37577,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ],
         impactFactor: 5
@@ -36081,7 +37605,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Niloy Das",
@@ -36093,7 +37617,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Chitra Roy",
@@ -36105,7 +37629,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "M. Mahbubur Rahman",
@@ -36117,7 +37641,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "A B M Shawkat Ali",
@@ -36129,7 +37653,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -36156,7 +37680,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Imamul Islam",
@@ -36168,7 +37692,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Sabbir Alam",
@@ -36180,7 +37704,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Jahidul Hasan Rony",
@@ -36192,7 +37716,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -36204,7 +37728,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Niloy Das",
@@ -36216,7 +37740,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -36243,7 +37767,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -36255,7 +37779,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Mohi Uddin Mohin",
@@ -36267,7 +37791,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naiemur Rahman",
@@ -36279,7 +37803,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Saklain Mostak",
@@ -36291,7 +37815,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -36315,7 +37839,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -36342,7 +37866,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Sharifur Rahman",
@@ -36354,7 +37878,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Imamul Islam",
@@ -36366,7 +37890,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Sabbir Alam",
@@ -36378,7 +37902,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Jahidul Hasan Rony",
@@ -36390,7 +37914,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Niloy Das",
@@ -36402,7 +37926,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -36429,7 +37953,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Shah Mohazzem Hossain",
@@ -36531,7 +38055,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Zuhaina Islam Bushra",
@@ -36567,7 +38091,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "M. Mahbubur Rahman",
@@ -36579,7 +38103,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "A. B. M. Shawkat Ali",
@@ -36618,7 +38142,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -36630,7 +38154,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Imamul Islam",
@@ -36642,7 +38166,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Khawza Iftekhar Uddin Ahmed",
@@ -36654,7 +38178,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayyaz Khan",
@@ -36732,7 +38256,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Jakariya Sajib",
@@ -36744,7 +38268,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M D Sahrial Alam",
@@ -36756,7 +38280,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Mohammad Asif Ul Haq",
@@ -36768,7 +38292,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -36795,7 +38319,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M D Sahrial Alam",
@@ -36807,7 +38331,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -36819,7 +38343,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Saklain Mostak",
@@ -36831,7 +38355,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -36858,7 +38382,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -36870,7 +38394,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Khawza Iftekhar Uddin Ahmed",
@@ -36882,7 +38406,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Fayyaz Khan",
@@ -36921,7 +38445,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M D Sahrial Alam",
@@ -36933,7 +38457,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Tanvir Siam",
@@ -36945,7 +38469,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Yasir Arafat",
@@ -36957,7 +38481,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Arman Hossain Rifat",
@@ -36969,7 +38493,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -36996,7 +38520,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aparna Sarker Saku",
@@ -37008,7 +38532,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Nurul Amin",
@@ -37020,7 +38544,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M D Sahrial Alam",
@@ -37032,7 +38556,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Mohammad Asif Ul Haq",
@@ -37044,7 +38568,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -37071,7 +38595,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Naimur Rahaman Rifat",
@@ -37083,7 +38607,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md Rifat Hossain",
@@ -37095,7 +38619,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Ruhul Amin",
@@ -37107,7 +38631,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Umme Muslima",
@@ -37119,7 +38643,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -37146,7 +38670,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif Ul Haq",
@@ -37158,7 +38682,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Rumki Akther Akhi",
@@ -37170,7 +38694,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Aparna Sarker Saku",
@@ -37182,7 +38706,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M D Sahrial Alam",
@@ -37194,7 +38718,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37221,7 +38745,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Siti Nurnadirah Ahmad Latfi",
@@ -37269,7 +38793,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -37296,7 +38820,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -37308,7 +38832,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naiemur Rahman",
@@ -37320,7 +38844,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Bivas Sarkar",
@@ -37332,7 +38856,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37359,7 +38883,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Bivas Sarkar",
@@ -37371,7 +38895,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -37383,7 +38907,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Naiemur Rahman",
@@ -37395,7 +38919,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37434,7 +38958,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -37461,7 +38985,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -37473,7 +38997,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37500,7 +39024,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -37512,7 +39036,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -37536,7 +39060,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashaduzzaman Niloy",
@@ -37548,7 +39072,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Zakir Hossain",
@@ -37572,7 +39096,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37599,7 +39123,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "JOHIR UDDIN KHAN",
@@ -37635,7 +39159,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -37662,7 +39186,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -37674,7 +39198,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -37686,7 +39210,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -37698,7 +39222,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -37710,7 +39234,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -37722,7 +39246,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -37734,7 +39258,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37761,7 +39285,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -37773,7 +39297,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37800,7 +39324,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Md. Akhlasur Rahman",
@@ -37812,7 +39336,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Yousu Al-Tunian",
@@ -37824,7 +39348,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "M. Heikal Hasan",
@@ -37836,7 +39360,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           },
           {
             name: "Niloy Chandra Das",
@@ -37848,7 +39372,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -37875,7 +39399,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif Ul Haq",
@@ -37887,7 +39411,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Maraz Sarkar",
@@ -37899,7 +39423,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -37911,7 +39435,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -37950,7 +39474,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: false
+            isHomeInstitution: true
           }
         ]
       },
@@ -37977,7 +39501,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shyful Islam",
@@ -37989,7 +39513,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Imamul Islam",
@@ -38001,7 +39525,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sahin",
@@ -38013,7 +39537,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Razibul Awal",
@@ -38025,7 +39549,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -38037,7 +39561,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -38049,7 +39573,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38076,7 +39600,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "M M Naushad Ali",
@@ -38088,7 +39612,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashraful Islam",
@@ -38100,7 +39624,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -38112,7 +39636,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Molla Shahadat Hossain Lipu",
@@ -38124,7 +39648,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38151,7 +39675,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md Ashraful Islam",
@@ -38163,7 +39687,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Sabbir Alam",
@@ -38175,7 +39699,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Shahariar Ahmed Himo",
@@ -38187,7 +39711,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Ibrahim",
@@ -38199,7 +39723,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Hera Chandra Das",
@@ -38211,7 +39735,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Zahid Hasan",
@@ -38223,7 +39747,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Anorgul I. Ashirova",
@@ -38274,7 +39798,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mehedi Hasan",
@@ -38310,7 +39834,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mahmudul Hasan",
@@ -38334,7 +39858,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38449,7 +39973,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohd Shawal Jadin",
@@ -38473,7 +39997,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -38485,7 +40009,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38548,7 +40072,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38635,7 +40159,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Mohammad Asif ul Haq",
@@ -38647,7 +40171,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38749,7 +40273,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Muhammad Abul Hasan",
@@ -38761,7 +40285,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Dewan Mohammad Saaduzzaman",
@@ -38773,7 +40297,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -38785,7 +40309,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38824,7 +40348,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -38836,7 +40360,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -38848,7 +40372,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Ashif Mahbub",
@@ -38860,7 +40384,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -38887,7 +40411,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Hasan Maruf",
@@ -38899,7 +40423,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Md. Mahmudul Hasan",
@@ -38911,7 +40435,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "Ratil Hasnat Ashique",
@@ -38923,7 +40447,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           },
           {
             name: "ASM Shihavuddin",
@@ -38935,7 +40459,7 @@ var verifiedScholarCache_default = {
             continent: "Asia",
             lat: 23.710399627685547,
             lng: 90.40744018554688,
-            isHomeInstitution: true
+            isHomeInstitution: false
           }
         ]
       },
@@ -41431,6 +42955,40 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         (ins) => String(ins.country_code || "").toUpperCase() === "BD"
       )
     );
+    let authorAffiliation = void 0;
+    const selfRawInsts = Array.isArray(selfAuthorship?.institutions) ? selfAuthorship.institutions.filter((i) => i?.display_name) : [];
+    const selfFilteredInsts = selfRawInsts.filter((inst) => {
+      const dName = String(inst.display_name || "");
+      if (/\bsystem$/i.test(dName) && selfRawInsts.length > 1) {
+        return false;
+      }
+      return true;
+    });
+    const primarySelfInst = selfFilteredInsts[0] || selfRawInsts[0];
+    if (primarySelfInst) {
+      let dispName = String(primarySelfInst.display_name);
+      let cCode = String(primarySelfInst.country_code || "");
+      let shortId = String(primarySelfInst.id || "").replace(
+        "https://openalex.org/",
+        ""
+      );
+      if ((dispName === "East\u2013West University" || shortId === "I4210135468") && hasBangladeshiAuthor) {
+        dispName = "East West University";
+        cCode = "BD";
+        shortId = "I885507782";
+      }
+      const mapped = await resolveInstitutionFromOfficialSources(
+        dispName,
+        cCode,
+        shortId,
+        geoCache
+      );
+      authorAffiliation = {
+        name: targetName,
+        ...mapped,
+        isHomeInstitution: mapped.universityId === homeMapped.universityId
+      };
+    }
     const coAuthors = [];
     const seenAuthorInstKeys = /* @__PURE__ */ new Set();
     for (const a of authorships) {
@@ -41520,7 +43078,8 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       doi: cleanDoi,
       landingPageUrl: (cleanDoi ? `https://doi.org/${cleanDoi}` : void 0) || rawLanding,
       year,
-      coAuthors
+      coAuthors,
+      authorAffiliation
     };
   }
   function parseScholarCoAuthors(authorsText) {
@@ -41623,6 +43182,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
           doi: oaDetails.doi,
           url: paperUrl,
           coAuthors: oaDetails.coAuthors,
+          authorAffiliation: oaDetails.authorAffiliation,
           impactFactor: getJournalImpactFactor(
             venue,
             type,
@@ -41730,6 +43290,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         doi: oaDetails.doi,
         url: paperUrl,
         coAuthors: oaDetails.coAuthors,
+        authorAffiliation: oaDetails.authorAffiliation,
         impactFactor: getJournalImpactFactor(
           oaDetails.venue,
           type,

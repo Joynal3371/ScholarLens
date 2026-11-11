@@ -24,8 +24,9 @@ export async function svgElementToPngDataUrl(
   const svgH = bbox && bbox.height > 0 ? bbox.height : svgEl.clientHeight || 320;
 
   const pad = 28;
-  const headerH = 54;
-  const totalW = svgW + pad * 2;
+  const headerH = 76;
+  const minW = 660;
+  const totalW = Math.max(minW, svgW + pad * 2);
   const totalH = svgH + headerH + pad * 2;
   const scale = 3;
 
@@ -71,16 +72,52 @@ export async function svgElementToPngDataUrl(
 
       // Title
       ctx.fillStyle = darkTheme ? '#f8fafc' : '#0f172a';
-      ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.fillText(title, pad, pad + 16);
+      ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(title, pad, pad + 18);
 
-      // Subtitle
-      ctx.fillStyle = darkTheme ? '#94a3b8' : '#64748b';
-      ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.fillText(subtitle, pad, pad + 36);
+      // Subtitle: Parse name & affiliation so it wraps gracefully and is 100% visible
+      const maxTextW = totalW - pad * 2;
+      const subMatch = subtitle.match(/^([^(]+?)\s*\((.+)\)\s*$/);
+      if (subMatch) {
+        const rName = subMatch[1].trim();
+        const rAffil = subMatch[2].trim();
 
-      // Draw SVG chart
-      ctx.drawImage(img, pad, pad + headerH, svgW, svgH);
+        ctx.fillStyle = darkTheme ? '#e2e8f0' : '#1e293b';
+        ctx.font = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(rName, pad, pad + 38);
+
+        ctx.fillStyle = darkTheme ? '#94a3b8' : '#64748b';
+        ctx.font = '400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        
+        // Wrap affiliation text if it exceeds max width
+        if (ctx.measureText(rAffil).width <= maxTextW) {
+          ctx.fillText(rAffil, pad, pad + 54);
+        } else {
+          const words = rAffil.split(' ');
+          let line1 = '';
+          let line2 = '';
+          for (const w of words) {
+            const testLine = line1 ? `${line1} ${w}` : w;
+            if (ctx.measureText(testLine).width <= maxTextW) {
+              line1 = testLine;
+            } else {
+              line2 = line2 ? `${line2} ${w}` : w;
+            }
+          }
+          ctx.fillText(line1, pad, pad + 52);
+          if (line2) {
+            ctx.fillText(line2, pad, pad + 66);
+          }
+        }
+      } else {
+        ctx.fillStyle = darkTheme ? '#94a3b8' : '#64748b';
+        ctx.font = '400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(subtitle, pad, pad + 40);
+      }
+
+      // Draw SVG chart (centered horizontally)
+      const chartX = Math.max(pad, Math.round((totalW - svgW) / 2));
+      ctx.drawImage(img, chartX, pad + headerH, svgW, svgH);
 
       URL.revokeObjectURL(url);
       resolve(canvas.toDataURL('image/png'));
@@ -429,18 +466,6 @@ export async function generateResearcherPdfReport(params: {
   y = headerBannerH + 4.5;
 
   // -------------------------------------------------------------------------
-  // SECTION 1: CORE BIBLIOMETRIC INDICATORS (KPI GRID WITHOUT Q1+Q2 COMBINED)
-  // -------------------------------------------------------------------------
-  y = drawSectionHeader(
-    doc,
-    '01',
-    'Executive Bibliometric & Impact Indicators',
-    margin,
-    y,
-    contentW
-  );
-
-  // -------------------------------------------------------------------------
   // SECTION 1: EXECUTIVE BIBLIOMETRIC & IMPACT INDICATORS (MATCHING WEB HIGHLIGHT SECTION)
   // -------------------------------------------------------------------------
   y = drawSectionHeader(
@@ -493,7 +518,7 @@ export async function generateResearcherPdfReport(params: {
     const bx = margin + idx * (mW + mGap);
     const by = y;
 
-    // Card background & subtle border
+    // Card background & subtle border (pure white, matching web)
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(226, 232, 240);
     doc.roundedRect(bx, by, mW, mH, 1.5, 1.5, 'FD');
@@ -514,7 +539,7 @@ export async function generateResearcherPdfReport(params: {
     doc.setTextColor(100, 116, 139);
     doc.text(card.label, bx + 2.5, by + 4.2);
 
-    // Primary Value
+    // Primary Value (dark bold text)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11.0);
     doc.setTextColor(15, 23, 42);
@@ -529,54 +554,40 @@ export async function generateResearcherPdfReport(params: {
 
   y += mH + 2.5;
 
-  // 2. Row 2: Dedicated Journal Quartile & Indexing Distribution Container
+  // 2. Row 2: Dedicated Journal Quartile & Indexing Distribution Container (matching web highlight section)
   const pCategories: {
     key: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Conference' | 'Non-Indexed';
     label: string;
-    bg: [number, number, number];
-    border: [number, number, number];
     dotColor: [number, number, number];
   }[] = [
     {
       key: 'Q1',
       label: 'Q1 Journals',
-      bg: [248, 250, 255],
-      border: [219, 234, 254],
       dotColor: [37, 99, 235],
     },
     {
       key: 'Q2',
       label: 'Q2 Journals',
-      bg: [244, 251, 247],
-      border: [209, 250, 229],
       dotColor: [5, 150, 105],
     },
     {
       key: 'Q3',
       label: 'Q3 Journals',
-      bg: [254, 252, 243],
-      border: [254, 243, 199],
       dotColor: [217, 119, 6],
     },
     {
       key: 'Q4',
       label: 'Q4 Journals',
-      bg: [255, 245, 245],
-      border: [254, 226, 226],
-      dotColor: [220, 38, 38],
+      dotColor: [225, 29, 72],
     },
     {
       key: 'Conference',
       label: 'Conference',
-      bg: [250, 245, 255],
-      border: [243, 232, 255],
       dotColor: [124, 58, 237],
     },
     {
       key: 'Non-Indexed',
       label: 'Others',
-      bg: [248, 250, 252],
-      border: [226, 232, 240],
       dotColor: [71, 85, 105],
     },
   ];
@@ -599,38 +610,38 @@ export async function generateResearcherPdfReport(params: {
     align: 'right',
   });
 
-  // 6 Interactive/Visual Category Chips
+  // 6 Interactive/Visual Category Chips (pure white cards, matching web app)
   const chipPad = 3.0;
   const chipGap = 1.8;
   const chipW = (contentW - chipPad * 2 - chipGap * 5) / 6;
   const chipH = 10.0;
   const chipY = y + 5.6;
 
-  pCategories.forEach(({ key, label, bg, border, dotColor }, idx) => {
+  pCategories.forEach(({ key, label, dotColor }, idx) => {
     const d = stats.portfolioDistribution[key];
     const cx = margin + chipPad + idx * (chipW + chipGap);
 
-    // Chip box
-    doc.setFillColor(bg[0], bg[1], bg[2]);
-    doc.setDrawColor(border[0], border[1], border[2]);
+    // Clean white chip box matching web app
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(226, 232, 240);
     doc.roundedRect(cx, chipY, chipW, chipH, 1.2, 1.2, 'FD');
 
     // Label (left) & Colored indicator dot (right)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(5.6);
-    doc.setTextColor(51, 65, 85);
+    doc.setTextColor(71, 85, 105);
     doc.text(label, cx + 2.0, chipY + 3.6);
 
     doc.setFillColor(dotColor[0], dotColor[1], dotColor[2]);
-    doc.circle(cx + chipW - 3.0, chipY + 2.8, 0.9, 'F');
+    doc.circle(cx + chipW - 2.8, chipY + 2.8, 0.9, 'F');
 
-    // Percentage value
+    // Percentage value (bold dark text, exactly like web highlight)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.2);
-    doc.setTextColor(dotColor[0], dotColor[1], dotColor[2]);
+    doc.setFontSize(8.4);
+    doc.setTextColor(15, 23, 42);
     doc.text(`${d.percentage}%`, cx + 2.0, chipY + 7.2);
 
-    // Paper count
+    // Paper count (subtle slate text)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(4.8);
     doc.setTextColor(100, 116, 139);

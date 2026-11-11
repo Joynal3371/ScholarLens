@@ -21,7 +21,6 @@ import {
   UniversityCollaboration,
   CoAuthorSummary,
   CountryCollaboration,
-  calculateHIndex,
   DEFAULT_FILTER_STATE,
   getPublicationUrl,
   getPublicationPortfolioCategory,
@@ -309,14 +308,6 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
     return count;
   }, [filter]);
 
-  const filteredCitationsSum = filteredPublications.reduce(
-    (acc, p) => acc + p.citations,
-    0
-  );
-  const filteredHIndex = calculateHIndex(
-    filteredPublications.map((p) => p.citations)
-  );
-
   return (
     <section
       id="publications"
@@ -332,35 +323,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
           Publication Portfolio ({filteredPublications.length} / {allPublications.length})
         </h2>
 
-        <div className="flex flex-wrap items-center gap-4 text-xs">
-          <div className="font-mono tabular-nums text-slate-600">
-            Publications:{' '}
-            <strong
-              data-testid="filtered-publications-count"
-              className="text-slate-900 font-bold"
-            >
-              {filteredPublications.length}
-            </strong>
-          </div>
-          <span aria-hidden="true" className="text-slate-300">
-            ·
-          </span>
-          <div className="font-mono tabular-nums text-slate-600">
-            Citations:{' '}
-            <strong className="text-slate-900 font-bold">
-              {filteredCitationsSum.toLocaleString()}
-            </strong>
-          </div>
-          <span aria-hidden="true" className="text-slate-300">
-            ·
-          </span>
-          <div className="font-mono tabular-nums text-slate-600">
-            Portfolio h-index:{' '}
-            <strong className="text-slate-900 font-bold">
-              {filteredHIndex}
-            </strong>
-          </div>
-
+        <div className="flex items-center gap-3 text-xs">
           {hasActiveFilters && (
             <button
               type="button"
@@ -749,19 +712,19 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
         )}
       </div>
 
-      {/* Compact Publications Table */}
+      {/* Compact Publications Table with Sticky Header */}
       {filteredPublications.length > 0 ? (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/60 text-[11px] font-semibold text-slate-500">
-                <th className="py-2.5 pl-6 pr-3">Publication &amp; Co-Authors</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Venue</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Type</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Quartile</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Impact Factor</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap">Year</th>
-                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap">
+            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
+              <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
+                <th className="py-2.5 pl-6 pr-3 bg-slate-50">Publication &amp; Co-Authors</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Venue</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Type</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Quartile</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Impact Factor</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Year</th>
+                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">
                   Citations
                 </th>
               </tr>
@@ -837,7 +800,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
                     <td className="py-3 px-3 align-top whitespace-nowrap font-mono">
                       {pub.impactFactor !== undefined &&
                       pub.impactFactor !== null ? (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/80 tabular-nums">
+                        <span className="text-slate-700 font-semibold tabular-nums">
                           {pub.impactFactor.toFixed(1)}
                         </span>
                       ) : (

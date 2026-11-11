@@ -115,16 +115,72 @@ function matchesCollaboratingCountry(
   return false;
 }
 
-// Deterministic deep-space starfield for the 3D globe background
-const DEEP_SPACE_STARS = Array.from({ length: 145 }, (_, i) => {
-  const x = ((i * 173 + (i * i * 31)) % (GLOBE_WIDTH - 16)) + 8;
-  const y = ((i * 137 + (i * 43)) % (GLOBE_HEIGHT - 16)) + 8;
-  const r = i % 11 === 0 ? 1.65 : i % 4 === 0 ? 1.15 : 0.75;
-  const opacity = Number((0.25 + ((i * 19) % 70) / 100).toFixed(2));
-  const color =
-    i % 7 === 0 ? '#bae6fd' : i % 5 === 0 ? '#e0e7ff' : '#f8fafc';
-  const hasGlow = i % 11 === 0;
-  return { id: `star-${i}`, x, y, r, opacity, color, hasGlow };
+interface SpaceStar {
+  id: string;
+  x: number;
+  y: number;
+  r: number;
+  opacity: number;
+  color: string;
+  haloColor: string;
+  hasGlow: boolean;
+  hasSpikes: boolean;
+  animClass: string;
+  duration: string;
+  delay: string;
+}
+
+// Deterministic multi-spectral celestial starfield (220 realistic astronomical stars)
+const STELLAR_COLORS = [
+  '#ffffff', // Diamond White (Class A)
+  '#f8fafc', // Radiant Soft White (Class F)
+  '#93c5fd', // Sapphire Blue (Class B)
+  '#60a5fa', // Electric Blue (Class O)
+  '#38bdf8', // Cyan Ice (Class O/B)
+  '#fef08a', // Sun Gold (Class G)
+  '#fcd34d', // Warm Yellow (Class G)
+  '#fdba74', // Amber Star (Class K)
+  '#fb923c', // Orange Giant (Class K)
+  '#f472b6', // Magenta Star (Emission Nebula)
+  '#c084fc', // Violet/Lilac (Distant cluster)
+  '#6ee7b7', // Subtle Mint/Teal
+];
+
+const DEEP_SPACE_STARS: SpaceStar[] = Array.from({ length: 220 }, (_, i) => {
+  const x = Number((((i * 197 + i * i * 47) % (GLOBE_WIDTH - 20)) + 10).toFixed(1));
+  const y = Number((((i * 151 + i * 71) % (GLOBE_HEIGHT - 20)) + 10).toFixed(1));
+
+  const isMajor = i % 13 === 0;
+  const isMedium = i % 4 === 0;
+  const r = isMajor ? 2.1 : isMedium ? 1.25 : 0.65;
+  const opacity = Number((0.35 + ((i * 23) % 65) / 100).toFixed(2));
+  const color = STELLAR_COLORS[i % STELLAR_COLORS.length];
+  const haloColor =
+    color === '#ffffff' || color === '#f8fafc'
+      ? '#38bdf8'
+      : color;
+  const hasGlow = isMajor || (isMedium && i % 8 === 0);
+  const hasSpikes = isMajor && i % 26 === 0;
+
+  const animClasses = ['star-twinkle-a', 'star-twinkle-b', 'star-twinkle-c', 'star-pulse'];
+  const animClass = animClasses[i % animClasses.length];
+  const duration = `${(1.8 + ((i * 37) % 25) / 10).toFixed(1)}s`;
+  const delay = `${(((i * 41) % 30) / 10).toFixed(1)}s`;
+
+  return {
+    id: `celestial-star-${i}`,
+    x,
+    y,
+    r,
+    opacity,
+    color,
+    haloColor,
+    hasGlow,
+    hasSpikes,
+    animClass,
+    duration,
+    delay,
+  };
 });
 
 interface FlatWorldCollaborationMapProps {
@@ -1419,6 +1475,37 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               aria-label="Interactive round-world collaboration globe with country and district boundaries"
             >
               <defs>
+                <style>{`
+                  @keyframes starTwinkleA {
+                    0%, 100% { opacity: 0.28; transform: scale(0.85); }
+                    50% { opacity: 1.0; transform: scale(1.18); }
+                  }
+                  @keyframes starTwinkleB {
+                    0%, 100% { opacity: 0.95; transform: scale(1.12); }
+                    50% { opacity: 0.22; transform: scale(0.82); }
+                  }
+                  @keyframes starTwinkleC {
+                    0%, 100% { opacity: 0.42; }
+                    35% { opacity: 0.18; }
+                    70% { opacity: 0.98; }
+                  }
+                  @keyframes starPulseGlow {
+                    0%, 100% { opacity: 0.35; transform: scale(0.92); }
+                    50% { opacity: 0.95; transform: scale(1.32); }
+                  }
+                  @keyframes cosmicMeteorTrail {
+                    0% { transform: translate(-120px, -60px); opacity: 0; }
+                    3% { opacity: 0.95; }
+                    12% { transform: translate(460px, 230px); opacity: 0; }
+                    100% { transform: translate(460px, 230px); opacity: 0; }
+                  }
+                  .star-twinkle-a { animation: starTwinkleA ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+                  .star-twinkle-b { animation: starTwinkleB ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+                  .star-twinkle-c { animation: starTwinkleC ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+                  .star-pulse { animation: starPulseGlow ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+                  .cosmic-meteor { animation: cosmicMeteorTrail 11s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
+                `}</style>
+
                 <radialGradient id="oceanSphereGrad" cx="35%" cy="30%" r="70%">
                   <stop offset="0%" stopColor="#162e4d" />
                   <stop offset="60%" stopColor="#0b1b32" />
@@ -1439,9 +1526,28 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   <stop offset="92%" stopColor="#38bdf8" stopOpacity="0.18" />
                   <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
                 </radialGradient>
+
+                {/* Deep Cosmic Nebulae Clouds */}
+                <radialGradient id="cosmicNebulaViolet" cx="18%" cy="22%" r="42%">
+                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.14" />
+                  <stop offset="50%" stopColor="#6366f1" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#09152b" stopOpacity="0" />
+                </radialGradient>
+                <radialGradient id="cosmicNebulaCyan" cx="82%" cy="78%" r="45%">
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.12" />
+                  <stop offset="55%" stopColor="#0284c7" stopOpacity="0.05" />
+                  <stop offset="100%" stopColor="#02050b" stopOpacity="0" />
+                </radialGradient>
+
+                {/* Meteor Gradient Tail */}
+                <linearGradient id="meteorTailGrad" x1="0%" y1="0%" x2="100%" y2="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                  <stop offset="40%" stopColor="#67e8f9" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                </linearGradient>
               </defs>
 
-              {/* 1. DEEP SPACE STARFIELD BACKGROUND */}
+              {/* 1. DEEP SPACE STARFIELD BACKGROUND & NEBULAR DUST */}
               <rect
                 x={0}
                 y={0}
@@ -1449,18 +1555,52 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 height={GLOBE_HEIGHT}
                 fill="url(#deepSpaceBgGrad)"
               />
+              <rect
+                x={0}
+                y={0}
+                width={GLOBE_WIDTH}
+                height={GLOBE_HEIGHT}
+                fill="url(#cosmicNebulaViolet)"
+                className="pointer-events-none"
+              />
+              <rect
+                x={0}
+                y={0}
+                width={GLOBE_WIDTH}
+                height={GLOBE_HEIGHT}
+                fill="url(#cosmicNebulaCyan)"
+                className="pointer-events-none"
+              />
+
+              {/* Dynamic Celestial Multi-Spectral Starfield */}
               <g id="deep-space-starfield" className="pointer-events-none select-none">
                 {DEEP_SPACE_STARS.map((star) => (
-                  <g key={star.id}>
+                  <g
+                    key={star.id}
+                    className={star.animClass}
+                    style={{
+                      animationDuration: star.duration,
+                      animationDelay: star.delay,
+                    }}
+                  >
+                    {/* Multi-layered radial glow halo for bright stars */}
                     {star.hasGlow && (
                       <circle
                         cx={star.x}
                         cy={star.y}
-                        r={star.r * 2.6}
-                        fill={star.color}
-                        opacity={star.opacity * 0.28}
+                        r={star.r * 2.8}
+                        fill={star.haloColor}
+                        opacity={star.opacity * 0.35}
                       />
                     )}
+                    {/* 4-point telescope diffraction spikes on focal beacons */}
+                    {star.hasSpikes && (
+                      <g stroke={star.color} strokeWidth={0.65} opacity={star.opacity * 0.75}>
+                        <line x1={star.x - star.r * 3.8} y1={star.y} x2={star.x + star.r * 3.8} y2={star.y} />
+                        <line x1={star.x} y1={star.y - star.r * 3.8} x2={star.x} y2={star.y + star.r * 3.8} />
+                      </g>
+                    )}
+                    {/* Star Core */}
                     <circle
                       cx={star.x}
                       cy={star.y}
@@ -1470,6 +1610,20 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                     />
                   </g>
                 ))}
+
+                {/* Subtle Passing Meteor / Shooting Star */}
+                <g className="cosmic-meteor pointer-events-none">
+                  <line
+                    x1="60"
+                    y1="35"
+                    x2="110"
+                    y2="60"
+                    stroke="url(#meteorTailGrad)"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="110" cy="60" r="1.4" fill="#ffffff" />
+                </g>
               </g>
 
               {/* Subtle Blue Atmospheric Halo Around Earth */}
@@ -1967,14 +2121,22 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       key={author.name}
                       className="px-3 py-2 flex items-center justify-between gap-2 bg-slate-50/40 hover:bg-slate-50"
                     >
-                      <div className="min-w-0">
-                        <div className="text-xs font-semibold text-slate-900 truncate">
-                          {author.name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-mono tabular-nums">
-                          {author.paperCount}{' '}
-                          {author.paperCount === 1 ? 'paper' : 'papers'} ·{' '}
-                          {author.citations.toLocaleString()} cit.
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={`/api/scholar/avatar?name=${encodeURIComponent(author.name)}`}
+                          alt={author.name}
+                          loading="lazy"
+                          className="w-7 h-7 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-xs font-semibold text-slate-900 truncate">
+                            {author.name}
+                          </div>
+                          <div className="text-[11px] text-slate-500 font-mono tabular-nums">
+                            {author.paperCount}{' '}
+                            {author.paperCount === 1 ? 'paper' : 'papers'} ·{' '}
+                            {author.citations.toLocaleString()} cit.
+                          </div>
                         </div>
                       </div>
                       <button
@@ -1988,7 +2150,9 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   ))}
                   {filteredSelectedCoAuthors.length === 0 && (
                     <div className="px-3 py-4 text-center text-xs text-slate-500">
-                      No co-authors matching "{coAuthorQuery}".
+                      {coAuthorQuery
+                        ? `No co-authors matching "${coAuthorQuery}".`
+                        : 'No other affiliated co-authors recorded for this institution.'}
                     </div>
                   )}
                 </div>

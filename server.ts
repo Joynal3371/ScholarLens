@@ -2792,6 +2792,7 @@ export async function buildLiveResearcherProfile(
     landingPageUrl?: string;
     year: number;
     coAuthors: CoAuthorAffiliation[];
+    authorAffiliation?: CoAuthorAffiliation;
   }> {
     const year = Number(w.publication_year) || 0;
     const source = w.primary_location?.source;
@@ -2833,6 +2834,47 @@ export async function buildLiveResearcherProfile(
         (ins: any) => String(ins.country_code || '').toUpperCase() === 'BD'
       )
     );
+
+    // Dynamic resolution of the researcher's own institutional affiliation on this work:
+    let authorAffiliation: CoAuthorAffiliation | undefined = undefined;
+    const selfRawInsts: any[] = Array.isArray(selfAuthorship?.institutions)
+      ? selfAuthorship.institutions.filter((i: any) => i?.display_name)
+      : [];
+    const selfFilteredInsts = selfRawInsts.filter((inst: any) => {
+      const dName = String(inst.display_name || '');
+      if (/\bsystem$/i.test(dName) && selfRawInsts.length > 1) {
+        return false;
+      }
+      return true;
+    });
+    const primarySelfInst = selfFilteredInsts[0] || selfRawInsts[0];
+    if (primarySelfInst) {
+      let dispName = String(primarySelfInst.display_name);
+      let cCode = String(primarySelfInst.country_code || '');
+      let shortId = String(primarySelfInst.id || '').replace(
+        'https://openalex.org/',
+        ''
+      );
+      if (
+        (dispName === 'East–West University' || shortId === 'I4210135468') &&
+        hasBangladeshiAuthor
+      ) {
+        dispName = 'East West University';
+        cCode = 'BD';
+        shortId = 'I885507782';
+      }
+      const mapped = await resolveInstitutionFromOfficialSources(
+        dispName,
+        cCode,
+        shortId,
+        geoCache
+      );
+      authorAffiliation = {
+        name: targetName,
+        ...mapped,
+        isHomeInstitution: mapped.universityId === homeMapped.universityId,
+      };
+    }
 
     const coAuthors: CoAuthorAffiliation[] = [];
     const seenAuthorInstKeys = new Set<string>();
@@ -2949,6 +2991,7 @@ export async function buildLiveResearcherProfile(
         (cleanDoi ? `https://doi.org/${cleanDoi}` : undefined) || rawLanding,
       year,
       coAuthors,
+      authorAffiliation,
     };
   }
 
@@ -3091,6 +3134,7 @@ export async function buildLiveResearcherProfile(
           doi: oaDetails.doi,
           url: paperUrl,
           coAuthors: oaDetails.coAuthors,
+          authorAffiliation: oaDetails.authorAffiliation,
           impactFactor: getJournalImpactFactor(
             venue,
             type,
@@ -3226,6 +3270,7 @@ export async function buildLiveResearcherProfile(
         doi: oaDetails.doi,
         url: paperUrl,
         coAuthors: oaDetails.coAuthors,
+        authorAffiliation: oaDetails.authorAffiliation,
         impactFactor: getJournalImpactFactor(
           oaDetails.venue,
           type,
