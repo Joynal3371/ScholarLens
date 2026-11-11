@@ -496,29 +496,21 @@ export async function generateResearcherPdfReport(params: {
       label: 'VERIFIED PUBLICATIONS',
       value: String(stats.totalPapers),
       sub: 'Peer-reviewed corpus',
-      badgeBg: [239, 246, 255] as [number, number, number],
-      badgeColor: [37, 99, 235] as [number, number, number],
     },
     {
       label: 'CUMULATIVE CITATIONS',
       value: stats.totalCitations.toLocaleString(),
       sub: `~${(stats.totalCitations / Math.max(1, stats.totalPapers)).toFixed(1)} cites/paper`,
-      badgeBg: [236, 253, 245] as [number, number, number],
-      badgeColor: [5, 150, 105] as [number, number, number],
     },
     {
       label: 'H-INDEX / I10-INDEX',
       value: `${stats.hIndex}  /  ${stats.i10Index}`,
-      sub: `${stats.i10Index} papers ≥ 10 citations`,
-      badgeBg: [238, 242, 255] as [number, number, number],
-      badgeColor: [79, 70, 229] as [number, number, number],
+      sub: `${stats.i10Index} papers >= 10 citations`,
     },
     {
       label: 'INSTITUTIONAL NETWORK',
       value: String(universities.length),
       sub: `Across ${countries.length} collaborating nations`,
-      badgeBg: [245, 243, 255] as [number, number, number],
-      badgeColor: [124, 58, 237] as [number, number, number],
     },
   ];
 
@@ -535,16 +527,6 @@ export async function generateResearcherPdfReport(params: {
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(226, 232, 240);
     doc.roundedRect(bx, by, mW, mH, 1.5, 1.5, 'FD');
-
-    // Micro badge icon box on top right
-    const iconW = 4.4;
-    const iconH = 4.4;
-    const iconX = bx + mW - iconW - 2.0;
-    const iconY = by + 2.0;
-    doc.setFillColor(card.badgeBg[0], card.badgeBg[1], card.badgeBg[2]);
-    doc.roundedRect(iconX, iconY, iconW, iconH, 1.0, 1.0, 'F');
-    doc.setFillColor(card.badgeColor[0], card.badgeColor[1], card.badgeColor[2]);
-    doc.circle(iconX + iconW / 2, iconY + iconH / 2, 1.0, 'F');
 
     // Label
     doc.setFont('helvetica', 'bold');
@@ -741,8 +723,6 @@ export async function generateResearcherPdfReport(params: {
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(margin, p1CardY, p1ColW, p1CardH, 1.5, 1.5, 'FD');
-  doc.setFillColor(14, 165, 233);
-  doc.rect(margin, p1CardY, p1ColW, 1.2, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(15, 23, 42);
@@ -795,8 +775,6 @@ export async function generateResearcherPdfReport(params: {
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(c2X, p1CardY, p1ColW, p1CardH, 1.5, 1.5, 'FD');
-  doc.setFillColor(37, 99, 235);
-  doc.rect(c2X, p1CardY, p1ColW, 1.2, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(15, 23, 42);
@@ -844,8 +822,6 @@ export async function generateResearcherPdfReport(params: {
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(c3X, p1CardY, p1ColW, p1CardH, 1.5, 1.5, 'FD');
-  doc.setFillColor(79, 70, 229);
-  doc.rect(c3X, p1CardY, p1ColW, 1.2, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(15, 23, 42);

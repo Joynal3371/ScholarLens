@@ -968,18 +968,10 @@ export const PortfolioBreakdownSection: React.FC<
                         {j.venue.length > 22 ? j.venue.slice(0, 21) + '…' : j.venue}
                       </text>
 
-                      {/* 3. Quartile Pill */}
-                      <rect
-                        x="192"
-                        y="2.5"
-                        width="28"
-                        height="17"
-                        rx="3.5"
-                        fill={j.quartile === 'Q1' ? '#eff6ff' : j.quartile === 'Q2' ? '#ecfdf5' : j.quartile === 'Q3' ? '#fffbeb' : '#fef2f2'}
-                      />
+                      {/* 3. Quartile */}
                       <text
                         x="206"
-                        y="14.5"
+                        y="15"
                         fill={j.quartile === 'Q1' ? '#1d4ed8' : j.quartile === 'Q2' ? '#047857' : j.quartile === 'Q3' ? '#b45309' : '#b91c1c'}
                         fontSize="9.5"
                         fontWeight="700"
@@ -988,20 +980,10 @@ export const PortfolioBreakdownSection: React.FC<
                         {j.quartile}
                       </text>
 
-                      {/* 4. Clarivate JIF Metric Badge */}
-                      <rect
-                        x="226"
-                        y="2.5"
-                        width="54"
-                        height="17"
-                        rx="3.5"
-                        fill="#f8fafc"
-                        stroke="#e2e8f0"
-                        strokeWidth="1"
-                      />
+                      {/* 4. Clarivate JIF Metric */}
                       <text
                         x="253"
-                        y="14.5"
+                        y="15"
                         fill="#0f172a"
                         fontSize="9.5"
                         fontWeight="700"
@@ -1135,27 +1117,17 @@ export const PortfolioBreakdownSection: React.FC<
                         {ca.name.length > 20 ? ca.name.slice(0, 19) + '…' : ca.name}
                       </text>
 
-                      {/* 3. Institution / Country Badge */}
-                      <rect
-                        x="190"
-                        y="2.5"
-                        width="92"
-                        height="17"
-                        rx="3.5"
-                        fill="#f8fafc"
-                        stroke="#e2e8f0"
-                        strokeWidth="1"
-                      />
+                      {/* 3. Institution / Country */}
                       <text
                         x="236"
-                        y="14.5"
+                        y="15"
                         fill="#475569"
-                        fontSize="9"
+                        fontSize="9.5"
                         fontWeight="600"
                         textAnchor="middle"
                       >
-                        {(ca.universityName || ca.country || 'Collaborator').length > 15
-                          ? (ca.universityName || ca.country || 'Collaborator').slice(0, 14) + '…'
+                        {(ca.universityName || ca.country || 'Collaborator').length > 18
+                          ? (ca.universityName || ca.country || 'Collaborator').slice(0, 17) + '…'
                           : ca.universityName || ca.country || 'Collaborator'}
                       </text>
 
