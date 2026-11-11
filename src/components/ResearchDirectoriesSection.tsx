@@ -174,9 +174,28 @@ export const ResearchDirectoriesSection: React.FC<
                   <td className="py-2.5 pl-6 pr-3 font-semibold text-slate-900">
                     <div className="flex items-center gap-2.5">
                       <img
-                        src={`/api/scholar/avatar?name=${encodeURIComponent(ca.name)}`}
+                        src={
+                          ca.avatarUrl ||
+                          `/api/scholar/avatar?name=${encodeURIComponent(
+                            ca.name
+                          )}&uni=${encodeURIComponent(ca.universityName)}${
+                            ca.scholarUserId
+                              ? `&userId=${encodeURIComponent(ca.scholarUserId)}`
+                              : ''
+                          }`
+                        }
                         alt={ca.name}
                         loading="lazy"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          const fallbackUrl = `/api/scholar/avatar?name=${encodeURIComponent(
+                            ca.name
+                          )}&uni=${encodeURIComponent(ca.universityName)}`;
+                          if (!target.src.endsWith(fallbackUrl)) {
+                            target.src = fallbackUrl;
+                          }
+                        }}
                         className="w-7 h-7 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs"
                       />
                       <span className="truncate">{ca.name}</span>

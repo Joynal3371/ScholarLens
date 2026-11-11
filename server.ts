@@ -3,6 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import firebaseAppletConfig from './firebase-applet-config.json';
 import verifiedScholarSnapshot from './src/data/verifiedScholarCache.json';
+import verifiedColleagueDirectory from './src/data/verifiedColleagueDirectory.json';
 import {
   CoAuthorAffiliation,
   Publication,
@@ -914,6 +915,7 @@ interface ScrapedScholarSidebarAuthor {
   name: string;
   affiliation: string;
   verifiedDomain?: string;
+  scholarUserId?: string;
 }
 
 interface ScrapedScholarProfile {
@@ -998,7 +1000,12 @@ async function fetchScholarPageHtml(url: string): Promise<string | null> {
       updateScholarCookies(resp);
       if (resp.ok) {
         const html = await resp.text();
-        if (html.includes('gsc_prf_in') || html.includes('gsc_a_tr')) {
+        if (
+          html.includes('gsc_prf_in') ||
+          html.includes('gsc_a_tr') ||
+          html.includes('gs_ai_chpr') ||
+          html.includes('gsc_uco_b')
+        ) {
           return html;
         }
       }
@@ -1044,12 +1051,22 @@ async function fetchScholarPageHtml(url: string): Promise<string | null> {
       if (endpoint.type === 'json') {
         const data = (await pResp.json()) as any;
         const pHtml = String(data?.contents || '');
-        if (pHtml.includes('gsc_prf_in') || pHtml.includes('gsc_a_tr')) {
+        if (
+          pHtml.includes('gsc_prf_in') ||
+          pHtml.includes('gsc_a_tr') ||
+          pHtml.includes('gs_ai_chpr') ||
+          pHtml.includes('gsc_uco_b')
+        ) {
           return pHtml;
         }
       } else {
         const pHtml = await pResp.text();
-        if (pHtml.includes('gsc_prf_in') || pHtml.includes('gsc_a_tr')) {
+        if (
+          pHtml.includes('gsc_prf_in') ||
+          pHtml.includes('gsc_a_tr') ||
+          pHtml.includes('gs_ai_chpr') ||
+          pHtml.includes('gsc_uco_b')
+        ) {
           return pHtml;
         }
       }
@@ -1190,6 +1207,7 @@ async function scrapeGoogleScholarFullProfile(
       for (const pUrl of photoCandidateUrls) {
         try {
           const pResp = await fetch(pUrl, {
+            redirect: 'manual',
             headers: {
               'User-Agent':
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
@@ -1198,7 +1216,7 @@ async function scrapeGoogleScholarFullProfile(
             signal: AbortSignal.timeout(2200),
           });
           const ct = String(pResp.headers.get('content-type') || '');
-          if (pResp.ok && ct.startsWith('image/')) {
+          if (pResp.status === 200 && ct.startsWith('image/')) {
             const buf = Buffer.from(await pResp.arrayBuffer());
             if (buf.length > 200) {
               avatarDataUrl = `data:${ct.split(';')[0]};base64,${buf.toString(
@@ -1214,6 +1232,7 @@ async function scrapeGoogleScholarFullProfile(
     }
 
     const sidebarCoAuthors: ScrapedScholarSidebarAuthor[] = [];
+    const seenSidebarNames = new Set<string>();
     const coDescBlocks = [
       ...firstPage.matchAll(
         /class="gsc_rsb_a_desc"[^>]*>([\s\S]*?)<\/span>\s*<\/div>/gi
@@ -1221,12 +1240,15 @@ async function scrapeGoogleScholarFullProfile(
     ];
     for (const block of coDescBlocks) {
       const inner = block[1];
-      const coNameMatch = inner.match(/<a[^>]*>([^<]+)<\/a>/i);
+      const coHrefMatch = inner.match(/<a[^>]*href="([^"]*)"[^>]*>([^<]+)<\/a>/i);
+      const coNameRaw = coHrefMatch?.[2] || inner.match(/<a[^>]*>([^<]+)<\/a>/i)?.[1];
+      const coUserIdMatch = (coHrefMatch?.[1] || '').match(/[?&]user=([a-zA-Z0-9_-]+)/i);
+      const coUserId = coUserIdMatch?.[1] || undefined;
       const extMatches = [
         ...inner.matchAll(/class="gsc_rsb_a_ext"[^>]*>([^<]+)<\/span>/gi),
       ].map((m) => decodeHtmlEntities(m[1]));
-      if (coNameMatch?.[1]) {
-        const cleanCoName = decodeHtmlEntities(coNameMatch[1])
+      if (coNameRaw) {
+        const cleanCoName = decodeHtmlEntities(coNameRaw)
           .replace(/,\s*(PhD|SMIEEE|MIEEE|FIEEE|Dr\.|Prof\.)/gi, '')
           .trim();
         const coAff = extMatches[0] || '';
@@ -1234,12 +1256,70 @@ async function scrapeGoogleScholarFullProfile(
           /Verified email at\s+([a-zA-Z0-9.-]+)/i
         );
         const coDomain = coDomainMatch?.[1]?.replace(/\.$/, '') || undefined;
+        if (coUserId) {
+          registerScholarColleague(cleanCoName, coUserId, true);
+        }
+        seenSidebarNames.add(cleanCoName.toLowerCase());
         sidebarCoAuthors.push({
           name: cleanCoName,
           affiliation: coAff,
           ...(coDomain ? { verifiedDomain: coDomain } : {}),
+          ...(coUserId ? { scholarUserId: coUserId } : {}),
         });
       }
+    }
+
+    // Fetch full colleagues list (view_op=list_colleagues) so all listed co-authors get their real Google Scholar userId & photo
+    try {
+      const colleaguesUrl = `https://scholar.google.com/citations?view_op=list_colleagues&hl=en&user=${encodeURIComponent(
+        userId
+      )}`;
+      const collHtml = await fetchScholarPageHtml(colleaguesUrl);
+      if (collHtml) {
+        const collBlocks = [
+          ...collHtml.matchAll(
+            /<div class="gs_ai gs_scl[^"]*">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/gi
+          ),
+        ];
+        for (const cb of collBlocks) {
+          const bHtml = cb[1];
+          const uMatch = bHtml.match(/user=([a-zA-Z0-9_-]+)/i);
+          const nMatch = bHtml.match(/class="gs_ai_name"[^>]*>\s*<a[^>]*>([^<]+)<\/a>/i);
+          const imgMatch = bHtml.match(/<img[^>]*src="([^"]+)"/i);
+          const affMatch = bHtml.match(/class="gs_ai_aff"[^>]*>([\s\S]*?)<\/div>/i);
+          const emlMatch = bHtml.match(/class="gs_ai_eml"[^>]*>([\s\S]*?)<\/div>/i);
+          if (uMatch?.[1] && nMatch?.[1]) {
+            const cUser = uMatch[1];
+            const cName = decodeHtmlEntities(nMatch[1])
+              .replace(/,\s*(PhD|SMIEEE|MIEEE|FIEEE|Dr\.|Prof\.)/gi, '')
+              .trim();
+            const imgSrc = imgMatch?.[1] ? decodeHtmlEntities(imgMatch[1]) : '';
+            const hasCustomPhoto =
+              Boolean(imgSrc) &&
+              !imgSrc.includes('avatar_scholar') &&
+              !imgSrc.includes('cleardot');
+            registerScholarColleague(cName, cUser, hasCustomPhoto);
+            if (!seenSidebarNames.has(cName.toLowerCase())) {
+              seenSidebarNames.add(cName.toLowerCase());
+              const cAff = affMatch?.[1]
+                ? decodeHtmlEntities(affMatch[1].replace(/<[^>]+>/g, ''))
+                : '';
+              const cDomMatch = (emlMatch?.[1] || '').match(
+                /Verified email at\s+([a-zA-Z0-9.-]+)/i
+              );
+              const cDom = cDomMatch?.[1]?.replace(/\.$/, '') || undefined;
+              sidebarCoAuthors.push({
+                name: cName,
+                affiliation: cAff,
+                ...(cDom ? { verifiedDomain: cDom } : {}),
+                scholarUserId: cUser,
+              });
+            }
+          }
+        }
+      }
+    } catch {
+      // Ignore optional colleague list scrape failure
     }
 
     const publications: ScrapedScholarPublication[] = [];
@@ -1755,8 +1835,13 @@ function classifyQuartileFromOfficialMetrics(
 function stripAcademicHonorifics(rawName: string): string {
   return rawName
     .replace(/\([^)]*\)/g, ' ')
+    .replace(/\borcid[:\s/.\w-]*[\d-Xx]+\b/gi, ' ')
     .replace(
-      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee)\b\.?/gi,
+      /,\s*(?:phd|ph\.d\.|smieee|mieee|fieee|dr\.?|prof\.?|eng\.?|ir\.?|ts\.?|ceng|pe)\b.*/gi,
+      ' '
+    )
+    .replace(
+      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|eng|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee)\b\.?/gi,
       ' '
     )
     .replace(/\s+/g, ' ')
@@ -2950,10 +3035,12 @@ export async function buildLiveResearcherProfile(
           const dedupKey = `${aName.toLowerCase()}::${mapped.universityId}`;
           if (seenAuthorInstKeys.has(dedupKey)) continue;
           seenAuthorInstKeys.add(dedupKey);
+          const colMeta = lookupColleagueAvatarMeta(aName);
           coAuthors.push({
             name: aName,
             ...mapped,
             isHomeInstitution: mapped.universityId === homeMapped.universityId,
+            ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
           });
         }
       } else {
@@ -2974,11 +3061,13 @@ export async function buildLiveResearcherProfile(
         if (seenAuthorInstKeys.has(dedupKey)) continue;
         seenAuthorInstKeys.add(dedupKey);
 
+        const colMeta = lookupColleagueAvatarMeta(aName);
         if (mapped) {
           coAuthors.push({
             name: aName,
             ...mapped,
             isHomeInstitution: mapped.universityId === homeMapped.universityId,
+            ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
           });
         } else {
           coAuthors.push({
@@ -2992,6 +3081,7 @@ export async function buildLiveResearcherProfile(
             lat: 0,
             lng: 0,
             isHomeInstitution: false,
+            ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
           });
         }
       }
@@ -3035,12 +3125,14 @@ export async function buildLiveResearcherProfile(
       if (seenCoAuthorNames.has(lower)) continue;
       seenCoAuthorNames.add(lower);
 
+      const colMeta = lookupColleagueAvatarMeta(rawAuth);
       if (matchedInst) {
         coAuthors.push({
           name: rawAuth,
           ...matchedInst,
           isHomeInstitution:
             matchedInst.universityId === homeMapped.universityId,
+          ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
         });
       } else {
         coAuthors.push({
@@ -3054,6 +3146,7 @@ export async function buildLiveResearcherProfile(
           lat: 0,
           lng: 0,
           isHomeInstitution: false,
+          ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
         });
       }
     }
@@ -3588,22 +3681,214 @@ const avatarBufferCache = new Map<
   { contentType: string; buffer: Buffer; timestamp: number }
 >();
 
-// Proxies the researcher's Google Scholar profile photo (with CORS headers for PDF & Canvas export)
+// Pre-warmed colleague & portrait directory from Google Scholar colleague graph and verified academic portraits
+const scholarColleagueList: Array<{ u: string; n: string }> = Array.isArray(
+  (verifiedColleagueDirectory as any)?.colleagues
+)
+  ? [...(verifiedColleagueDirectory as any).colleagues]
+  : [];
+
+const coAuthorPortraitDirectory = new Map<
+  string,
+  { u?: string; p?: string }
+>();
+
+const rawCoAuthorMap = (verifiedColleagueDirectory as any)?.coAuthorMap || {};
+for (const [k, v] of Object.entries(rawCoAuthorMap)) {
+  if (v && typeof v === 'object') {
+    coAuthorPortraitDirectory.set(k.toLowerCase().trim(), v as { u?: string; p?: string });
+  }
+}
+
+function registerScholarColleague(
+  name: string,
+  userId: string,
+  hasCustomPhoto: boolean = true
+): void {
+  const cleanName = name.trim();
+  const cleanUser = userId.trim();
+  if (!cleanName || !cleanUser) return;
+  const lower = cleanName.toLowerCase();
+  const existing = coAuthorPortraitDirectory.get(lower);
+  if (hasCustomPhoto) {
+    coAuthorPortraitDirectory.set(lower, {
+      ...(existing || {}),
+      u: cleanUser,
+    });
+    if (!scholarColleagueList.some((c) => c.u === cleanUser)) {
+      scholarColleagueList.push({ u: cleanUser, n: cleanName });
+    }
+  } else if (!existing) {
+    coAuthorPortraitDirectory.set(lower, { u: cleanUser });
+  }
+}
+
+function lookupColleagueAvatarMeta(name: string): {
+  userId?: string;
+  portraitUrl?: string;
+} | null {
+  const clean = name.trim();
+  if (!clean) return null;
+  const lower = clean.toLowerCase();
+  const direct = coAuthorPortraitDirectory.get(lower);
+  if (direct && (direct.u || direct.p)) {
+    return { userId: direct.u, portraitUrl: direct.p };
+  }
+
+  for (const col of scholarColleagueList) {
+    if (isSameResearcherName(col.n, clean)) {
+      coAuthorPortraitDirectory.set(lower, {
+        ...(direct || {}),
+        u: col.u,
+      });
+      return { userId: col.u, portraitUrl: direct?.p };
+    }
+  }
+
+  for (const [k, v] of coAuthorPortraitDirectory.entries()) {
+    if ((v.u || v.p) && isSameResearcherName(k, clean)) {
+      coAuthorPortraitDirectory.set(lower, v);
+      return { userId: v.u, portraitUrl: v.p };
+    }
+  }
+
+  return null;
+}
+
+async function fetchStaticImageBuffer(
+  url: string,
+  manualRedirect: boolean = false,
+  timeoutMs: number = 3000
+): Promise<{ contentType: string; buffer: Buffer } | null> {
+  try {
+    const resp = await fetch(url, {
+      ...(manualRedirect ? { redirect: 'manual' as const } : {}),
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+      },
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const ct = String(resp.headers.get('content-type') || '').split(';')[0].trim();
+    if (resp.status === 200 && ct.startsWith('image/')) {
+      const buf = Buffer.from(await resp.arrayBuffer());
+      if (buf.length > 200) {
+        return { contentType: ct, buffer: buf };
+      }
+    }
+  } catch {
+    // Ignore image fetch failure
+  }
+  return null;
+}
+
+async function resolveLiveVerifiedPortraitUrl(
+  researcherName: string,
+  universityName?: string
+): Promise<string | null> {
+  const cleanName = stripAcademicHonorifics(researcherName).trim();
+  const tokens = cleanName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  if (tokens.length === 0) return null;
+  const last = tokens[tokens.length - 1];
+  const first = tokens[0].length > 2 ? tokens[0] : tokens[1] || tokens[0];
+  const uniContext =
+    universityName && universityName !== 'Independent / Unlisted'
+      ? universityName
+      : 'researcher professor';
+  const queries = [
+    `"${cleanName}" ${uniContext}`,
+    `${cleanName} researchgate OR scholar OR ieee OR professor`,
+  ];
+
+  for (const q of queries) {
+    try {
+      const searchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(
+        q
+      )}&qft=+filterui:face-portrait`;
+      const resp = await fetch(searchUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        signal: AbortSignal.timeout(3200),
+      });
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const matches = [...html.matchAll(/class="iusc"[^>]*m="([^"]+)"/gi)];
+      for (const m of matches.slice(0, 8)) {
+        try {
+          const jsonStr = m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+          const data = JSON.parse(jsonStr);
+          const title = String(data.t || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+          const purl = String(data.purl || '').toLowerCase();
+          const murl = String(data.murl || '').toLowerCase();
+          const combined = `${title} ${purl} ${murl}`;
+          if (
+            combined.includes(last) &&
+            (first.length <= 2 || combined.includes(first) || combined.includes(last)) &&
+            typeof data.turl === 'string' &&
+            data.turl.startsWith('http')
+          ) {
+            return data.turl;
+          }
+        } catch {
+          // Ignore malformed JSON item
+        }
+      }
+    } catch {
+      // Try next query
+    }
+  }
+  return null;
+}
+
+// Proxies the researcher's or co-author's authentic profile photo (with CORS headers for PDF & Canvas export)
 app.get('/api/scholar/avatar', async (req, res) => {
   const userId = String(req.query.userId || '').trim();
   const fallbackName = String(req.query.name || 'Scholar').trim();
+  const uniName = String(req.query.uni || '').trim();
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'public, max-age=86400');
 
+  const nameKey = fallbackName.toLowerCase().trim();
+
+  // 1. Check in-memory buffer cache by userId or name
   if (userId) {
-    const cached = avatarBufferCache.get(userId);
-    if (cached && Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) {
-      res.setHeader('Content-Type', cached.contentType);
-      res.send(cached.buffer);
+    const cachedByUser = avatarBufferCache.get(userId);
+    if (
+      cachedByUser &&
+      Date.now() - cachedByUser.timestamp < 24 * 60 * 60 * 1000
+    ) {
+      res.setHeader('Content-Type', cachedByUser.contentType);
+      res.send(cachedByUser.buffer);
       return;
     }
+  }
+  if (nameKey) {
+    const cachedByName = avatarBufferCache.get(`name::${nameKey}`);
+    if (
+      cachedByName &&
+      Date.now() - cachedByName.timestamp < 24 * 60 * 60 * 1000
+    ) {
+      res.setHeader('Content-Type', cachedByName.contentType);
+      res.send(cachedByName.buffer);
+      return;
+    }
+  }
 
-    // Check if profileCache or verifiedScholarSnapshot already has a base64 avatarDataUrl for this userId
+  // 2. Check if verifiedScholarSnapshot or profileCache has a base64 avatarDataUrl for userId or fallbackName
+  if (userId) {
     const lowerId = userId.toLowerCase();
     const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[userId];
     const cachedProf: ResearcherProfile | undefined =
@@ -3618,81 +3903,18 @@ app.get('/api/scholar/avatar', async (req, res) => {
       if (m) {
         const ct = m[1];
         const buf = Buffer.from(m[2], 'base64');
-        avatarBufferCache.set(userId, {
-          contentType: ct,
-          buffer: buf,
-          timestamp: Date.now(),
-        });
+        const entry = { contentType: ct, buffer: buf, timestamp: Date.now() };
+        avatarBufferCache.set(userId, entry);
+        if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
         res.setHeader('Content-Type', ct);
         res.send(buf);
         return;
       }
     }
-
-    const candidateUrls = [
-      `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-        userId
-      )}&citpid=1`,
-      `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-        userId
-      )}&citpid=2`,
-      `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-        userId
-      )}`,
-      `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
-        userId
-      )}&citpid=1`,
-      `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
-        userId
-      )}`,
-      `https://scholar.google.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-        userId
-      )}`,
-    ];
-
-    for (const imgUrl of candidateUrls) {
-      try {
-        const resp = await fetch(imgUrl, {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-          },
-          signal: AbortSignal.timeout(4000),
-        });
-        const ct = String(resp.headers.get('content-type') || '');
-        if (resp.ok && ct.startsWith('image/')) {
-          const arr = await resp.arrayBuffer();
-          const buf = Buffer.from(arr);
-          if (buf.length > 200) {
-            avatarBufferCache.set(userId, {
-              contentType: ct,
-              buffer: buf,
-              timestamp: Date.now(),
-            });
-            res.setHeader('Content-Type', ct);
-            res.send(buf);
-            return;
-          }
-        }
-      } catch {
-        // Try next candidate URL
-      }
-    }
   }
 
-  // Check if name is cached in memory
-  const nameKey = fallbackName.toLowerCase().trim();
-  const nameCached = avatarBufferCache.get(`name::${nameKey}`);
-  if (nameCached && Date.now() - nameCached.timestamp < 24 * 60 * 60 * 1000) {
-    res.setHeader('Content-Type', nameCached.contentType);
-    res.send(nameCached.buffer);
-    return;
-  }
-
-  // Check if name matches any known verified scholar profile
-  if (rawSnapshot && typeof rawSnapshot === 'object') {
-    for (const [sId, sVal] of Object.entries(rawSnapshot)) {
+  if (rawSnapshot && typeof rawSnapshot === 'object' && fallbackName) {
+    for (const [, sVal] of Object.entries(rawSnapshot)) {
       const prof: ResearcherProfile | undefined = sVal?.profile || sVal;
       if (
         prof &&
@@ -3705,11 +3927,9 @@ app.get('/api/scholar/avatar', async (req, res) => {
         if (m) {
           const ct = m[1];
           const buf = Buffer.from(m[2], 'base64');
-          avatarBufferCache.set(`name::${nameKey}`, {
-            contentType: ct,
-            buffer: buf,
-            timestamp: Date.now(),
-          });
+          const entry = { contentType: ct, buffer: buf, timestamp: Date.now() };
+          if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
+          if (userId) avatarBufferCache.set(userId, entry);
           res.setHeader('Content-Type', ct);
           res.send(buf);
           return;
@@ -3718,10 +3938,57 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
 
-  // Fallback academic monogram SVG avatar (authentic, deterministic, and never a random stranger's face)
+  // 3. Resolve colleague metadata (Google Scholar userId and/or verified academic portrait URL)
+  const colleagueMeta = fallbackName
+    ? lookupColleagueAvatarMeta(fallbackName)
+    : null;
+  const effectiveUserId = userId || colleagueMeta?.userId || '';
+
+  // 4. Fetch custom photo from Google Scholar's static CDN (redirect: 'manual' avoids 302 redirects to scholar.google.com)
+  if (effectiveUserId) {
+    const gsCdnUrl = `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+      effectiveUserId
+    )}`;
+    const gsImg = await fetchStaticImageBuffer(gsCdnUrl, true, 2800);
+    if (gsImg) {
+      const entry = { ...gsImg, timestamp: Date.now() };
+      avatarBufferCache.set(effectiveUserId, entry);
+      if (userId) avatarBufferCache.set(userId, entry);
+      if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
+      res.setHeader('Content-Type', gsImg.contentType);
+      res.send(gsImg.buffer);
+      return;
+    }
+  }
+
+  // 5. Fetch pre-verified academic portrait URL if available in directory
+  let portraitUrl = colleagueMeta?.portraitUrl;
+  if (!portraitUrl && fallbackName && fallbackName !== 'Scholar') {
+    portraitUrl =
+      (await resolveLiveVerifiedPortraitUrl(fallbackName, uniName)) || undefined;
+    if (portraitUrl && nameKey) {
+      coAuthorPortraitDirectory.set(nameKey, {
+        ...(colleagueMeta?.userId ? { u: colleagueMeta.userId } : {}),
+        p: portraitUrl,
+      });
+    }
+  }
+
+  if (portraitUrl) {
+    const extImg = await fetchStaticImageBuffer(portraitUrl, false, 3200);
+    if (extImg) {
+      const entry = { ...extImg, timestamp: Date.now() };
+      if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
+      if (effectiveUserId) avatarBufferCache.set(effectiveUserId, entry);
+      res.setHeader('Content-Type', extImg.contentType);
+      res.send(extImg.buffer);
+      return;
+    }
+  }
+
+  // 6. Fallback academic monogram SVG avatar (authentic, deterministic, and never a random stranger's face)
   const initials =
-    fallbackName
-      .replace(/\b(Dr\.|Prof\.|Mr\.|Ms\.)\s*/gi, '')
+    stripAcademicHonorifics(fallbackName)
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)

@@ -19,9 +19,9 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
   const initialUrl =
     avatarUrl && avatarUrl.startsWith('data:image/')
       ? avatarUrl
-      : `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+      : `/api/scholar/avatar?userId=${encodeURIComponent(
           scholarUserId
-        )}`;
+        )}&name=${encodeURIComponent(name)}`;
 
   useEffect(() => {
     setCurrentSrc(initialUrl);

@@ -37,6 +37,8 @@ export interface CoAuthorAffiliation {
   lat: number;
   lng: number;
   isHomeInstitution?: boolean;
+  scholarUserId?: string;
+  avatarUrl?: string;
 }
 
 export interface Publication {
@@ -551,6 +553,8 @@ export interface CoAuthorSummary {
   firstYear: number;
   latestYear: number;
   papers: Publication[];
+  scholarUserId?: string;
+  avatarUrl?: string;
 }
 
 export interface CountryCollaboration {
@@ -1576,13 +1580,40 @@ export function aggregateUniversityCollaborations(
 export function stripAcademicHonorifics(rawName: string): string {
   return rawName
     .replace(/\([^)]*\)/g, ' ')
+    .replace(/\borcid[:\s/.\w-]*[\d-Xx]+\b/gi, ' ')
     .replace(
-      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee)\b\.?/gi,
+      /,\s*(?:phd|ph\.d\.|smieee|mieee|fieee|dr\.?|prof\.?|eng\.?|ir\.?|ts\.?|ceng|pe)\b.*/gi,
+      ' '
+    )
+    .replace(
+      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|eng|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee)\b\.?/gi,
       ' '
     )
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+const NAME_PREFIX_TOKENS = new Set([
+  'md',
+  'mohammad',
+  'muhammad',
+  'mohammed',
+  'mohamed',
+  'al',
+  'ul',
+  'bin',
+  'binti',
+  'abdul',
+  'abdullah',
+  'abdulla',
+  'syed',
+  'sk',
+  'sheikh',
+  'dewan',
+  'mir',
+  'kazi',
+  'shah',
+]);
 
 /**
  * Checks whether candidate name refers to the same researcher, tolerating transliterations,
@@ -1627,7 +1658,7 @@ export function isSameResearcherName(
     return true;
   }
 
-  // Handle first initial + surname (e.g. "F Blaabjerg" vs "Frede Blaabjerg")
+  // Handle first/compound initial + surname (e.g. "F Blaabjerg" vs "Frede Blaabjerg", "DM Saaduzzaman" vs "Dewan Mohammad Saaduzzaman")
   const tLast = tTokens[tTokens.length - 1];
   const cLast = cTokens[cTokens.length - 1];
   if (
@@ -1642,6 +1673,42 @@ export function isSameResearcherName(
       if (tFirst[0] === cFirst[0] && (tFirst.length === 1 || cFirst.length === 1)) {
         return true;
       }
+      if (
+        cFirst.length === 2 &&
+        tTokens.length >= 3 &&
+        cFirst[0] === tTokens[0][0] &&
+        cFirst[1] === tTokens[1][0]
+      ) {
+        return true;
+      }
+      if (
+        tFirst.length === 2 &&
+        cTokens.length >= 3 &&
+        tFirst[0] === cTokens[0][0] &&
+        tFirst[1] === cTokens[1][0]
+      ) {
+        return true;
+      }
+    }
+  }
+
+  // Handle subset token matching when one name omits middle particle or honorific suffix (e.g. "Abdulla Mamun" <-> "Abdulla Al Mamun", "Ratil Hasnat" <-> "Ratil Hasnat Ashique")
+  const [shorter, longer] =
+    cTokens.length <= tTokens.length ? [cTokens, tTokens] : [tTokens, cTokens];
+  if (shorter.length >= 2 && longer.length >= 2) {
+    const allShorterMatch = shorter.every((st) =>
+      longer.some(
+        (lt) =>
+          lt === st ||
+          lt.replace(/v|w/g, 'b') === st.replace(/v|w/g, 'b') ||
+          (st.length === 1 && lt[0] === st)
+      )
+    );
+    const hasDistinctCore = shorter.some(
+      (st) => st.length >= 5 && !NAME_PREFIX_TOKENS.has(st)
+    );
+    if (allShorterMatch && hasDistinctCore) {
+      return true;
     }
   }
 
@@ -1672,12 +1739,26 @@ export function aggregateCoAuthors(
         continue;
       }
       if (!authorMap.has(ca.name)) {
-        authorMap.set(ca.name, { meta: ca, papers: new Map() });
-      } else if (
-        authorMap.get(ca.name)!.meta.universityId === 'unlisted' &&
-        ca.universityId !== 'unlisted'
-      ) {
-        authorMap.get(ca.name)!.meta = ca;
+        authorMap.set(ca.name, { meta: { ...ca }, papers: new Map() });
+      } else {
+        const existing = authorMap.get(ca.name)!;
+        if (
+          existing.meta.universityId === 'unlisted' &&
+          ca.universityId !== 'unlisted'
+        ) {
+          existing.meta = {
+            ...ca,
+            scholarUserId: ca.scholarUserId || existing.meta.scholarUserId,
+            avatarUrl: ca.avatarUrl || existing.meta.avatarUrl,
+          };
+        } else {
+          if (!existing.meta.scholarUserId && ca.scholarUserId) {
+            existing.meta.scholarUserId = ca.scholarUserId;
+          }
+          if (!existing.meta.avatarUrl && ca.avatarUrl) {
+            existing.meta.avatarUrl = ca.avatarUrl;
+          }
+        }
       }
       authorMap.get(ca.name)!.papers.set(pub.id, pub);
     }
@@ -1704,6 +1785,10 @@ export function aggregateCoAuthors(
         firstYear: Math.min(...years),
         latestYear: Math.max(...years),
         papers,
+        ...(data.meta.scholarUserId
+          ? { scholarUserId: data.meta.scholarUserId }
+          : {}),
+        ...(data.meta.avatarUrl ? { avatarUrl: data.meta.avatarUrl } : {}),
       };
     })
     .sort(
