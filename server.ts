@@ -3723,32 +3723,176 @@ function registerScholarColleague(
   }
 }
 
+const COMMON_RESEARCHER_NAMES = new Set([
+  'mohammad', 'md', 'muhammad', 'mohammed', 'mohamed', 'abdul', 'abdullah', 'syed', 'sheikh', 'sk',
+  'shah', 'mir', 'kazi', 'dewan', 'abu', 'abul', 'bin', 'binti', 'ibn', 'ibne', 'al', 'ul', 'ur',
+  'rahman', 'islam', 'hossain', 'hossen', 'hussein', 'hasan', 'hassan', 'ahmed', 'ahamed', 'ahmad',
+  'ali', 'khan', 'alam', 'mahmud', 'kabir', 'amin', 'haque', 'hoque', 'uddin', 'miah', 'mia',
+  'chowdhury', 'sarkar', 'sarker', 'akter', 'begum', 'khatun', 'karim', 'rahim', 'hakim', 'halim',
+  'mannan', 'hannan', 'sattar', 'gafur', 'kader', 'baten', 'malek', 'khaleque', 'bari', 'barua',
+  'das', 'dey', 'roy', 'saha', 'sen', 'ghosh', 'bose', 'mitra', 'datta', 'dutta', 'guha', 'pal',
+  'paul', 'nandi', 'mandal', 'mondal', 'biswas', 'sikder', 'talukder', 'majumder', 'mazumder',
+  'kumar', 'sharma', 'verma', 'gupta', 'singh', 'yadav', 'patel', 'mehta', 'joshi', 'reddy', 'rao',
+  'wang', 'zhang', 'li', 'liu', 'chen', 'yang', 'huang', 'zhao', 'wu', 'zhou', 'xu', 'sun', 'ma',
+  'zhu', 'hu', 'guo', 'he', 'lin', 'gao', 'luo', 'zheng', 'liang', 'xie', 'song', 'tang', 'deng',
+  'han', 'feng', 'cao', 'peng', 'zeng', 'xiao', 'tian', 'dong', 'pan', 'yuan', 'cai', 'jiang',
+  'yu', 'du', 'ye', 'cheng', 'wei', 'su', 'lu', 'ding', 'ren', 'shen', 'yao', 'cui', 'tan', 'fan',
+  'jin', 'shi', 'liao', 'jia', 'xia', 'fu', 'fang', 'zou', 'xiong', 'bai', 'meng', 'qin', 'qiu',
+  'nielsen', 'jensen', 'hansen', 'pedersen', 'andersen', 'christensen', 'larsen', 'sorensen',
+  'garcia', 'rodriguez', 'martinez', 'hernandez', 'lopez', 'gonzalez', 'perez', 'sanchez',
+  'fernandez', 'vazquez', 'silva', 'santos', 'oliveira', 'souza', 'costa', 'pereira',
+  'smith', 'jones', 'brown', 'wilson', 'taylor', 'johnson', 'williams', 'miller', 'davis',
+  'john', 'robert', 'david', 'michael', 'james', 'william', 'richard', 'thomas', 'charles', 'daniel',
+  'kim', 'lee', 'park', 'choi', 'jung', 'kang', 'cho', 'yoon', 'jang', 'lim',
+]);
+
+function parseStrictNameTokens(rawName: string): string[] {
+  let s = String(rawName || '')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/\borcid[:\s/.\w-]*[\d-Xx]+\b/gi, ' ')
+    .replace(/;.*$/g, ' ')
+    .replace(
+      /,\s*(?:phd|ph\.d\.|smieee|mieee|fieee|dr\.?|prof\.?|eng\.?|ir\.?|ts\.?|ceng|cmgr|fiet|pe|pdf|mrsc|isi|wos|highly|cited|researcher)\b.*/gi,
+      ' '
+    )
+    .replace(
+      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|eng|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee|ceng|fiet|pdf|mrsc)\b\.?/gi,
+      ' '
+    );
+  s = s.replace(/\b([A-Z])([A-Z])\s+(?=[A-Z][a-z])/g, '$1 $2 ');
+  s = s.replace(/\b([A-Z])([A-Z])([A-Z])\s+(?=[A-Z][a-z])/g, '$1 $2 $3 ');
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((t) =>
+      t === 'md' || t === 'muhammad' || t === 'mohammed' || t === 'mohamed'
+        ? 'mohammad'
+        : t
+    );
+}
+
+/**
+ * Strict, conflict-free researcher identity matcher for Google Scholar photo resolution.
+ * Guarantees that researchers sharing only a title prefix ("Md.") and surname ("Islam", "Rahman", "Hossain")
+ * with different middle/given names are never conflated.
+ */
+function isStrictSameResearcherForAvatar(nameA: string, nameB: string): boolean {
+  const rawA = parseStrictNameTokens(nameA);
+  const rawB = parseStrictNameTokens(nameB);
+  if (rawA.length === 0 || rawB.length === 0) return false;
+
+  const cleanA = rawA.filter(
+    (t) => !['al', 'ul', 'ur', 'bin', 'binti', 'de', 'da', 'do', 'dos'].includes(t)
+  );
+  const cleanB = rawB.filter(
+    (t) => !['al', 'ul', 'ur', 'bin', 'binti', 'de', 'da', 'do', 'dos'].includes(t)
+  );
+  if (cleanA.length === 0 || cleanB.length === 0) return false;
+
+  if (cleanA.join(' ') === cleanB.join(' ')) return true;
+
+  const noMdA =
+    cleanA[0] === 'mohammad' && cleanA.length >= 3 ? cleanA.slice(1) : cleanA;
+  const noMdB =
+    cleanB[0] === 'mohammad' && cleanB.length >= 3 ? cleanB.slice(1) : cleanB;
+  if (
+    noMdA.join(' ') === noMdB.join(' ') &&
+    noMdA.length >= 2 &&
+    noMdA.every((w) => w.length >= 3)
+  ) {
+    return true;
+  }
+
+  for (const [arrA, arrB] of [
+    [cleanA, cleanB],
+    [noMdA, noMdB],
+  ]) {
+    if (arrA.length === arrB.length && arrA.length >= 2) {
+      const lastA = arrA[arrA.length - 1];
+      const lastB = arrB[arrB.length - 1];
+      if (lastA !== lastB || lastA.length < 3) continue;
+
+      let allMatch = true;
+      let exactFullWords = 0;
+      let exactDistinctiveFullWords = 0;
+      for (let i = 0; i < arrA.length; i++) {
+        const a = arrA[i];
+        const b = arrB[i];
+        if (a === b) {
+          if (a.length >= 2 && a !== 'mohammad') {
+            exactFullWords++;
+            if (!COMMON_RESEARCHER_NAMES.has(a)) exactDistinctiveFullWords++;
+          }
+        } else if (
+          (a.length === 1 && b.length >= 2 && b[0] === a) ||
+          (b.length === 1 && a.length >= 2 && a[0] === b)
+        ) {
+          // Initial matches corresponding full name token at the same position
+        } else {
+          allMatch = false;
+          break;
+        }
+      }
+      if (allMatch) {
+        if (exactFullWords >= 2) return true;
+        if (
+          arrA.length >= 3 &&
+          exactDistinctiveFullWords >= 1 &&
+          lastA.length >= 6 &&
+          !COMMON_RESEARCHER_NAMES.has(lastA)
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+
+  const [shorter, longer] =
+    noMdA.length <= noMdB.length ? [noMdA, noMdB] : [noMdB, noMdA];
+  if (
+    shorter.length === 2 &&
+    longer.length === 3 &&
+    shorter.every((w) => w.length >= 3)
+  ) {
+    const firstSame = shorter[0] === longer[0];
+    const secondMatchesSecondOrThird =
+      shorter[1] === longer[1] || shorter[1] === longer[2];
+    const hasDistinctiveGiven =
+      !COMMON_RESEARCHER_NAMES.has(shorter[0]) && shorter[0].length >= 4;
+    const hasDistinctiveSecond =
+      !COMMON_RESEARCHER_NAMES.has(shorter[1]) && shorter[1].length >= 5;
+    if (
+      firstSame &&
+      secondMatchesSecondOrThird &&
+      hasDistinctiveGiven &&
+      hasDistinctiveSecond
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function lookupColleagueAvatarMeta(name: string): {
   userId?: string;
-  portraitUrl?: string;
 } | null {
   const clean = name.trim();
   if (!clean) return null;
   const lower = clean.toLowerCase();
   const direct = coAuthorPortraitDirectory.get(lower);
-  if (direct && (direct.u || direct.p)) {
-    return { userId: direct.u, portraitUrl: direct.p };
+  if (direct?.u) {
+    return { userId: direct.u };
   }
 
   for (const col of scholarColleagueList) {
-    if (isSameResearcherName(col.n, clean)) {
-      coAuthorPortraitDirectory.set(lower, {
-        ...(direct || {}),
-        u: col.u,
-      });
-      return { userId: col.u, portraitUrl: direct?.p };
-    }
-  }
-
-  for (const [k, v] of coAuthorPortraitDirectory.entries()) {
-    if ((v.u || v.p) && isSameResearcherName(k, clean)) {
-      coAuthorPortraitDirectory.set(lower, v);
-      return { userId: v.u, portraitUrl: v.p };
+    if (isStrictSameResearcherForAvatar(clean, col.n)) {
+      coAuthorPortraitDirectory.set(lower, { u: col.u });
+      return { userId: col.u };
     }
   }
 
@@ -3783,81 +3927,10 @@ async function fetchStaticImageBuffer(
   return null;
 }
 
-async function resolveLiveVerifiedPortraitUrl(
-  researcherName: string,
-  universityName?: string
-): Promise<string | null> {
-  const cleanName = stripAcademicHonorifics(researcherName).trim();
-  const tokens = cleanName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean);
-  if (tokens.length === 0) return null;
-  const last = tokens[tokens.length - 1];
-  const first = tokens[0].length > 2 ? tokens[0] : tokens[1] || tokens[0];
-  const uniContext =
-    universityName && universityName !== 'Independent / Unlisted'
-      ? universityName
-      : 'researcher professor';
-  const queries = [
-    `"${cleanName}" ${uniContext}`,
-    `${cleanName} researchgate OR scholar OR ieee OR professor`,
-  ];
-
-  for (const q of queries) {
-    try {
-      const searchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(
-        q
-      )}&qft=+filterui:face-portrait`;
-      const resp = await fetch(searchUrl, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-          'Accept-Language': 'en-US,en;q=0.9',
-        },
-        signal: AbortSignal.timeout(3200),
-      });
-      if (!resp.ok) continue;
-      const html = await resp.text();
-      const matches = [...html.matchAll(/class="iusc"[^>]*m="([^"]+)"/gi)];
-      for (const m of matches.slice(0, 8)) {
-        try {
-          const jsonStr = m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&');
-          const data = JSON.parse(jsonStr);
-          const title = String(data.t || '')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase();
-          const purl = String(data.purl || '').toLowerCase();
-          const murl = String(data.murl || '').toLowerCase();
-          const combined = `${title} ${purl} ${murl}`;
-          if (
-            combined.includes(last) &&
-            (first.length <= 2 || combined.includes(first) || combined.includes(last)) &&
-            typeof data.turl === 'string' &&
-            data.turl.startsWith('http')
-          ) {
-            return data.turl;
-          }
-        } catch {
-          // Ignore malformed JSON item
-        }
-      }
-    } catch {
-      // Try next query
-    }
-  }
-  return null;
-}
-
-// Proxies the researcher's or co-author's authentic profile photo (with CORS headers for PDF & Canvas export)
+// Proxies the researcher's or co-author's authentic Google Scholar profile photo (with CORS headers for PDF & Canvas export)
 app.get('/api/scholar/avatar', async (req, res) => {
   const userId = String(req.query.userId || '').trim();
   const fallbackName = String(req.query.name || 'Scholar').trim();
-  const uniName = String(req.query.uni || '').trim();
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'public, max-age=86400');
 
@@ -3887,7 +3960,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
 
-  // 2. Check if verifiedScholarSnapshot or profileCache has a base64 avatarDataUrl for userId or fallbackName
+  // 2. Check if verifiedScholarSnapshot or profileCache has a base64 avatarDataUrl for userId or exact researcher name
   if (userId) {
     const lowerId = userId.toLowerCase();
     const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[userId];
@@ -3919,7 +3992,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
       if (
         prof &&
         prof.name &&
-        isSameResearcherName(prof.name, fallbackName) &&
+        isStrictSameResearcherForAvatar(prof.name, fallbackName) &&
         prof.avatarUrl &&
         prof.avatarUrl.startsWith('data:image/')
       ) {
@@ -3938,11 +4011,11 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
 
-  // 3. Resolve colleague metadata (Google Scholar userId and/or verified academic portrait URL)
+  // 3. Resolve verified Google Scholar userId from colleague graph or Wikidata P1960
   const colleagueMeta = fallbackName
     ? lookupColleagueAvatarMeta(fallbackName)
     : null;
-  const effectiveUserId = userId || colleagueMeta?.userId || '';
+  let effectiveUserId = userId || colleagueMeta?.userId || '';
 
   // 4. Fetch custom photo from Google Scholar's static CDN (redirect: 'manual' avoids 302 redirects to scholar.google.com)
   if (effectiveUserId) {
@@ -3961,32 +4034,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
 
-  // 5. Fetch pre-verified academic portrait URL if available in directory
-  let portraitUrl = colleagueMeta?.portraitUrl;
-  if (!portraitUrl && fallbackName && fallbackName !== 'Scholar') {
-    portraitUrl =
-      (await resolveLiveVerifiedPortraitUrl(fallbackName, uniName)) || undefined;
-    if (portraitUrl && nameKey) {
-      coAuthorPortraitDirectory.set(nameKey, {
-        ...(colleagueMeta?.userId ? { u: colleagueMeta.userId } : {}),
-        p: portraitUrl,
-      });
-    }
-  }
-
-  if (portraitUrl) {
-    const extImg = await fetchStaticImageBuffer(portraitUrl, false, 3200);
-    if (extImg) {
-      const entry = { ...extImg, timestamp: Date.now() };
-      if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
-      if (effectiveUserId) avatarBufferCache.set(effectiveUserId, entry);
-      res.setHeader('Content-Type', extImg.contentType);
-      res.send(extImg.buffer);
-      return;
-    }
-  }
-
-  // 6. Fallback academic monogram SVG avatar (authentic, deterministic, and never a random stranger's face)
+  // 5. Fallback academic monogram SVG avatar (authentic, deterministic, and never a wrong person's face)
   const initials =
     stripAcademicHonorifics(fallbackName)
       .split(/\s+/)

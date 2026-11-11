@@ -153,16 +153,16 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 1: Co-Authors */}
       {activeTab === 'coauthors' && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-semibold text-slate-500">
-                <th className="py-2.5 pl-6 pr-3">Co-Author</th>
-                <th className="py-2.5 px-3">University</th>
-                <th className="py-2.5 px-3">Country</th>
-                <th className="py-2.5 px-3 text-right">Papers</th>
-                <th className="py-2.5 px-3 text-right">Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right">Action</th>
+            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
+              <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
+                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">Co-Author</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">University</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Country</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Citations</th>
+                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
@@ -229,17 +229,17 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 2: Universities */}
       {activeTab === 'universities' && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-semibold text-slate-500">
-                <th className="py-2.5 pl-6 pr-3">University</th>
-                <th className="py-2.5 px-3">Country</th>
-                <th className="py-2.5 px-3">Co-Authors</th>
-                <th className="py-2.5 px-3 text-right">Papers</th>
-                <th className="py-2.5 px-3 text-right">Q1</th>
-                <th className="py-2.5 px-3 text-right">Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right">Action</th>
+            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
+              <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
+                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">University</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Country</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Co-Authors</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Q1</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Citations</th>
+                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
@@ -282,17 +282,17 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 3: Countries */}
       {activeTab === 'countries' && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-semibold text-slate-500">
-                <th className="py-2.5 pl-6 pr-3">Country</th>
-                <th className="py-2.5 px-3">Universities</th>
-                <th className="py-2.5 px-3 text-right">Co-Authors</th>
-                <th className="py-2.5 px-3 text-right">Papers</th>
-                <th className="py-2.5 px-3 text-right">Share</th>
-                <th className="py-2.5 px-3 text-right">Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right">Action</th>
+            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
+              <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
+                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">Country</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Universities</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Co-Authors</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Share</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Citations</th>
+                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
@@ -337,16 +337,16 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 4: Journals & Venues */}
       {activeTab === 'journals' && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-semibold text-slate-500">
-                <th className="py-2.5 pl-6 pr-3">Journal / Conference Venue</th>
-                <th className="py-2.5 px-3">Type</th>
-                <th className="py-2.5 px-3">Quartile</th>
-                <th className="py-2.5 px-3 text-right">Papers</th>
-                <th className="py-2.5 px-3 text-right">Total Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right">Action</th>
+            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
+              <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
+                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">Journal / Conference Venue</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Type</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Quartile</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Total Citations</th>
+                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">

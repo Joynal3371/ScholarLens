@@ -1658,7 +1658,7 @@ export function isSameResearcherName(
     return true;
   }
 
-  // Handle first/compound initial + surname (e.g. "F Blaabjerg" vs "Frede Blaabjerg", "DM Saaduzzaman" vs "Dewan Mohammad Saaduzzaman")
+  // Handle first/compound initial + surname (e.g. "F Blaabjerg" vs "Frede Blaabjerg")
   const tLast = tTokens[tTokens.length - 1];
   const cLast = cTokens[cTokens.length - 1];
   if (
@@ -1668,47 +1668,23 @@ export function isSameResearcherName(
   ) {
     const tFirst = tTokens[0] || '';
     const cFirst = cTokens[0] || '';
-    if (tFirst && cFirst) {
-      if (tFirst === cFirst) return true;
+    const cMid = cTokens.slice(1, -1);
+    const tMid = tTokens.slice(1, -1);
+    const hasConflictingMiddleWords =
+      cMid.length > 0 &&
+      tMid.length > 0 &&
+      cMid.some(
+        (cm) =>
+          cm.length >= 2 &&
+          !NAME_PREFIX_TOKENS.has(cm) &&
+          !tMid.some((tm) => tm === cm || tm[0] === cm[0])
+      );
+
+    if (tFirst && cFirst && !hasConflictingMiddleWords) {
+      if (tFirst === cFirst && !NAME_PREFIX_TOKENS.has(tFirst)) return true;
       if (tFirst[0] === cFirst[0] && (tFirst.length === 1 || cFirst.length === 1)) {
         return true;
       }
-      if (
-        cFirst.length === 2 &&
-        tTokens.length >= 3 &&
-        cFirst[0] === tTokens[0][0] &&
-        cFirst[1] === tTokens[1][0]
-      ) {
-        return true;
-      }
-      if (
-        tFirst.length === 2 &&
-        cTokens.length >= 3 &&
-        tFirst[0] === cTokens[0][0] &&
-        tFirst[1] === cTokens[1][0]
-      ) {
-        return true;
-      }
-    }
-  }
-
-  // Handle subset token matching when one name omits middle particle or honorific suffix (e.g. "Abdulla Mamun" <-> "Abdulla Al Mamun", "Ratil Hasnat" <-> "Ratil Hasnat Ashique")
-  const [shorter, longer] =
-    cTokens.length <= tTokens.length ? [cTokens, tTokens] : [tTokens, cTokens];
-  if (shorter.length >= 2 && longer.length >= 2) {
-    const allShorterMatch = shorter.every((st) =>
-      longer.some(
-        (lt) =>
-          lt === st ||
-          lt.replace(/v|w/g, 'b') === st.replace(/v|w/g, 'b') ||
-          (st.length === 1 && lt[0] === st)
-      )
-    );
-    const hasDistinctCore = shorter.some(
-      (st) => st.length >= 5 && !NAME_PREFIX_TOKENS.has(st)
-    );
-    if (allShorterMatch && hasDistinctCore) {
-      return true;
     }
   }
 

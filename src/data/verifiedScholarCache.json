@@ -68,8 +68,7 @@
             "continent": "Europe",
             "lat": 55.77044,
             "lng": 12.50378,
-            "isHomeInstitution": false,
-            "scholarUserId": "A8Zsmn4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Vladimir Fedorov",
@@ -527,8 +526,7 @@
             "continent": "North America",
             "lat": 25.72149,
             "lng": -80.26838,
-            "isHomeInstitution": false,
-            "scholarUserId": "QJI_468AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Brooke Gintert",
@@ -1295,8 +1293,7 @@
             "continent": "Europe",
             "lat": 55.77044,
             "lng": 12.50378,
-            "isHomeInstitution": false,
-            "scholarUserId": "A8Zsmn4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "M. Eder",
@@ -1308,8 +1305,7 @@
             "continent": "Europe",
             "lat": 55.77044,
             "lng": 12.50378,
-            "isHomeInstitution": false,
-            "scholarUserId": "F6nq2-cAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Dan Zheng",
@@ -1427,7 +1423,7 @@
             "lat": 4.5841,
             "lng": 101.0829,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "3SW112QAAAAJ"
           },
           {
             "name": "Ratil Hasnat Ashique",
@@ -3146,7 +3142,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Muhammad Masroor Ali",
@@ -3716,8 +3712,7 @@
             "continent": "Europe",
             "lat": 48.85341,
             "lng": 2.3488,
-            "isHomeInstitution": false,
-            "scholarUserId": "stsREIUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Séverine M. Sigoillot",
@@ -3729,8 +3724,7 @@
             "continent": "Europe",
             "lat": 48.85341,
             "lng": 2.3488,
-            "isHomeInstitution": false,
-            "scholarUserId": "stsREIUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Séverine M. Sigoillot",
@@ -3742,8 +3736,7 @@
             "continent": "Europe",
             "lat": 48.85341,
             "lng": 2.3488,
-            "isHomeInstitution": false,
-            "scholarUserId": "stsREIUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Séverine M. Sigoillot",
@@ -3755,8 +3748,7 @@
             "continent": "Europe",
             "lat": 48.85341,
             "lng": 2.3488,
-            "isHomeInstitution": false,
-            "scholarUserId": "stsREIUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Séverine M. Sigoillot",
@@ -3768,8 +3760,7 @@
             "continent": "Europe",
             "lat": 48.85341,
             "lng": 2.3488,
-            "isHomeInstitution": false,
-            "scholarUserId": "stsREIUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Elaine Del Nery",
@@ -4389,8 +4380,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "A8Zsmn4AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -4418,7 +4408,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Abdulla Al Mamun",
@@ -4482,8 +4472,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Hasan Maruf",
@@ -4628,8 +4617,7 @@
             "continent": "Europe",
             "lat": 55.77044,
             "lng": 12.50378,
-            "isHomeInstitution": false,
-            "scholarUserId": "A8Zsmn4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Steen Hjelm Madsen",
@@ -4797,8 +4785,7 @@
             "continent": "Asia",
             "lat": 39.9075,
             "lng": 116.39723,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Rasidul Islam",
@@ -4810,8 +4797,7 @@
             "continent": "Asia",
             "lat": 39.9075,
             "lng": 116.39723,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Rasidul Islam",
@@ -4823,8 +4809,7 @@
             "continent": "Asia",
             "lat": 24.96,
             "lng": 89.83,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Rayid Hasan Mojumder",
@@ -4876,7 +4861,7 @@
             "lat": 22.809789657592773,
             "lng": 89.56439208984375,
             "isHomeInstitution": false,
-            "scholarUserId": "X6_inMYAAAAJ"
+            "scholarUserId": "hWYSPusAAAAJ"
           },
           {
             "name": "Mohammad Raza Miah",
@@ -5072,8 +5057,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Murad Kabir Nipun",
@@ -5363,8 +5347,7 @@
             "continent": "Europe",
             "lat": 55.77044,
             "lng": 12.50378,
-            "isHomeInstitution": false,
-            "scholarUserId": "A8Zsmn4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Shohreh Sheiati",
@@ -5455,8 +5438,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Fayzur Rahman",
@@ -5481,8 +5463,7 @@
             "continent": "Europe",
             "lat": 37.98376,
             "lng": 23.72784,
-            "isHomeInstitution": false,
-            "scholarUserId": "lHjQpgUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Hady Habib Fayek",
@@ -5561,8 +5542,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "oH3jnVkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Abu M. Fuad",
@@ -5988,7 +5968,7 @@
             "lat": 0,
             "lng": 0,
             "isHomeInstitution": false,
-            "scholarUserId": "uvRqshUAAAAJ"
+            "scholarUserId": "U6cOzyMAAAAJ"
           },
           {
             "name": "MS Munir",
@@ -6012,8 +5992,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "uvRqshUAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 0.5
@@ -6042,7 +6021,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "M M Naushad Ali",
@@ -6679,8 +6658,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "U6cOzyMAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 0.5
@@ -6907,7 +6885,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "_IrwYrMAAAAJ"
           },
           {
             "name": "Mamun Rabbani",
@@ -7076,8 +7054,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "y48WCEEAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 3.3,
@@ -7142,8 +7119,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Ahmed Al Mansur",
@@ -7274,7 +7250,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -7404,7 +7380,7 @@
             "lat": 27.88145,
             "lng": 78.07464,
             "isHomeInstitution": false,
-            "scholarUserId": "2nmPUlYAAAAJ"
+            "scholarUserId": "mTTnenIAAAAJ"
           },
           {
             "name": "Md. Hasan Maruf",
@@ -7497,7 +7473,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Zia Islam",
@@ -7548,7 +7524,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "_IrwYrMAAAAJ"
           },
           {
             "name": "Molla Shahadat Hossain Lipu",
@@ -7585,8 +7561,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -7703,7 +7678,8 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false
+            "isHomeInstitution": false,
+            "scholarUserId": "vnagQWAAAAAJ"
           },
           {
             "name": "MN Ambia",
@@ -7715,8 +7691,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "F_n4bcMAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "SA Haque",
@@ -8236,7 +8211,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "vwSrbiwAAAAJ"
           },
           {
             "name": "Md. Hasan Maruf",
@@ -8482,8 +8457,7 @@
             "continent": "Asia",
             "lat": 23.7104,
             "lng": 90.40744,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Aminul Islam",
@@ -8521,8 +8495,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mohammad Monirujjaman Khan",
@@ -8706,8 +8679,7 @@
             "continent": "North America",
             "lat": 25.72149,
             "lng": -80.26838,
-            "isHomeInstitution": false,
-            "scholarUserId": "QJI_468AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Brooke Gintert",
@@ -8827,7 +8799,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "_IrwYrMAAAAJ"
           },
           {
             "name": "Hasan Jamil Apon",
@@ -9178,7 +9150,7 @@
             "lat": 25.809999465942383,
             "lng": 88.91000366210938,
             "isHomeInstitution": false,
-            "scholarUserId": "89H4EVYAAAAJ"
+            "scholarUserId": "OoC4hJAAAAAJ"
           },
           {
             "name": "Nimur Rahman",
@@ -9370,7 +9342,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Muhammad Masroor Ali",
@@ -9777,8 +9749,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "vHwFXr8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Sajib Hossain",
@@ -9946,8 +9917,7 @@
             "continent": "Europe",
             "lat": 48.85341,
             "lng": 2.3488,
-            "isHomeInstitution": false,
-            "scholarUserId": "rcaVaW4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mathilde Cannat",
@@ -9959,8 +9929,7 @@
             "continent": "Europe",
             "lat": 48.85341,
             "lng": 2.3488,
-            "isHomeInstitution": false,
-            "scholarUserId": "rcaVaW4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Nuno Gracias",
@@ -9985,8 +9954,7 @@
             "continent": "North America",
             "lat": 46.732391357421875,
             "lng": -117.00016784667969,
-            "isHomeInstitution": false,
-            "scholarUserId": "DvRzEqkAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -10710,8 +10678,7 @@
             "continent": "North America",
             "lat": 29.763280868530273,
             "lng": -95.36327362060547,
-            "isHomeInstitution": false,
-            "scholarUserId": "X89D9OEAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Sabbir Alam",
@@ -10815,8 +10782,7 @@
             "continent": "Europe",
             "lat": 41.1485,
             "lng": -8.61097,
-            "isHomeInstitution": false,
-            "scholarUserId": "fM37CNIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Pedro Serrano e Silva",
@@ -10828,8 +10794,7 @@
             "continent": "Europe",
             "lat": 41.1485,
             "lng": -8.61097,
-            "isHomeInstitution": false,
-            "scholarUserId": "fM37CNIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Ricardo Cruz",
@@ -10867,8 +10832,7 @@
             "continent": "Europe",
             "lat": 41.1485,
             "lng": -8.61097,
-            "isHomeInstitution": false,
-            "scholarUserId": "LCwT1z0AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Tiago Gonçalves",
@@ -10880,8 +10844,7 @@
             "continent": "Europe",
             "lat": 41.1485,
             "lng": -8.61097,
-            "isHomeInstitution": false,
-            "scholarUserId": "LCwT1z0AAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -11129,8 +11092,7 @@
             "continent": "Asia",
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Abu Naser",
@@ -11154,8 +11116,7 @@
             "continent": "Asia",
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Azizul Hoque",
@@ -11167,8 +11128,7 @@
             "continent": "Asia",
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
-            "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -11232,8 +11192,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Abdul Aziz Prodhan",
@@ -11257,8 +11216,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7yvAYBsAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -11297,8 +11255,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "60fAMvgAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Fayzur Rahman",
@@ -11443,8 +11400,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Ahmed Al Mansur",
@@ -11612,7 +11568,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Muhammad Masroor Ali",
@@ -11703,8 +11659,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "GGR7HJ8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MAU Haq",
@@ -11754,8 +11709,7 @@
             "continent": "Asia",
             "lat": 23.8703670501709,
             "lng": 90.40263366699219,
-            "isHomeInstitution": false,
-            "scholarUserId": "LCduskQAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -11805,8 +11759,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "JnwcUwkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MS Kaiser",
@@ -11880,8 +11833,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "fpt89sUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "T Rahman",
@@ -11893,8 +11845,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "t4h0imwAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "S Ansari",
@@ -11906,8 +11857,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "tekQYpQAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MS Rahman",
@@ -11972,8 +11922,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "O1DbdIcAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mohammad Tariqul Islam",
@@ -11985,8 +11934,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "60fAMvgAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Ahsanul Alam",
@@ -11999,7 +11947,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "scholarUserId": "iOFTRZkAAAAJ"
           },
           {
             "name": "Sameya Afrin July",
@@ -12313,8 +12261,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "A8Zsmn4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "V Fedorov",
@@ -12722,8 +12669,7 @@
             "continent": "Europe",
             "lat": 55.77044,
             "lng": 12.50378,
-            "isHomeInstitution": false,
-            "scholarUserId": "A8Zsmn4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Vladimir Fedorov",
@@ -12953,8 +12899,7 @@
             "continent": "North America",
             "lat": 25.72149,
             "lng": -80.26838,
-            "isHomeInstitution": false,
-            "scholarUserId": "QJI_468AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Nuno Gracias",
@@ -13056,7 +13001,7 @@
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
             "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "scholarUserId": "exCfrEkAAAAJ"
           },
           {
             "name": "K. K. Islam",
@@ -13068,8 +13013,7 @@
             "continent": "Asia",
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
-            "isHomeInstitution": false,
-            "scholarUserId": "LCduskQAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -13119,8 +13063,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "LCduskQAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -13195,8 +13138,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "J2dTY1cAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 1.9,
@@ -13505,7 +13447,7 @@
             "lat": 27.88145,
             "lng": 78.07464,
             "isHomeInstitution": false,
-            "scholarUserId": "2nmPUlYAAAAJ"
+            "scholarUserId": "mTTnenIAAAAJ"
           },
           {
             "name": "Abdul Rauf Bhatti",
@@ -13833,8 +13775,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "60fAMvgAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Hasan Maruf",
@@ -13951,7 +13892,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "_IrwYrMAAAAJ"
           },
           {
             "name": "Jannatul Ferdousy",
@@ -14088,8 +14029,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Iy9oC5oAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MA Hoque",
@@ -14101,8 +14041,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "exCfrEkAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -14141,7 +14080,7 @@
             "lat": 0,
             "lng": 0,
             "isHomeInstitution": false,
-            "scholarUserId": "r898m8sAAAAJ"
+            "scholarUserId": "etPAW2cAAAAJ"
           }
         ]
       },
@@ -14167,7 +14106,8 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false
+            "isHomeInstitution": false,
+            "scholarUserId": "X8XSSNEAAAAJ"
           },
           {
             "name": "MH Maruf",
@@ -14179,8 +14119,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MR Robin",
@@ -14286,8 +14225,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Anika Tahseen",
@@ -14311,8 +14249,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Raiyan Gani",
@@ -14351,7 +14288,7 @@
             "lat": 22.3384,
             "lng": 91.83168,
             "isHomeInstitution": false,
-            "scholarUserId": "2gNoNFYAAAAJ"
+            "scholarUserId": "o_8byMUAAAAJ"
           },
           {
             "name": "Raihan Ul Islam",
@@ -14414,8 +14351,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "_Sxh6SUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Mohi Uddin Mohin",
@@ -14517,8 +14453,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "A7q1rksAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Hujaifa Ahmed Tanvir",
@@ -14608,8 +14543,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7yvAYBsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Jahidul Hasan Rony",
@@ -14803,8 +14737,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "X6_inMYAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Muhammad Abu Yusuf Nayeem",
@@ -14893,8 +14826,7 @@
             "continent": "Asia",
             "lat": 23.7104,
             "lng": 90.40744,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Jabed Hasan",
@@ -15139,8 +15071,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "y89HApwAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "AKM Shahabuddin",
@@ -15193,8 +15124,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Rakibul Hasan",
@@ -15206,8 +15136,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Tahmina Akter",
@@ -15311,7 +15240,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Md. Mohi Uddin Mohin",
@@ -15414,8 +15343,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7yvAYBsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Ashaduzzaman Niloy",
@@ -15453,8 +15381,7 @@
             "continent": "Asia",
             "lat": 23.796411514282227,
             "lng": 90.41734313964844,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Shariful Alam",
@@ -15466,8 +15393,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "authorAffiliation": {
@@ -15571,7 +15497,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Md. Sabbir Alam",
@@ -15636,8 +15562,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Abdulla Al Mamun",
@@ -15674,8 +15599,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7yvAYBsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Ashaduzzaman Niloy",
@@ -15716,7 +15640,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "M M Naushad Ali",
@@ -15780,8 +15704,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Anorgul I. Ashirova",
@@ -15959,8 +15882,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Minhaz Ul Karim Asif",
@@ -16063,7 +15985,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "vwSrbiwAAAAJ"
           },
           {
             "name": "Md. Fayzur Rahman",
@@ -16088,8 +16010,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "U6cOzyMAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Tariqul Islam",
@@ -16101,8 +16022,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Hasan Maruf",
@@ -16179,8 +16099,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "MwLf63kAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Avoy Roy",
@@ -16297,7 +16216,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "_IrwYrMAAAAJ"
           },
           {
             "name": "Muhammad Abul Hasan",
@@ -16517,8 +16436,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MGS Fakir",
@@ -16751,8 +16669,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -16790,8 +16707,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "F Uddin",
@@ -16803,8 +16719,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "xlaXoIoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Rahman",
@@ -16816,8 +16731,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -17062,8 +16976,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "exCfrEkAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -17103,7 +17016,7 @@
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
             "isHomeInstitution": false,
-            "scholarUserId": "uvRqshUAAAAJ"
+            "scholarUserId": "U6cOzyMAAAAJ"
           },
           {
             "name": "S. M. Nizamuddin",
@@ -17179,7 +17092,7 @@
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
             "isHomeInstitution": false,
-            "scholarUserId": "uvRqshUAAAAJ"
+            "scholarUserId": "U6cOzyMAAAAJ"
           },
           {
             "name": "S. M. Nizamuddin",
@@ -18070,8 +17983,7 @@
             "continent": "North America",
             "lat": 39.29038,
             "lng": -76.61219,
-            "isHomeInstitution": false,
-            "scholarUserId": "m1qAiOUAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 2.6
@@ -18187,8 +18099,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "UbORO1IAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "G Cheng",
@@ -18267,8 +18178,7 @@
             "continent": "North America",
             "lat": 43.70643,
             "lng": -79.39864,
-            "isHomeInstitution": true,
-            "scholarUserId": "rr8pZoUAAAAJ"
+            "isHomeInstitution": true
           }
         ]
       },
@@ -18649,8 +18559,7 @@
             "continent": "North America",
             "lat": 43.70643,
             "lng": -79.39864,
-            "isHomeInstitution": true,
-            "scholarUserId": "rr8pZoUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Richard S. Zemel",
@@ -18862,8 +18771,7 @@
             "continent": "North America",
             "lat": 43.70643,
             "lng": -79.39864,
-            "isHomeInstitution": true,
-            "scholarUserId": "rr8pZoUAAAAJ"
+            "isHomeInstitution": true
           }
         ],
         "impactFactor": 44.7
@@ -19121,8 +19029,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "m1qAiOUAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -19363,8 +19270,7 @@
             "continent": "North America",
             "lat": 39.29038,
             "lng": -76.61219,
-            "isHomeInstitution": false,
-            "scholarUserId": "m1qAiOUAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -19830,8 +19736,7 @@
             "continent": "Europe",
             "lat": 52.2,
             "lng": 0.11667,
-            "isHomeInstitution": false,
-            "scholarUserId": "5Uz70IoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Anca D. Dragan",
@@ -20090,8 +19995,7 @@
             "continent": "North America",
             "lat": 37.38605,
             "lng": -122.08385,
-            "isHomeInstitution": false,
-            "scholarUserId": "yeX22UYAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -20209,8 +20113,7 @@
             "continent": "Europe",
             "lat": 51.50853,
             "lng": -0.12574,
-            "isHomeInstitution": false,
-            "scholarUserId": "U6i6DFYAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Christophe L. M. Phillips",
@@ -20222,8 +20125,7 @@
             "continent": "Europe",
             "lat": 51.50853,
             "lng": -0.12574,
-            "isHomeInstitution": false,
-            "scholarUserId": "U6i6DFYAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Stefan J. Kiebel",
@@ -20819,8 +20721,7 @@
             "continent": "North America",
             "lat": 39.29038,
             "lng": -76.61219,
-            "isHomeInstitution": false,
-            "scholarUserId": "m1qAiOUAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 50.5
@@ -21784,8 +21685,7 @@
             "continent": "Europe",
             "lat": 52.00667,
             "lng": 4.35556,
-            "isHomeInstitution": false,
-            "scholarUserId": "6GDfcqEAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -24438,8 +24338,7 @@
             "continent": "North America",
             "lat": 39.29038,
             "lng": -76.61219,
-            "isHomeInstitution": false,
-            "scholarUserId": "m1qAiOUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Lee E Schumacher",
@@ -24684,8 +24583,7 @@
             "continent": "North America",
             "lat": 39.29038,
             "lng": -76.61219,
-            "isHomeInstitution": false,
-            "scholarUserId": "m1qAiOUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Paul K. Kienker",
@@ -25044,8 +24942,7 @@
             "continent": "North America",
             "lat": 43.70643,
             "lng": -79.39864,
-            "isHomeInstitution": true,
-            "scholarUserId": "33ftCdEAAAAJ"
+            "isHomeInstitution": true
           }
         ],
         "impactFactor": 2.4
@@ -25413,8 +25310,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "ITZ1e7MAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -25679,8 +25575,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "bf7ilxMAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -25757,8 +25652,7 @@
             "continent": "North America",
             "lat": 39.29038,
             "lng": -76.61219,
-            "isHomeInstitution": false,
-            "scholarUserId": "m1qAiOUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Lee E Schumacher",
@@ -26422,7 +26316,7 @@
             "lat": 4.5841,
             "lng": 101.0829,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "3SW112QAAAAJ"
           },
           {
             "name": "Ratil Hasnat Ashique",
@@ -26595,7 +26489,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Muhammad Masroor Ali",
@@ -26633,7 +26527,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "4GNcKUYAAAAJ"
+            "scholarUserId": "pyfGbCAAAAAJ"
           },
           {
             "name": "Ian B. Benitez",
@@ -26645,8 +26539,7 @@
             "continent": "Asia",
             "lat": 14.6042,
             "lng": 120.9822,
-            "isHomeInstitution": false,
-            "scholarUserId": "vEicsFUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Sidahmed Sidi Habib",
@@ -26683,8 +26576,7 @@
             "continent": "Europe",
             "lat": 49.83465,
             "lng": 18.28204,
-            "isHomeInstitution": false,
-            "scholarUserId": "23pMZJsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Aymen Flah",
@@ -26696,8 +26588,7 @@
             "continent": "Asia",
             "lat": 31.95522,
             "lng": 35.94503,
-            "isHomeInstitution": false,
-            "scholarUserId": "23pMZJsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Aymen Flah",
@@ -26709,8 +26600,7 @@
             "continent": "Asia",
             "lat": 33.8814582824707,
             "lng": 10.098199844360352,
-            "isHomeInstitution": false,
-            "scholarUserId": "23pMZJsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Aymen Flah",
@@ -26722,8 +26612,7 @@
             "continent": "Asia",
             "lat": 31.95522,
             "lng": 35.94503,
-            "isHomeInstitution": false,
-            "scholarUserId": "23pMZJsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mohammad A. Kanan",
@@ -27107,8 +26996,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "oH3jnVkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Maher G. M. Abdolrasol",
@@ -27120,8 +27008,7 @@
             "continent": "Asia",
             "lat": 3.35,
             "lng": 101.25,
-            "isHomeInstitution": false,
-            "scholarUserId": "yGZyt_0AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Thamer A. H. Alghamdi",
@@ -27309,7 +27196,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Abdulla Al Mamun",
@@ -27373,8 +27260,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Hasan Maruf",
@@ -27467,8 +27353,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Murad Kabir Nipun",
@@ -27573,7 +27458,7 @@
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
             "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "scholarUserId": "exCfrEkAAAAJ"
           }
         ]
       },
@@ -27704,8 +27589,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 3.3
@@ -27836,8 +27720,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "ASM Shihavuddin",
@@ -27916,8 +27799,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "oH3jnVkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Abu M. Fuad",
@@ -28261,8 +28143,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "W-m-HKEAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "AFM Shahid-Ud-Daula",
@@ -28286,8 +28167,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "_OnCTMcAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MM Haq",
@@ -28492,8 +28372,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "-H6uxc0AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MMN Ali",
@@ -28530,8 +28409,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MSH Lipu",
@@ -28704,8 +28582,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MSI Ashrafi",
@@ -28717,7 +28594,8 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false
+            "isHomeInstitution": false,
+            "scholarUserId": "UuxFL80AAAAJ"
           },
           {
             "name": "ASM Shihavuddin",
@@ -28952,8 +28830,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Imamul Islam",
@@ -29017,8 +28894,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "AjK8FbUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MS Ahmed",
@@ -29201,7 +29077,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Khusbu Rahman",
@@ -29314,8 +29190,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Abdulla Al Mamun",
@@ -29341,7 +29216,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "_IrwYrMAAAAJ"
           },
           {
             "name": "Molla Shahadat Hossain Lipu",
@@ -29495,8 +29370,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Shahin Alom",
@@ -29614,8 +29488,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "M Rabbani",
@@ -29627,8 +29500,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Y2PR-3IAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MH Maruf",
@@ -29640,8 +29512,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Islam",
@@ -29653,8 +29524,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "-H6uxc0AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "ASM Shihavuddin",
@@ -30007,7 +29877,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "vwSrbiwAAAAJ"
           }
         ],
         "impactFactor": 1.9
@@ -30150,8 +30020,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Imamul Islam",
@@ -30257,7 +30126,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -30401,7 +30270,7 @@
             "lat": 27.88145,
             "lng": 78.07464,
             "isHomeInstitution": false,
-            "scholarUserId": "2nmPUlYAAAAJ"
+            "scholarUserId": "mTTnenIAAAAJ"
           },
           {
             "name": "Md. Hasan Maruf",
@@ -30519,8 +30388,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MD. Daud Patowary Raju",
@@ -30626,7 +30494,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "-TCVv-IAAAAJ"
           },
           {
             "name": "Sheikh Forhad Rahman",
@@ -30650,8 +30518,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -30758,7 +30625,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Amirul Islam",
@@ -30771,7 +30638,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "4GNcKUYAAAAJ"
+            "scholarUserId": "pyfGbCAAAAAJ"
           },
           {
             "name": "Muhammad Masroor Ali",
@@ -31056,8 +30923,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mohammad Golam Mohiuddin",
@@ -31082,8 +30948,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "KMSnB5cAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Shamim Mondol",
@@ -31122,8 +30987,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "GGR7HJ8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MS Islam",
@@ -31262,8 +31126,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Kamruzzaman",
@@ -31316,7 +31179,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "scholarUserId": "iOFTRZkAAAAJ"
           },
           {
             "name": "Md. Fayzur Rahman",
@@ -31341,8 +31204,7 @@
             "continent": "North America",
             "lat": 52.13238,
             "lng": -106.66892,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md Ashraful Islam",
@@ -31355,7 +31217,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           }
         ]
       },
@@ -31409,7 +31271,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "vwSrbiwAAAAJ"
           },
           {
             "name": "Md. Hasan Maruf",
@@ -31616,8 +31478,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "KMSH Sourov",
@@ -31641,8 +31502,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "TEj244wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Islam",
@@ -31654,8 +31514,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "-H6uxc0AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "M Rabbani",
@@ -31667,8 +31526,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Y2PR-3IAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 2.6
@@ -31853,8 +31711,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Shahin Alom",
@@ -31969,8 +31826,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "HJ Apon",
@@ -31982,8 +31838,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "dF_FmygAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "M Rabbani",
@@ -31995,8 +31850,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Y2PR-3IAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MH Maruf",
@@ -32008,8 +31862,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "ASM Shihavuddin",
@@ -32061,8 +31914,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "GGR7HJ8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "GMA Halim",
@@ -32217,8 +32069,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -32272,7 +32123,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Mohammad Asif ul Haq",
@@ -32338,7 +32189,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "X6_inMYAAAAJ"
+            "scholarUserId": "xZ5ikKYAAAAJ"
           },
           {
             "name": "Md. Akbar Ali Mollik",
@@ -32350,8 +32201,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "H5UWFkQAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Anik Kumar Ghosh",
@@ -32646,8 +32496,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "5DP05lAAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Rahman",
@@ -32659,8 +32508,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Ahmed",
@@ -32672,8 +32520,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "GGR7HJ8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "S Chowdhury",
@@ -32751,8 +32598,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -32780,7 +32626,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "scholarUserId": "iOFTRZkAAAAJ"
           },
           {
             "name": "Md Arafat Hossain",
@@ -32792,8 +32638,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Ashraful Islam",
@@ -32806,7 +32651,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           }
         ]
       },
@@ -32834,7 +32679,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "X6_inMYAAAAJ"
+            "scholarUserId": "xZ5ikKYAAAAJ"
           },
           {
             "name": "Anik Kumar Ghosh",
@@ -32896,7 +32741,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "vwSrbiwAAAAJ"
           },
           {
             "name": "Muhammad Masroor Ali",
@@ -33052,7 +32897,8 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false
+            "isHomeInstitution": false,
+            "scholarUserId": "UuxFL80AAAAJ"
           },
           {
             "name": "MH Maruf",
@@ -33064,8 +32910,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MSH Lipu",
@@ -33127,8 +32972,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "W-m-HKEAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MN Haque",
@@ -33140,8 +32984,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "BSvhaNAAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MMM Syeed",
@@ -33205,8 +33048,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "o_8byMUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Muhibul Haque Bhuyan",
@@ -33257,8 +33099,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MH Bhuyan",
@@ -33358,8 +33199,7 @@
             "continent": "Asia",
             "lat": 23.7104,
             "lng": 90.40744,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Saef Ullah Miah",
@@ -33372,7 +33212,7 @@
             "lat": 23.7104,
             "lng": 90.40744,
             "isHomeInstitution": false,
-            "scholarUserId": "7yvAYBsAAAAJ"
+            "scholarUserId": "E5Wby_AAAAAJ"
           },
           {
             "name": "Md. Imamul Islam",
@@ -33565,8 +33405,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -33604,8 +33443,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -33659,7 +33497,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Md. Mohi Uddin Mohin",
@@ -33802,8 +33640,7 @@
             "continent": "North America",
             "lat": 29.763280868530273,
             "lng": -95.36327362060547,
-            "isHomeInstitution": false,
-            "scholarUserId": "X89D9OEAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Sabbir Alam",
@@ -33959,8 +33796,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "hgNDVl0AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MI Islam",
@@ -33972,8 +33808,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MH Maruf",
@@ -33985,8 +33820,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "RH Ashique",
@@ -34010,8 +33844,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Y1KEgrkAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -34037,8 +33870,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "PreEXWEAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Kabir",
@@ -34050,8 +33882,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "y48WCEEAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "M Modasshir",
@@ -34075,8 +33906,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "1G7OeA8AAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 1.4
@@ -34105,7 +33935,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "-TCVv-IAAAAJ"
           },
           {
             "name": "Sheikh Forhad Rahman",
@@ -34129,8 +33959,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Imamul Islam",
@@ -34237,7 +34066,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Md. Mohi Uddin Mohin",
@@ -34457,8 +34286,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Taha Selim Ustun",
@@ -34576,7 +34404,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Taha Selim Ustun",
@@ -34808,8 +34636,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Ic_OwXIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MF Rahman",
@@ -34821,8 +34648,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MM Rahman",
@@ -34834,8 +34660,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MH Maruf",
@@ -34847,8 +34672,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "R Parvin",
@@ -34860,8 +34684,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "hyMm1ZwAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -34888,8 +34711,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Nazmul Hossain",
@@ -34901,8 +34723,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Zia Ul Islam",
@@ -34927,8 +34748,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "oH3jnVkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Molla Shahadat Hossain Lipu",
@@ -35087,8 +34907,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Nahyan Al Mahmud",
@@ -35164,8 +34983,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "MbDaahUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Md Imran Khan",
@@ -35178,7 +34996,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": true,
-            "scholarUserId": "A7q1rksAAAAJ"
+            "scholarUserId": "7q0nlWEAAAAJ"
           },
           {
             "name": "Md. Rezwan Kabir",
@@ -35190,8 +35008,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "y48WCEEAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Md. Sharifur Rahman",
@@ -35204,7 +35021,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "-TCVv-IAAAAJ"
           }
         ]
       },
@@ -35231,8 +35048,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Sheikh Forhad Rahman",
@@ -35256,8 +35072,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Ashikur Rahman",
@@ -35269,8 +35084,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Md. Asadur Rahman",
@@ -35282,8 +35096,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Asadur Rahman",
@@ -35295,8 +35108,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Munshi Mahbubur Rahman",
@@ -35308,8 +35120,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": true
           }
         ]
       },
@@ -35476,8 +35287,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Tanmoy Roy Akash",
@@ -35631,7 +35441,7 @@
             "lat": 42.12836456298828,
             "lng": -80.08663940429688,
             "isHomeInstitution": false,
-            "scholarUserId": "MwLf63kAAAAJ"
+            "scholarUserId": "KDa_PjoAAAAJ"
           },
           {
             "name": "Bibekananda Nath",
@@ -35656,7 +35466,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Shahela Akter",
@@ -35734,8 +35544,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -35790,8 +35599,7 @@
             "continent": "Asia",
             "lat": 23.7104,
             "lng": 90.40744,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Imamul Islam",
@@ -35895,8 +35703,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Hasan Maruf",
@@ -36038,8 +35845,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md Abdul Masum",
@@ -36102,7 +35908,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Ts Ustun",
@@ -36555,8 +36361,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MH Maruf",
@@ -36568,8 +36373,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MHU Roshid",
@@ -36607,8 +36411,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "LCduskQAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -36714,7 +36517,7 @@
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
             "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "scholarUserId": "exCfrEkAAAAJ"
           }
         ]
       },
@@ -36752,8 +36555,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "GGR7HJ8AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -36819,8 +36621,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -36858,8 +36659,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -36947,7 +36747,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "-TCVv-IAAAAJ"
           }
         ]
       },
@@ -37040,7 +36840,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "-TCVv-IAAAAJ"
           },
           {
             "name": "Sheikh Forhad Rahman",
@@ -37064,8 +36864,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Shahariare Mahamud",
@@ -37166,8 +36965,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": true
           }
         ]
       },
@@ -37258,8 +37056,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "o_8byMUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MSH Shajib",
@@ -37307,8 +37104,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "iBOaC58AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -37385,8 +37181,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -37563,7 +37358,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "scholarUserId": "iOFTRZkAAAAJ"
           },
           {
             "name": "Muhammad Masroor Ali",
@@ -37640,8 +37435,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Ahsanul Alam",
@@ -37654,7 +37448,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "scholarUserId": "iOFTRZkAAAAJ"
           },
           {
             "name": "Md. Mohi Uddin Mohin",
@@ -37680,7 +37474,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "M M Naushad Ali",
@@ -37731,8 +37525,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "7yvAYBsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "AA MIM",
@@ -37768,8 +37561,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "fcGXYbIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A AHMED",
@@ -37781,8 +37573,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "GGR7HJ8AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -37910,8 +37701,7 @@
             "continent": "Asia",
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mohammad Rokonuzzaman",
@@ -37937,7 +37727,7 @@
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
             "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "scholarUserId": "exCfrEkAAAAJ"
           }
         ]
       },
@@ -38082,7 +37872,7 @@
             "lat": 27.88145,
             "lng": 78.07464,
             "isHomeInstitution": false,
-            "scholarUserId": "2nmPUlYAAAAJ"
+            "scholarUserId": "mTTnenIAAAAJ"
           },
           {
             "name": "Abdul Rauf Bhatti",
@@ -38148,8 +37938,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "16CkhLsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MJ Emerson",
@@ -38187,8 +37976,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "ASM Shihavuddin",
@@ -38318,8 +38106,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "be8uiCkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MMM Syeed",
@@ -38343,8 +38130,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -38447,8 +38233,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Shihavuddin",
@@ -38460,8 +38245,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "be8uiCkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "RH Ashique",
@@ -38485,8 +38269,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "TUKrdA0AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MF Rahman",
@@ -38498,8 +38281,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -38565,8 +38347,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -38592,8 +38373,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Y1KEgrkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MH Bhuyan",
@@ -38632,8 +38412,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "239N-0sAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "AA Murad",
@@ -38645,8 +38424,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "Z9nhLocAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "A Yeasmin",
@@ -38670,8 +38448,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "LCduskQAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -38798,8 +38575,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MA Rahman",
@@ -38811,8 +38587,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -38994,8 +38769,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "A B M Shawkat Ali",
@@ -39035,7 +38809,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": true,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "-TCVv-IAAAAJ"
           },
           {
             "name": "Md. Imamul Islam",
@@ -39165,8 +38939,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Saklain Mostak",
@@ -39191,7 +38964,7 @@
             "lat": 3.483599901199341,
             "lng": 103.39959716796875,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Md Mainul Hasan Abir",
@@ -39230,8 +39003,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "X89D9OEAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Md. Sharifur Rahman",
@@ -39244,7 +39016,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": true,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "-TCVv-IAAAAJ"
           },
           {
             "name": "Md. Imamul Islam",
@@ -39376,7 +39148,7 @@
             "lat": 22.3384,
             "lng": 91.83168,
             "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "scholarUserId": "zVO35ksAAAAJ"
           },
           {
             "name": "Jitu Prakash Dhar",
@@ -39475,8 +39247,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "A. B. M. Shawkat Ali",
@@ -39515,8 +39286,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -39554,8 +39324,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Fayyaz Khan",
@@ -39567,8 +39336,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "A7q1rksAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "impactFactor": 2.6
@@ -39637,8 +39405,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "_OnCTMcAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Jakariya Sajib",
@@ -39662,8 +39429,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Mohammad Asif Ul Haq",
@@ -39716,8 +39482,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -39769,8 +39534,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Shahariar Ahmed Himo",
@@ -39795,8 +39559,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "drQ6MO4AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Fayyaz Khan",
@@ -39808,8 +39571,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "A7q1rksAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -39848,8 +39610,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Tanvir Siam",
@@ -39949,8 +39710,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Mohammad Asif Ul Haq",
@@ -39991,7 +39751,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": true,
-            "scholarUserId": "60fAMvgAAAAJ"
+            "scholarUserId": "AjK8FbUAAAAJ"
           },
           {
             "name": "Naimur Rahaman Rifat",
@@ -40015,8 +39775,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Ruhul Amin",
@@ -40118,8 +39877,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -40196,8 +39954,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "MQPKS0wAAAAJ"
+            "isHomeInstitution": true
           }
         ]
       },
@@ -40250,8 +40007,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Bivas Sarkar",
@@ -40329,8 +40085,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -40478,8 +40233,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "7yvAYBsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Ashaduzzaman Niloy",
@@ -40504,8 +40258,7 @@
             "continent": "Asia",
             "lat": 23.796411514282227,
             "lng": 90.41734313964844,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md. Shariful Alam",
@@ -40517,8 +40270,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "OduMIqUAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -40754,8 +40506,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Md. Akhlasur Rahman",
@@ -40767,8 +40518,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Yousu Al-Tunian",
@@ -40792,8 +40542,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": true,
-            "scholarUserId": "J2dTY1cAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Niloy Chandra Das",
@@ -40897,8 +40646,7 @@
             "continent": "Asia",
             "lat": 23.7104,
             "lng": 90.40744,
-            "isHomeInstitution": false,
-            "scholarUserId": "A7q1rksAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Asadur Rahman",
@@ -41067,7 +40815,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Mohammad Asif ul Haq",
@@ -41134,7 +40882,7 @@
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "-H6uxc0AAAAJ"
           },
           {
             "name": "Md. Sabbir Alam",
@@ -41196,8 +40944,7 @@
             "continent": "Asia",
             "lat": 23.710399627685547,
             "lng": 90.40744018554688,
-            "isHomeInstitution": false,
-            "scholarUserId": "9y8PSFsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Anorgul I. Ashirova",
@@ -41688,8 +41435,7 @@
             "continent": "Asia",
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
-            "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mohammad Rokonuzzaman",
@@ -41715,7 +41461,7 @@
             "lat": 23.947555541992188,
             "lng": 90.37980651855469,
             "isHomeInstitution": false,
-            "scholarUserId": "7_jhuAYAAAAJ"
+            "scholarUserId": "exCfrEkAAAAJ"
           }
         ]
       },
@@ -41980,8 +41726,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "MT Islam",
@@ -42005,8 +41750,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "S Barua",
@@ -42018,8 +41762,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "TUKrdA0AAAAJ"
+            "isHomeInstitution": false
           }
         ]
       },
@@ -42173,8 +41916,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "BSvhaNAAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Alam",
@@ -42198,8 +41940,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "GGR7HJ8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "M Hasan",
@@ -42211,8 +41952,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "8EJq1fIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "R Fayzur",
@@ -42224,8 +41964,7 @@
             "continent": "Asia",
             "lat": 0,
             "lng": 0,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           }
         ]
       }
@@ -42731,8 +42470,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "eRyvKcgAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Saman A. Gorji",
@@ -43943,8 +43681,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "F00QhGcAAAAJ"
+            "isHomeInstitution": true
           }
         ],
         "openAccess": false,
@@ -44186,8 +43923,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "5oIfeQkAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Kyo‐Beum Lee",
@@ -44305,8 +44041,7 @@
             "continent": "Asia",
             "lat": 2.9691,
             "lng": 101.7317,
-            "isHomeInstitution": false,
-            "scholarUserId": "xlaXoIoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "M. A. Hannan",
@@ -44402,8 +44137,7 @@
             "continent": "Oceania",
             "lat": -33.8688,
             "lng": 151.2093,
-            "isHomeInstitution": false,
-            "scholarUserId": "eRyvKcgAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Fang Zheng Peng",
@@ -44438,8 +44172,7 @@
             "continent": "Oceania",
             "lat": -33.8688,
             "lng": 151.2093,
-            "isHomeInstitution": false,
-            "scholarUserId": "HAiWj9AAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -44653,8 +44386,7 @@
             "continent": "Asia",
             "lat": 1.3483,
             "lng": 103.6831,
-            "isHomeInstitution": false,
-            "scholarUserId": "xehFzM8AAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -44810,8 +44542,7 @@
             "continent": "North America",
             "lat": 45.4215,
             "lng": -75.6972,
-            "isHomeInstitution": false,
-            "scholarUserId": "dX9dtKwAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Poh Chiang Loh",
@@ -45232,8 +44963,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "7FORgWsAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -45303,8 +45033,7 @@
             "continent": "Asia",
             "lat": 1.3483,
             "lng": 103.6831,
-            "isHomeInstitution": false,
-            "scholarUserId": "xehFzM8AAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -45368,7 +45097,7 @@
             "lat": 55.6761,
             "lng": 12.5683,
             "isHomeInstitution": false,
-            "scholarUserId": "_IaQxa8AAAAJ"
+            "scholarUserId": "KZ5TMuAAAAAJ"
           },
           {
             "name": "Cristian F. Garcia",
@@ -45639,8 +45368,7 @@
             "continent": "Asia",
             "lat": 1.3483,
             "lng": 103.6831,
-            "isHomeInstitution": false,
-            "scholarUserId": "xehFzM8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Poh Chiang Loh",
@@ -45816,8 +45544,7 @@
             "continent": "Europe",
             "lat": 55.7704,
             "lng": 12.5038,
-            "isHomeInstitution": false,
-            "scholarUserId": "sKemeHMAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -45873,8 +45600,7 @@
             "continent": "Europe",
             "lat": 40.4168,
             "lng": -3.7038,
-            "isHomeInstitution": false,
-            "scholarUserId": "kmOwNBkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Jose Antonio Cobos",
@@ -46256,8 +45982,7 @@
             "continent": "Europe",
             "lat": 48.8566,
             "lng": 2.3522,
-            "isHomeInstitution": false,
-            "scholarUserId": "iaMmkOMAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "María Paz Comech",
@@ -46420,8 +46145,7 @@
             "continent": "North America",
             "lat": 45.4215,
             "lng": -75.6972,
-            "isHomeInstitution": false,
-            "scholarUserId": "dX9dtKwAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Josep Maria Guerrero",
@@ -46446,8 +46170,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "6F4MgCUAAAAJ"
+            "isHomeInstitution": true
           }
         ],
         "openAccess": false,
@@ -46506,8 +46229,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "FjYXJ0wAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Florin Iov",
@@ -47172,8 +46894,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "eRyvKcgAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -47219,8 +46940,7 @@
             "continent": "Europe",
             "lat": 55.7704,
             "lng": 12.5038,
-            "isHomeInstitution": false,
-            "scholarUserId": "sKemeHMAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Michael J. Newman",
@@ -47243,8 +46963,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "Cx-b6jsAAAAJ"
+            "isHomeInstitution": true
           }
         ],
         "openAccess": false,
@@ -47316,8 +47035,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "sKemeHMAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Mahajan Sagar Bhaskar",
@@ -47522,8 +47240,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "A7q1rksAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Mojtaba Forouzesh",
@@ -47547,8 +47264,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "eRyvKcgAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Li Li",
@@ -47642,8 +47358,7 @@
             "continent": "Asia",
             "lat": 1.3521,
             "lng": 103.8198,
-            "isHomeInstitution": false,
-            "scholarUserId": "F00QhGcAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -47690,8 +47405,7 @@
             "continent": "Asia",
             "lat": 28.6139,
             "lng": 77.209,
-            "isHomeInstitution": false,
-            "scholarUserId": "utxICFEAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "J. Prasanth Ram",
@@ -47880,8 +47594,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Marco Liserre",
@@ -48423,7 +48136,7 @@
             "lat": 55.6761,
             "lng": 12.5683,
             "isHomeInstitution": false,
-            "scholarUserId": "_IaQxa8AAAAJ"
+            "scholarUserId": "KZ5TMuAAAAAJ"
           }
         ],
         "openAccess": true,
@@ -48578,8 +48291,7 @@
             "continent": "North America",
             "lat": 45.4215,
             "lng": -75.6972,
-            "isHomeInstitution": false,
-            "scholarUserId": "dX9dtKwAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -49005,8 +48717,7 @@
             "continent": "Asia",
             "lat": 2.9691,
             "lng": 101.7317,
-            "isHomeInstitution": false,
-            "scholarUserId": "5-RdiToAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Kashem Mohammad Muttaqi",
@@ -49066,8 +48777,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "eRyvKcgAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Fang Zheng Peng",
@@ -49103,8 +48813,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "HAiWj9AAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Shuitao Yang",
@@ -49310,8 +49019,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "eRyvKcgAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -49424,8 +49132,7 @@
             "continent": "North America",
             "lat": 45.4215,
             "lng": -75.6972,
-            "isHomeInstitution": false,
-            "scholarUserId": "dX9dtKwAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -49501,8 +49208,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "d-Z_YigAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Stig Munk‐Nielsen",
@@ -49539,8 +49245,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "FjYXJ0wAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Birgitte Bak‐Jensen",
@@ -49709,8 +49414,7 @@
             "continent": "Asia",
             "lat": 2.9691,
             "lng": 101.7317,
-            "isHomeInstitution": false,
-            "scholarUserId": "xlaXoIoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Pin Jern Ker",
@@ -49806,8 +49510,7 @@
             "continent": "Europe",
             "lat": 55.6761,
             "lng": 12.5683,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Hemanshu Roy Pota",
@@ -49829,8 +49532,7 @@
             "continent": "Oceania",
             "lat": -33.8688,
             "lng": 151.2093,
-            "isHomeInstitution": false,
-            "scholarUserId": "6IwSh1UAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -50104,8 +49806,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "xehFzM8AAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Poh Chiang Loh",
@@ -50668,8 +50369,7 @@
             "continent": "Oceania",
             "lat": -33.8886,
             "lng": 151.1873,
-            "isHomeInstitution": false,
-            "scholarUserId": "eRyvKcgAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -51564,8 +51264,7 @@
             "continent": "North America",
             "lat": 38.8951,
             "lng": -77.0364,
-            "isHomeInstitution": false,
-            "scholarUserId": "sKemeHMAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Ned Mohan",
@@ -51868,8 +51567,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "5oIfeQkAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Kyo‐Beum Lee",
@@ -51953,8 +51651,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "FjYXJ0wAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Nicolaos Antonio Cutululis",
@@ -52024,8 +51721,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "5oIfeQkAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Soren Jorgensen",
@@ -52155,8 +51851,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "5oIfeQkAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Kyo‐Beum Lee",
@@ -52509,8 +52204,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "5oIfeQkAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "June-Seok Lee",
@@ -52604,8 +52298,7 @@
             "continent": "Europe",
             "lat": 55.7704,
             "lng": 12.5038,
-            "isHomeInstitution": false,
-            "scholarUserId": "sKemeHMAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -52805,8 +52498,7 @@
             "continent": "North America",
             "lat": 45.4215,
             "lng": -75.6972,
-            "isHomeInstitution": false,
-            "scholarUserId": "dX9dtKwAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Xiongfei Wang",
@@ -53648,8 +53340,7 @@
             "continent": "Asia",
             "lat": 37.2829,
             "lng": 127.0463,
-            "isHomeInstitution": false,
-            "scholarUserId": "5oIfeQkAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Hae-Gwang Jeong",
@@ -54047,8 +53738,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -54139,8 +53829,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -54231,8 +53920,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -54871,8 +54559,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "t7IkeWwAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Flemming Christensen",
@@ -55420,8 +55107,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -55925,8 +55611,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -56029,8 +55714,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -56220,8 +55904,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -57486,8 +57169,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "dzHYBKcAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Yongjie Liu",
@@ -57835,8 +57517,7 @@
             "continent": "Asia",
             "lat": 39.9042,
             "lng": 116.4074,
-            "isHomeInstitution": false,
-            "scholarUserId": "0aSKUPsAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Md Ahnaf Tahmid Anon",
@@ -57951,8 +57632,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "QiJPlOIAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Jinhao Wang",
@@ -58280,8 +57960,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -58430,8 +58109,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -58868,8 +58546,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "lHjQpgUAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Andera Coraddu",
@@ -59142,8 +58819,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -59574,8 +59250,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -59630,8 +59305,7 @@
             "continent": "Asia",
             "lat": 37.5665,
             "lng": 126.978,
-            "isHomeInstitution": false,
-            "scholarUserId": "5oIfeQkAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -59723,8 +59397,7 @@
             "continent": "Europe",
             "lat": 52.9388,
             "lng": -1.1963,
-            "isHomeInstitution": false,
-            "scholarUserId": "vHwFXr8AAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -59887,8 +59560,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -60129,8 +59801,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -60708,8 +60379,7 @@
             "continent": "Asia",
             "lat": 31.2304,
             "lng": 121.4737,
-            "isHomeInstitution": false,
-            "scholarUserId": "QiJPlOIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Yong Wang",
@@ -60999,8 +60669,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -61345,8 +61014,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -61856,8 +61524,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "2FMEI6YAAAAJ"
+            "isHomeInstitution": true
           }
         ],
         "openAccess": true,
@@ -61984,8 +61651,7 @@
             "continent": "Europe",
             "lat": 60.1699,
             "lng": 24.9384,
-            "isHomeInstitution": false,
-            "scholarUserId": "nbdcrQUAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -63650,8 +63316,7 @@
             "continent": "Europe",
             "lat": 40.4168,
             "lng": -3.7038,
-            "isHomeInstitution": false,
-            "scholarUserId": "MEnSyUIAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -64187,8 +63852,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -64907,8 +64571,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "sJ7SOTEAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Erdem Akboy",
@@ -65242,7 +64905,7 @@
             "lat": 57.0143,
             "lng": 9.9854,
             "isHomeInstitution": true,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "l8j25bMAAAAJ"
           },
           {
             "name": "Farha Khan",
@@ -65777,7 +65440,7 @@
             "lat": -33.8688,
             "lng": 151.2093,
             "isHomeInstitution": false,
-            "scholarUserId": "AYjm370AAAAJ"
+            "scholarUserId": "l8j25bMAAAAJ"
           },
           {
             "name": "Syed Ayaz Ali Shah",
@@ -66182,8 +65845,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": true
           }
         ],
         "openAccess": true,
@@ -66453,8 +66115,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -67088,8 +66749,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -67809,8 +67469,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -68240,8 +67899,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -68480,8 +68138,7 @@
             "continent": "Asia",
             "lat": 31.2304,
             "lng": 121.4737,
-            "isHomeInstitution": false,
-            "scholarUserId": "QiJPlOIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Yong Wang",
@@ -68643,8 +68300,7 @@
             "continent": "Europe",
             "lat": 40.4168,
             "lng": -3.7038,
-            "isHomeInstitution": false,
-            "scholarUserId": "MEnSyUIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Tomislav Dragičević",
@@ -68956,7 +68612,7 @@
             "lat": 55.6761,
             "lng": 12.5683,
             "isHomeInstitution": false,
-            "scholarUserId": "_IaQxa8AAAAJ"
+            "scholarUserId": "KZ5TMuAAAAAJ"
           }
         ],
         "openAccess": false,
@@ -69217,8 +68873,7 @@
             "continent": "Asia",
             "lat": 31.2304,
             "lng": 121.4737,
-            "isHomeInstitution": false,
-            "scholarUserId": "QiJPlOIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Yong Wang",
@@ -69733,8 +69388,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -72627,7 +72281,7 @@
             "lat": 55.6761,
             "lng": 12.5683,
             "isHomeInstitution": false,
-            "scholarUserId": "_IaQxa8AAAAJ"
+            "scholarUserId": "KZ5TMuAAAAAJ"
           }
         ],
         "openAccess": false,
@@ -72718,8 +72372,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -72810,8 +72463,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -73043,8 +72695,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -74268,8 +73919,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Wen Cao",
@@ -74536,8 +74186,7 @@
             "continent": "Asia",
             "lat": 1.3483,
             "lng": 103.6831,
-            "isHomeInstitution": false,
-            "scholarUserId": "xehFzM8AAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Xu Cai",
@@ -74668,8 +74317,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Marco Liserre",
@@ -75208,8 +74856,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -75300,8 +74947,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -76136,8 +75782,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -76550,8 +76195,7 @@
             "continent": "Asia",
             "lat": 31.2304,
             "lng": 121.4737,
-            "isHomeInstitution": false,
-            "scholarUserId": "QiJPlOIAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Zhaoyue Zou",
@@ -76760,8 +76404,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -77261,8 +76904,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": false,
@@ -77341,8 +76983,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -77433,8 +77074,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -78762,8 +78402,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -79166,8 +78805,7 @@
             "continent": "Europe",
             "lat": 57.0143,
             "lng": 9.9854,
-            "isHomeInstitution": true,
-            "scholarUserId": "sJ7SOTEAAAAJ"
+            "isHomeInstitution": true
           },
           {
             "name": "Sajib Chakraborty",
@@ -79618,8 +79256,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -79713,8 +79350,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -79875,8 +79511,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -79967,8 +79602,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -80037,8 +79671,7 @@
             "continent": "Asia",
             "lat": 39.9042,
             "lng": 116.4074,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Yuyang Liu",
@@ -80060,8 +79693,7 @@
             "continent": "Asia",
             "lat": 39.9042,
             "lng": 116.4074,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -80141,8 +79773,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Junjie Tao",
@@ -80302,8 +79933,7 @@
             "continent": "Asia",
             "lat": 39.9042,
             "lng": 116.4074,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Yuyang Liu",
@@ -80325,8 +79955,7 @@
             "continent": "Asia",
             "lat": 39.9042,
             "lng": 116.4074,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -80429,8 +80058,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -80522,8 +80150,7 @@
             "continent": "Asia",
             "lat": 39.9042,
             "lng": 116.4074,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Carlos Fernández",
@@ -80534,8 +80161,7 @@
             "continent": "Asia",
             "lat": 39.9042,
             "lng": 116.4074,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           }
         ],
         "openAccess": true,
@@ -80651,8 +80277,7 @@
             "continent": "Asia",
             "lat": 22.3364,
             "lng": 114.1724,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Huai Wang",
@@ -80804,8 +80429,7 @@
             "continent": "North America",
             "lat": 38.8951,
             "lng": -77.0364,
-            "isHomeInstitution": false,
-            "scholarUserId": "bwQsTmAAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Chang Bo Lu",
@@ -81065,8 +80689,7 @@
             "continent": "Europe",
             "lat": 51.5074,
             "lng": -0.1278,
-            "isHomeInstitution": false,
-            "scholarUserId": "65rIewoAAAAJ"
+            "isHomeInstitution": false
           },
           {
             "name": "Liangwei Cheng",
