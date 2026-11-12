@@ -185,9 +185,11 @@ export const ResearchDirectoriesSection: React.FC<
                       <img
                         src={
                           (ca.avatarUrl && ca.avatarUrl.trim()) ||
-                          `/api/scholar/avatar?v=3&name=${encodeURIComponent(
+                          `/api/scholar/avatar?v=4&name=${encodeURIComponent(
                             ca.name
                           )}&uni=${encodeURIComponent(ca.universityName)}${
+                            ca.orcid ? `&orcid=${encodeURIComponent(ca.orcid)}` : ''
+                          }${
                             ca.scholarUserId
                               ? `&userId=${encodeURIComponent(ca.scholarUserId)}`
                               : ''
@@ -198,9 +200,11 @@ export const ResearchDirectoriesSection: React.FC<
                         referrerPolicy="no-referrer"
                         onError={(e) => {
                           const target = e.currentTarget;
-                          const fallbackUrl = `/api/scholar/avatar?v=3&name=${encodeURIComponent(
+                          const fallbackUrl = `/api/scholar/avatar?v=4&name=${encodeURIComponent(
                             ca.name
-                          )}&uni=${encodeURIComponent(ca.universityName)}`;
+                          )}&uni=${encodeURIComponent(ca.universityName)}${
+                            ca.orcid ? `&orcid=${encodeURIComponent(ca.orcid)}` : ''
+                          }`;
                           if (!target.src.endsWith(fallbackUrl)) {
                             target.src = fallbackUrl;
                           }

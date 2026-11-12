@@ -38,6 +38,7 @@ export interface CoAuthorAffiliation {
   lng: number;
   isHomeInstitution?: boolean;
   scholarUserId?: string;
+  orcid?: string;
   avatarUrl?: string;
 }
 
@@ -556,6 +557,7 @@ export interface CoAuthorSummary {
   latestYear: number;
   papers: Publication[];
   scholarUserId?: string;
+  orcid?: string;
   avatarUrl?: string;
 }
 
@@ -1987,12 +1989,16 @@ export function aggregateCoAuthors(
             ...ca,
             name: preferredName,
             scholarUserId: ca.scholarUserId || existing.meta.scholarUserId,
+            orcid: ca.orcid || existing.meta.orcid,
             avatarUrl: ca.avatarUrl || existing.meta.avatarUrl,
           };
         } else {
           existing.meta.name = preferredName;
           if (!existing.meta.scholarUserId && ca.scholarUserId) {
             existing.meta.scholarUserId = ca.scholarUserId;
+          }
+          if (!existing.meta.orcid && ca.orcid) {
+            existing.meta.orcid = ca.orcid;
           }
           if (!existing.meta.avatarUrl && ca.avatarUrl) {
             existing.meta.avatarUrl = ca.avatarUrl;
@@ -2031,6 +2037,7 @@ export function aggregateCoAuthors(
         ...(data.meta.scholarUserId
           ? { scholarUserId: data.meta.scholarUserId }
           : {}),
+        ...(data.meta.orcid ? { orcid: data.meta.orcid } : {}),
         ...(data.meta.avatarUrl ? { avatarUrl: data.meta.avatarUrl } : {}),
       };
     })
