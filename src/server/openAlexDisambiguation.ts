@@ -19,8 +19,13 @@ const AFFIL_STOPWORDS = new Set([
   'univ',
   'university',
   'institute',
+  'institution',
+  'academic',
   'college',
   'school',
+  'international',
+  'independent',
+  'unlisted',
   'technology',
   'science',
   'engineering',
@@ -167,6 +172,36 @@ export function isSameResearcherNameMatch(
     cLast !== tLast &&
     cLast.replace(/v|w/g, 'b') !== tLast.replace(/v|w/g, 'b')
   ) {
+    // Allow hyphenated compound surnames (e.g. "Caroline Barrère‐Mangote" <-> "Caroline Barrere")
+    const getHyphenSurnameParts = (raw: string): string[] | null => {
+      const lastRaw = String(raw || '').trim().split(/\s+/).pop() || '';
+      if (!/[-‐‑‒–—]/.test(lastRaw)) return null;
+      const parts = lastRaw
+        .split(/[-‐‑‒–—]+/)
+        .map((p) =>
+          p
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z]/g, '')
+        )
+        .filter((p) => p.length >= 2);
+      return parts.length >= 2 ? parts : null;
+    };
+    const cHyphenParts = getHyphenSurnameParts(candidateName);
+    const tHyphenParts = getHyphenSurnameParts(targetName);
+    const hyphenLastMatches =
+      (cHyphenParts &&
+        cHyphenParts.includes(tLast) &&
+        cTokens.length >= 3 &&
+        cTokens.slice(0, -cHyphenParts.length).join(' ') === tTokens.slice(0, -1).join(' ')) ||
+      (tHyphenParts &&
+        tHyphenParts.includes(cLast) &&
+        tTokens.length >= 3 &&
+        tTokens.slice(0, -tHyphenParts.length).join(' ') === cTokens.slice(0, -1).join(' '));
+    if (hyphenLastMatches) {
+      return true;
+    }
     return false;
   }
 
@@ -694,4 +729,137 @@ export function extractSameInstitutionAuthorIds(
     }
   }
   return ids;
+}
+
+/** Filters un-ORCIDed Crossref fallback works against target name, affiliation tokens, or known GS titles to block homonym pollution. */
+export function shouldKeepCrossrefFallbackWork(params: {
+  title: string;
+  authors: any[];
+  targetName: string;
+  isSameName: (a: string, b: string) => boolean;
+  affilTokens: string[];
+  candidateTitles?: string[];
+}): boolean {
+  const { title, authors, targetName, isSameName, affilTokens, candidateTitles } =
+    params;
+  const matchingAuthors = (authors || []).filter((au) => {
+    const full = `${au?.given || ''} ${au?.family || ''}`.trim();
+    return Boolean(full && isSameName(full, targetName));
+  });
+  if (matchingAuthors.length === 0) return false;
+
+  const normTitle = normalizeAsciiWords(title);
+  if (normTitle && candidateTitles && candidateTitles.length > 0) {
+    const titleMatched = candidateTitles.some((cand) => {
+      const cNorm = normalizeAsciiWords(cand);
+      if (!cNorm) return false;
+      if (cNorm === normTitle) return true;
+      return (
+        Math.min(cNorm.length, normTitle.length) >= 24 &&
+        (normTitle.includes(cNorm) || cNorm.includes(normTitle))
+      );
+    });
+    if (titleMatched) return true;
+  }
+
+  if (affilTokens.length === 0) return false;
+
+  for (const au of matchingAuthors) {
+    const affList = Array.isArray(au?.affiliation) ? au.affiliation : [];
+    const affText = normalizeAsciiWords(
+      affList.map((af: any) => String(af?.name || af || '')).join(' ')
+    );
+    if (affText && affilTokens.some((tok) => affText.includes(tok))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/** Maps ORCID public `/works` summary groups into OpenAlex-shaped work objects, skipping entries already present in `existingKeys`. */
+export function mapOrcidWorksSummaryToOpenAlexFormat(
+  worksData: any,
+  authorName: string,
+  orcidId: string,
+  existingKeys: Set<string> = new Set(),
+  affiliationHint: string = ''
+): any[] {
+  const groups: any[] = Array.isArray(worksData?.group) ? worksData.group : [];
+  const cleanOrcid = String(orcidId || '').trim();
+  const cleanAffil = String(affiliationHint || '').trim();
+  const mapped: any[] = [];
+
+  for (const group of groups) {
+    const summary = Array.isArray(group?.['work-summary'])
+      ? group['work-summary'][0]
+      : null;
+    if (!summary) continue;
+
+    const title = String(summary?.title?.title?.value || '').trim();
+    if (!title) continue;
+    const normTitleKey = normalizeAsciiWords(title);
+
+    const extIds: any[] = Array.isArray(
+      summary?.['external-ids']?.['external-id']
+    )
+      ? summary['external-ids']['external-id']
+      : [];
+    const doiEntry =
+      extIds.find(
+        (e) =>
+          String(e?.['external-id-type'] || '').toLowerCase() === 'doi' &&
+          String(e?.['external-id-relationship'] || '').toLowerCase() === 'self'
+      ) ||
+      extIds.find(
+        (e) => String(e?.['external-id-type'] || '').toLowerCase() === 'doi'
+      );
+    const rawDoi = String(doiEntry?.['external-id-value'] || '').trim();
+    const doiKey = rawDoi.toLowerCase();
+
+    if (
+      (doiKey && existingKeys.has(`doi:${doiKey}`)) ||
+      (normTitleKey && existingKeys.has(`title:${normTitleKey}`))
+    ) {
+      continue;
+    }
+    if (doiKey) existingKeys.add(`doi:${doiKey}`);
+    if (normTitleKey) existingKeys.add(`title:${normTitleKey}`);
+
+    const venue =
+      String(summary?.['journal-title']?.value || '').trim() ||
+      'Academic Venue';
+    const year = Number(summary?.['publication-date']?.year?.value) || 2020;
+    const workUrl =
+      String(summary?.url?.value || '').trim() ||
+      (rawDoi ? `https://doi.org/${rawDoi}` : undefined);
+
+    mapped.push({
+      id: rawDoi ? `orcid:${rawDoi}` : `orcid:${title.slice(0, 48)}`,
+      title,
+      display_name: title,
+      publication_year: year,
+      type: String(summary?.type || 'journal-article').replace(/-/g, '_'),
+      doi: rawDoi ? `https://doi.org/${rawDoi}` : undefined,
+      open_access: { is_oa: false },
+      cited_by_count: 0,
+      primary_location: {
+        source: { display_name: venue, type: 'journal' },
+        landing_page_url: workUrl,
+      },
+      authorships: [
+        {
+          author_position: 'first',
+          author: {
+            display_name: authorName,
+            orcid: cleanOrcid ? `https://orcid.org/${cleanOrcid}` : undefined,
+          },
+          institutions: [],
+          raw_affiliation_strings: cleanAffil ? [cleanAffil] : [],
+        },
+      ],
+    });
+  }
+
+  return mapped;
 }

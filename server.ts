@@ -50,12 +50,14 @@ import {
   extractPortraitUrlFromHtml,
   extractSameInstitutionAuthorIds,
   isSameResearcherNameMatch,
+  mapOrcidWorksSummaryToOpenAlexFormat,
   normalizeAsciiWords,
   normalizeOrcidUrl,
   pickDisambiguationTitles,
   pickInstitutionalProfileUrls,
   rankOpenAlexAuthorsFromWorks,
   scoreOpenAlexAuthorCandidate,
+  shouldKeepCrossrefFallbackWork,
 } from './src/server/openAlexDisambiguation';
 import {
   extractCandidateScholarIdsFromSearchHtml,
@@ -442,7 +444,7 @@ async function queryWikidataInstitutionCoords(
         headers: {
           'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
         },
-        signal: AbortSignal.timeout(2500),
+        signal: AbortSignal.timeout(3600),
       }
     );
     if (!res.ok) return null;
@@ -2113,7 +2115,7 @@ async function resolveScholarIdViaWikidata(
         headers: {
           'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
         },
-        signal: AbortSignal.timeout(2500),
+        signal: AbortSignal.timeout(3600),
       }
     );
     if (res.ok) {
@@ -2542,7 +2544,7 @@ async function resolveScholarIdentityViaOrcid(
 
   try {
     const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 2600);
+    const t = setTimeout(() => controller.abort(), 3300);
     const res = await fetch(
       `https://pub.orcid.org/v3.0/expanded-search/?q=${encodeURIComponent(
         `"${cleanId}"`
@@ -2597,7 +2599,11 @@ async function resolveScholarIdentityByUserIdFallback(
     coAuthorMap: rawCoAuthorMap,
     verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
   });
-  if (fromBundledStores?.name && fromBundledStores?.affiliationHint) {
+  if (
+    fromBundledStores?.name &&
+    fromBundledStores?.affiliationHint &&
+    fromBundledStores?.orcid
+  ) {
     return fromBundledStores;
   }
 
@@ -2627,7 +2633,11 @@ async function resolveScholarIdentityByUserIdFallback(
     digests,
     registeredUsers,
   });
-  if (fromCombinedStores?.name && fromCombinedStores?.affiliationHint) {
+  if (
+    fromCombinedStores?.name &&
+    fromCombinedStores?.affiliationHint &&
+    fromCombinedStores?.orcid
+  ) {
     return fromCombinedStores;
   }
 
@@ -2637,29 +2647,38 @@ async function resolveScholarIdentityByUserIdFallback(
       new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
     ]);
 
+  const needSlowWebLookup = !(
+    fromCombinedStores?.name && fromCombinedStores?.affiliationHint
+  );
   const fastPromise = Promise.all([
     withTimeout(resolveScholarIdViaWikidata(cleanId), 3800),
     withTimeout(resolveScholarIdViaWikipedia(cleanId), 3800),
     withTimeout(resolveScholarIdentityViaOrcid(cleanId), 3500),
   ]);
-  const slowPromise = Promise.all([
-    withTimeout(resolveScholarIdentityViaDdg(cleanId), 2600),
-    withTimeout(resolveScholarIdentityViaYahoo(cleanId), 2600),
-  ]);
+  const slowPromise = needSlowWebLookup
+    ? Promise.all([
+        withTimeout(resolveScholarIdentityViaDdg(cleanId), 2600),
+        withTimeout(resolveScholarIdentityViaYahoo(cleanId), 2600),
+      ])
+    : Promise.resolve([null, null] as [null, null]);
 
   const [wikidataHit, wikipediaHit, orcidHit] = await fastPromise;
   const fastHits = [wikidataHit, wikipediaHit, orcidHit].filter(
     (x): x is ResolvedScholarIdentity => Boolean(x?.name)
   );
   // Return immediately when structured registries already provide both name and affiliation (or give slow scrapers max 900ms)
-  const slowSettled = fastHits.some((x) => Boolean(x.affiliationHint))
-    ? [null, null]
-    : await Promise.race([
-        slowPromise,
-        new Promise<[null, null]>((resolve) =>
-          setTimeout(() => resolve([null, null]), fastHits.length > 0 ? 700 : 2700)
-        ),
-      ]);
+  const slowSettled =
+    !needSlowWebLookup || fastHits.some((x) => Boolean(x.affiliationHint))
+      ? ([null, null] as [null, null])
+      : await Promise.race([
+          slowPromise,
+          new Promise<[null, null]>((resolve) =>
+            setTimeout(
+              () => resolve([null, null]),
+              fastHits.length > 0 ? 700 : 2700
+            )
+          ),
+        ]);
   const [ddgHit, yahooHit] = slowSettled;
 
   const externalHits = [
@@ -2753,11 +2772,13 @@ export async function buildLiveResearcherProfile(
         })
       : { knownWorkTitles: [], knownCollaboratorNames: [] };
 
-  // Run fast external fallback identity in parallel with GS scraping whenever bundled stores lack an affiliation hint
+  // Run fast external fallback identity in parallel with GS scraping whenever bundled stores lack affiliation or ORCID
   const needParallelFallback =
     !effectiveQueryName &&
     isValidScholarId(effectiveUserId) &&
-    (!fastStoreIdentity?.name || !fastStoreIdentity?.affiliationHint);
+    (!fastStoreIdentity?.name ||
+      !fastStoreIdentity?.affiliationHint ||
+      !fastStoreIdentity?.orcid);
   const parallelFallbackPromise = needParallelFallback
     ? resolveScholarIdentityByUserIdFallback(effectiveUserId).catch(() => null)
     : Promise.resolve(null);
@@ -2793,7 +2814,9 @@ export async function buildLiveResearcherProfile(
     !scraped &&
     !effectiveQueryName &&
     effectiveUserId &&
-    (!fallbackIdentity?.name || !fallbackIdentity?.affiliationHint)
+    (!fallbackIdentity?.name ||
+      !fallbackIdentity?.affiliationHint ||
+      !fallbackIdentity?.orcid)
   ) {
     const enrichedFallback = needParallelFallback
       ? await parallelFallbackPromise
@@ -2856,8 +2879,16 @@ export async function buildLiveResearcherProfile(
   let weakFallbackId = '';
   let weakFallbackScore = -1;
   let weakFallbackCountryMatched = false;
+  let openAlexCandidateCount = 0;
   const cleanSearchName = stripAcademicHonorifics(targetName) || targetName;
   const affilTokens = extractAffiliationKeywords(rawAffilHintText);
+  const hasAnyDisambigSignal = Boolean(
+    (scraped && scraped.publications.length > 0) ||
+      orcidHint ||
+      affilTokens.length > 0 ||
+      effectiveCountryHint ||
+      fastStoreEvidence.knownWorkTitles.length > 0
+  );
 
   try {
     // 1a. If we have an authoritative ORCID (from GS name, Wikidata P496, ORCID search, or snapshot), look it up directly first
@@ -3078,6 +3109,9 @@ export async function buildLiveResearcherProfile(
       scoredCandidates = scoreCandidateList(rawResults);
     }
 
+    openAlexCandidateCount =
+      scoredCandidates.length > 0 ? scoredCandidates.length : rawResults.length;
+
     if (scoredCandidates.length > 0) {
       const top = scoredCandidates[0];
       bestAffilMatches = top.affilMatches;
@@ -3089,8 +3123,11 @@ export async function buildLiveResearcherProfile(
       weakFallbackScore = top.score;
       weakFallbackCountryMatched = top.countryMatches > 0;
 
-      // Only lock author IDs upfront when no affiliation constraint exists or candidate matched affiliation
-      if (affilTokens.length === 0 || top.affilMatches > 0) {
+      // Only lock author IDs upfront when disambiguation evidence confirms the author (never pick an unconstrained homonym out of many candidates)
+      if (
+        (affilTokens.length === 0 && (hasAnyDisambigSignal || scoredCandidates.length <= 2)) ||
+        top.affilMatches > 0
+      ) {
         primaryOpenAlexAuthor = top.author;
         bestOaCandidateScore = top.score;
         openAlexAuthorIds.push(top.id);
@@ -3108,7 +3145,11 @@ export async function buildLiveResearcherProfile(
           }
         }
       }
-    } else if (rawResults[0] && affilTokens.length === 0) {
+    } else if (
+      rawResults[0] &&
+      affilTokens.length === 0 &&
+      (hasAnyDisambigSignal || rawResults.length <= 2)
+    ) {
       weakFallbackAuthor = rawResults[0];
       weakFallbackId = String(rawResults[0].id || '')
         .replace('https://openalex.org/', '')
@@ -3270,7 +3311,10 @@ export async function buildLiveResearcherProfile(
   if (
     openAlexAuthorIds.length === 0 &&
     weakFallbackId &&
-    (affilTokens.length === 0 || bestAffilMatches > 0 || weakFallbackCountryMatched)
+    ((affilTokens.length === 0 &&
+      (hasAnyDisambigSignal || openAlexCandidateCount <= 2)) ||
+      bestAffilMatches > 0 ||
+      weakFallbackCountryMatched)
   ) {
     openAlexAuthorIds.push(weakFallbackId);
     if (!primaryOpenAlexAuthor && weakFallbackAuthor) {
@@ -3418,19 +3462,30 @@ export async function buildLiveResearcherProfile(
     }
   }
 
-  // Crossref author fallback when both Google Scholar scraping and OpenAlex yielded 0 works
+  // Crossref + ORCID author fallback when both Google Scholar scraping and OpenAlex yielded 0 works
   if ((!scraped || scraped.publications.length === 0) && rawOaWorks.length === 0) {
     try {
       const crOrcid =
         extractEmbeddedOrcid(String(primaryOpenAlexAuthor?.orcid || '')) ||
         orcidHint;
+      const crossrefAffilHint = String(
+        scraped?.affiliation ||
+          fallbackIdentity?.affiliationHint ||
+          domainResolvedHome?.universityName ||
+          ''
+      ).trim();
       const crUrl = crOrcid
         ? `https://api.crossref.org/works?filter=orcid:${encodeURIComponent(
             crOrcid
           )}&rows=100&mailto=research@scholarlens.org`
         : `https://api.crossref.org/works?query.author=${encodeURIComponent(
             cleanSearchName
-          )}&rows=40&mailto=research@scholarlens.org`;
+          )}${
+            crossrefAffilHint
+              ? `&query.affiliation=${encodeURIComponent(crossrefAffilHint)}`
+              : ''
+          }&rows=40&mailto=research@scholarlens.org`;
+      const seenFallbackKeys = new Set<string>();
       const crRes = await fetch(crUrl, {
         headers: {
           'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
@@ -3448,12 +3503,18 @@ export async function buildLiveResearcherProfile(
           ).trim();
           if (!title) continue;
           const authors: any[] = Array.isArray(item.author) ? item.author : [];
-          if (!crOrcid) {
-            const hasMatchingAuthor = authors.some((au) => {
-              const full = `${au?.given || ''} ${au?.family || ''}`.trim();
-              return full && isSameResearcherName(full, targetName);
-            });
-            if (!hasMatchingAuthor) continue;
+          if (
+            !crOrcid &&
+            !shouldKeepCrossrefFallbackWork({
+              title,
+              authors,
+              targetName,
+              isSameName: isSameResearcherName,
+              affilTokens,
+              candidateTitles: disambigCandidateTitles,
+            })
+          ) {
+            continue;
           }
           const venue = String(
             (Array.isArray(item['container-title'])
@@ -3467,6 +3528,9 @@ export async function buildLiveResearcherProfile(
             [];
           const year = Number(yearParts[0]) || 2020;
           const doi = item.DOI ? String(item.DOI).trim() : undefined;
+          if (doi) seenFallbackKeys.add(`doi:${doi.toLowerCase()}`);
+          const normT = normalizeAsciiWords(title);
+          if (normT) seenFallbackKeys.add(`title:${normT}`);
           rawOaWorks.push({
             id: doi ? `crossref:${doi}` : `crossref:${title.slice(0, 48)}`,
             title,
@@ -3496,6 +3560,34 @@ export async function buildLiveResearcherProfile(
                 : [],
             })),
           });
+        }
+      }
+      // Supplement ORCID-verified profiles when Crossref returned fewer than 3 works (e.g., during OpenAlex rate limits)
+      if (crOrcid && rawOaWorks.length < 3) {
+        try {
+          const orcidWorksRes = await fetch(
+            `https://pub.orcid.org/v3.0/${encodeURIComponent(crOrcid)}/works`,
+            {
+              headers: {
+                Accept: 'application/json',
+                'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+              },
+              signal: AbortSignal.timeout(4200),
+            }
+          );
+          if (orcidWorksRes.ok) {
+            const orcidWorksData = (await orcidWorksRes.json()) as any;
+            const orcidFallbackWorks = mapOrcidWorksSummaryToOpenAlexFormat(
+              orcidWorksData,
+              cleanSearchName || targetName,
+              crOrcid,
+              seenFallbackKeys,
+              crossrefAffilHint
+            );
+            rawOaWorks.push(...orcidFallbackWorks);
+          }
+        } catch {
+          // Ignore ORCID works timeout
         }
       }
     } catch {

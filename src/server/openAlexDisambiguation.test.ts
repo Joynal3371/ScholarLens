@@ -7,10 +7,12 @@ import {
   extractPortraitUrlFromHtml,
   extractSameInstitutionAuthorIds,
   isSameResearcherNameMatch,
+  mapOrcidWorksSummaryToOpenAlexFormat,
   pickDisambiguationTitles,
   pickInstitutionalProfileUrls,
   rankOpenAlexAuthorsFromWorks,
   scoreOpenAlexAuthorCandidate,
+  shouldKeepCrossrefFallbackWork,
 } from './openAlexDisambiguation';
 
 const simpleSameName = (a: string, b: string) =>
@@ -430,4 +432,149 @@ test('scoreOpenAlexAuthorCandidate prefers higher-impact spaced-initial record o
   assert.ok(sStub);
   assert.ok(sCanonical);
   assert.ok(sCanonical.score > sStub.score);
+});
+
+test('shouldKeepCrossrefFallbackWork blocks homonym papers with mismatched or missing affiliations', () => {
+  const affilTokens = extractAffiliationKeywords('Total Research & Technology France');
+
+  // Unrelated nursing paper even when co-authored by same name
+  assert.equal(
+    shouldKeepCrossrefFallbackWork({
+      title: 'Competency Validation for Pediatric Nurses',
+      authors: [
+        {
+          given: 'Caroline',
+          family: 'Barrere',
+          affiliation: [{ name: 'Texas Hospital School of Nursing, USA' }],
+        },
+      ],
+      targetName: 'Caroline Barrere',
+      isSameName: isSameResearcherNameMatch,
+      affilTokens,
+    }),
+    false
+  );
+
+  // Matching affiliation keeps the real paper
+  assert.equal(
+    shouldKeepCrossrefFallbackWork({
+      title: 'Understanding the Vanadium-Asphaltene Nanoaggregate Link',
+      authors: [
+        {
+          given: 'Caroline',
+          family: 'Barrere',
+          affiliation: [{ name: 'Total Research & Technology, Gonfreville, France' }],
+        },
+      ],
+      targetName: 'Caroline Barrere',
+      isSameName: isSameResearcherNameMatch,
+      affilTokens,
+    }),
+    true
+  );
+
+  // Known scraped GS title keeps the paper even if Crossref omitted affiliation metadata
+  assert.equal(
+    shouldKeepCrossrefFallbackWork({
+      title: 'Characterization of Asphaltenes Using GPC ICP-MS Analysis',
+      authors: [{ given: 'Caroline', family: 'Barrere' }],
+      targetName: 'Caroline Barrere',
+      isSameName: isSameResearcherNameMatch,
+      affilTokens,
+      candidateTitles: ['Characterization of Asphaltenes Using GPC ICP-MS Analysis'],
+    }),
+    true
+  );
+
+  // Without affiliation tokens or known titles, ambiguous un-ORCIDed Crossref hits are rejected
+  assert.equal(
+    shouldKeepCrossrefFallbackWork({
+      title: 'Vibrational dynamics in GeH4-H2 under pressure',
+      authors: [
+        {
+          given: 'Xiao',
+          family: 'Chen',
+          affiliation: [{ name: 'Chinese Academy of Sciences' }],
+        },
+      ],
+      targetName: 'Xiao Chen',
+      isSameName: isSameResearcherNameMatch,
+      affilTokens: [],
+      candidateTitles: [],
+    }),
+    false
+  );
+});
+
+test('extractAffiliationKeywords ignores generic placeholders and isSameResearcherNameMatch handles hyphenated compound surnames', () => {
+  assert.deepEqual(extractAffiliationKeywords('Academic Institution'), []);
+  assert.deepEqual(extractAffiliationKeywords('Independent / Unlisted'), []);
+
+  assert.equal(
+    isSameResearcherNameMatch('Caroline Barrère\u2010Mangote', 'Caroline Barrere'),
+    true
+  );
+  assert.equal(
+    isSameResearcherNameMatch('Caroline Barrere', 'Caroline Barrère-Mangote'),
+    true
+  );
+  assert.equal(
+    isSameResearcherNameMatch('Aminul Islam Khan', 'Aminul Islam'),
+    false
+  );
+});
+
+test('mapOrcidWorksSummaryToOpenAlexFormat maps unique ORCID works and skips existing DOIs/titles', () => {
+  const seen = new Set(['doi:10.1000/already-in-crossref']);
+  const mapped = mapOrcidWorksSummaryToOpenAlexFormat(
+    {
+      group: [
+        {
+          'work-summary': [
+            {
+              title: { title: { value: 'Duplicate Crossref Work' } },
+              'external-ids': {
+                'external-id': [
+                  {
+                    'external-id-type': 'doi',
+                    'external-id-value': '10.1000/already-in-crossref',
+                    'external-id-relationship': 'self',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          'work-summary': [
+            {
+              title: { title: { value: 'Molecular Characterization of Bio-Oil' } },
+              'journal-title': { value: 'Fuel Processing Technology' },
+              type: 'journal-article',
+              'publication-date': { year: { value: '2022' } },
+              'external-ids': {
+                'external-id': [
+                  {
+                    'external-id-type': 'doi',
+                    'external-id-value': '10.1016/j.fuproc.2022.107000',
+                    'external-id-relationship': 'self',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    },
+    'Caroline Barrere-Mangote',
+    '0000-0001-6774-2509',
+    seen,
+    'Total'
+  );
+
+  assert.equal(mapped.length, 1);
+  assert.equal(mapped[0].title, 'Molecular Characterization of Bio-Oil');
+  assert.equal(mapped[0].publication_year, 2022);
+  assert.equal(mapped[0].primary_location.source.display_name, 'Fuel Processing Technology');
+  assert.equal(mapped[0].authorships[0].author.orcid, 'https://orcid.org/0000-0001-6774-2509');
 });

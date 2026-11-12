@@ -76,11 +76,16 @@ export interface ScholarWorkEvidence {
 
 const GENERIC_PLACEHOLDER_AFFILS = new Set([
   'independent / unlisted',
+  'independent',
   'unlisted',
   'unknown',
   'unknown university',
+  'international',
   'academic researcher',
+  'academic institution',
+  'research institution',
   'academic research university',
+  'academic university',
   'research university',
 ]);
 

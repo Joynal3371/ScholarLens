@@ -199,3 +199,20 @@ test('extractEmbeddedOrcid and lookupScholarIdentityInStores extract ORCID hints
   assert.ok(fromColleague);
   assert.equal(fromColleague.orcid, '0000-0003-2330-9775');
 });
+
+test('lookupScholarIdentityInStores ignores generic placeholder affiliations like Academic Institution', () => {
+  const res = lookupScholarIdentityInStores({
+    scholarId: 'A8Zsmn4AAAAJ',
+    digests: {
+      A8Zsmn4AAAAJ: {
+        scholarUserId: 'A8Zsmn4AAAAJ',
+        name: 'Xiao Chen',
+        affiliation: 'Academic Institution',
+        country: 'International',
+      },
+    },
+  });
+  assert.ok(res);
+  assert.equal(res.name, 'Xiao Chen');
+  assert.equal(res.affiliationHint, undefined);
+});
