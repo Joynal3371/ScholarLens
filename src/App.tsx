@@ -1687,6 +1687,12 @@ export default function App() {
       {/* Gmail / ORCID Login Modal */}
       <AuthGateModal
         isOpen={isAuthModalOpen}
+        defaultScholarUrl={
+          activeProfile?.scholarUrl ||
+          (activeProfile?.scholarUserId
+            ? `https://scholar.google.com/citations?user=${activeProfile.scholarUserId}`
+            : '')
+        }
         pendingActionLabel={
           pendingExport?.type === 'pdf'
             ? 'Full Profile PDF Report'

@@ -4257,6 +4257,11 @@ const SCHOLAR_CLAIMS_FILE = path.resolve(process.cwd(), 'src/data/scholarClaims.
 const scholarClaimsData: {
   claims: Record<string, StoredClaimRecord>;
   users: Record<string, StoredOrcidUserRecord>;
+  config?: {
+    orcidClientId?: string;
+    orcidClientSecret?: string;
+    orcidEnvironment?: 'production' | 'sandbox';
+  };
 } = { claims: {}, users: {} };
 
 try {
@@ -4266,6 +4271,7 @@ try {
     if (parsed && typeof parsed === 'object') {
       scholarClaimsData.claims = parsed.claims || {};
       scholarClaimsData.users = parsed.users || {};
+      scholarClaimsData.config = parsed.config || {};
     }
   }
 } catch (e) {
@@ -4604,27 +4610,401 @@ function verifyAuthenticityBetweenOrcidAndScholar(
   };
 }
 
+// 1. Helper: Get effective ORCID OAuth configuration
+function getEffectiveOrcidConfig(req: express.Request) {
+  const envClientId = (process.env.ORCID_CLIENT_ID || '').trim();
+  const envClientSecret = (process.env.ORCID_CLIENT_SECRET || '').trim();
+  const savedConfig = scholarClaimsData.config || {};
+
+  const clientId =
+    envClientId && envClientId !== 'MY_ORCID_CLIENT_ID'
+      ? envClientId
+      : (savedConfig.orcidClientId || '').trim();
+  const clientSecret =
+    envClientSecret && envClientSecret !== 'MY_ORCID_CLIENT_SECRET'
+      ? envClientSecret
+      : (savedConfig.orcidClientSecret || '').trim();
+  const environment: 'production' | 'sandbox' =
+    savedConfig.orcidEnvironment ||
+    (process.env.ORCID_ENVIRONMENT === 'sandbox' ? 'sandbox' : 'production');
+
+  const isConfigured = Boolean(
+    clientId && clientId.length > 5 && clientSecret && clientSecret.length > 5
+  );
+  const domain = environment === 'sandbox' ? 'sandbox.orcid.org' : 'orcid.org';
+  const baseUrl = getPublicBaseUrl(req);
+  const redirectUri = `${baseUrl}/auth/orcid/callback`;
+
+  return {
+    clientId,
+    clientSecret,
+    environment,
+    isConfigured,
+    domain,
+    baseUrl,
+    redirectUri,
+  };
+}
+
 // 1. Get ORCID OAuth URL for popup authentication
 app.get('/api/auth/orcid/url', (req, res) => {
+  const config = getEffectiveOrcidConfig(req);
+  if (config.isConfigured) {
+    const authUrl = `https://${config.domain}/oauth/authorize?client_id=${encodeURIComponent(
+      config.clientId
+    )}&response_type=code&scope=/authenticate&redirect_uri=${encodeURIComponent(
+      config.redirectUri
+    )}`;
+    res.json({
+      url: authUrl,
+      configured: true,
+      redirectUri: config.redirectUri,
+      environment: config.environment,
+    });
+  } else {
+    res.json({
+      url: `${config.baseUrl}/auth/orcid/setup`,
+      configured: false,
+      redirectUri: config.redirectUri,
+      environment: config.environment,
+    });
+  }
+});
+
+// 1b. Save ORCID OAuth App Configuration & Credentials
+app.post('/api/auth/orcid/save-config', (req, res) => {
+  const { clientId, clientSecret, environment } = req.body || {};
+  const cleanClientId = String(clientId || '').trim();
+  const cleanClientSecret = String(clientSecret || '').trim();
+  const cleanEnv: 'production' | 'sandbox' =
+    environment === 'sandbox' ? 'sandbox' : 'production';
+
+  if (!cleanClientId || cleanClientId.length < 5) {
+    res.status(400).json({
+      error: 'Please enter a valid ORCID Client ID (e.g. APP-XXXXXXXXXXXXXXXX).',
+    });
+    return;
+  }
+  if (!cleanClientSecret || cleanClientSecret.length < 5) {
+    res.status(400).json({
+      error: 'Please enter your ORCID Client Secret.',
+    });
+    return;
+  }
+
+  scholarClaimsData.config = {
+    orcidClientId: cleanClientId,
+    orcidClientSecret: cleanClientSecret,
+    orcidEnvironment: cleanEnv,
+  };
+  persistScholarClaimsToDisk();
+
+  const domain = cleanEnv === 'sandbox' ? 'sandbox.orcid.org' : 'orcid.org';
   const redirectUri = `${getPublicBaseUrl(req)}/auth/orcid/callback`;
-  const clientId = process.env.ORCID_CLIENT_ID || '';
-  const isConfigured = Boolean(
-    clientId && clientId.trim().length > 3 && clientId !== 'MY_ORCID_CLIENT_ID'
-  );
-  const authUrl = isConfigured
-    ? `https://orcid.org/oauth/authorize?client_id=${encodeURIComponent(
-        clientId
-      )}&response_type=code&scope=/authenticate&redirect_uri=${encodeURIComponent(
-        redirectUri
-      )}`
-    : '';
+  const authUrl = `https://${domain}/oauth/authorize?client_id=${encodeURIComponent(
+    cleanClientId
+  )}&response_type=code&scope=/authenticate&redirect_uri=${encodeURIComponent(
+    redirectUri
+  )}`;
 
   res.json({
-    url: authUrl,
-    configured: isConfigured,
-    redirectUri,
+    success: true,
+    authUrl,
   });
 });
+
+// 1c. Official ORCID OAuth Setup & Redirect Gateway
+app.get(
+  ['/auth/orcid/setup', '/auth/orcid/bridge', '/auth/orcid/bridge/'],
+  (req, res) => {
+    const config = getEffectiveOrcidConfig(req);
+
+    // If already configured with credentials, redirect directly to official ORCID OAuth authorization server
+    if (config.isConfigured) {
+      const authUrl = `https://${config.domain}/oauth/authorize?client_id=${encodeURIComponent(
+        config.clientId
+      )}&response_type=code&scope=/authenticate&redirect_uri=${encodeURIComponent(
+        config.redirectUri
+      )}`;
+      res.redirect(authUrl);
+      return;
+    }
+
+    // Otherwise render official setup interface for registering credentials
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect Official ORCID OAuth</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      max-width: 520px;
+      width: 100%;
+      padding: 36px 32px 32px 32px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #A6CE39;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: 21px;
+      margin: 0 0 8px 0;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.45;
+    }
+    .uri-box {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 20px 0;
+      text-align: left;
+    }
+    .uri-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .uri-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: #0369a1;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    .copy-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+    }
+    .copy-btn:hover { background: #f8fafc; }
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 12.5px;
+      color: #1e293b;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 13.5px;
+      font-family: ui-monospace, monospace;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      background: #ffffff;
+      color: #0f172a;
+    }
+    input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+    }
+    .radio-group {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn {
+      width: 100%;
+      background: #004e64;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 14px;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #003e50; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .status {
+      margin-top: 12px;
+      font-size: 12.5px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+      line-height: 1.4;
+    }
+    .status.error {
+      display: block;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+    }
+    .status.loading {
+      display: block;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .footer-help {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+    .footer-help a {
+      color: #0284c7;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">iD</div>
+      <h2>Connect Official ORCID OAuth</h2>
+      <p class="subtitle">To authenticate passwords directly on orcid.org without third-party exposure, connect your free ORCID Developer credentials.</p>
+    </div>
+
+    <div class="uri-box">
+      <div class="uri-label">
+        <span>Required Redirect URI for ORCID</span>
+        <button id="copyBtn" class="copy-btn" type="button">Copy</button>
+      </div>
+      <div id="redirectUriText" class="uri-code">${config.redirectUri}</div>
+    </div>
+
+    <form id="configForm">
+      <div class="form-group">
+        <label for="clientId">ORCID Client ID</label>
+        <input id="clientId" type="text" placeholder="APP-XXXXXXXXXXXXXXXX" required />
+      </div>
+      <div class="form-group">
+        <label for="clientSecret">ORCID Client Secret</label>
+        <input id="clientSecret" type="password" placeholder="••••••••-••••-••••-••••-••••••••••••" required />
+      </div>
+      <div class="form-group">
+        <label>ORCID Environment</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="env" value="production" checked /> Production (orcid.org)
+          </label>
+          <label>
+            <input type="radio" name="env" value="sandbox" /> Sandbox (sandbox.orcid.org)
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" id="saveBtn" class="btn">
+        Save &amp; Continue to Official ORCID Sign-In
+      </button>
+      <div id="status" class="status"></div>
+    </form>
+
+    <div class="footer-help">
+      Don't have API credentials yet? Go to <a href="https://orcid.org/developer-tools" target="_blank" rel="noopener">orcid.org/developer-tools</a>, agree to the terms, add the Redirect URI above, and copy your Client ID &amp; Secret.
+    </div>
+  </div>
+
+  <script>
+    const copyBtn = document.getElementById('copyBtn');
+    const redirectUriText = document.getElementById('redirectUriText').innerText;
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(redirectUriText).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      });
+    });
+
+    const form = document.getElementById('configForm');
+    const saveBtn = document.getElementById('saveBtn');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const clientId = document.getElementById('clientId').value.trim();
+      const clientSecret = document.getElementById('clientSecret').value.trim();
+      const env = document.querySelector('input[name="env"]:checked').value;
+
+      status.className = 'status loading';
+      status.textContent = 'Saving configuration and redirecting to ORCID...';
+      saveBtn.disabled = true;
+
+      try {
+        const resp = await fetch('/api/auth/orcid/save-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clientId, clientSecret, environment: env })
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.success) {
+          throw new Error(data.error || 'Failed to save configuration');
+        }
+
+        // Immediately redirect the popup window to official ORCID sign-in
+        window.location.href = data.authUrl;
+      } catch (err) {
+        status.className = 'status error';
+        status.textContent = err.message || 'Error saving configuration';
+        saveBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>`);
+  }
+);
 
 // 2. ORCID OAuth Callback Handler
 app.get(
@@ -4655,16 +5035,17 @@ app.get(
     }
 
     try {
-      const redirectUri = `${getPublicBaseUrl(req)}/auth/orcid/callback`;
-      const tokenResp = await fetch('https://orcid.org/oauth/token', {
+      const config = getEffectiveOrcidConfig(req);
+      const redirectUri = config.redirectUri;
+      const tokenResp = await fetch(`https://${config.domain}/oauth/token`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          client_id: process.env.ORCID_CLIENT_ID || '',
-          client_secret: process.env.ORCID_CLIENT_SECRET || '',
+          client_id: config.clientId,
+          client_secret: config.clientSecret,
           grant_type: 'authorization_code',
           code,
           redirect_uri: redirectUri,
@@ -4672,6 +5053,14 @@ app.get(
       });
 
       const tokenData = await tokenResp.json();
+      if (!tokenResp.ok || tokenData.error) {
+        throw new Error(
+          tokenData.error_description ||
+            tokenData.error ||
+            'ORCID token exchange failed'
+        );
+      }
+
       const orcidId = tokenData.orcid || '';
       const orcidName = tokenData.name || '';
 
