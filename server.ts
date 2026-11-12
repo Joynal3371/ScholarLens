@@ -489,8 +489,12 @@ async function fetchOpenAlexJson(
     canonicalUrl.includes('?') ? '&' : '?'
   }mailto=${politeMailto}${apiKey ? `&api_key=${encodeURIComponent(apiKey)}` : ''}`;
 
-  if (Date.now() >= openAlexDirectRateLimitedUntil) {
-    const maxAttempts = timeoutMs >= 3000 ? 2 : 1;
+  if (process.env.VERCEL || Date.now() >= openAlexDirectRateLimitedUntil) {
+    const maxAttempts = process.env.VERCEL
+      ? 3
+      : timeoutMs >= 3000
+      ? 2
+      : 1;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         const res = await fetch(fullUrl, {
@@ -507,14 +511,24 @@ async function fetchOpenAlexJson(
           return data;
         }
         if (res.status === 429) {
-          openAlexDirectRateLimitedUntil = Date.now() + 5 * 60 * 1000;
-          break;
+          if (!process.env.VERCEL) {
+            // Locally, route via Vercel proxy for 5m instead of repeating direct 429s
+            openAlexDirectRateLimitedUntil = Date.now() + 5 * 60 * 1000;
+            break;
+          }
+          if (attempt + 1 < maxAttempts) {
+            await new Promise((r) => setTimeout(r, 350 * (attempt + 1)));
+            continue;
+          }
         } else if (res.status < 500) {
           return null;
+        } else if (attempt + 1 < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
+          continue;
         }
       } catch {
         if (attempt + 1 < maxAttempts) {
-          await new Promise((r) => setTimeout(r, 120));
+          await new Promise((r) => setTimeout(r, 150 * (attempt + 1)));
           continue;
         }
       }
@@ -3364,13 +3378,21 @@ export async function buildLiveResearcherProfile(
       const baseRecentUrl = `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
         filterIds
       )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&select=${selectFields}&mailto=research@scholarlens.org`;
+      const knownOaWorksCount =
+        openAlexAuthorIds.length === 1
+          ? Number(primaryOpenAlexAuthor?.works_count || 0)
+          : 0;
       const fetchUrls = [
         `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
           filterIds
         )}&sort=cited_by_count:desc&per-page=200&page=1&select=${selectFields}&mailto=research@scholarlens.org`,
-        `${baseRecentUrl}&page=1`,
-        `${baseRecentUrl}&page=2`,
       ];
+      if (knownOaWorksCount === 0 || knownOaWorksCount > 200) {
+        fetchUrls.push(`${baseRecentUrl}&page=1`);
+      }
+      if (knownOaWorksCount === 0 || knownOaWorksCount > 400) {
+        fetchUrls.push(`${baseRecentUrl}&page=2`);
+      }
       const pageMetaResults = await Promise.all(
         fetchUrls.map(async (url) => {
           const worksData = await fetchOpenAlexJson(url, 6500);
@@ -3399,17 +3421,22 @@ export async function buildLiveResearcherProfile(
   // Crossref author fallback when both Google Scholar scraping and OpenAlex yielded 0 works
   if ((!scraped || scraped.publications.length === 0) && rawOaWorks.length === 0) {
     try {
-      const crRes = await fetch(
-        `https://api.crossref.org/works?query.author=${encodeURIComponent(
-          cleanSearchName
-        )}&rows=40&mailto=research@scholarlens.org`,
-        {
-          headers: {
-            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
-          },
-          signal: AbortSignal.timeout(4800),
-        }
-      );
+      const crOrcid =
+        extractEmbeddedOrcid(String(primaryOpenAlexAuthor?.orcid || '')) ||
+        orcidHint;
+      const crUrl = crOrcid
+        ? `https://api.crossref.org/works?filter=orcid:${encodeURIComponent(
+            crOrcid
+          )}&rows=100&mailto=research@scholarlens.org`
+        : `https://api.crossref.org/works?query.author=${encodeURIComponent(
+            cleanSearchName
+          )}&rows=40&mailto=research@scholarlens.org`;
+      const crRes = await fetch(crUrl, {
+        headers: {
+          'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+        },
+        signal: AbortSignal.timeout(4800),
+      });
       if (crRes.ok) {
         const crData = (await crRes.json()) as any;
         const items: any[] = Array.isArray(crData?.message?.items)
@@ -3421,11 +3448,13 @@ export async function buildLiveResearcherProfile(
           ).trim();
           if (!title) continue;
           const authors: any[] = Array.isArray(item.author) ? item.author : [];
-          const hasMatchingAuthor = authors.some((au) => {
-            const full = `${au?.given || ''} ${au?.family || ''}`.trim();
-            return full && isSameResearcherName(full, targetName);
-          });
-          if (!hasMatchingAuthor) continue;
+          if (!crOrcid) {
+            const hasMatchingAuthor = authors.some((au) => {
+              const full = `${au?.given || ''} ${au?.family || ''}`.trim();
+              return full && isSameResearcherName(full, targetName);
+            });
+            if (!hasMatchingAuthor) continue;
+          }
           const venue = String(
             (Array.isArray(item['container-title'])
               ? item['container-title'][0]
@@ -5193,7 +5222,7 @@ export async function buildLiveResearcherProfile(
 
   const orcidRaw: string | undefined = primaryOpenAlexAuthor?.orcid
     ? String(primaryOpenAlexAuthor.orcid).replace('https://orcid.org/', '')
-    : undefined;
+    : orcidHint || undefined;
 
   const openAlexTopics: string[] = Array.isArray(primaryOpenAlexAuthor?.topics)
     ? primaryOpenAlexAuthor.topics
