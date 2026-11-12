@@ -29,9 +29,18 @@ import {
   verifySignedSessionToken,
 } from './src/server/orcidAuth';
 import {
+  DigestWorkItem,
+  PublicResearcherSummary,
+  SocialForbiddenError,
+  SocialNetworkStore,
+  SocialNotFoundError,
+  SocialValidationError,
+} from './src/server/socialStore';
+import {
   buildYahooScholarSearchQueries,
   extractAffiliationKeywords,
   extractPortraitUrlFromHtml,
+  extractSameInstitutionAuthorIds,
   normalizeAsciiWords,
   pickDisambiguationTitles,
   pickInstitutionalProfileUrls,
@@ -2318,11 +2327,51 @@ export async function buildLiveResearcherProfile(
     }
   }
 
+  // Merge any split OpenAlex author IDs belonging to the same researcher at the confirmed primary institution
+  if (primaryOpenAlexAuthor && cleanSearchName) {
+    try {
+      const lki: any[] = Array.isArray(primaryOpenAlexAuthor.last_known_institutions)
+        ? primaryOpenAlexAuthor.last_known_institutions
+        : [];
+      const matchingInst =
+        lki.find((inst) => {
+          const iName = normalizeAsciiWords(String(inst?.display_name || ''));
+          return affilTokens.length > 0 && affilTokens.some((tok) => iName.includes(tok));
+        }) || lki[0];
+      const primaryInstId = String(matchingInst?.id || '')
+        .replace('https://openalex.org/', '')
+        .trim();
+      if (primaryInstId && (affilTokens.length === 0 || bestOaCandidateScore >= 50 || bestAffilMatches > 0)) {
+        const splitAuthorsData = await fetchOpenAlexJson(
+          `https://api.openalex.org/authors?filter=display_name.search:${encodeURIComponent(
+            cleanSearchName
+          )},affiliations.institution.id:${encodeURIComponent(
+            primaryInstId
+          )}&per-page=25&select=id,display_name,works_count,last_known_institutions&mailto=research@scholarlens.org`,
+          3800
+        );
+        const sameInstIds = extractSameInstitutionAuthorIds(
+          Array.isArray(splitAuthorsData?.results) ? splitAuthorsData.results : [],
+          cleanSearchName,
+          isSameResearcherName,
+          8
+        );
+        for (const extraId of sameInstIds) {
+          if (!openAlexAuthorIds.includes(extraId) && openAlexAuthorIds.length < 8) {
+            openAlexAuthorIds.push(extraId);
+          }
+        }
+      }
+    } catch {
+      // Non-fatal if split-author lookup times out
+    }
+  }
+
   // 2. Fetch works from OpenAlex (both top-cited impact works AND recent works by publication year)
   let rawOaWorks: any[] = [];
   if (openAlexAuthorIds.length > 0) {
     try {
-      const filterIds = openAlexAuthorIds.slice(0, 5).join('|');
+      const filterIds = openAlexAuthorIds.slice(0, 8).join('|');
       const fetchUrls = [
         `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
           filterIds
@@ -2368,6 +2417,57 @@ export async function buildLiveResearcherProfile(
         if (wId && !seenOaWorkIds.has(wId)) {
           seenOaWorkIds.add(wId);
           strictScholarOaWorks.push(matchedW);
+        }
+      }
+    }
+
+    // Query OpenAlex by title for recent unmatched Google Scholar papers (catches brand-new works on unlinked split IDs)
+    const minRecentYear = new Date().getFullYear() - 2;
+    const unmatchedRecentIndices: number[] = [];
+    for (let gIdx = 0; gIdx < scraped.publications.length; gIdx++) {
+      if (gsMatchedOaWorkByIndex.has(gIdx)) continue;
+      const gsPub = scraped.publications[gIdx];
+      if ((gsPub.year || 0) >= minRecentYear && String(gsPub.title || '').trim().length >= 12) {
+        unmatchedRecentIndices.push(gIdx);
+        if (unmatchedRecentIndices.length >= 8) break;
+      }
+    }
+    if (unmatchedRecentIndices.length > 0) {
+      const recoveredEntries = await Promise.all(
+        unmatchedRecentIndices.map(async (gIdx) => {
+          const gsPub = scraped.publications[gIdx];
+          try {
+            const wData = await fetchOpenAlexJson(
+              `https://api.openalex.org/works?search=${encodeURIComponent(
+                gsPub.title
+              )}&per-page=3&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
+              3800
+            );
+            const candidates: any[] = Array.isArray(wData?.results) ? wData.results : [];
+            const matched = matchGsTitleToOpenAlexWork(gsPub.title, candidates);
+            if (!matched) return null;
+            const authorships: any[] = Array.isArray(matched.authorships) ? matched.authorships : [];
+            const hasTargetAuthor = authorships.some((au) => {
+              const auName = String(au?.author?.display_name || '').trim();
+              const auId = String(au?.author?.id || '').replace('https://openalex.org/', '').trim();
+              return (
+                (auId && openAlexAuthorIds.includes(auId)) ||
+                (auName && isSameResearcherName(auName, targetName))
+              );
+            });
+            return hasTargetAuthor ? { gIdx, matched } : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      for (const entry of recoveredEntries) {
+        if (!entry) continue;
+        gsMatchedOaWorkByIndex.set(entry.gIdx, entry.matched);
+        const wId = String(entry.matched.id || '');
+        if (wId && !seenOaWorkIds.has(wId)) {
+          seenOaWorkIds.add(wId);
+          strictScholarOaWorks.push(entry.matched);
         }
       }
     }
@@ -3502,6 +3602,24 @@ export async function buildLiveResearcherProfile(
         }
       }
     }
+
+    // Link co-authors who are registered ScholarLens users with verified Scholar IDs
+    const registeredList = await getSocialStore()
+      .listRegisteredResearchers()
+      .catch(() => [] as PublicResearcherSummary[]);
+    if (registeredList.length > 0) {
+      for (const pub of normalizedPublications) {
+        for (const ca of pub.coAuthors || []) {
+          if (ca.scholarUserId) continue;
+          const matchUser = registeredList.find(
+            (ru) => ru.scholarUserId && isSameResearcherName(ca.name, ru.name)
+          );
+          if (matchUser?.scholarUserId) {
+            ca.scholarUserId = matchUser.scholarUserId;
+          }
+        }
+      }
+    }
   } catch {
     // Non-critical co-author pre-enrichment timeout
   }
@@ -3586,7 +3704,7 @@ if (rawSnapshot && typeof rawSnapshot === 'object') {
 
 export const app = express();
 app.set('trust proxy', 1);
-app.use(express.json());
+app.use(express.json({ limit: '4mb' }));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', service: 'ScholarLens Analytics API' });
@@ -4650,6 +4768,68 @@ function getOrcidStore(): OrcidAccountStore {
     });
   }
   return _orcidStore;
+}
+
+const SOCIAL_STORE_FILE = path.resolve(process.cwd(), 'src/data/scholarSocial.json');
+let _socialStore: SocialNetworkStore | null = null;
+function getSocialStore(): SocialNetworkStore {
+  if (!_socialStore) {
+    _socialStore = new SocialNetworkStore({
+      firestoreDocBase: FIRESTORE_DOC_BASE,
+      getBridgeToken: getBridgeIdToken,
+      mirrorFilePath: SOCIAL_STORE_FILE,
+      fallbackUsersProvider: () =>
+        Object.values(scholarClaimsData.users || {})
+          .filter((u) => Boolean(u?.uid))
+          .map((u) => ({
+            uid: u.uid,
+            name: u.displayName || u.orcidId || 'Researcher',
+            ...(u.photoURL ? { photoURL: u.photoURL } : {}),
+            ...(u.scholarUrl ? { scholarUrl: u.scholarUrl } : {}),
+            ...(u.scholarUserId ? { scholarUserId: u.scholarUserId } : {}),
+            ...(u.orcidId ? { orcidId: u.orcidId } : {}),
+            verified: Boolean(u.verified ?? true),
+          })),
+    });
+  }
+  return _socialStore;
+}
+
+function buildWorksDigestFromProfile(profile: ResearcherProfile) {
+  const cleanId = String(profile.scholarUserId || '').trim();
+  if (!cleanId || !Array.isArray(profile.publications)) return null;
+  const works: DigestWorkItem[] = [...profile.publications]
+    .sort((a, b) => (b.year || 0) - (a.year || 0) || (b.citations || 0) - (a.citations || 0))
+    .slice(0, 12)
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      venue: p.venue,
+      year: p.year,
+      citations: p.citations || 0,
+      quartile: p.quartile,
+      type: p.type,
+      ...(p.doi ? { doi: p.doi } : {}),
+      ...(p.url ? { url: p.url } : {}),
+      coAuthorNames: (p.coAuthors || [])
+        .map((c) => c.name)
+        .filter((n) => Boolean(n && !isSameResearcherName(n, profile.name)))
+        .slice(0, 6),
+    }));
+
+  return {
+    scholarUserId: cleanId,
+    name: profile.name,
+    affiliation: profile.homeUniversity || profile.affiliation || 'Academic Researcher',
+    country: profile.homeCountry || '',
+    avatarUrl: profile.avatarUrl,
+    ...(profile.orcid ? { orcid: profile.orcid } : {}),
+    totalCitations: profile.officialMetrics?.totalCitations || 0,
+    hIndex: profile.officialMetrics?.hIndex || 0,
+    publicationCount: profile.publications.length,
+    updatedAt: new Date().toISOString(),
+    works,
+  };
 }
 
 function isLocalHostname(req: express.Request): boolean {
@@ -6155,6 +6335,605 @@ app.get('/api/scholar/claim-status', async (req, res) => {
   });
 });
 
+// ============================================================================
+// RESEARCHER NETWORK: CONNECTIONS, DIRECT MESSAGING, POSTS & NEWSFEED
+// ============================================================================
+
+function sendSocialError(res: express.Response, err: any) {
+  if (
+    err instanceof SocialValidationError ||
+    err instanceof SocialForbiddenError ||
+    err instanceof SocialNotFoundError
+  ) {
+    res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+  res.status(500).json({ error: String(err?.message || 'Internal social service error.') });
+}
+
+function enrichResearchersWithDigests(
+  researchers: PublicResearcherSummary[],
+  digests: Record<string, any>
+): PublicResearcherSummary[] {
+  return researchers.map((r) => {
+    const sid = String(r.scholarUserId || '').trim();
+    const digest = sid ? digests[sid] : undefined;
+    const cachedProf =
+      sid ? profileCache.get(`${sid.toLowerCase()}::`)?.data?.profile : undefined;
+    return {
+      ...r,
+      ...(r.photoURL
+        ? { photoURL: r.photoURL }
+        : sid
+        ? { photoURL: `/api/scholar/avatar?userId=${encodeURIComponent(sid)}` }
+        : {}),
+      affiliation:
+        cachedProf?.homeUniversity ||
+        cachedProf?.affiliation ||
+        digest?.affiliation ||
+        r.affiliation ||
+        '',
+      country: cachedProf?.homeCountry || digest?.country || r.country || '',
+      totalCitations:
+        cachedProf?.officialMetrics?.totalCitations ??
+        digest?.totalCitations ??
+        r.totalCitations ??
+        0,
+      hIndex:
+        cachedProf?.officialMetrics?.hIndex ??
+        digest?.hIndex ??
+        r.hIndex ??
+        0,
+      publicationCount:
+        cachedProf?.publications?.length ??
+        digest?.publicationCount ??
+        r.publicationCount ??
+        0,
+    };
+  });
+}
+
+app.get('/api/social/summary', async (req, res) => {
+  try {
+    const sessionUser = await verifySessionUserFromRequest(req);
+    if (!sessionUser) {
+      res.json({
+        authenticated: false,
+        unreadMessagesCount: 0,
+        pendingConnectionsCount: 0,
+        acceptedConnectionsCount: 0,
+      });
+      return;
+    }
+    const store = getSocialStore();
+    const [conn, convos] = await Promise.all([
+      store.getConnectionsOverview(sessionUser.uid),
+      store.listConversationsForUser(sessionUser.uid),
+    ]);
+    const unreadMessagesCount = convos.reduce(
+      (sum, c) => sum + Number(c.unreadBy?.[sessionUser.uid] || 0),
+      0
+    );
+    res.json({
+      authenticated: true,
+      unreadMessagesCount,
+      pendingConnectionsCount: conn.incomingRequests.length,
+      acceptedConnectionsCount: conn.acceptedUids.length,
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.get('/api/social/researchers', async (req, res) => {
+  try {
+    const store = getSocialStore();
+    const q = String(req.query.q || '').trim().toLowerCase();
+    const [sessionUser, registered, digests] = await Promise.all([
+      verifySessionUserFromRequest(req),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests(),
+    ]);
+
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    let statusByUid: Record<string, string> = {};
+    if (sessionUser) {
+      const conn = await store.getConnectionsOverview(sessionUser.uid);
+      statusByUid = conn.statusByUid;
+    }
+
+    const items = enriched
+      .filter((r) => {
+        if (!q) return true;
+        return (
+          r.name.toLowerCase().includes(q) ||
+          (r.affiliation || '').toLowerCase().includes(q) ||
+          (r.country || '').toLowerCase().includes(q) ||
+          (r.orcidId || '').toLowerCase().includes(q)
+        );
+      })
+      .map((r) => ({
+        ...r,
+        isSelf: Boolean(sessionUser && r.uid === sessionUser.uid),
+        connectionStatus: statusByUid[r.uid] || 'none',
+      }));
+
+    res.json({
+      currentUid: sessionUser?.uid || null,
+      researchers: items,
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.get('/api/social/connections', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in to manage your researcher connections.' });
+    return;
+  }
+  try {
+    const store = getSocialStore();
+    const [overview, registered, digests] = await Promise.all([
+      store.getConnectionsOverview(sessionUser.uid),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests(),
+    ]);
+
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    const byUid = new Map(enriched.map((r) => [r.uid, r]));
+
+    res.json({
+      currentUid: sessionUser.uid,
+      accepted: overview.acceptedUids.map((uid) => byUid.get(uid)).filter(Boolean),
+      incoming: overview.incomingRequests
+        .map((edge) => ({
+          ...edge,
+          researcher: byUid.get(edge.requesterUid) || { uid: edge.requesterUid, name: 'Researcher' },
+        })),
+      outgoing: overview.outgoingRequests
+        .map((edge) => ({
+          ...edge,
+          researcher: byUid.get(edge.recipientUid) || { uid: edge.recipientUid, name: 'Researcher' },
+        })),
+      statusByUid: overview.statusByUid,
+      allResearchers: enriched.map((r) => ({
+        ...r,
+        isSelf: r.uid === sessionUser.uid,
+        connectionStatus: overview.statusByUid[r.uid] || 'none',
+      })),
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.post('/api/social/connections/request', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in to connect with researchers.' });
+    return;
+  }
+  try {
+    const targetUid = String(req.body?.targetUid || '').trim();
+    const note = typeof req.body?.note === 'string' ? req.body.note : undefined;
+    const result = await getSocialStore().sendConnectionRequest(sessionUser.uid, targetUid, note);
+    res.json(result);
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.post('/api/social/connections/respond', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+  try {
+    const requesterUid = String(req.body?.requesterUid || '').trim();
+    const action = req.body?.action === 'decline' ? 'decline' : 'accept';
+    const result = await getSocialStore().respondConnectionRequest(
+      sessionUser.uid,
+      requesterUid,
+      action
+    );
+    res.json(result);
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.delete('/api/social/connections/:otherUid', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+  try {
+    const otherUid = String(req.params.otherUid || '').trim();
+    const result = await getSocialStore().removeConnection(sessionUser.uid, otherUid);
+    res.json(result);
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.get('/api/social/messages/conversations', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in to view your messages.' });
+    return;
+  }
+  try {
+    const store = getSocialStore();
+    const [convos, registered, digests] = await Promise.all([
+      store.listConversationsForUser(sessionUser.uid),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests(),
+    ]);
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    const byUid = new Map(enriched.map((r) => [r.uid, r]));
+
+    const conversations = convos.map((c) => {
+      const partnerUid =
+        c.participants.find((id) => id !== sessionUser.uid) || c.participants[0];
+      return {
+        threadId: c.threadId,
+        partnerUid,
+        partner: byUid.get(partnerUid) || { uid: partnerUid, name: 'Researcher' },
+        lastMessageText: c.lastMessageText,
+        lastMessageAt: c.lastMessageAt,
+        lastSenderUid: c.lastSenderUid,
+        unreadCount: Number(c.unreadBy?.[sessionUser.uid] || 0),
+      };
+    });
+
+    const totalUnread = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
+    res.json({ currentUid: sessionUser.uid, conversations, totalUnread });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.get('/api/social/messages/thread/:partnerUid', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in to view messages.' });
+    return;
+  }
+  try {
+    const partnerUid = String(req.params.partnerUid || '').trim();
+    const store = getSocialStore();
+    const [thread, registered, digests] = await Promise.all([
+      store.getThreadWithUser(sessionUser.uid, partnerUid),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests(),
+    ]);
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    const partner = enriched.find((r) => r.uid === partnerUid) || {
+      uid: partnerUid,
+      name: 'Researcher',
+    };
+    res.json({ currentUid: sessionUser.uid, partner, thread });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.post('/api/social/messages', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in to send messages.' });
+    return;
+  }
+  try {
+    const recipientUid = String(req.body?.recipientUid || '').trim();
+    const text = String(req.body?.text || '');
+    const message = await getSocialStore().sendMessage(sessionUser.uid, recipientUid, text);
+    res.status(201).json({ message });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.get('/api/social/feed', async (req, res) => {
+  try {
+    const filterMode = String(req.query.filter || 'all').toLowerCase();
+    const queryText = String(req.query.q || '').trim().toLowerCase();
+    const offset = Math.max(0, Number(req.query.offset) || 0);
+    const limit = Math.min(40, Math.max(1, Number(req.query.limit) || 15));
+
+    const store = getSocialStore();
+    const [sessionUser, posts, registered, storedDigests] = await Promise.all([
+      verifySessionUserFromRequest(req),
+      store.listPosts(60),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests(),
+    ]);
+
+    const digests = { ...storedDigests };
+    // Ensure cached in-memory profiles are also reflected in feed digests
+    for (const [, entry] of profileCache.entries()) {
+      const prof = entry?.data?.profile;
+      const sid = String(prof?.scholarUserId || '').trim();
+      if (prof && sid && !digests[sid]) {
+        const d = buildWorksDigestFromProfile(prof);
+        if (d) digests[sid] = d;
+      }
+    }
+
+    // Hydrate up to 2 registered site researchers who don't yet have cached works for the newsfeed
+    const missingRegIds = registered
+      .map((r) => String(r.scholarUserId || '').trim())
+      .filter((sid) => sid && !digests[sid])
+      .slice(0, 2);
+    if (missingRegIds.length > 0) {
+      await Promise.race([
+        Promise.allSettled(
+          missingRegIds.map(async (sid) => {
+            const built = await buildLiveResearcherProfile(sid, '');
+            if (built?.profile) {
+              profileCache.set(`${sid.toLowerCase()}::`, {
+                timestamp: Date.now(),
+                data: built,
+              });
+              const d = buildWorksDigestFromProfile(built.profile);
+              if (d) {
+                digests[sid] = d;
+                void store.recordResearcherWorksDigest(d).catch(() => {});
+              }
+            }
+          })
+        ),
+        new Promise((resolve) => setTimeout(resolve, 4200)),
+      ]);
+    }
+
+    const enrichedUsers = enrichResearchersWithDigests(registered, digests);
+    const userByUid = new Map(enrichedUsers.map((u) => [u.uid, u]));
+    const userByScholarId = new Map<string, PublicResearcherSummary>();
+    for (const u of enrichedUsers) {
+      if (u.scholarUserId) userByScholarId.set(u.scholarUserId.trim(), u);
+    }
+
+    let acceptedSet = new Set<string>();
+    let statusByUid: Record<string, string> = {};
+    if (sessionUser) {
+      const conn = await store.getConnectionsOverview(sessionUser.uid);
+      acceptedSet = new Set(conn.acceptedUids);
+      statusByUid = conn.statusByUid;
+    }
+
+    const postFeedItems = posts.map((post) => {
+      const author = userByUid.get(post.authorUid) || {
+        uid: post.authorUid,
+        name: 'Researcher',
+      };
+      return {
+        feedId: `feed_post_${post.id}`,
+        kind: 'post' as const,
+        postId: post.id,
+        createdAt: post.createdAt,
+        sortScore: new Date(post.createdAt).getTime() || Date.now(),
+        author: {
+          ...author,
+          connectionStatus: statusByUid[author.uid] || 'none',
+          isSelf: Boolean(sessionUser && author.uid === sessionUser.uid),
+        },
+        caption: post.caption,
+        mentionedWork: post.mentionedWork || null,
+        taggedCoAuthors: post.taggedCoAuthors || [],
+        images: post.images || [],
+        video: post.video || null,
+        likesCount: (post.likes || []).length,
+        likedByMe: Boolean(sessionUser && (post.likes || []).includes(sessionUser.uid)),
+        comments: (post.comments || []).map((c) => {
+          const cAuthor = userByUid.get(c.authorUid);
+          return {
+            ...c,
+            authorName: cAuthor?.name || 'Researcher',
+            authorPhoto: cAuthor?.photoURL || '',
+            authorScholarUserId: cAuthor?.scholarUserId || '',
+          };
+        }),
+      };
+    });
+
+    const seenWorkKeys = new Set<string>();
+    const workFeedItems: any[] = [];
+    for (const digest of Object.values(digests)) {
+      const regUser = userByScholarId.get(digest.scholarUserId);
+      const authorUid = regUser?.uid || '';
+      const authorPhoto =
+        regUser?.photoURL ||
+        digest.avatarUrl ||
+        `/api/scholar/avatar?userId=${encodeURIComponent(digest.scholarUserId)}`;
+
+      for (const work of digest.works || []) {
+        const wKey = `${work.title.toLowerCase().slice(0, 60)}::${digest.scholarUserId}`;
+        if (seenWorkKeys.has(wKey)) continue;
+        seenWorkKeys.add(wKey);
+
+        const syntheticTs =
+          new Date(
+            Math.max(1995, Math.min(2027, work.year || 2024)),
+            0,
+            15
+          ).getTime() +
+          Math.min(work.citations || 0, 500) * 100000;
+
+        workFeedItems.push({
+          feedId: `feed_work_${digest.scholarUserId}_${work.id}`,
+          kind: 'work' as const,
+          createdAt: `${work.year || new Date().getFullYear()}-01-15T00:00:00.000Z`,
+          sortScore: syntheticTs,
+          author: {
+            uid: authorUid,
+            name: regUser?.name || digest.name,
+            photoURL: authorPhoto,
+            scholarUserId: digest.scholarUserId,
+            orcidId: regUser?.orcidId || digest.orcid,
+            affiliation: regUser?.affiliation || digest.affiliation,
+            country: regUser?.country || digest.country,
+            verified: Boolean(regUser?.verified),
+            connectionStatus: authorUid ? statusByUid[authorUid] || 'none' : 'none',
+            isSelf: Boolean(sessionUser && authorUid && authorUid === sessionUser.uid),
+          },
+          work,
+        });
+      }
+    }
+
+    workFeedItems.sort((a, b) => {
+      const yearDiff = (b.work.year || 0) - (a.work.year || 0);
+      if (yearDiff !== 0) return yearDiff;
+      return (b.work.citations || 0) - (a.work.citations || 0);
+    });
+
+    let combined: any[];
+    if (filterMode === 'posts') {
+      combined = postFeedItems;
+    } else if (filterMode === 'works') {
+      combined = workFeedItems;
+    } else if (filterMode === 'connections' && sessionUser) {
+      combined = [
+        ...postFeedItems.filter(
+          (i) => i.author.uid === sessionUser.uid || acceptedSet.has(i.author.uid)
+        ),
+        ...workFeedItems.filter(
+          (i) => i.author.uid && acceptedSet.has(i.author.uid)
+        ),
+      ];
+    } else {
+      // Interleave newest authored posts prominently at top alongside recent researcher works
+      combined = [...postFeedItems, ...workFeedItems];
+    }
+
+    if (queryText) {
+      combined = combined.filter((item) => {
+        const hay = [
+          item.author?.name,
+          item.author?.affiliation,
+          item.caption,
+          item.mentionedWork?.title,
+          item.mentionedWork?.venue,
+          item.work?.title,
+          item.work?.venue,
+          ...(item.taggedCoAuthors || []).map((t: any) => t.name),
+          ...(item.work?.coAuthorNames || []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        return hay.includes(queryText);
+      });
+    }
+
+    const totalCount = combined.length;
+    const paged = combined.slice(offset, offset + limit);
+
+    res.json({
+      items: paged,
+      totalCount,
+      hasMore: offset + paged.length < totalCount,
+      researchersCount: enrichedUsers.length,
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.post('/api/social/posts', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in with ORCID to publish a research post.' });
+    return;
+  }
+  try {
+    const post = await getSocialStore().createPost(sessionUser.uid, {
+      caption: req.body?.caption,
+      mentionedWork: req.body?.mentionedWork,
+      taggedCoAuthors: req.body?.taggedCoAuthors,
+      images: req.body?.images,
+      videoUrl: req.body?.videoUrl,
+    });
+    res.status(201).json({ post });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.post('/api/social/posts/:postId/like', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in to like posts.' });
+    return;
+  }
+  try {
+    const post = await getSocialStore().toggleLikePost(
+      sessionUser.uid,
+      String(req.params.postId || '')
+    );
+    res.json({
+      postId: post.id,
+      likesCount: post.likes.length,
+      likedByMe: post.likes.includes(sessionUser.uid),
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.post('/api/social/posts/:postId/comment', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Please sign in to comment.' });
+    return;
+  }
+  try {
+    const post = await getSocialStore().addCommentToPost(
+      sessionUser.uid,
+      String(req.params.postId || ''),
+      String(req.body?.text || '')
+    );
+    const registered = await getSocialStore().listRegisteredResearchers();
+    const userByUid = new Map(registered.map((u) => [u.uid, u]));
+    res.status(201).json({
+      postId: post.id,
+      comments: post.comments.map((c) => {
+        const cAuthor = userByUid.get(c.authorUid);
+        return {
+          ...c,
+          authorName: cAuthor?.name || 'Researcher',
+          authorPhoto: cAuthor?.photoURL || '',
+          authorScholarUserId: cAuthor?.scholarUserId || '',
+        };
+      }),
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
+app.delete('/api/social/posts/:postId', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+  try {
+    await getSocialStore().deletePost(
+      sessionUser.uid,
+      String(req.params.postId || '')
+    );
+    res.json({ success: true });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+
 // Proxies the researcher's or co-author's authentic profile photo (with CORS headers for PDF & Canvas export)
 app.get('/api/scholar/avatar', async (req, res) => {
   const userId = String(req.query.userId || '').trim();
@@ -6730,6 +7509,10 @@ app.get('/api/scholar/analyze', async (req, res) => {
         timestamp: Date.now(),
         data: result,
       });
+    }
+    const digest = buildWorksDigestFromProfile(result.profile);
+    if (digest) {
+      void getSocialStore().recordResearcherWorksDigest(digest).catch(() => {});
     }
 
     res.json(result);

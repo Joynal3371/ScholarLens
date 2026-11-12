@@ -4,6 +4,7 @@ import {
   buildYahooScholarSearchQueries,
   extractAffiliationKeywords,
   extractPortraitUrlFromHtml,
+  extractSameInstitutionAuthorIds,
   pickDisambiguationTitles,
   pickInstitutionalProfileUrls,
   rankOpenAlexAuthorsFromWorks,
@@ -152,4 +153,18 @@ test('buildYahooScholarSearchQueries scopes university when known and skips Inde
     buildYahooScholarSearchQueries('Guido Tosello', 'Independent / Unlisted'),
     ['Guido Tosello scholar.google.com/citations']
   );
+});
+
+test('extractSameInstitutionAuthorIds collects split OpenAlex author records matching name', () => {
+  const merged = extractSameInstitutionAuthorIds(
+    [
+      { id: 'https://openalex.org/A5044908817', display_name: 'Aminul Islam', works_count: 47 },
+      { id: 'https://openalex.org/A9999999999', display_name: 'Md Aminul Hoque', works_count: 15 },
+      { id: 'https://openalex.org/A5139503707', display_name: 'Aminul Islam', works_count: 2 },
+      { id: 'https://openalex.org/A5101775050', display_name: 'Aminul Islam', works_count: 130 },
+    ],
+    'Aminul Islam',
+    simpleSameName
+  );
+  assert.deepEqual(merged, ['A5101775050', 'A5044908817', 'A5139503707']);
 });

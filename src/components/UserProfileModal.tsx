@@ -21,7 +21,6 @@ interface UserProfileModalProps {
   onUpdateUser: (updated: AuthenticatedResearcher) => void;
   onSignOut: () => void;
   onRemoveAccount: () => void;
-  onViewMyProfile?: () => void;
 }
 
 function resizeImageFileToDataUri(file: File): Promise<string> {
@@ -72,7 +71,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onUpdateUser,
   onSignOut,
   onRemoveAccount,
-  onViewMyProfile,
 }) => {
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState('');
@@ -390,21 +388,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <ExternalLink className="w-3 h-3 text-emerald-600" />
               </a>
             </div>
-          )}
-
-          {/* View My Profile in ScholarLens */}
-          {onViewMyProfile && (user.scholarUrl || user.scholarUserId) && (
-            <button
-              type="button"
-              onClick={() => {
-                onViewMyProfile();
-                onClose();
-              }}
-              className="w-full py-2 px-3 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
-            >
-              <UserIcon className="w-4 h-4" />
-              <span>View My Profile in ScholarLens</span>
-            </button>
           )}
 
           {error && (

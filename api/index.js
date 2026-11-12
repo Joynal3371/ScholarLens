@@ -1,7 +1,7 @@
 // server.ts
 import express from "express";
-import path from "path";
-import fs from "fs";
+import path2 from "path";
+import fs2 from "fs";
 import dotenv from "dotenv";
 
 // firebase-applet-config.json
@@ -969,6 +969,660 @@ var OrcidAccountStore = class {
   }
 };
 
+// src/server/socialStore.ts
+import crypto2 from "crypto";
+import fs from "fs";
+import path from "path";
+function canonicalPairId(uidA, uidB) {
+  const cleanA = String(uidA || "").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+  const cleanB = String(uidB || "").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+  return [cleanA, cleanB].sort().join("__");
+}
+function sanitizePostId(rawId) {
+  return String(rawId || "").trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+}
+var SocialValidationError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+    this.name = "SocialValidationError";
+  }
+};
+var SocialForbiddenError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403;
+    this.name = "SocialForbiddenError";
+  }
+};
+var SocialNotFoundError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 404;
+    this.name = "SocialNotFoundError";
+  }
+};
+function parseFirestoreString(field) {
+  return typeof field?.stringValue === "string" ? field.stringValue : "";
+}
+function parseFirestoreBoolean(field) {
+  return typeof field?.booleanValue === "boolean" ? field.booleanValue : false;
+}
+function isAllowedImageInput(url) {
+  const clean = String(url || "").trim();
+  if (!clean || clean.length > 36e4) return false;
+  if (/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(clean)) {
+    return true;
+  }
+  return /^https?:\/\/.+/i.test(clean) && clean.length <= 2e3;
+}
+function isAllowedVideoInput(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return { valid: false, kind: "external" };
+  if (/^data:video\/(mp4|webm|ogg);base64,[A-Za-z0-9+/=]+$/i.test(clean)) {
+    return { valid: clean.length <= 75e4, kind: "upload" };
+  }
+  if (/^https?:\/\/.+/i.test(clean) && clean.length <= 2e3) {
+    return { valid: true, kind: "external" };
+  }
+  return { valid: false, kind: "external" };
+}
+var SocialNetworkStore = class {
+  constructor(options) {
+    this.mirror = {
+      connections: [],
+      threadsIndex: {},
+      threads: {},
+      postsOrder: [],
+      posts: {},
+      worksDigests: {}
+    };
+    this.firestoreDocBase = options.firestoreDocBase.replace(/\/$/, "");
+    this.getBridgeToken = options.getBridgeToken;
+    this.fetchImpl = options.fetchImpl || fetch;
+    this.mirrorFilePath = options.mirrorFilePath;
+    this.fallbackUsersProvider = options.fallbackUsersProvider;
+    this.loadMirrorFromDisk();
+  }
+  loadMirrorFromDisk() {
+    if (!this.mirrorFilePath) return;
+    try {
+      if (fs.existsSync(this.mirrorFilePath)) {
+        const parsed = JSON.parse(fs.readFileSync(this.mirrorFilePath, "utf8"));
+        this.mirror = {
+          connections: Array.isArray(parsed?.connections) ? parsed.connections : [],
+          threadsIndex: parsed?.threadsIndex && typeof parsed.threadsIndex === "object" ? parsed.threadsIndex : {},
+          threads: parsed?.threads && typeof parsed.threads === "object" ? parsed.threads : {},
+          postsOrder: Array.isArray(parsed?.postsOrder) ? parsed.postsOrder : [],
+          posts: parsed?.posts && typeof parsed.posts === "object" ? parsed.posts : {},
+          worksDigests: parsed?.worksDigests && typeof parsed.worksDigests === "object" ? parsed.worksDigests : {}
+        };
+      }
+    } catch {
+    }
+  }
+  persistMirrorToDisk() {
+    if (!this.mirrorFilePath) return;
+    try {
+      const dir = path.dirname(this.mirrorFilePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(this.mirrorFilePath, JSON.stringify(this.mirror, null, 2), "utf8");
+    } catch {
+    }
+  }
+  async readJsonDoc(docKey) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token || !this.firestoreDocBase) return "UNAVAILABLE";
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(4e3)
+        }
+      );
+      if (resp.status === 404) return null;
+      if (!resp.ok) return "UNAVAILABLE";
+      const data = await resp.json();
+      const rawJson = parseFirestoreString(data?.fields?.payloadJson);
+      if (!rawJson) return null;
+      return JSON.parse(rawJson);
+    } catch {
+      return "UNAVAILABLE";
+    }
+  }
+  async writeJsonDoc(docKey, payload) {
+    const serialized = JSON.stringify(payload);
+    if (serialized.length > 9e5) {
+      throw new SocialValidationError(
+        "Attachment payload exceeds storage size limit. Please use smaller compressed images or a video link."
+      );
+    }
+    try {
+      const token = await this.getBridgeToken();
+      if (!token || !this.firestoreDocBase) return false;
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            fields: {
+              key: { stringValue: docKey },
+              payloadJson: { stringValue: serialized },
+              updatedAtMs: { integerValue: String(Date.now()) }
+            }
+          }),
+          signal: AbortSignal.timeout(4500)
+        }
+      );
+      return resp.ok;
+    } catch {
+      return false;
+    }
+  }
+  async deleteJsonDoc(docKey) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token || !this.firestoreDocBase) return false;
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(4e3)
+        }
+      );
+      return resp.ok || resp.status === 404;
+    } catch {
+      return false;
+    }
+  }
+  /**
+   * Lists sanitized researcher profiles registered on ScholarLens from Firestore `users` + fallback mirror.
+   */
+  async listRegisteredResearchers() {
+    const byUid = /* @__PURE__ */ new Map();
+    const fallbackUsers = this.fallbackUsersProvider?.() || [];
+    for (const u of fallbackUsers) {
+      if (!u.uid) continue;
+      byUid.set(u.uid, { ...u });
+    }
+    try {
+      const token = await this.getBridgeToken();
+      if (token && this.firestoreDocBase) {
+        const resp = await this.fetchImpl(
+          `${this.firestoreDocBase}/users?pageSize=120`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(4500)
+          }
+        );
+        if (resp.ok) {
+          const data = await resp.json();
+          for (const docItem of data?.documents || []) {
+            const fields = docItem?.fields;
+            if (!fields) continue;
+            const docUid = parseFirestoreString(fields.uid) || String(docItem.name || "").split("/").pop() || "";
+            if (!docUid) continue;
+            const name = parseFirestoreString(fields.name) || parseFirestoreString(fields.displayName) || parseFirestoreString(fields.orcidId) || "Researcher";
+            const photoURL = parseFirestoreString(fields.photoURL) || void 0;
+            const scholarUrl = parseFirestoreString(fields.scholarUrl) || void 0;
+            const scholarUserId = parseFirestoreString(fields.scholarUserId) || void 0;
+            const orcidId = parseFirestoreString(fields.orcidId) || void 0;
+            const verified = parseFirestoreBoolean(fields.verified) || Boolean(orcidId);
+            byUid.set(docUid, {
+              uid: docUid,
+              name,
+              ...photoURL ? { photoURL } : {},
+              ...scholarUrl ? { scholarUrl } : {},
+              ...scholarUserId ? { scholarUserId } : {},
+              ...orcidId ? { orcidId } : {},
+              verified
+            });
+          }
+        }
+      }
+    } catch {
+    }
+    return Array.from(byUid.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+  async loadConnections() {
+    const remote = await this.readJsonDoc("social_connections");
+    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.edges)) {
+      this.mirror.connections = remote.edges;
+      return remote.edges;
+    }
+    if (remote === null) {
+      this.mirror.connections = [];
+      return [];
+    }
+    return this.mirror.connections;
+  }
+  async saveConnections(edges) {
+    this.mirror.connections = edges;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_connections", { edges });
+  }
+  async getConnectionsOverview(currentUid) {
+    const edges = await this.loadConnections();
+    const acceptedUids = [];
+    const incomingRequests = [];
+    const outgoingRequests = [];
+    const statusByUid = {};
+    for (const edge of edges) {
+      if (edge.requesterUid !== currentUid && edge.recipientUid !== currentUid) {
+        continue;
+      }
+      const otherUid = edge.requesterUid === currentUid ? edge.recipientUid : edge.requesterUid;
+      if (edge.status === "accepted") {
+        acceptedUids.push(otherUid);
+        statusByUid[otherUid] = "connected";
+      } else if (edge.recipientUid === currentUid) {
+        incomingRequests.push(edge);
+        statusByUid[otherUid] = "pending_received";
+      } else {
+        outgoingRequests.push(edge);
+        statusByUid[otherUid] = "pending_sent";
+      }
+    }
+    return { acceptedUids, incomingRequests, outgoingRequests, statusByUid };
+  }
+  async sendConnectionRequest(fromUid, toUid, note) {
+    const cleanFrom = String(fromUid || "").trim();
+    const cleanTo = String(toUid || "").trim();
+    if (!cleanFrom || !cleanTo) {
+      throw new SocialValidationError("Both sender and recipient identifiers are required.");
+    }
+    if (cleanFrom === cleanTo) {
+      throw new SocialValidationError("You cannot send a connection request to yourself.");
+    }
+    const pairId = canonicalPairId(cleanFrom, cleanTo);
+    const edges = await this.loadConnections();
+    const existingIdx = edges.findIndex((e) => e.id === pairId);
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    if (existingIdx >= 0) {
+      const existing = edges[existingIdx];
+      if (existing.status === "accepted") {
+        return { status: "connected", edge: existing };
+      }
+      if (existing.requesterUid === cleanTo && existing.recipientUid === cleanFrom) {
+        const updated = {
+          ...existing,
+          status: "accepted",
+          updatedAt: nowIso
+        };
+        edges[existingIdx] = updated;
+        await this.saveConnections(edges);
+        return { status: "connected", edge: updated };
+      }
+      return { status: "pending_sent", edge: existing };
+    }
+    const created = {
+      id: pairId,
+      requesterUid: cleanFrom,
+      recipientUid: cleanTo,
+      status: "pending",
+      ...note && note.trim() ? { note: note.trim().slice(0, 280) } : {},
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    const next = [...edges, created];
+    await this.saveConnections(next);
+    return { status: "pending_sent", edge: created };
+  }
+  async respondConnectionRequest(currentUid, requesterUid, action) {
+    const pairId = canonicalPairId(currentUid, requesterUid);
+    const edges = await this.loadConnections();
+    const idx = edges.findIndex((e) => e.id === pairId);
+    if (idx < 0) {
+      throw new SocialNotFoundError("Connection invitation was not found.");
+    }
+    const edge = edges[idx];
+    if (edge.status === "pending" && edge.recipientUid !== currentUid) {
+      throw new SocialForbiddenError("Only the recipient can respond to a connection invitation.");
+    }
+    if (action === "accept") {
+      edges[idx] = {
+        ...edge,
+        status: "accepted",
+        updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      await this.saveConnections(edges);
+      return { status: "connected" };
+    }
+    const filtered = edges.filter((e) => e.id !== pairId);
+    await this.saveConnections(filtered);
+    return { status: "none" };
+  }
+  async removeConnection(currentUid, otherUid) {
+    const pairId = canonicalPairId(currentUid, otherUid);
+    const edges = await this.loadConnections();
+    const next = edges.filter((e) => e.id !== pairId);
+    if (next.length !== edges.length) {
+      await this.saveConnections(next);
+    }
+    return { status: "none" };
+  }
+  async loadThreadsIndex() {
+    const remote = await this.readJsonDoc(
+      "social_threads_index"
+    );
+    if (remote && remote !== "UNAVAILABLE" && remote.threads) {
+      this.mirror.threadsIndex = remote.threads;
+      return remote.threads;
+    }
+    if (remote === null) {
+      this.mirror.threadsIndex = {};
+      return {};
+    }
+    return this.mirror.threadsIndex;
+  }
+  async saveThreadsIndex(threads) {
+    this.mirror.threadsIndex = threads;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_threads_index", { threads });
+  }
+  async loadThreadMessages(threadId) {
+    const remote = await this.readJsonDoc(
+      `social_thread_${threadId}`
+    );
+    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.messages)) {
+      this.mirror.threads[threadId] = remote.messages;
+      return remote.messages;
+    }
+    if (remote === null) {
+      this.mirror.threads[threadId] = [];
+      return [];
+    }
+    return this.mirror.threads[threadId] || [];
+  }
+  async saveThreadMessages(threadId, messages) {
+    const trimmed = messages.slice(-250);
+    this.mirror.threads[threadId] = trimmed;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc(`social_thread_${threadId}`, { messages: trimmed });
+  }
+  async listConversationsForUser(currentUid) {
+    const index = await this.loadThreadsIndex();
+    return Object.values(index).filter((t) => Array.isArray(t.participants) && t.participants.includes(currentUid)).sort((a, b) => String(b.lastMessageAt).localeCompare(String(a.lastMessageAt)));
+  }
+  async getThreadWithUser(currentUid, partnerUid) {
+    const threadId = canonicalPairId(currentUid, partnerUid);
+    const [index, messages] = await Promise.all([
+      this.loadThreadsIndex(),
+      this.loadThreadMessages(threadId)
+    ]);
+    const summary = index[threadId] || {
+      threadId,
+      participants: [currentUid, partnerUid].sort(),
+      lastMessageText: "",
+      lastMessageAt: "",
+      lastSenderUid: "",
+      unreadBy: {}
+    };
+    if (summary.unreadBy?.[currentUid]) {
+      summary.unreadBy = { ...summary.unreadBy, [currentUid]: 0 };
+      index[threadId] = summary;
+      await this.saveThreadsIndex(index);
+    }
+    return {
+      ...summary,
+      messages
+    };
+  }
+  async sendMessage(senderUid, recipientUid, rawText) {
+    const cleanSender = String(senderUid || "").trim();
+    const cleanRecipient = String(recipientUid || "").trim();
+    const cleanText = String(rawText || "").trim();
+    if (!cleanSender || !cleanRecipient) {
+      throw new SocialValidationError("Sender and recipient are required.");
+    }
+    if (cleanSender === cleanRecipient) {
+      throw new SocialValidationError("You cannot send direct messages to yourself.");
+    }
+    if (!cleanText) {
+      throw new SocialValidationError("Message cannot be empty.");
+    }
+    if (cleanText.length > 4e3) {
+      throw new SocialValidationError("Message exceeds maximum length of 4,000 characters.");
+    }
+    const threadId = canonicalPairId(cleanSender, cleanRecipient);
+    const [index, existingMessages] = await Promise.all([
+      this.loadThreadsIndex(),
+      this.loadThreadMessages(threadId)
+    ]);
+    const msg = {
+      id: `msg_${Date.now()}_${crypto2.randomBytes(4).toString("hex")}`,
+      senderUid: cleanSender,
+      recipientUid: cleanRecipient,
+      text: cleanText,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const nextMessages = [...existingMessages, msg];
+    await this.saveThreadMessages(threadId, nextMessages);
+    const prevUnread = Number(index[threadId]?.unreadBy?.[cleanRecipient] || 0);
+    index[threadId] = {
+      threadId,
+      participants: [cleanSender, cleanRecipient].sort(),
+      lastMessageText: cleanText.slice(0, 140),
+      lastMessageAt: msg.createdAt,
+      lastSenderUid: cleanSender,
+      unreadBy: {
+        ...index[threadId]?.unreadBy || {},
+        [cleanSender]: 0,
+        [cleanRecipient]: prevUnread + 1
+      }
+    };
+    await this.saveThreadsIndex(index);
+    return msg;
+  }
+  async loadPostsOrder() {
+    const remote = await this.readJsonDoc("social_posts_index");
+    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.order)) {
+      this.mirror.postsOrder = remote.order;
+      return remote.order;
+    }
+    if (remote === null) {
+      this.mirror.postsOrder = [];
+      return [];
+    }
+    return this.mirror.postsOrder;
+  }
+  async savePostsOrder(order) {
+    const trimmed = order.slice(0, 120);
+    this.mirror.postsOrder = trimmed;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_posts_index", { order: trimmed });
+  }
+  async loadPostDoc(postId) {
+    const cleanId = sanitizePostId(postId);
+    if (!cleanId) return null;
+    const remote = await this.readJsonDoc(`social_post_${cleanId}`);
+    if (remote && remote !== "UNAVAILABLE" && remote.id) {
+      this.mirror.posts[cleanId] = remote;
+      return remote;
+    }
+    if (remote === null) return null;
+    return this.mirror.posts[cleanId] || null;
+  }
+  async savePostDoc(post) {
+    this.mirror.posts[post.id] = post;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc(`social_post_${post.id}`, post);
+  }
+  async createPost(authorUid, input) {
+    const caption = String(input.caption || "").trim().slice(0, 4e3);
+    const images = [];
+    for (const rawImg of Array.isArray(input.images) ? input.images : []) {
+      const cleanImg = String(rawImg || "").trim();
+      if (!cleanImg) continue;
+      if (!isAllowedImageInput(cleanImg)) {
+        throw new SocialValidationError(
+          "Each image must be a valid HTTP(S) URL or compressed JPEG/PNG/WebP/GIF under 350 KB."
+        );
+      }
+      images.push(cleanImg);
+      if (images.length >= 3) break;
+    }
+    let video = null;
+    if (input.videoUrl && String(input.videoUrl).trim()) {
+      const cleanVideo = String(input.videoUrl).trim();
+      const check = isAllowedVideoInput(cleanVideo);
+      if (!check.valid) {
+        throw new SocialValidationError(
+          "Video must be a valid HTTP(S) video link (e.g., YouTube/MP4) or uploaded MP4/WebM clip under 750 KB."
+        );
+      }
+      video = { url: cleanVideo, kind: check.kind };
+    }
+    let mentionedWork = null;
+    if (input.mentionedWork && String(input.mentionedWork.title || "").trim()) {
+      const w = input.mentionedWork;
+      mentionedWork = {
+        ...w.id ? { id: String(w.id).slice(0, 80) } : {},
+        title: String(w.title).trim().slice(0, 320),
+        ...w.venue ? { venue: String(w.venue).trim().slice(0, 200) } : {},
+        ...typeof w.year === "number" && Number.isFinite(w.year) ? { year: w.year } : {},
+        ...typeof w.citations === "number" && Number.isFinite(w.citations) ? { citations: w.citations } : {},
+        ...w.quartile ? { quartile: String(w.quartile).slice(0, 16) } : {},
+        ...w.type ? { type: String(w.type).slice(0, 32) } : {},
+        ...w.doi ? { doi: String(w.doi).slice(0, 160) } : {},
+        ...w.url && /^https?:\/\//i.test(w.url) ? { url: String(w.url).slice(0, 500) } : {}
+      };
+    }
+    const taggedCoAuthors = [];
+    const seenTags = /* @__PURE__ */ new Set();
+    for (const tag of Array.isArray(input.taggedCoAuthors) ? input.taggedCoAuthors : []) {
+      const name = String(tag?.name || "").trim().slice(0, 120);
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (seenTags.has(key)) continue;
+      seenTags.add(key);
+      taggedCoAuthors.push({
+        name,
+        ...tag.scholarUserId ? { scholarUserId: String(tag.scholarUserId).slice(0, 64) } : {},
+        ...tag.uid ? { uid: String(tag.uid).slice(0, 128) } : {},
+        ...tag.university ? { university: String(tag.university).slice(0, 180) } : {}
+      });
+      if (taggedCoAuthors.length >= 15) break;
+    }
+    if (!caption && !mentionedWork && images.length === 0 && !video) {
+      throw new SocialValidationError(
+        "Please add a caption, mention a research work, or attach an image/video before posting."
+      );
+    }
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    const post = {
+      id: `post_${Date.now()}_${crypto2.randomBytes(4).toString("hex")}`,
+      authorUid,
+      caption,
+      mentionedWork,
+      taggedCoAuthors,
+      images,
+      video,
+      likes: [],
+      comments: [],
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    await this.savePostDoc(post);
+    const order = await this.loadPostsOrder();
+    await this.savePostsOrder([post.id, ...order.filter((id) => id !== post.id)]);
+    return post;
+  }
+  async listPosts(limit = 40) {
+    const order = await this.loadPostsOrder();
+    const slice = order.slice(0, limit);
+    const docs = await Promise.all(slice.map((id) => this.loadPostDoc(id)));
+    return docs.filter((p) => Boolean(p));
+  }
+  async toggleLikePost(uid, postId) {
+    const post = await this.loadPostDoc(postId);
+    if (!post) throw new SocialNotFoundError("Post not found.");
+    const likes = Array.isArray(post.likes) ? [...post.likes] : [];
+    const idx = likes.indexOf(uid);
+    if (idx >= 0) {
+      likes.splice(idx, 1);
+    } else {
+      likes.push(uid);
+    }
+    const updated = {
+      ...post,
+      likes,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    await this.savePostDoc(updated);
+    return updated;
+  }
+  async addCommentToPost(uid, postId, rawText) {
+    const cleanText = String(rawText || "").trim();
+    if (!cleanText) throw new SocialValidationError("Comment cannot be empty.");
+    if (cleanText.length > 1500) {
+      throw new SocialValidationError("Comment exceeds 1,500 characters.");
+    }
+    const post = await this.loadPostDoc(postId);
+    if (!post) throw new SocialNotFoundError("Post not found.");
+    const comment = {
+      id: `cmt_${Date.now()}_${crypto2.randomBytes(3).toString("hex")}`,
+      authorUid: uid,
+      text: cleanText,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const updated = {
+      ...post,
+      comments: [...post.comments || [], comment].slice(-100),
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    await this.savePostDoc(updated);
+    return updated;
+  }
+  async deletePost(uid, postId) {
+    const post = await this.loadPostDoc(postId);
+    if (!post) throw new SocialNotFoundError("Post not found.");
+    if (post.authorUid !== uid) {
+      throw new SocialForbiddenError("Only the author can delete this post.");
+    }
+    const cleanId = sanitizePostId(postId);
+    delete this.mirror.posts[cleanId];
+    const order = await this.loadPostsOrder();
+    await this.savePostsOrder(order.filter((id) => id !== cleanId));
+    await this.deleteJsonDoc(`social_post_${cleanId}`);
+  }
+  async listResearcherWorksDigests() {
+    const remote = await this.readJsonDoc(
+      "social_works_digests"
+    );
+    if (remote && remote !== "UNAVAILABLE" && remote.digests) {
+      this.mirror.worksDigests = remote.digests;
+      return remote.digests;
+    }
+    if (remote === null) {
+      this.mirror.worksDigests = {};
+      return {};
+    }
+    return this.mirror.worksDigests;
+  }
+  async recordResearcherWorksDigest(digest) {
+    const cleanId = String(digest.scholarUserId || "").trim();
+    if (!cleanId) return;
+    const digests = { ...await this.listResearcherWorksDigests() };
+    digests[cleanId] = {
+      ...digest,
+      scholarUserId: cleanId,
+      works: (digest.works || []).slice(0, 12)
+    };
+    const sortedEntries = Object.entries(digests).sort((a, b) => String(b[1].updatedAt).localeCompare(String(a[1].updatedAt))).slice(0, 20);
+    const trimmed = Object.fromEntries(sortedEntries);
+    this.mirror.worksDigests = trimmed;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_works_digests", { digests: trimmed });
+  }
+};
+
 // src/server/openAlexDisambiguation.ts
 var AFFIL_STOPWORDS = /* @__PURE__ */ new Set([
   "dept",
@@ -1248,6 +1902,22 @@ function buildYahooScholarSearchQueries(name, university) {
   }
   queries.push(`${cleanName} scholar.google.com/citations`);
   return queries;
+}
+function extractSameInstitutionAuthorIds(instAuthors, cleanSearchName, isSameName, maxIds = 8) {
+  const ids = [];
+  const sorted = [...instAuthors || []].sort(
+    (a, b) => Number(b?.works_count || 0) - Number(a?.works_count || 0)
+  );
+  for (const cand of sorted) {
+    const cName = String(cand?.display_name || "").trim();
+    const cId = String(cand?.id || "").replace("https://openalex.org/", "").trim();
+    if (!cId || !cName || !isSameName(cName, cleanSearchName)) continue;
+    if (!ids.includes(cId)) {
+      ids.push(cId);
+      if (ids.length >= maxIds) break;
+    }
+  }
+  return ids;
 }
 
 // src/data/verifiedScholarCache.json
@@ -96125,10 +96795,42 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       bestOaCandidateScore = weakFallbackScore;
     }
   }
+  if (primaryOpenAlexAuthor && cleanSearchName) {
+    try {
+      const lki = Array.isArray(primaryOpenAlexAuthor.last_known_institutions) ? primaryOpenAlexAuthor.last_known_institutions : [];
+      const matchingInst = lki.find((inst) => {
+        const iName = normalizeAsciiWords(String(inst?.display_name || ""));
+        return affilTokens.length > 0 && affilTokens.some((tok) => iName.includes(tok));
+      }) || lki[0];
+      const primaryInstId = String(matchingInst?.id || "").replace("https://openalex.org/", "").trim();
+      if (primaryInstId && (affilTokens.length === 0 || bestOaCandidateScore >= 50 || bestAffilMatches > 0)) {
+        const splitAuthorsData = await fetchOpenAlexJson(
+          `https://api.openalex.org/authors?filter=display_name.search:${encodeURIComponent(
+            cleanSearchName
+          )},affiliations.institution.id:${encodeURIComponent(
+            primaryInstId
+          )}&per-page=25&select=id,display_name,works_count,last_known_institutions&mailto=research@scholarlens.org`,
+          3800
+        );
+        const sameInstIds = extractSameInstitutionAuthorIds(
+          Array.isArray(splitAuthorsData?.results) ? splitAuthorsData.results : [],
+          cleanSearchName,
+          isSameResearcherName,
+          8
+        );
+        for (const extraId of sameInstIds) {
+          if (!openAlexAuthorIds.includes(extraId) && openAlexAuthorIds.length < 8) {
+            openAlexAuthorIds.push(extraId);
+          }
+        }
+      }
+    } catch {
+    }
+  }
   let rawOaWorks = [];
   if (openAlexAuthorIds.length > 0) {
     try {
-      const filterIds = openAlexAuthorIds.slice(0, 5).join("|");
+      const filterIds = openAlexAuthorIds.slice(0, 8).join("|");
       const fetchUrls = [
         `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
           filterIds
@@ -96172,6 +96874,52 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         if (wId && !seenOaWorkIds.has(wId)) {
           seenOaWorkIds.add(wId);
           strictScholarOaWorks.push(matchedW);
+        }
+      }
+    }
+    const minRecentYear = (/* @__PURE__ */ new Date()).getFullYear() - 2;
+    const unmatchedRecentIndices = [];
+    for (let gIdx = 0; gIdx < scraped.publications.length; gIdx++) {
+      if (gsMatchedOaWorkByIndex.has(gIdx)) continue;
+      const gsPub = scraped.publications[gIdx];
+      if ((gsPub.year || 0) >= minRecentYear && String(gsPub.title || "").trim().length >= 12) {
+        unmatchedRecentIndices.push(gIdx);
+        if (unmatchedRecentIndices.length >= 8) break;
+      }
+    }
+    if (unmatchedRecentIndices.length > 0) {
+      const recoveredEntries = await Promise.all(
+        unmatchedRecentIndices.map(async (gIdx) => {
+          const gsPub = scraped.publications[gIdx];
+          try {
+            const wData = await fetchOpenAlexJson(
+              `https://api.openalex.org/works?search=${encodeURIComponent(
+                gsPub.title
+              )}&per-page=3&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
+              3800
+            );
+            const candidates = Array.isArray(wData?.results) ? wData.results : [];
+            const matched = matchGsTitleToOpenAlexWork(gsPub.title, candidates);
+            if (!matched) return null;
+            const authorships = Array.isArray(matched.authorships) ? matched.authorships : [];
+            const hasTargetAuthor = authorships.some((au) => {
+              const auName = String(au?.author?.display_name || "").trim();
+              const auId = String(au?.author?.id || "").replace("https://openalex.org/", "").trim();
+              return auId && openAlexAuthorIds.includes(auId) || auName && isSameResearcherName(auName, targetName);
+            });
+            return hasTargetAuthor ? { gIdx, matched } : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      for (const entry of recoveredEntries) {
+        if (!entry) continue;
+        gsMatchedOaWorkByIndex.set(entry.gIdx, entry.matched);
+        const wId = String(entry.matched.id || "");
+        if (wId && !seenOaWorkIds.has(wId)) {
+          seenOaWorkIds.add(wId);
+          strictScholarOaWorks.push(entry.matched);
         }
       }
     }
@@ -97039,6 +97787,20 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         }
       }
     }
+    const registeredList = await getSocialStore().listRegisteredResearchers().catch(() => []);
+    if (registeredList.length > 0) {
+      for (const pub of normalizedPublications) {
+        for (const ca of pub.coAuthors || []) {
+          if (ca.scholarUserId) continue;
+          const matchUser = registeredList.find(
+            (ru) => ru.scholarUserId && isSameResearcherName(ca.name, ru.name)
+          );
+          if (matchUser?.scholarUserId) {
+            ca.scholarUserId = matchUser.scholarUserId;
+          }
+        }
+      }
+    }
   } catch {
   }
   const profile = {
@@ -97101,7 +97863,7 @@ if (rawSnapshot && typeof rawSnapshot === "object") {
 }
 var app = express();
 app.set("trust proxy", 1);
-app.use(express.json());
+app.use(express.json({ limit: "4mb" }));
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "ScholarLens Analytics API" });
 });
@@ -97967,11 +98729,11 @@ function enrichAndPrewarmProfileCoAuthors(publications) {
   }, 10);
   return enriched;
 }
-var SCHOLAR_CLAIMS_FILE = path.resolve(process.cwd(), "src/data/scholarClaims.json");
+var SCHOLAR_CLAIMS_FILE = path2.resolve(process.cwd(), "src/data/scholarClaims.json");
 var scholarClaimsData = { claims: {}, users: {} };
 try {
-  if (fs.existsSync(SCHOLAR_CLAIMS_FILE)) {
-    const raw = fs.readFileSync(SCHOLAR_CLAIMS_FILE, "utf-8");
+  if (fs2.existsSync(SCHOLAR_CLAIMS_FILE)) {
+    const raw = fs2.readFileSync(SCHOLAR_CLAIMS_FILE, "utf-8");
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === "object") {
       scholarClaimsData.claims = parsed.claims || {};
@@ -97985,7 +98747,7 @@ try {
 function persistScholarClaimsToDisk() {
   try {
     if (process.env.VERCEL || process.env.READ_ONLY_FS === "true") return;
-    fs.writeFileSync(
+    fs2.writeFileSync(
       SCHOLAR_CLAIMS_FILE,
       JSON.stringify(scholarClaimsData, null, 2),
       "utf-8"
@@ -98042,6 +98804,56 @@ function getOrcidStore() {
     });
   }
   return _orcidStore;
+}
+var SOCIAL_STORE_FILE = path2.resolve(process.cwd(), "src/data/scholarSocial.json");
+var _socialStore = null;
+function getSocialStore() {
+  if (!_socialStore) {
+    _socialStore = new SocialNetworkStore({
+      firestoreDocBase: FIRESTORE_DOC_BASE,
+      getBridgeToken: getBridgeIdToken,
+      mirrorFilePath: SOCIAL_STORE_FILE,
+      fallbackUsersProvider: () => Object.values(scholarClaimsData.users || {}).filter((u) => Boolean(u?.uid)).map((u) => ({
+        uid: u.uid,
+        name: u.displayName || u.orcidId || "Researcher",
+        ...u.photoURL ? { photoURL: u.photoURL } : {},
+        ...u.scholarUrl ? { scholarUrl: u.scholarUrl } : {},
+        ...u.scholarUserId ? { scholarUserId: u.scholarUserId } : {},
+        ...u.orcidId ? { orcidId: u.orcidId } : {},
+        verified: Boolean(u.verified ?? true)
+      }))
+    });
+  }
+  return _socialStore;
+}
+function buildWorksDigestFromProfile(profile) {
+  const cleanId = String(profile.scholarUserId || "").trim();
+  if (!cleanId || !Array.isArray(profile.publications)) return null;
+  const works = [...profile.publications].sort((a, b) => (b.year || 0) - (a.year || 0) || (b.citations || 0) - (a.citations || 0)).slice(0, 12).map((p) => ({
+    id: p.id,
+    title: p.title,
+    venue: p.venue,
+    year: p.year,
+    citations: p.citations || 0,
+    quartile: p.quartile,
+    type: p.type,
+    ...p.doi ? { doi: p.doi } : {},
+    ...p.url ? { url: p.url } : {},
+    coAuthorNames: (p.coAuthors || []).map((c) => c.name).filter((n) => Boolean(n && !isSameResearcherName(n, profile.name))).slice(0, 6)
+  }));
+  return {
+    scholarUserId: cleanId,
+    name: profile.name,
+    affiliation: profile.homeUniversity || profile.affiliation || "Academic Researcher",
+    country: profile.homeCountry || "",
+    avatarUrl: profile.avatarUrl,
+    ...profile.orcid ? { orcid: profile.orcid } : {},
+    totalCitations: profile.officialMetrics?.totalCitations || 0,
+    hIndex: profile.officialMetrics?.hIndex || 0,
+    publicationCount: profile.publications.length,
+    updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    works
+  };
 }
 function isLocalHostname(req) {
   const host = String(req.get("x-forwarded-host") || req.get("host") || "").toLowerCase();
@@ -99231,6 +100043,511 @@ app.get("/api/scholar/claim-status", async (req, res) => {
     verifiedAt: claim.createdAt
   });
 });
+function sendSocialError(res, err) {
+  if (err instanceof SocialValidationError || err instanceof SocialForbiddenError || err instanceof SocialNotFoundError) {
+    res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+  res.status(500).json({ error: String(err?.message || "Internal social service error.") });
+}
+function enrichResearchersWithDigests(researchers, digests) {
+  return researchers.map((r) => {
+    const sid = String(r.scholarUserId || "").trim();
+    const digest = sid ? digests[sid] : void 0;
+    const cachedProf = sid ? profileCache.get(`${sid.toLowerCase()}::`)?.data?.profile : void 0;
+    return {
+      ...r,
+      ...r.photoURL ? { photoURL: r.photoURL } : sid ? { photoURL: `/api/scholar/avatar?userId=${encodeURIComponent(sid)}` } : {},
+      affiliation: cachedProf?.homeUniversity || cachedProf?.affiliation || digest?.affiliation || r.affiliation || "",
+      country: cachedProf?.homeCountry || digest?.country || r.country || "",
+      totalCitations: cachedProf?.officialMetrics?.totalCitations ?? digest?.totalCitations ?? r.totalCitations ?? 0,
+      hIndex: cachedProf?.officialMetrics?.hIndex ?? digest?.hIndex ?? r.hIndex ?? 0,
+      publicationCount: cachedProf?.publications?.length ?? digest?.publicationCount ?? r.publicationCount ?? 0
+    };
+  });
+}
+app.get("/api/social/summary", async (req, res) => {
+  try {
+    const sessionUser = await verifySessionUserFromRequest(req);
+    if (!sessionUser) {
+      res.json({
+        authenticated: false,
+        unreadMessagesCount: 0,
+        pendingConnectionsCount: 0,
+        acceptedConnectionsCount: 0
+      });
+      return;
+    }
+    const store = getSocialStore();
+    const [conn, convos] = await Promise.all([
+      store.getConnectionsOverview(sessionUser.uid),
+      store.listConversationsForUser(sessionUser.uid)
+    ]);
+    const unreadMessagesCount = convos.reduce(
+      (sum, c) => sum + Number(c.unreadBy?.[sessionUser.uid] || 0),
+      0
+    );
+    res.json({
+      authenticated: true,
+      unreadMessagesCount,
+      pendingConnectionsCount: conn.incomingRequests.length,
+      acceptedConnectionsCount: conn.acceptedUids.length
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.get("/api/social/researchers", async (req, res) => {
+  try {
+    const store = getSocialStore();
+    const q = String(req.query.q || "").trim().toLowerCase();
+    const [sessionUser, registered, digests] = await Promise.all([
+      verifySessionUserFromRequest(req),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests()
+    ]);
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    let statusByUid = {};
+    if (sessionUser) {
+      const conn = await store.getConnectionsOverview(sessionUser.uid);
+      statusByUid = conn.statusByUid;
+    }
+    const items = enriched.filter((r) => {
+      if (!q) return true;
+      return r.name.toLowerCase().includes(q) || (r.affiliation || "").toLowerCase().includes(q) || (r.country || "").toLowerCase().includes(q) || (r.orcidId || "").toLowerCase().includes(q);
+    }).map((r) => ({
+      ...r,
+      isSelf: Boolean(sessionUser && r.uid === sessionUser.uid),
+      connectionStatus: statusByUid[r.uid] || "none"
+    }));
+    res.json({
+      currentUid: sessionUser?.uid || null,
+      researchers: items
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.get("/api/social/connections", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in to manage your researcher connections." });
+    return;
+  }
+  try {
+    const store = getSocialStore();
+    const [overview, registered, digests] = await Promise.all([
+      store.getConnectionsOverview(sessionUser.uid),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests()
+    ]);
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    const byUid = new Map(enriched.map((r) => [r.uid, r]));
+    res.json({
+      currentUid: sessionUser.uid,
+      accepted: overview.acceptedUids.map((uid) => byUid.get(uid)).filter(Boolean),
+      incoming: overview.incomingRequests.map((edge) => ({
+        ...edge,
+        researcher: byUid.get(edge.requesterUid) || { uid: edge.requesterUid, name: "Researcher" }
+      })),
+      outgoing: overview.outgoingRequests.map((edge) => ({
+        ...edge,
+        researcher: byUid.get(edge.recipientUid) || { uid: edge.recipientUid, name: "Researcher" }
+      })),
+      statusByUid: overview.statusByUid,
+      allResearchers: enriched.map((r) => ({
+        ...r,
+        isSelf: r.uid === sessionUser.uid,
+        connectionStatus: overview.statusByUid[r.uid] || "none"
+      }))
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.post("/api/social/connections/request", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in to connect with researchers." });
+    return;
+  }
+  try {
+    const targetUid = String(req.body?.targetUid || "").trim();
+    const note = typeof req.body?.note === "string" ? req.body.note : void 0;
+    const result = await getSocialStore().sendConnectionRequest(sessionUser.uid, targetUid, note);
+    res.json(result);
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.post("/api/social/connections/respond", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Authentication required." });
+    return;
+  }
+  try {
+    const requesterUid = String(req.body?.requesterUid || "").trim();
+    const action = req.body?.action === "decline" ? "decline" : "accept";
+    const result = await getSocialStore().respondConnectionRequest(
+      sessionUser.uid,
+      requesterUid,
+      action
+    );
+    res.json(result);
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.delete("/api/social/connections/:otherUid", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Authentication required." });
+    return;
+  }
+  try {
+    const otherUid = String(req.params.otherUid || "").trim();
+    const result = await getSocialStore().removeConnection(sessionUser.uid, otherUid);
+    res.json(result);
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.get("/api/social/messages/conversations", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in to view your messages." });
+    return;
+  }
+  try {
+    const store = getSocialStore();
+    const [convos, registered, digests] = await Promise.all([
+      store.listConversationsForUser(sessionUser.uid),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests()
+    ]);
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    const byUid = new Map(enriched.map((r) => [r.uid, r]));
+    const conversations = convos.map((c) => {
+      const partnerUid = c.participants.find((id) => id !== sessionUser.uid) || c.participants[0];
+      return {
+        threadId: c.threadId,
+        partnerUid,
+        partner: byUid.get(partnerUid) || { uid: partnerUid, name: "Researcher" },
+        lastMessageText: c.lastMessageText,
+        lastMessageAt: c.lastMessageAt,
+        lastSenderUid: c.lastSenderUid,
+        unreadCount: Number(c.unreadBy?.[sessionUser.uid] || 0)
+      };
+    });
+    const totalUnread = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
+    res.json({ currentUid: sessionUser.uid, conversations, totalUnread });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.get("/api/social/messages/thread/:partnerUid", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in to view messages." });
+    return;
+  }
+  try {
+    const partnerUid = String(req.params.partnerUid || "").trim();
+    const store = getSocialStore();
+    const [thread, registered, digests] = await Promise.all([
+      store.getThreadWithUser(sessionUser.uid, partnerUid),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests()
+    ]);
+    const enriched = enrichResearchersWithDigests(registered, digests);
+    const partner = enriched.find((r) => r.uid === partnerUid) || {
+      uid: partnerUid,
+      name: "Researcher"
+    };
+    res.json({ currentUid: sessionUser.uid, partner, thread });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.post("/api/social/messages", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in to send messages." });
+    return;
+  }
+  try {
+    const recipientUid = String(req.body?.recipientUid || "").trim();
+    const text = String(req.body?.text || "");
+    const message = await getSocialStore().sendMessage(sessionUser.uid, recipientUid, text);
+    res.status(201).json({ message });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.get("/api/social/feed", async (req, res) => {
+  try {
+    const filterMode = String(req.query.filter || "all").toLowerCase();
+    const queryText = String(req.query.q || "").trim().toLowerCase();
+    const offset = Math.max(0, Number(req.query.offset) || 0);
+    const limit = Math.min(40, Math.max(1, Number(req.query.limit) || 15));
+    const store = getSocialStore();
+    const [sessionUser, posts, registered, storedDigests] = await Promise.all([
+      verifySessionUserFromRequest(req),
+      store.listPosts(60),
+      store.listRegisteredResearchers(),
+      store.listResearcherWorksDigests()
+    ]);
+    const digests = { ...storedDigests };
+    for (const [, entry] of profileCache.entries()) {
+      const prof = entry?.data?.profile;
+      const sid = String(prof?.scholarUserId || "").trim();
+      if (prof && sid && !digests[sid]) {
+        const d = buildWorksDigestFromProfile(prof);
+        if (d) digests[sid] = d;
+      }
+    }
+    const missingRegIds = registered.map((r) => String(r.scholarUserId || "").trim()).filter((sid) => sid && !digests[sid]).slice(0, 2);
+    if (missingRegIds.length > 0) {
+      await Promise.race([
+        Promise.allSettled(
+          missingRegIds.map(async (sid) => {
+            const built = await buildLiveResearcherProfile(sid, "");
+            if (built?.profile) {
+              profileCache.set(`${sid.toLowerCase()}::`, {
+                timestamp: Date.now(),
+                data: built
+              });
+              const d = buildWorksDigestFromProfile(built.profile);
+              if (d) {
+                digests[sid] = d;
+                void store.recordResearcherWorksDigest(d).catch(() => {
+                });
+              }
+            }
+          })
+        ),
+        new Promise((resolve) => setTimeout(resolve, 4200))
+      ]);
+    }
+    const enrichedUsers = enrichResearchersWithDigests(registered, digests);
+    const userByUid = new Map(enrichedUsers.map((u) => [u.uid, u]));
+    const userByScholarId = /* @__PURE__ */ new Map();
+    for (const u of enrichedUsers) {
+      if (u.scholarUserId) userByScholarId.set(u.scholarUserId.trim(), u);
+    }
+    let acceptedSet = /* @__PURE__ */ new Set();
+    let statusByUid = {};
+    if (sessionUser) {
+      const conn = await store.getConnectionsOverview(sessionUser.uid);
+      acceptedSet = new Set(conn.acceptedUids);
+      statusByUid = conn.statusByUid;
+    }
+    const postFeedItems = posts.map((post) => {
+      const author = userByUid.get(post.authorUid) || {
+        uid: post.authorUid,
+        name: "Researcher"
+      };
+      return {
+        feedId: `feed_post_${post.id}`,
+        kind: "post",
+        postId: post.id,
+        createdAt: post.createdAt,
+        sortScore: new Date(post.createdAt).getTime() || Date.now(),
+        author: {
+          ...author,
+          connectionStatus: statusByUid[author.uid] || "none",
+          isSelf: Boolean(sessionUser && author.uid === sessionUser.uid)
+        },
+        caption: post.caption,
+        mentionedWork: post.mentionedWork || null,
+        taggedCoAuthors: post.taggedCoAuthors || [],
+        images: post.images || [],
+        video: post.video || null,
+        likesCount: (post.likes || []).length,
+        likedByMe: Boolean(sessionUser && (post.likes || []).includes(sessionUser.uid)),
+        comments: (post.comments || []).map((c) => {
+          const cAuthor = userByUid.get(c.authorUid);
+          return {
+            ...c,
+            authorName: cAuthor?.name || "Researcher",
+            authorPhoto: cAuthor?.photoURL || "",
+            authorScholarUserId: cAuthor?.scholarUserId || ""
+          };
+        })
+      };
+    });
+    const seenWorkKeys = /* @__PURE__ */ new Set();
+    const workFeedItems = [];
+    for (const digest of Object.values(digests)) {
+      const regUser = userByScholarId.get(digest.scholarUserId);
+      const authorUid = regUser?.uid || "";
+      const authorPhoto = regUser?.photoURL || digest.avatarUrl || `/api/scholar/avatar?userId=${encodeURIComponent(digest.scholarUserId)}`;
+      for (const work of digest.works || []) {
+        const wKey = `${work.title.toLowerCase().slice(0, 60)}::${digest.scholarUserId}`;
+        if (seenWorkKeys.has(wKey)) continue;
+        seenWorkKeys.add(wKey);
+        const syntheticTs = new Date(
+          Math.max(1995, Math.min(2027, work.year || 2024)),
+          0,
+          15
+        ).getTime() + Math.min(work.citations || 0, 500) * 1e5;
+        workFeedItems.push({
+          feedId: `feed_work_${digest.scholarUserId}_${work.id}`,
+          kind: "work",
+          createdAt: `${work.year || (/* @__PURE__ */ new Date()).getFullYear()}-01-15T00:00:00.000Z`,
+          sortScore: syntheticTs,
+          author: {
+            uid: authorUid,
+            name: regUser?.name || digest.name,
+            photoURL: authorPhoto,
+            scholarUserId: digest.scholarUserId,
+            orcidId: regUser?.orcidId || digest.orcid,
+            affiliation: regUser?.affiliation || digest.affiliation,
+            country: regUser?.country || digest.country,
+            verified: Boolean(regUser?.verified),
+            connectionStatus: authorUid ? statusByUid[authorUid] || "none" : "none",
+            isSelf: Boolean(sessionUser && authorUid && authorUid === sessionUser.uid)
+          },
+          work
+        });
+      }
+    }
+    workFeedItems.sort((a, b) => {
+      const yearDiff = (b.work.year || 0) - (a.work.year || 0);
+      if (yearDiff !== 0) return yearDiff;
+      return (b.work.citations || 0) - (a.work.citations || 0);
+    });
+    let combined;
+    if (filterMode === "posts") {
+      combined = postFeedItems;
+    } else if (filterMode === "works") {
+      combined = workFeedItems;
+    } else if (filterMode === "connections" && sessionUser) {
+      combined = [
+        ...postFeedItems.filter(
+          (i) => i.author.uid === sessionUser.uid || acceptedSet.has(i.author.uid)
+        ),
+        ...workFeedItems.filter(
+          (i) => i.author.uid && acceptedSet.has(i.author.uid)
+        )
+      ];
+    } else {
+      combined = [...postFeedItems, ...workFeedItems];
+    }
+    if (queryText) {
+      combined = combined.filter((item) => {
+        const hay = [
+          item.author?.name,
+          item.author?.affiliation,
+          item.caption,
+          item.mentionedWork?.title,
+          item.mentionedWork?.venue,
+          item.work?.title,
+          item.work?.venue,
+          ...(item.taggedCoAuthors || []).map((t) => t.name),
+          ...item.work?.coAuthorNames || []
+        ].filter(Boolean).join(" ").toLowerCase();
+        return hay.includes(queryText);
+      });
+    }
+    const totalCount = combined.length;
+    const paged = combined.slice(offset, offset + limit);
+    res.json({
+      items: paged,
+      totalCount,
+      hasMore: offset + paged.length < totalCount,
+      researchersCount: enrichedUsers.length
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.post("/api/social/posts", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in with ORCID to publish a research post." });
+    return;
+  }
+  try {
+    const post = await getSocialStore().createPost(sessionUser.uid, {
+      caption: req.body?.caption,
+      mentionedWork: req.body?.mentionedWork,
+      taggedCoAuthors: req.body?.taggedCoAuthors,
+      images: req.body?.images,
+      videoUrl: req.body?.videoUrl
+    });
+    res.status(201).json({ post });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.post("/api/social/posts/:postId/like", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in to like posts." });
+    return;
+  }
+  try {
+    const post = await getSocialStore().toggleLikePost(
+      sessionUser.uid,
+      String(req.params.postId || "")
+    );
+    res.json({
+      postId: post.id,
+      likesCount: post.likes.length,
+      likedByMe: post.likes.includes(sessionUser.uid)
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.post("/api/social/posts/:postId/comment", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Please sign in to comment." });
+    return;
+  }
+  try {
+    const post = await getSocialStore().addCommentToPost(
+      sessionUser.uid,
+      String(req.params.postId || ""),
+      String(req.body?.text || "")
+    );
+    const registered = await getSocialStore().listRegisteredResearchers();
+    const userByUid = new Map(registered.map((u) => [u.uid, u]));
+    res.status(201).json({
+      postId: post.id,
+      comments: post.comments.map((c) => {
+        const cAuthor = userByUid.get(c.authorUid);
+        return {
+          ...c,
+          authorName: cAuthor?.name || "Researcher",
+          authorPhoto: cAuthor?.photoURL || "",
+          authorScholarUserId: cAuthor?.scholarUserId || ""
+        };
+      })
+    });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
+app.delete("/api/social/posts/:postId", async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: "Authentication required." });
+    return;
+  }
+  try {
+    await getSocialStore().deletePost(
+      sessionUser.uid,
+      String(req.params.postId || "")
+    );
+    res.json({ success: true });
+  } catch (err) {
+    sendSocialError(res, err);
+  }
+});
 app.get("/api/scholar/avatar", async (req, res) => {
   const userId = String(req.query.userId || "").trim();
   const orcidParam = normalizeOrcidId(String(req.query.orcid || "").trim()) || "";
@@ -99539,6 +100856,11 @@ app.get("/api/scholar/analyze", async (req, res) => {
         data: result
       });
     }
+    const digest = buildWorksDigestFromProfile(result.profile);
+    if (digest) {
+      void getSocialStore().recordResearcherWorksDigest(digest).catch(() => {
+      });
+    }
     res.json(result);
   } catch {
     res.status(500).json({ error: "Failed to analyze Google Scholar profile." });
@@ -99554,10 +100876,10 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+    const distPath = path2.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*all", (_req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      res.sendFile(path2.join(distPath, "index.html"));
     });
   }
   if (!process.env.VERCEL) {

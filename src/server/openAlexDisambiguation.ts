@@ -396,3 +396,27 @@ export function buildYahooScholarSearchQueries(
   queries.push(`${cleanName} scholar.google.com/citations`);
   return queries;
 }
+
+export function extractSameInstitutionAuthorIds(
+  instAuthors: any[],
+  cleanSearchName: string,
+  isSameName: (a: string, b: string) => boolean,
+  maxIds: number = 8
+): string[] {
+  const ids: string[] = [];
+  const sorted = [...(instAuthors || [])].sort(
+    (a, b) => Number(b?.works_count || 0) - Number(a?.works_count || 0)
+  );
+  for (const cand of sorted) {
+    const cName = String(cand?.display_name || '').trim();
+    const cId = String(cand?.id || '')
+      .replace('https://openalex.org/', '')
+      .trim();
+    if (!cId || !cName || !isSameName(cName, cleanSearchName)) continue;
+    if (!ids.includes(cId)) {
+      ids.push(cId);
+      if (ids.length >= maxIds) break;
+    }
+  }
+  return ids;
+}

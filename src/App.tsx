@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   Search,
   FileDown,
@@ -15,6 +15,8 @@ import {
   Award,
   TrendingUp,
   X,
+  Rss,
+  MessageSquare,
 } from 'lucide-react';
 import {
   parseGoogleScholarInput,
@@ -57,13 +59,22 @@ import {
 import { PublicationsExplorer } from './components/PublicationsExplorer';
 import { ResearchDirectoriesSection } from './components/ResearchDirectoriesSection';
 import { ScholarProfileAvatar } from './components/ScholarProfileAvatar';
+import { ResearchFeedSection } from './components/ResearchFeedSection';
+import {
+  ConnectionsSection,
+  SiteResearcher,
+} from './components/ConnectionsSection';
+import { MessagingSection } from './components/MessagingSection';
 
 export type AppPage =
   | 'overview'
   | 'charts'
   | 'map'
   | 'publications'
-  | 'directories';
+  | 'directories'
+  | 'feed'
+  | 'connections'
+  | 'messages';
 
 type PendingExportTask =
   | { type: 'pdf' }
@@ -152,7 +163,16 @@ export default function App() {
     const p = params.get('page') as AppPage | null;
     if (
       p &&
-      ['overview', 'charts', 'map', 'publications', 'directories'].includes(p)
+      [
+        'overview',
+        'charts',
+        'map',
+        'publications',
+        'directories',
+        'feed',
+        'connections',
+        'messages',
+      ].includes(p)
     ) {
       return p;
     }
@@ -201,6 +221,44 @@ export default function App() {
   const [pendingExport, setPendingExport] = useState<PendingExportTask | null>(
     null
   );
+  const [messageTarget, setMessageTarget] = useState<SiteResearcher | null>(null);
+  const [socialSummary, setSocialSummary] = useState({
+    unreadMessagesCount: 0,
+    pendingConnectionsCount: 0,
+    acceptedConnectionsCount: 0,
+  });
+
+  const refreshSocialSummary = useCallback(async () => {
+    if (!authUser) {
+      setSocialSummary({
+        unreadMessagesCount: 0,
+        pendingConnectionsCount: 0,
+        acceptedConnectionsCount: 0,
+      });
+      return;
+    }
+    try {
+      const resp = await fetch('/api/social/summary', { credentials: 'include' });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      setSocialSummary({
+        unreadMessagesCount: Number(data.unreadMessagesCount || 0),
+        pendingConnectionsCount: Number(data.pendingConnectionsCount || 0),
+        acceptedConnectionsCount: Number(data.acceptedConnectionsCount || 0),
+      });
+    } catch {
+      // Ignore transient polling failures
+    }
+  }, [authUser]);
+
+  useEffect(() => {
+    void refreshSocialSummary();
+    if (!authUser) return;
+    const timer = window.setInterval(() => {
+      void refreshSocialSummary();
+    }, 15000);
+    return () => window.clearInterval(timer);
+  }, [authUser, refreshSocialSummary]);
 
   const saveSessionUser = (user: AuthenticatedResearcher | null) => {
     setAuthUser(user);
@@ -327,7 +385,16 @@ export default function App() {
       const p = params.get('page') as AppPage | null;
       if (
         p &&
-        ['overview', 'charts', 'map', 'publications', 'directories'].includes(p)
+        [
+          'overview',
+          'charts',
+          'map',
+          'publications',
+          'directories',
+          'feed',
+          'connections',
+          'messages',
+        ].includes(p)
       ) {
         setActivePage(p);
       } else {
@@ -733,10 +800,10 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 ${
+      className={`min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-24 ${
         activePage === 'map' || activePage === 'directories'
-          ? 'lg:h-screen lg:overflow-hidden lg:pb-0'
-          : 'lg:pb-6'
+          ? 'lg:h-screen lg:overflow-hidden lg:pb-16'
+          : 'lg:pb-20'
       }`}
     >
       {/* Top Bar: Brand Logo, Centered Desktop Navigation Tabs, and Right Actions */}
@@ -880,17 +947,64 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Right: Corner Login / User Profile Icon */}
+          {/* Right: Corner Actions & User Profile Icon */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {authUser ? (
-              <button
-                type="button"
-                onClick={() => setIsProfileModalOpen(true)}
-                data-testid="corner-profile-button"
-                aria-label="Open profile settings"
-                title="Profile Settings"
-                className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
-              >
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetScholar =
+                      authUser.scholarUserId || authUser.scholarUrl;
+                    if (targetScholar) {
+                      const parsed = parseGoogleScholarInput(targetScholar);
+                      const queryId =
+                        parsed.valid && parsed.userId
+                          ? parsed.userId
+                          : targetScholar;
+                      if (
+                        !activeProfile ||
+                        activeProfile.scholarUserId !== queryId
+                      ) {
+                        void fetchProfileFromServer(queryId, authUser.name);
+                      }
+                    }
+                    navigateToPage('overview');
+                  }}
+                  data-testid="header-view-profile-button"
+                  aria-label="View My Profile in ScholarLens"
+                  title="View My Profile in ScholarLens"
+                  className="p-2 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer"
+                >
+                  <User className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('messages')}
+                  data-testid="header-messages-button"
+                  aria-label="Open Researcher Messages"
+                  title="Messages"
+                  className={`relative p-2 rounded-full border transition-colors cursor-pointer ${
+                    activePage === 'messages'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border-slate-200'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  {socialSummary.unreadMessagesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
+                      {socialSummary.unreadMessagesCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileModalOpen(true)}
+                  data-testid="corner-profile-button"
+                  aria-label="Open profile settings"
+                  title="Profile Settings"
+                  className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
+                >
                 <div className="relative w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
                   {authUser.photoURL && authUser.photoURL.trim() ? (
                     <img
@@ -925,6 +1039,7 @@ export default function App() {
                   )}
                 </div>
               </button>
+              </>
             ) : (
               <button
                 type="button"
@@ -984,6 +1099,45 @@ export default function App() {
             </form>
           </div>
         )}
+
+        {/* Mobile Analytics Navigation Strip */}
+        <nav
+          aria-label="Mobile Analytics Pages"
+          className="lg:hidden max-w-[1360px] mx-auto mt-2 pt-2 border-t border-slate-100 flex items-center gap-1 overflow-x-auto pb-0.5"
+        >
+          {PAGE_METADATA.map((item) => {
+            const Icon = item.icon;
+            const isActive = activePage === item.id;
+            return (
+              <button
+                key={`mobile-top-${item.id}`}
+                type="button"
+                onClick={() => navigateToPage(item.id)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'bg-blue-600 text-white font-semibold'
+                    : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                <Icon className="w-3 h-3 shrink-0" />
+                <span>{item.shortLabel}</span>
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            disabled={!activeProfile}
+            onClick={handleRequestPdfReport}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-600 whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-45"
+          >
+            {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
+              <FileDown className="w-3 h-3 shrink-0" />
+            ) : (
+              <Lock className="w-3 h-3 shrink-0" />
+            )}
+            <span>PDF</span>
+          </button>
+        </nav>
       </header>
 
       {/* Main Centered Multi-Page Workspace */}
@@ -1717,50 +1871,201 @@ export default function App() {
               />
             </div>
           )}
+
+          {/* PAGE 6: RESEARCHER NEWSFEED (Facebook / LinkedIn-style Scrollable Feed + Post Composer) */}
+          {activePage === 'feed' && (
+            <ResearchFeedSection
+              authUser={authUser}
+              activeProfile={activeProfile}
+              onRequireSignIn={() => {
+                setPendingExport(null);
+                setIsAuthModalOpen(true);
+              }}
+              onOpenMessage={(researcher) => {
+                setMessageTarget(researcher);
+                navigateToPage('messages');
+              }}
+              onOpenScholarProfile={handleOpenResearcherProfile}
+              onOpenConnections={() => navigateToPage('connections')}
+              onOpenMyProfile={() => {
+                if (!authUser) {
+                  setIsAuthModalOpen(true);
+                  return;
+                }
+                const targetScholar =
+                  authUser.scholarUserId || authUser.scholarUrl;
+                if (targetScholar) {
+                  const parsed = parseGoogleScholarInput(targetScholar);
+                  const queryId =
+                    parsed.valid && parsed.userId ? parsed.userId : targetScholar;
+                  if (
+                    !activeProfile ||
+                    activeProfile.scholarUserId !== queryId
+                  ) {
+                    void fetchProfileFromServer(queryId, authUser.name);
+                  }
+                }
+                navigateToPage('overview');
+              }}
+              onSummaryChanged={refreshSocialSummary}
+            />
+          )}
+
+          {/* PAGE 7: LINKEDIN-STYLE RESEARCHER CONNECTIONS */}
+          {activePage === 'connections' && (
+            <ConnectionsSection
+              authUser={authUser}
+              onRequireSignIn={() => {
+                setPendingExport(null);
+                setIsAuthModalOpen(true);
+              }}
+              onOpenMessage={(researcher) => {
+                setMessageTarget(researcher);
+                navigateToPage('messages');
+              }}
+              onOpenScholarProfile={handleOpenResearcherProfile}
+              onSummaryChanged={refreshSocialSummary}
+            />
+          )}
+
+          {/* PAGE 8: RESEARCHER DIRECT MESSAGING */}
+          {activePage === 'messages' && (
+            <MessagingSection
+              authUser={authUser}
+              initialPartner={messageTarget}
+              onRequireSignIn={() => {
+                setPendingExport(null);
+                setIsAuthModalOpen(true);
+              }}
+              onOpenScholarProfile={handleOpenResearcherProfile}
+              onUnreadUpdated={refreshSocialSummary}
+            />
+          )}
         </main>
       </div>
 
-      {/* Android & Mobile Bottom Navigation Bar (48px+ ergonomic touch targets) */}
-      <nav
-        aria-label="Mobile Bottom Navigation"
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xs border-t border-slate-200 px-1 py-1 grid grid-cols-6 gap-0.5 shadow-lg"
-      >
-        {PAGE_METADATA.map((item) => {
-          const Icon = item.icon;
-          const isActive = activePage === item.id;
-          return (
-            <button
-              key={`mobile-${item.id}`}
-              type="button"
-              onClick={() => navigateToPage(item.id)}
-              aria-current={isActive ? 'page' : undefined}
-              className={`min-h-[48px] flex flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-medium transition-colors cursor-pointer ${
-                isActive
-                  ? 'text-blue-600 bg-blue-50/80 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span className="truncate max-w-full px-1">
-                {item.shortLabel}
-              </span>
-            </button>
-          );
-        })}
-        <button
-          type="button"
-          disabled={!activeProfile}
-          onClick={handleRequestPdfReport}
-          className="min-h-[48px] flex flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+      {/* Persistent Bottom Navigation Bar (Matching Top Navigation Menu) */}
+      <div className="fixed bottom-3 inset-x-0 z-40 flex justify-center px-3 pointer-events-none">
+        <nav
+          aria-label="Bottom Social Navigation"
+          data-testid="bottom-navigation-bar"
+          className="pointer-events-auto inline-flex items-center gap-1 bg-white/95 backdrop-blur-xs border border-slate-200/90 p-1 rounded-xl shadow-lg"
         >
-          {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
-            <FileDown className="w-4 h-4 shrink-0" />
-          ) : (
-            <Lock className="w-4 h-4 shrink-0" />
-          )}
-          <span className="truncate max-w-full px-1">PDF Report</span>
-        </button>
-      </nav>
+          <button
+            type="button"
+            onClick={() => navigateToPage('feed')}
+            data-testid="bottom-nav-feed"
+            aria-current={activePage === 'feed' ? 'page' : undefined}
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+              activePage === 'feed'
+                ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+            }`}
+          >
+            <Rss className="w-3.5 h-3.5 shrink-0" />
+            <span>Feed</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigateToPage('connections')}
+            data-testid="bottom-nav-connections"
+            aria-current={activePage === 'connections' ? 'page' : undefined}
+            className={`relative inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+              activePage === 'connections'
+                ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5 shrink-0" />
+            <span>Connections</span>
+            {socialSummary.pendingConnectionsCount > 0 && (
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                  activePage === 'connections'
+                    ? 'bg-white text-blue-600'
+                    : 'bg-rose-500 text-white'
+                }`}
+              >
+                {socialSummary.pendingConnectionsCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigateToPage('messages')}
+            data-testid="bottom-nav-messages"
+            aria-current={activePage === 'messages' ? 'page' : undefined}
+            className={`relative inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+              activePage === 'messages'
+                ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+            <span>Messages</span>
+            {socialSummary.unreadMessagesCount > 0 && (
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                  activePage === 'messages'
+                    ? 'bg-white text-blue-600'
+                    : 'bg-rose-500 text-white'
+                }`}
+              >
+                {socialSummary.unreadMessagesCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!authUser) {
+                setPendingExport(null);
+                setIsAuthModalOpen(true);
+                return;
+              }
+              const targetScholar =
+                authUser.scholarUserId || authUser.scholarUrl;
+              if (targetScholar) {
+                const parsed = parseGoogleScholarInput(targetScholar);
+                const queryId =
+                  parsed.valid && parsed.userId ? parsed.userId : targetScholar;
+                if (
+                  !activeProfile ||
+                  activeProfile.scholarUserId !== queryId
+                ) {
+                  void fetchProfileFromServer(queryId, authUser.name);
+                }
+              }
+              navigateToPage('overview');
+            }}
+            data-testid="bottom-nav-profile"
+            aria-current={
+              activePage === 'overview' &&
+              Boolean(
+                authUser?.scholarUserId &&
+                  activeProfile?.scholarUserId === authUser.scholarUserId
+              )
+                ? 'page'
+                : undefined
+            }
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+              activePage === 'overview' &&
+              Boolean(
+                authUser?.scholarUserId &&
+                  activeProfile?.scholarUserId === authUser.scholarUserId
+              )
+                ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+            }`}
+          >
+            <User className="w-3.5 h-3.5 shrink-0" />
+            <span>Profile</span>
+          </button>
+        </nav>
+      </div>
 
       {/* Gmail / ORCID Login Modal */}
       <AuthGateModal
@@ -1792,16 +2097,6 @@ export default function App() {
         isOpen={isProfileModalOpen}
         user={authUser}
         onClose={() => setIsProfileModalOpen(false)}
-        onViewMyProfile={() => {
-          const targetScholar = authUser?.scholarUserId || authUser?.scholarUrl;
-          if (targetScholar) {
-            const parsed = parseGoogleScholarInput(targetScholar);
-            const queryId = parsed.valid && parsed.userId ? parsed.userId : targetScholar;
-            void fetchProfileFromServer(queryId, authUser?.name);
-            setActivePage('overview');
-            setIsProfileModalOpen(false);
-          }
-        }}
         onUpdateUser={(updated) => {
           saveSessionUser(updated);
           if (updated.scholarUrl) {

@@ -4,6 +4,9 @@ interface ScholarProfileAvatarProps {
   scholarUserId: string;
   name: string;
   avatarUrl?: string;
+  orcid?: string;
+  university?: string;
+  compact?: boolean;
   className?: string;
 }
 
@@ -11,22 +14,37 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
   scholarUserId,
   name,
   avatarUrl,
+  orcid,
+  university,
+  compact = false,
   className = 'w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40',
 }) => {
+  const buildAvatarProxyUrl = (withId: boolean) => {
+    const cleanId = (scholarUserId || '').trim();
+    const cleanName = (name || '').trim();
+    const params = new URLSearchParams();
+    if (withId && cleanId) params.set('userId', cleanId);
+    if (cleanName) params.set('name', cleanName);
+    if (orcid) params.set('orcid', orcid);
+    if (university) params.set('uni', university);
+    return `/api/scholar/avatar?${params.toString()}`;
+  };
+
   const getInitialSrc = (): string | null => {
     const trimmedUrl = (avatarUrl || '').trim();
     if (
       trimmedUrl &&
       (trimmedUrl.startsWith('data:image/') ||
         trimmedUrl.startsWith('https://') ||
-        trimmedUrl.startsWith('http://'))
+        trimmedUrl.startsWith('http://') ||
+        trimmedUrl.startsWith('/api/'))
     ) {
       return trimmedUrl;
     }
     const cleanId = (scholarUserId || '').trim();
     const cleanName = (name || '').trim();
-    if (cleanId || cleanName) {
-      return `/api/scholar/avatar?userId=${encodeURIComponent(cleanId)}&name=${encodeURIComponent(cleanName)}`;
+    if (cleanId || cleanName || orcid) {
+      return buildAvatarProxyUrl(true);
     }
     return null;
   };
@@ -43,12 +61,12 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
     const cleanId = (scholarUserId || '').trim();
     const cleanName = (name || '').trim();
 
-    if (fallbackStep === 0 && cleanId && cleanName) {
+    if (fallbackStep === 0 && (cleanId || cleanName)) {
       setFallbackStep(1);
-      setCurrentSrc(`/api/scholar/avatar?userId=${encodeURIComponent(cleanId)}&name=${encodeURIComponent(cleanName)}`);
+      setCurrentSrc(buildAvatarProxyUrl(true));
     } else if (fallbackStep <= 1 && cleanName) {
       setFallbackStep(2);
-      setCurrentSrc(`/api/scholar/avatar?name=${encodeURIComponent(cleanName)}`);
+      setCurrentSrc(buildAvatarProxyUrl(false));
     } else {
       setCurrentSrc(null);
     }
@@ -65,19 +83,27 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
     <div className="relative shrink-0 select-none">
       {/* Circular Profile Picture Container */}
       <div
-        className={`${className} rounded-full overflow-hidden border-4 border-slate-200/90 bg-slate-100 shadow-md ring-4 ring-slate-100/80 relative flex items-center justify-center`}
+        className={`${className} rounded-full overflow-hidden ${
+          compact
+            ? 'border border-slate-200 bg-slate-100'
+            : 'border-4 border-slate-200/90 bg-slate-100 shadow-md ring-4 ring-slate-100/80'
+        } relative flex items-center justify-center`}
       >
         {currentSrc ? (
           <img
             src={currentSrc}
             alt={name || 'Researcher'}
             referrerPolicy="no-referrer"
-            data-testid="active-researcher-avatar"
+            data-testid={compact ? undefined : 'active-researcher-avatar'}
             onError={handleImageError}
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-xl sm:text-2xl font-bold text-slate-500">
+          <span
+            className={`${
+              compact ? 'text-xs' : 'text-xl sm:text-2xl'
+            } font-bold text-slate-500`}
+          >
             {initials || 'SR'}
           </span>
         )}
