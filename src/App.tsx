@@ -603,6 +603,27 @@ export default function App() {
     navigateToPage('map');
   };
 
+  const handleOpenResearcherProfile = (
+    authorName: string,
+    scholarUserId?: string
+  ) => {
+    const cleanName = authorName.trim();
+    if (!cleanName) return;
+    const cleanId = scholarUserId?.trim() || '';
+    navigateToPage('overview');
+    if (cleanId) {
+      void fetchProfileFromServer(cleanId, cleanName);
+      return;
+    }
+    const parsed = parseGoogleScholarInput(cleanName);
+    if (parsed.valid && parsed.userId) {
+      void fetchProfileFromServer(
+        parsed.userId,
+        parsed.queryName || cleanName
+      );
+    }
+  };
+
   const userInitials = authUser
     ? authUser.name
         .split(/\s+/)
@@ -1538,6 +1559,7 @@ export default function App() {
                 onFilterByUniversity={handleFilterByUniversity}
                 onFilterByCoAuthor={handleFilterByCoAuthor}
                 onExportChartPng={handleRequestChartPng}
+                onSelectResearcher={handleOpenResearcherProfile}
               />
             </div>
           )}
@@ -1569,6 +1591,7 @@ export default function App() {
               onFilterByCountry={handleFilterByCountry}
               onFilterByVenue={handleFilterByVenue}
               onInspectUniversityOnGlobe={handleInspectUniversityOnGlobe}
+              onSelectResearcher={handleOpenResearcherProfile}
             />
           )}
         </main>

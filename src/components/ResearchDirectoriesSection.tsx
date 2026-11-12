@@ -19,6 +19,7 @@ interface ResearchDirectoriesSectionProps {
   onFilterByCountry: (country: string) => void;
   onFilterByVenue: (venue: string) => void;
   onInspectUniversityOnGlobe: (universityId: string) => void;
+  onSelectResearcher?: (name: string, scholarUserId?: string) => void;
 }
 
 type DirectoryTab = 'coauthors' | 'universities' | 'countries' | 'journals';
@@ -35,6 +36,7 @@ export const ResearchDirectoriesSection: React.FC<
   onFilterByCountry,
   onFilterByVenue,
   onInspectUniversityOnGlobe,
+  onSelectResearcher,
 }) => {
   const [activeTab, setActiveTab] = useState<DirectoryTab>('coauthors');
   const [directorySearch, setDirectorySearch] = useState<string>('');
@@ -172,7 +174,14 @@ export const ResearchDirectoriesSection: React.FC<
                   className="hover:bg-slate-50/80 transition-colors"
                 >
                   <td className="py-2.5 pl-6 pr-3 font-semibold text-slate-900">
-                    <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onSelectResearcher?.(ca.name, ca.scholarUserId)
+                      }
+                      title={`View ${ca.name} in ScholarLens`}
+                      className="inline-flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none max-w-full"
+                    >
                       <img
                         src={
                           ca.avatarUrl ||
@@ -196,10 +205,12 @@ export const ResearchDirectoriesSection: React.FC<
                             target.src = fallbackUrl;
                           }
                         }}
-                        className="w-7 h-7 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs"
+                        className="w-7 h-7 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs group-hover:ring-2 group-hover:ring-blue-500/40 transition-all"
                       />
-                      <span className="truncate">{ca.name}</span>
-                    </div>
+                      <span className="truncate text-slate-900 group-hover:text-blue-600 group-hover:underline transition-colors">
+                        {ca.name}
+                      </span>
+                    </button>
                   </td>
                   <td className="py-2.5 px-3 text-slate-700">
                     {ca.universityName}

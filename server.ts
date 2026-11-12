@@ -1999,11 +1999,24 @@ async function resolveScholarIdViaWikidata(
   return null;
 }
 
+function isValidScholarId(id?: string): boolean {
+  if (!id) return false;
+  const trimmed = id.trim();
+  return /^[a-zA-Z0-9_-]{8,14}$/.test(trimmed) && !trimmed.includes(' ');
+}
+
 async function resolveGoogleScholarIdByName(
   researcherName: string
 ): Promise<string | null> {
   const clean = stripAcademicHonorifics(researcherName).trim();
   if (!clean || clean.length < 3) return null;
+
+  // 1. Check verified colleague directory and discovered Google Scholar colleagues first
+  const knownColleague = lookupColleagueAvatarMeta(clean);
+  if (knownColleague?.userId && isValidScholarId(knownColleague.userId)) {
+    return knownColleague.userId;
+  }
+
   try {
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(
       clean
@@ -2081,8 +2094,8 @@ export async function buildLiveResearcherProfile(
 ): Promise<{ profile: ResearcherProfile; source: string } | null> {
   let effectiveUserId = userIdInput;
 
-  // If the user searched by researcher name (e.g. "Geoffrey Hinton"), resolve their official Google Scholar ID first
-  if (queryNameInput) {
+  // If the user searched by researcher name (and userIdInput is not already a valid 12-char Google Scholar ID), resolve their official Google Scholar ID first
+  if (queryNameInput && !isValidScholarId(userIdInput)) {
     const resolvedScholarId = await resolveGoogleScholarIdByName(
       queryNameInput
     );
@@ -4393,14 +4406,11 @@ app.get('/api/scholar/analyze', async (req, res) => {
 
         if (
           (lowerUser &&
-            (candidateId === lowerUser ||
-              candidateId.includes(lowerUser) ||
-              lowerUser.includes(candidateId))) ||
+            isValidScholarId(userId) &&
+            candidateId === lowerUser) ||
           (lowerQuery &&
-            candidateName &&
-            (candidateName === lowerQuery ||
-              candidateName.includes(lowerQuery) ||
-              lowerQuery.includes(candidateName)))
+            prof.name &&
+            isStrictSameResearcherForAvatar(prof.name, queryName))
         ) {
           snapMatch = prof;
           break;
@@ -4429,7 +4439,9 @@ app.get('/api/scholar/analyze', async (req, res) => {
   }
 
   try {
-    const resolvedId = queryName
+    const resolvedId = isValidScholarId(userId)
+      ? userId
+      : queryName
       ? (await resolveGoogleScholarIdByName(queryName)) || userId
       : userId;
 

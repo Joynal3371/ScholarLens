@@ -534,6 +534,8 @@ export interface UniversityCollaboration {
     name: string;
     paperCount: number;
     citations: number;
+    scholarUserId?: string;
+    avatarUrl?: string;
   }[];
   papers: Publication[];
   firstCollaborationYear: number;
@@ -1342,7 +1344,15 @@ export function aggregateUniversityCollaborations(
     {
       meta: CoAuthorAffiliation;
       papers: Map<string, Publication>;
-      authorMap: Map<string, { paperIds: Set<string>; citations: number }>;
+      authorMap: Map<
+        string,
+        {
+          paperIds: Set<string>;
+          citations: number;
+          scholarUserId?: string;
+          avatarUrl?: string;
+        }
+      >;
     }
   >();
 
@@ -1443,9 +1453,20 @@ export function aggregateUniversityCollaborations(
       }
 
       if (!entry.authorMap.has(ca.name)) {
-        entry.authorMap.set(ca.name, { paperIds: new Set(), citations: 0 });
+        entry.authorMap.set(ca.name, {
+          paperIds: new Set(),
+          citations: 0,
+          scholarUserId: ca.scholarUserId,
+          avatarUrl: ca.avatarUrl,
+        });
       }
       const authorEntry = entry.authorMap.get(ca.name)!;
+      if (!authorEntry.scholarUserId && ca.scholarUserId) {
+        authorEntry.scholarUserId = ca.scholarUserId;
+      }
+      if (!authorEntry.avatarUrl && ca.avatarUrl) {
+        authorEntry.avatarUrl = ca.avatarUrl;
+      }
       if (!authorEntry.paperIds.has(pub.id)) {
         authorEntry.paperIds.add(pub.id);
         authorEntry.citations += pub.citations;
@@ -1514,6 +1535,8 @@ export function aggregateUniversityCollaborations(
         name,
         paperCount: stats.paperIds.size,
         citations: stats.citations,
+        ...(stats.scholarUserId ? { scholarUserId: stats.scholarUserId } : {}),
+        ...(stats.avatarUrl ? { avatarUrl: stats.avatarUrl } : {}),
       }))
       .sort((a, b) => b.paperCount - a.paperCount || b.citations - a.citations);
 

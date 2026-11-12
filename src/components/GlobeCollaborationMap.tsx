@@ -41,6 +41,7 @@ interface GlobeCollaborationMapProps {
     filename: string,
     darkTheme?: boolean
   ) => void;
+  onSelectResearcher?: (name: string, scholarUserId?: string) => void;
 }
 
 const worldTopology = worldAtlasData as any;
@@ -452,6 +453,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
   onFilterByUniversity,
   onFilterByCoAuthor,
   onExportChartPng,
+  onSelectResearcher,
 }) => {
   const [viewState, setViewState] = useState<{
     lat: number;
@@ -2121,15 +2123,50 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       key={author.name}
                       className="px-3 py-2 flex items-center justify-between gap-2 bg-slate-50/40 hover:bg-slate-50"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onSelectResearcher?.(
+                            author.name,
+                            author.scholarUserId
+                          )
+                        }
+                        title={`View ${author.name} in ScholarLens`}
+                        className="flex items-center gap-2.5 min-w-0 text-left group cursor-pointer focus:outline-none"
+                      >
                         <img
-                          src={`/api/scholar/avatar?name=${encodeURIComponent(author.name)}`}
+                          src={
+                            author.avatarUrl ||
+                            `/api/scholar/avatar?name=${encodeURIComponent(
+                              author.name
+                            )}&uni=${encodeURIComponent(
+                              selectedUni.universityName
+                            )}${
+                              author.scholarUserId
+                                ? `&userId=${encodeURIComponent(
+                                    author.scholarUserId
+                                  )}`
+                                : ''
+                            }`
+                          }
                           alt={author.name}
                           loading="lazy"
-                          className="w-7 h-7 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            const fallbackUrl = `/api/scholar/avatar?name=${encodeURIComponent(
+                              author.name
+                            )}&uni=${encodeURIComponent(
+                              selectedUni.universityName
+                            )}`;
+                            if (!target.src.endsWith(fallbackUrl)) {
+                              target.src = fallbackUrl;
+                            }
+                          }}
+                          className="w-7 h-7 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0 shadow-2xs group-hover:ring-2 group-hover:ring-blue-500/40 transition-all"
                         />
                         <div className="min-w-0">
-                          <div className="text-xs font-semibold text-slate-900 truncate">
+                          <div className="text-xs font-semibold text-slate-900 group-hover:text-blue-600 group-hover:underline truncate transition-colors">
                             {author.name}
                           </div>
                           <div className="text-[11px] text-slate-500 font-mono tabular-nums">
@@ -2138,7 +2175,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                             {author.citations.toLocaleString()} cit.
                           </div>
                         </div>
-                      </div>
+                      </button>
                       <button
                         type="button"
                         onClick={() => onFilterByCoAuthor(author.name)}
