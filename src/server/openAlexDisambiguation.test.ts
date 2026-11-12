@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  areOrcidsConflicting,
   buildYahooScholarSearchQueries,
   extractAffiliationKeywords,
   extractPortraitUrlFromHtml,
   extractSameInstitutionAuthorIds,
+  isSameResearcherNameMatch,
   pickDisambiguationTitles,
   pickInstitutionalProfileUrls,
   rankOpenAlexAuthorsFromWorks,
@@ -167,4 +169,181 @@ test('extractSameInstitutionAuthorIds collects split OpenAlex author records mat
     simpleSameName
   );
   assert.deepEqual(merged, ['A5101775050', 'A5044908817', 'A5139503707']);
+
+  // Conflicting non-empty ORCIDs at the same university must never be merged together
+  const safeMerged = extractSameInstitutionAuthorIds(
+    [
+      {
+        id: 'https://openalex.org/A5044908817',
+        display_name: 'Aminul Islam',
+        orcid: 'https://orcid.org/0000-0002-5335-6735',
+        works_count: 47,
+      },
+      {
+        id: 'https://openalex.org/A5139503707',
+        display_name: 'Aminul Islam',
+        orcid: null,
+        works_count: 2,
+      },
+      {
+        id: 'https://openalex.org/A5101775050',
+        display_name: 'Aminul Islam',
+        orcid: 'https://orcid.org/0000-0002-8275-6631',
+        works_count: 130,
+      },
+    ],
+    'Aminul Islam',
+    simpleSameName,
+    8,
+    '0000-0002-8275-6631'
+  );
+  assert.deepEqual(safeMerged, ['A5101775050', 'A5139503707']);
+
+  // Without primaryOrcid, ambiguous distinct ORCIDs at the same university must not be merged together
+  const ambiguousNoPrimary = extractSameInstitutionAuthorIds(
+    [
+      {
+        id: 'https://openalex.org/A5044908817',
+        display_name: 'Aminul Islam',
+        orcid: 'https://orcid.org/0000-0002-5335-6735',
+        works_count: 47,
+      },
+      {
+        id: 'https://openalex.org/A5139503707',
+        display_name: 'Aminul Islam',
+        orcid: null,
+        works_count: 2,
+      },
+      {
+        id: 'https://openalex.org/A5101775050',
+        display_name: 'Aminul Islam',
+        orcid: 'https://orcid.org/0000-0002-8275-6631',
+        works_count: 130,
+      },
+    ],
+    'Aminul Islam',
+    simpleSameName,
+    8
+  );
+  assert.deepEqual(ambiguousNoPrimary, ['A5139503707']);
+
+  assert.equal(
+    areOrcidsConflicting('https://orcid.org/0000-0002-8275-6631', '0000-0002-5335-6735'),
+    true
+  );
+  assert.equal(
+    areOrcidsConflicting('https://orcid.org/0000-0002-8275-6631', '0000-0002-8275-6631'),
+    false
+  );
+});
+
+test('rankOpenAlexAuthorsFromWorks breaks ties between same-university homonyms using collaborators', () => {
+  const ranked = rankOpenAlexAuthorsFromWorks(
+    [
+      {
+        title: 'An Analysis and Modeling of the Class-E Inverter',
+        works: [
+          {
+            title: 'An Analysis and Modeling of the Class-E Inverter',
+            authorships: [
+              { author: { display_name: 'ASM Shihavuddin' } },
+              {
+                author: {
+                  id: 'https://openalex.org/A5101775050',
+                  display_name: 'Aminul Islam',
+                  orcid: 'https://orcid.org/0000-0002-8275-6631',
+                },
+                institutions: [{ display_name: 'Technical University of Denmark', country_code: 'DK' }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    'Aminul Islam',
+    ['technical', 'denmark'],
+    'DK',
+    simpleSameName,
+    simpleMatchWork,
+    ['ASM Shihavuddin']
+  );
+
+  assert.equal(ranked.length, 1);
+  assert.equal(ranked[0].id, 'A5101775050');
+  assert.equal(ranked[0].collaboratorHits, 1);
+  assert.equal(ranked[0].orcid, '0000-0002-8275-6631');
+});
+
+test('rankOpenAlexAuthorsFromWorks prefers ORCID-verified record on equal score ties', () => {
+  const ranked = rankOpenAlexAuthorsFromWorks(
+    [
+      {
+        title: 'Stub Paper With No Orcid',
+        works: [
+          {
+            title: 'Stub Paper With No Orcid',
+            authorships: [
+              {
+                author: {
+                  id: 'https://openalex.org/A5139503707',
+                  display_name: 'Aminul Islam',
+                  orcid: null,
+                },
+                institutions: [{ display_name: 'Technical University of Denmark', country_code: 'DK' }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: 'Canonical Paper With Orcid',
+        works: [
+          {
+            title: 'Canonical Paper With Orcid',
+            authorships: [
+              {
+                author: {
+                  id: 'https://openalex.org/A5101775050',
+                  display_name: 'Aminul Islam',
+                  orcid: 'https://orcid.org/0000-0002-8275-6631',
+                },
+                institutions: [{ display_name: 'Technical University of Denmark', country_code: 'DK' }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    'Aminul Islam',
+    ['technical', 'denmark'],
+    'DK',
+    simpleSameName,
+    simpleMatchWork
+  );
+
+  assert.equal(ranked.length, 2);
+  assert.equal(ranked[0].score, ranked[1].score);
+  assert.equal(ranked[0].id, 'A5101775050');
+  assert.equal(ranked[0].orcid, '0000-0002-8275-6631');
+});
+
+test('isSameResearcherNameMatch rejects distinct given names sharing surname and first initial', () => {
+  // True positives
+  assert.equal(isSameResearcherNameMatch('Aminul Islam', 'A. Islam'), true);
+  assert.equal(isSameResearcherNameMatch('Md. Imamul Islam', 'Imamul Islam'), true);
+  assert.equal(isSameResearcherNameMatch('Md. Imamul Islam', 'Mohammad Imamul Islam'), true);
+  assert.equal(isSameResearcherNameMatch('Md. Imamul Islam', 'M. I. Islam'), true);
+  assert.equal(isSameResearcherNameMatch('M. S. H. Lipu', 'Molla Shahadat Hossain Lipu'), true);
+  assert.equal(isSameResearcherNameMatch('MSH Lipu', 'Molla Shahadat Hossain Lipu'), true);
+  assert.equal(isSameResearcherNameMatch('Andrew Y. Ng', 'Andrew Ng'), true);
+  assert.equal(isSameResearcherNameMatch('Li Fei-Fei', 'Fei-Fei Li'), true);
+  assert.equal(isSameResearcherNameMatch('K. He', 'Kaiming He'), true);
+
+  // Critical false-merge prevention
+  assert.equal(isSameResearcherNameMatch('Md. Ashraful Islam', 'Md. Imamul Islam'), false);
+  assert.equal(isSameResearcherNameMatch('Ashraful Islam', 'Aminul Islam'), false);
+  assert.equal(isSameResearcherNameMatch('Aminul Islam Nayan', 'Aminul Islam'), false);
+  assert.equal(isSameResearcherNameMatch('James Smith', 'John Smith'), false);
+  assert.equal(isSameResearcherNameMatch('Y. Ng', 'Andrew Y. Ng'), false);
+  assert.equal(isSameResearcherNameMatch('Md. Islam', 'Md. Ashraful Islam'), false);
 });

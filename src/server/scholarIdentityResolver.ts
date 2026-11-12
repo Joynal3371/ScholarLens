@@ -47,7 +47,45 @@ function extractNameFromScholarTitle(rawTitle: string): string {
 export interface ResolvedScholarIdentity {
   name: string;
   affiliationHint?: string;
+  countryCodeHint?: string;
   source: string;
+}
+
+export interface ScholarStoreLookupParams {
+  scholarId: string;
+  colleagueDirectory?: Record<string, { name?: string; userId?: string; university?: string }>;
+  colleagueList?: Array<{ u?: string; n?: string; userId?: string; name?: string; university?: string }>;
+  coAuthorMap?: Record<string, { u?: string; p?: string }>;
+  verifiedSnapshot?: Record<string, any>;
+  digests?: Record<string, any>;
+  registeredUsers?: Array<{ name?: string; scholarUserId?: string; affiliation?: string }>;
+}
+
+export interface ScholarWorkEvidence {
+  knownWorkTitles: string[];
+  knownCollaboratorNames: string[];
+  affiliationHint?: string;
+  countryCodeHint?: string;
+}
+
+const GENERIC_PLACEHOLDER_AFFILS = new Set([
+  'independent / unlisted',
+  'unlisted',
+  'unknown',
+  'unknown university',
+  'academic researcher',
+  'academic research university',
+  'research university',
+]);
+
+function isInformativeAffiliation(raw?: string): boolean {
+  const clean = String(raw || '').trim().toLowerCase();
+  return Boolean(clean && clean.length >= 3 && !GENERIC_PLACEHOLDER_AFFILS.has(clean));
+}
+
+function normalizeCountryCodeOpt(raw?: string): string | undefined {
+  const cc = String(raw || '').trim().toUpperCase();
+  return cc.length === 2 && cc !== 'UN' ? cc : undefined;
 }
 
 /**
@@ -140,47 +178,142 @@ export function extractScholarIdentityFromYahooHtml(
   return null;
 }
 
-/**
- * Searches verified local caches/directories for a Google Scholar userId so
- * co-author or previously seen researchers resolve without external GS scraping.
- */
-export function lookupScholarIdentityInStores(params: {
-  scholarId: string;
-  colleagueDirectory?: Record<string, { name?: string; userId?: string; university?: string }>;
-  colleagueList?: Array<{ u?: string; n?: string; userId?: string; name?: string; university?: string }>;
-  coAuthorMap?: Record<string, { u?: string; p?: string }>;
-  verifiedSnapshot?: Record<string, any>;
-  digests?: Record<string, any>;
-  registeredUsers?: Array<{ name?: string; scholarUserId?: string; affiliation?: string }>;
-}): ResolvedScholarIdentity | null {
+interface StoreAggregationResult {
+  identity: ResolvedScholarIdentity | null;
+  knownWorkTitles: string[];
+  knownCollaboratorNames: string[];
+}
+
+function collectScholarStoreIdentityAndEvidence(
+  params: ScholarStoreLookupParams
+): StoreAggregationResult {
   const targetId = String(params.scholarId || '').trim();
-  if (!targetId) return null;
+  if (!targetId) {
+    return { identity: null, knownWorkTitles: [], knownCollaboratorNames: [] };
+  }
+
+  const bestName: { value: { name: string; source: string; priority: number } | null } = {
+    value: null,
+  };
+  const coAuthorNameCounts = new Map<
+    string,
+    { display: string; count: number; source: string; priority: number }
+  >();
+  const affilVotes = new Map<
+    string,
+    { affil: string; countryCode?: string; weight: number }
+  >();
+  const evidenceItems: Array<{
+    title: string;
+    collaborator?: string;
+    affil?: string;
+    year: number;
+  }> = [];
+
+  const recordName = (name: string, source: string, priority: number) => {
+    const clean = String(name || '').trim();
+    if (!clean) return;
+    if (!bestName.value || priority > bestName.value.priority) {
+      bestName.value = { name: clean, source, priority };
+    }
+  };
+
+  const recordCoAuthorName = (name: string, source: string, priority: number) => {
+    const clean = String(name || '').trim();
+    if (!clean) return;
+    const key = clean.toLowerCase();
+    const prev = coAuthorNameCounts.get(key);
+    if (prev) {
+      prev.count++;
+      if (priority > prev.priority) {
+        prev.priority = priority;
+        prev.source = source;
+        prev.display = clean;
+      }
+    } else {
+      coAuthorNameCounts.set(key, {
+        display: clean,
+        count: 1,
+        source,
+        priority,
+      });
+    }
+  };
+
+  const recordAffilVote = (
+    rawAffil: string | undefined,
+    rawCountry: string | undefined,
+    weight: number
+  ) => {
+    const cleanAffil = String(rawAffil || '').trim();
+    if (!isInformativeAffiliation(cleanAffil)) return;
+    const key = cleanAffil.toLowerCase();
+    const cc = normalizeCountryCodeOpt(rawCountry);
+    const prev = affilVotes.get(key);
+    if (prev) {
+      prev.weight += weight;
+      if (!prev.countryCode && cc) prev.countryCode = cc;
+    } else {
+      affilVotes.set(key, { affil: cleanAffil, countryCode: cc, weight });
+    }
+  };
 
   for (const reg of params.registeredUsers || []) {
     if (String(reg?.scholarUserId || '').trim() === targetId && reg?.name) {
-      return {
-        name: reg.name.trim(),
-        ...(reg.affiliation ? { affiliationHint: reg.affiliation } : {}),
-        source: 'registered-user',
-      };
+      recordName(reg.name, 'registered-user', 100);
+      recordAffilVote(reg.affiliation, undefined, 6);
+    }
+  }
+
+  for (const snapVal of Object.values(params.verifiedSnapshot || {})) {
+    const prof = snapVal?.profile || (snapVal?.publications ? snapVal : undefined);
+    if (!prof) continue;
+    if (String(prof.scholarUserId || '').trim() === targetId && prof.name) {
+      recordName(prof.name, 'snapshot-profile', 90);
+      recordAffilVote(
+        prof.homeUniversity || prof.affiliation,
+        undefined,
+        6
+      );
+      for (const pub of prof.publications || []) {
+        const title = String(pub?.title || '').trim();
+        if (title) {
+          evidenceItems.push({
+            title,
+            affil: String(prof.homeUniversity || prof.affiliation || '').trim(),
+            year: Number(pub?.year || 0),
+          });
+        }
+      }
+    }
+    for (const pub of prof.publications || []) {
+      for (const ca of pub?.coAuthors || []) {
+        if (String(ca?.scholarUserId || '').trim() === targetId && ca?.name) {
+          recordCoAuthorName(String(ca.name), 'snapshot-coauthor', 40);
+          recordAffilVote(ca.universityName, ca.countryCode, 1);
+          const title = String(pub?.title || '').trim();
+          if (title) {
+            evidenceItems.push({
+              title,
+              collaborator: String(prof.name || '').trim() || undefined,
+              affil: String(ca.universityName || '').trim(),
+              year: Number(pub?.year || 0),
+            });
+          }
+        }
+      }
     }
   }
 
   for (const digest of Object.values(params.digests || {})) {
     if (String(digest?.scholarUserId || '').trim() === targetId && digest?.name) {
-      return {
-        name: String(digest.name).trim(),
-        ...(digest.affiliation ? { affiliationHint: String(digest.affiliation) } : {}),
-        source: 'works-digest',
-      };
+      recordName(String(digest.name), 'works-digest', 80);
+      recordAffilVote(digest.affiliation, undefined, 5);
     }
     for (const ca of digest?.coAuthors || []) {
       if (String(ca?.scholarUserId || '').trim() === targetId && ca?.name) {
-        return {
-          name: String(ca.name).trim(),
-          ...(ca.universityName ? { affiliationHint: String(ca.universityName) } : {}),
-          source: 'digest-coauthor',
-        };
+        recordCoAuthorName(String(ca.name), 'digest-coauthor', 45);
+        recordAffilVote(ca.universityName, ca.countryCode, 1);
       }
     }
   }
@@ -189,59 +322,121 @@ export function lookupScholarIdentityInStores(params: {
     const id = String(item?.u || item?.userId || '').trim();
     const nm = String(item?.n || item?.name || '').trim();
     if (id === targetId && nm) {
-      return {
-        name: nm,
-        ...(item?.university ? { affiliationHint: String(item.university) } : {}),
-        source: 'colleague-list',
-      };
-    }
-  }
-
-  for (const [rawKey, entry] of Object.entries(params.coAuthorMap || {})) {
-    if (String(entry?.u || '').trim() === targetId && rawKey.trim()) {
-      return {
-        name: rawKey.trim(),
-        source: 'coauthor-map',
-      };
+      recordName(nm, 'colleague-list', 70);
+      recordAffilVote(item?.university, undefined, 2);
     }
   }
 
   for (const entry of Object.values(params.colleagueDirectory || {})) {
     if (String(entry?.userId || '').trim() === targetId && entry?.name) {
-      return {
-        name: String(entry.name).trim(),
-        ...(entry.university ? { affiliationHint: String(entry.university) } : {}),
-        source: 'colleague-directory',
-      };
+      recordName(String(entry.name), 'colleague-directory', 65);
+      recordAffilVote(entry.university, undefined, 2);
     }
   }
 
-  for (const snapVal of Object.values(params.verifiedSnapshot || {})) {
-    const prof = snapVal?.profile || (snapVal?.publications ? snapVal : undefined);
-    if (!prof) continue;
-    if (String(prof.scholarUserId || '').trim() === targetId && prof.name) {
-      return {
-        name: String(prof.name).trim(),
-        ...(prof.homeUniversity || prof.affiliation
-          ? { affiliationHint: String(prof.homeUniversity || prof.affiliation) }
-          : {}),
-        source: 'snapshot-profile',
-      };
+  for (const [rawKey, entry] of Object.entries(params.coAuthorMap || {})) {
+    if (String(entry?.u || '').trim() === targetId && rawKey.trim()) {
+      recordName(rawKey.trim(), 'coauthor-map', 20);
     }
-    for (const pub of prof.publications || []) {
-      for (const ca of pub?.coAuthors || []) {
-        if (String(ca?.scholarUserId || '').trim() === targetId && ca?.name) {
-          return {
-            name: String(ca.name).trim(),
-            ...(ca.universityName ? { affiliationHint: String(ca.universityName) } : {}),
-            source: 'snapshot-coauthor',
-          };
-        }
+  }
+
+  if (coAuthorNameCounts.size > 0 && (!bestName.value || bestName.value.priority < 50)) {
+    const sortedCo = [...coAuthorNameCounts.values()].sort(
+      (a, b) => b.count - a.count || b.priority - a.priority
+    );
+    bestName.value = {
+      name: sortedCo[0].display,
+      source: sortedCo[0].source,
+      priority: sortedCo[0].priority,
+    };
+  }
+
+  if (!bestName.value) {
+    return { identity: null, knownWorkTitles: [], knownCollaboratorNames: [] };
+  }
+
+  const topAffil = [...affilVotes.values()].sort((a, b) => b.weight - a.weight)[0];
+  const winningAffilLower = topAffil?.affil.toLowerCase();
+
+  // Filter work evidence to papers consistent with the winning affiliation when known
+  const sortedEvidence = [...evidenceItems].sort((a, b) => {
+    const aAligned =
+      winningAffilLower && a.affil?.toLowerCase() === winningAffilLower ? 1 : 0;
+    const bAligned =
+      winningAffilLower && b.affil?.toLowerCase() === winningAffilLower ? 1 : 0;
+    return bAligned - aAligned || b.year - a.year;
+  });
+
+  const knownWorkTitles: string[] = [];
+  const seenTitles = new Set<string>();
+  const knownCollaboratorNames: string[] = [];
+  const seenCollabs = new Set<string>();
+  for (const item of sortedEvidence) {
+    if (
+      winningAffilLower &&
+      item.affil &&
+      isInformativeAffiliation(item.affil) &&
+      item.affil.toLowerCase() !== winningAffilLower &&
+      knownWorkTitles.length > 0
+    ) {
+      continue;
+    }
+    const tKey = item.title.toLowerCase();
+    if (!seenTitles.has(tKey) && knownWorkTitles.length < 6) {
+      seenTitles.add(tKey);
+      knownWorkTitles.push(item.title);
+    }
+    if (item.collaborator) {
+      const cKey = item.collaborator.toLowerCase();
+      if (!seenCollabs.has(cKey) && knownCollaboratorNames.length < 6) {
+        seenCollabs.add(cKey);
+        knownCollaboratorNames.push(item.collaborator);
       }
     }
   }
 
-  return null;
+  return {
+    identity: {
+      name: bestName.value.name,
+      ...(topAffil?.affil ? { affiliationHint: topAffil.affil } : {}),
+      ...(topAffil?.countryCode ? { countryCodeHint: topAffil.countryCode } : {}),
+      source: bestName.value.source,
+    },
+    knownWorkTitles,
+    knownCollaboratorNames,
+  };
+}
+
+/**
+ * Searches verified local caches/directories for a Google Scholar userId so
+ * co-author or previously seen researchers resolve without external GS scraping.
+ * Scans all stores and picks the highest-weighted canonical affiliation so
+ * affiliation-less directory rows never shadow verified university metadata.
+ */
+export function lookupScholarIdentityInStores(
+  params: ScholarStoreLookupParams
+): ResolvedScholarIdentity | null {
+  return collectScholarStoreIdentityAndEvidence(params).identity;
+}
+
+/**
+ * Extracts verified co-authored paper titles and collaborator names associated with a
+ * Google Scholar userId from local snapshots/digests for OpenAlex work-based disambiguation.
+ */
+export function lookupScholarWorkEvidenceInStores(
+  params: ScholarStoreLookupParams
+): ScholarWorkEvidence {
+  const res = collectScholarStoreIdentityAndEvidence(params);
+  return {
+    knownWorkTitles: res.knownWorkTitles,
+    knownCollaboratorNames: res.knownCollaboratorNames,
+    ...(res.identity?.affiliationHint
+      ? { affiliationHint: res.identity.affiliationHint }
+      : {}),
+    ...(res.identity?.countryCodeHint
+      ? { countryCodeHint: res.identity.countryCodeHint }
+      : {}),
+  };
 }
 
 export function decodeSearchRedirectUrl(rawHref: string): string {

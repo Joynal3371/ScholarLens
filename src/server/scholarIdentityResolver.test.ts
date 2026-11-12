@@ -5,6 +5,7 @@ import {
   extractScholarIdentityFromDdgHtml,
   extractScholarIdentityFromYahooHtml,
   lookupScholarIdentityInStores,
+  lookupScholarWorkEvidenceInStores,
 } from './scholarIdentityResolver';
 
 test('extractScholarIdentityFromYahooHtml resolves researcher only from exact user= link match', () => {
@@ -108,4 +109,70 @@ test('extractCandidateScholarIdsFromSearchHtml ranks matching Scholar IDs with a
     (cand, target) => cand.toLowerCase() === target.toLowerCase()
   );
   assert.deepEqual(ids, ['_4sL4XUAAAAJ', 'AAAA1111BBBB']);
+});
+
+test('lookupScholarIdentityInStores aggregates majority affiliation across stores without shadowing by colleagueList', () => {
+  const params = {
+    scholarId: 'X6_inMYAAAAJ',
+    colleagueList: [{ u: 'X6_inMYAAAAJ', n: 'Aminul Islam' }],
+    verifiedSnapshot: {
+      be8uiCkAAAAJ: {
+        profile: {
+          name: 'ASM Shihavuddin',
+          scholarUserId: 'be8uiCkAAAAJ',
+          publications: [
+            {
+              title: 'An analysis and modeling of the class-e inverter',
+              year: 2021,
+              coAuthors: [
+                {
+                  name: 'Aminul Islam',
+                  scholarUserId: 'X6_inMYAAAAJ',
+                  universityName: 'Technical University of Denmark',
+                  countryCode: 'DK',
+                },
+              ],
+            },
+            {
+              title: 'Enhanced energy savings in indoor environments',
+              year: 2020,
+              coAuthors: [
+                {
+                  name: 'Aminul Islam',
+                  scholarUserId: 'X6_inMYAAAAJ',
+                  universityName: 'Technical University of Denmark',
+                  countryCode: 'DK',
+                },
+              ],
+            },
+            {
+              title: 'Noisy outlier paper',
+              year: 2026,
+              coAuthors: [
+                {
+                  name: 'Aminul Islam Nayan',
+                  scholarUserId: 'X6_inMYAAAAJ',
+                  universityName: 'Green University of Bangladesh',
+                  countryCode: 'BD',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  const identity = lookupScholarIdentityInStores(params);
+  assert.ok(identity);
+  assert.equal(identity.name, 'Aminul Islam');
+  assert.equal(identity.affiliationHint, 'Technical University of Denmark');
+  assert.equal(identity.countryCodeHint, 'DK');
+
+  const evidence = lookupScholarWorkEvidenceInStores(params);
+  assert.deepEqual(evidence.knownWorkTitles, [
+    'An analysis and modeling of the class-e inverter',
+    'Enhanced energy savings in indoor environments',
+  ]);
+  assert.deepEqual(evidence.knownCollaboratorNames, ['ASM Shihavuddin']);
 });

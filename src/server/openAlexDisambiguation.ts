@@ -61,6 +61,164 @@ export function stripAuthorHonorificsBasic(name: string): string {
     .trim();
 }
 
+const MUHAMMAD_PREFIX_VARIANTS = new Set([
+  'md',
+  'mohd',
+  'mohammed',
+  'muhammad',
+  'mohammad',
+  'muhammed',
+  'mohamad',
+]);
+
+function areGivenNameTokensCompatible(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.replace(/v|w/g, 'b') === b.replace(/v|w/g, 'b')) return true;
+  if (MUHAMMAD_PREFIX_VARIANTS.has(a) && MUHAMMAD_PREFIX_VARIANTS.has(b)) {
+    return true;
+  }
+  if (a.length === 1 || b.length === 1) {
+    return a[0] === b[0];
+  }
+  return false;
+}
+
+function isOrderedGivenSubsequence(shortTokens: string[], longTokens: string[]): boolean {
+  if (shortTokens.length === 0 || longTokens.length < shortTokens.length) {
+    return false;
+  }
+  let j = 0;
+  let firstMatchIndex = -1;
+  let matchedNonPrefix = false;
+  for (let i = 0; i < shortTokens.length; i++) {
+    const tok = shortTokens[i];
+    let found = false;
+    while (j < longTokens.length) {
+      if (areGivenNameTokensCompatible(tok, longTokens[j])) {
+        if (firstMatchIndex === -1) firstMatchIndex = j;
+        if (!MUHAMMAD_PREFIX_VARIANTS.has(tok) || !MUHAMMAD_PREFIX_VARIANTS.has(longTokens[j])) {
+          matchedNonPrefix = true;
+        }
+        j++;
+        found = true;
+        break;
+      }
+      j++;
+    }
+    if (!found) return false;
+  }
+  // Do not match a lone middle initial (e.g. "Y. Ng" vs "Andrew Y. Ng")
+  if (firstMatchIndex > 0 && shortTokens[0].length === 1 && shortTokens.length === 1) {
+    return false;
+  }
+  // Do not let "Md. Islam" match "Md. Ashraful Islam" solely via "Md." prefix
+  const longHasExtraDistinguishingToken =
+    longTokens.length > shortTokens.length &&
+    longTokens.some((t) => t.length >= 2 && !MUHAMMAD_PREFIX_VARIANTS.has(t));
+  if (!matchedNonPrefix && longHasExtraDistinguishingToken) {
+    return false;
+  }
+  return true;
+}
+
+export function isSameResearcherNameMatch(
+  candidateName: string,
+  targetName: string
+): boolean {
+  const c = String(candidateName || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const t = String(targetName || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!c || !t) return false;
+  if (c === t) return true;
+
+  const cNorm = c.replace(/v|w/g, 'b');
+  const tNorm = t.replace(/v|w/g, 'b');
+  if (cNorm === tNorm) return true;
+
+  const cTokens = c.split(/\s+/).filter(Boolean);
+  const tTokens = t.split(/\s+/).filter(Boolean);
+  if (cTokens.length < 2 || tTokens.length < 2) {
+    return false;
+  }
+
+  // Reversed East Asian name order ("Li Fei-Fei" <-> "Fei-Fei Li")
+  if (
+    cTokens.length === tTokens.length &&
+    [...cTokens].sort().join(' ') === [...tTokens].sort().join(' ')
+  ) {
+    return true;
+  }
+
+  const cLast = cTokens[cTokens.length - 1];
+  const tLast = tTokens[tTokens.length - 1];
+  if (
+    cLast !== tLast &&
+    cLast.replace(/v|w/g, 'b') !== tLast.replace(/v|w/g, 'b')
+  ) {
+    return false;
+  }
+
+  const cGiven = cTokens.slice(0, -1);
+  const tGiven = tTokens.slice(0, -1);
+
+  if (cGiven.join('') === tGiven.join('')) return true;
+
+  // Compacted multi-initial form (e.g. "MSH Lipu" <-> "Molla Shahadat Hossain Lipu")
+  if (
+    cGiven.length === 1 &&
+    cGiven[0].length >= 2 &&
+    cGiven[0].length === tGiven.length &&
+    tGiven.every((tok, idx) => tok[0] === cGiven[0][idx])
+  ) {
+    return true;
+  }
+  if (
+    tGiven.length === 1 &&
+    tGiven[0].length >= 2 &&
+    tGiven[0].length === cGiven.length &&
+    cGiven.every((tok, idx) => tok[0] === tGiven[0][idx])
+  ) {
+    return true;
+  }
+
+  const stripLeadingPrefix = (tokens: string[]): string[] =>
+    tokens.length >= 2 && MUHAMMAD_PREFIX_VARIANTS.has(tokens[0])
+      ? tokens.slice(1)
+      : tokens;
+
+  const cVariants = [cGiven];
+  const cStripped = stripLeadingPrefix(cGiven);
+  if (cStripped !== cGiven) cVariants.push(cStripped);
+
+  const tVariants = [tGiven];
+  const tStripped = stripLeadingPrefix(tGiven);
+  if (tStripped !== tGiven) tVariants.push(tStripped);
+
+  for (const cv of cVariants) {
+    for (const tv of tVariants) {
+      const [shortTokens, longTokens] =
+        cv.length <= tv.length ? [cv, tv] : [tv, cv];
+      if (isOrderedGivenSubsequence(shortTokens, longTokens)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 export interface ScoredOaCandidate {
   author: any;
   id: string;
@@ -193,12 +351,30 @@ export function pickDisambiguationTitles(
   return chosen;
 }
 
+export function normalizeOrcidUrl(raw?: string | null): string {
+  return String(raw || '')
+    .trim()
+    .replace(/^https?:\/\/orcid\.org\//i, '')
+    .toUpperCase();
+}
+
+export function areOrcidsConflicting(
+  orcidA?: string | null,
+  orcidB?: string | null
+): boolean {
+  const cleanA = normalizeOrcidUrl(orcidA);
+  const cleanB = normalizeOrcidUrl(orcidB);
+  return Boolean(cleanA && cleanB && cleanA !== cleanB);
+}
+
 export interface RankedWorkAuthorMatch {
   id: string;
+  orcid?: string;
   score: number;
   affilHits: number;
   countryHits: number;
   titleHits: number;
+  collaboratorHits: number;
 }
 
 export function rankOpenAlexAuthorsFromWorks(
@@ -207,16 +383,22 @@ export function rankOpenAlexAuthorsFromWorks(
   affilTokens: string[],
   homeCountryCode: string | undefined,
   isSameName: (a: string, b: string) => boolean,
-  matchWorkFn: (title: string, works: any[]) => any | null
+  matchWorkFn: (title: string, works: any[]) => any | null,
+  collaboratorNames: string[] = []
 ): RankedWorkAuthorMatch[] {
   const upperHomeCountry = String(homeCountryCode || '').trim().toUpperCase();
+  const cleanCollaborators = collaboratorNames
+    .map((n) => stripAuthorHonorificsBasic(n).trim())
+    .filter(Boolean);
   const candidates = new Map<
     string,
     {
       id: string;
+      orcid?: string;
       affilHits: number;
       countryHits: number;
       titleHits: number;
+      collaboratorHits: number;
       seenTitles: Set<string>;
     }
   >();
@@ -225,7 +407,19 @@ export function rankOpenAlexAuthorsFromWorks(
     const titleKey = entry.title.toLowerCase();
     for (const w of entry.works) {
       if (!matchWorkFn(entry.title, [w])) continue;
-      for (const au of w.authorships || []) {
+      const authorships: any[] = Array.isArray(w.authorships) ? w.authorships : [];
+      const workCollabCount =
+        cleanCollaborators.length > 0
+          ? authorships.filter((otherAu) => {
+              const otherName = String(otherAu.author?.display_name || '').trim();
+              return (
+                otherName &&
+                cleanCollaborators.some((colName) => isSameName(otherName, colName))
+              );
+            }).length
+          : 0;
+
+      for (const au of authorships) {
         const auName = String(au.author?.display_name || '');
         const auId = String(au.author?.id || '')
           .replace('https://openalex.org/', '')
@@ -236,17 +430,23 @@ export function rankOpenAlexAuthorsFromWorks(
         if (!stats) {
           stats = {
             id: auId,
+            orcid: normalizeOrcidUrl(au.author?.orcid) || undefined,
             affilHits: 0,
             countryHits: 0,
             titleHits: 0,
+            collaboratorHits: 0,
             seenTitles: new Set(),
           };
           candidates.set(auId, stats);
+        } else if (!stats.orcid) {
+          const normO = normalizeOrcidUrl(au.author?.orcid);
+          if (normO) stats.orcid = normO;
         }
 
         if (!stats.seenTitles.has(titleKey)) {
           stats.seenTitles.add(titleKey);
           stats.titleHits++;
+          stats.collaboratorHits += workCollabCount;
         }
 
         const insts: any[] = Array.isArray(au.institutions) ? au.institutions : [];
@@ -271,12 +471,25 @@ export function rankOpenAlexAuthorsFromWorks(
   return Array.from(candidates.values())
     .map((c) => ({
       id: c.id,
+      ...(c.orcid ? { orcid: c.orcid } : {}),
       affilHits: c.affilHits,
       countryHits: c.countryHits,
       titleHits: c.titleHits,
-      score: c.affilHits * 60 + c.countryHits * 25 + c.titleHits * 15,
+      collaboratorHits: c.collaboratorHits,
+      score:
+        c.affilHits * 60 +
+        c.collaboratorHits * 45 +
+        c.countryHits * 25 +
+        c.titleHits * 15,
     }))
-    .sort((a, b) => b.score - a.score || b.titleHits - a.titleHits);
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.collaboratorHits - a.collaboratorHits ||
+        b.affilHits - a.affilHits ||
+        b.titleHits - a.titleHits ||
+        (b.orcid ? 1 : 0) - (a.orcid ? 1 : 0)
+    );
 }
 
 const SKIPPED_PROFILE_HOSTS = [
@@ -401,18 +614,36 @@ export function extractSameInstitutionAuthorIds(
   instAuthors: any[],
   cleanSearchName: string,
   isSameName: (a: string, b: string) => boolean,
-  maxIds: number = 8
+  maxIds: number = 8,
+  primaryOrcid?: string
 ): string[] {
   const ids: string[] = [];
-  const sorted = [...(instAuthors || [])].sort(
-    (a, b) => Number(b?.works_count || 0) - Number(a?.works_count || 0)
-  );
-  for (const cand of sorted) {
+  const normalizedPrimaryOrcid = normalizeOrcidUrl(primaryOrcid);
+  const matching = (instAuthors || []).filter((cand) => {
     const cName = String(cand?.display_name || '').trim();
     const cId = String(cand?.id || '')
       .replace('https://openalex.org/', '')
       .trim();
-    if (!cId || !cName || !isSameName(cName, cleanSearchName)) continue;
+    return Boolean(cId && cName && isSameName(cName, cleanSearchName));
+  });
+  const distinctOrcids = new Set(
+    matching.map((cand) => normalizeOrcidUrl(cand?.orcid)).filter(Boolean)
+  );
+  const skipAllOrcids = !normalizedPrimaryOrcid && distinctOrcids.size > 1;
+  const sorted = [...matching].sort(
+    (a, b) => Number(b?.works_count || 0) - Number(a?.works_count || 0)
+  );
+  for (const cand of sorted) {
+    const cId = String(cand?.id || '')
+      .replace('https://openalex.org/', '')
+      .trim();
+    const candOrcid = normalizeOrcidUrl(cand?.orcid);
+    if (normalizedPrimaryOrcid && areOrcidsConflicting(normalizedPrimaryOrcid, candOrcid)) {
+      continue;
+    }
+    if (skipAllOrcids && candOrcid) {
+      continue;
+    }
     if (!ids.includes(cId)) {
       ids.push(cId);
       if (ids.length >= maxIds) break;

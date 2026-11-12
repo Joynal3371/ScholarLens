@@ -44,11 +44,14 @@ import {
   sortAndRankFeedItems,
 } from './src/server/feedRanking';
 import {
+  areOrcidsConflicting,
   buildYahooScholarSearchQueries,
   extractAffiliationKeywords,
   extractPortraitUrlFromHtml,
   extractSameInstitutionAuthorIds,
+  isSameResearcherNameMatch,
   normalizeAsciiWords,
+  normalizeOrcidUrl,
   pickDisambiguationTitles,
   pickInstitutionalProfileUrls,
   rankOpenAlexAuthorsFromWorks,
@@ -60,7 +63,9 @@ import {
   extractScholarIdentityFromDdgHtml,
   extractScholarIdentityFromYahooHtml,
   lookupScholarIdentityInStores,
+  lookupScholarWorkEvidenceInStores,
   ResolvedScholarIdentity,
+  ScholarWorkEvidence,
 } from './src/server/scholarIdentityResolver';
 import {
   ContinentName,
@@ -1032,13 +1037,8 @@ async function fetchScholarPageHtml(url: string): Promise<string | null> {
     }
   }
 
-  // 2. Fallback via Google AMP mirror & high-availability Hexlet AllOrigins relays if direct fetch was throttled
-  const ampPath = url.replace(/^https?:\/\//i, '');
+  // 2. Fallback via high-availability Hexlet AllOrigins relays if direct fetch was throttled
   const fallbackEndpoints = [
-    {
-      type: 'raw',
-      url: `https://www.google.com/amp/s/${ampPath}`,
-    },
     {
       type: 'raw',
       url: `https://allorigins.hexlet.app/raw?url=${encodeURIComponent(url)}`,
@@ -1865,67 +1865,10 @@ function isSameResearcherName(
   candidateName: string,
   targetName: string
 ): boolean {
-  const c = stripAcademicHonorifics(candidateName)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const t = stripAcademicHonorifics(targetName)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (!c || !t) return false;
-  if (c === t) return true;
-
-  // Normalized phonetic comparison for common international transliteration variants (v/b, w/v)
-  const cNorm = c.replace(/v|w/g, 'b');
-  const tNorm = t.replace(/v|w/g, 'b');
-  if (cNorm === tNorm) return true;
-
-  const cTokens = c.split(/\s+/).filter(Boolean);
-  const tTokens = t.split(/\s+/).filter(Boolean);
-
-  // Support reversed name order (e.g. East Asian "Li Fei-Fei" <-> "Fei-Fei Li")
-  if (
-    cTokens.length >= 2 &&
-    cTokens.length === tTokens.length &&
-    [...cTokens].sort().join(' ') === [...tTokens].sort().join(' ')
-  ) {
-    return true;
-  }
-
-  const tParts = tTokens.filter((p) => p.length >= 4);
-  if (tParts.length > 0) {
-    const lastPart = tParts[tParts.length - 1];
-    const lastPartNorm = lastPart.replace(/v|w/g, 'b');
-    const firstInit = tTokens[0]?.[0] || '';
-    const cFirstInit = cTokens[0]?.[0] || '';
-    if (
-      (c.includes(lastPart) || cNorm.includes(lastPartNorm)) &&
-      (!firstInit || !cFirstInit || firstInit === cFirstInit)
-    ) {
-      return true;
-    }
-  } else if (tTokens.length >= 2 && cTokens.length >= 2) {
-    // Support 2-3 letter surnames (e.g. "Kaiming He", "Andrew Ng", "Fei-Fei Li")
-    const tLast = tTokens[tTokens.length - 1];
-    const tFirst = tTokens[0];
-    if (
-      tLast.length >= 2 &&
-      cTokens.includes(tLast) &&
-      (cTokens.includes(tFirst) ||
-        (tFirst.length >= 4 && c.includes(tFirst)) ||
-        cTokens[0]?.[0] === tFirst[0])
-    ) {
-      return true;
-    }
-  }
-  return false;
+  return isSameResearcherNameMatch(
+    stripAcademicHonorifics(candidateName),
+    stripAcademicHonorifics(targetName)
+  );
 }
 
 function matchGsTitleToOpenAlexWork(
@@ -1982,12 +1925,18 @@ function matchGsTitleToOpenAlexWork(
 
 async function resolveScholarIdViaWikidata(
   scholarId: string
-): Promise<string | null> {
+): Promise<ResolvedScholarIdentity | null> {
   try {
-    const sparql = `SELECT ?itemLabel WHERE { ?item wdt:P1960 "${scholarId.replace(
-      /"/g,
-      ''
-    )}". SERVICE wikibase:label { bd:serviceParam wikibase:language "en". } } LIMIT 1`;
+    const cleanId = scholarId.replace(/"/g, '');
+    const sparql = `SELECT ?itemLabel ?employerLabel ?eduLabel ?countryCode WHERE {
+      ?item wdt:P1960 "${cleanId}".
+      OPTIONAL {
+        ?item wdt:P108 ?employer.
+        OPTIONAL { ?employer wdt:P17 ?empCountry. ?empCountry wdt:P297 ?countryCode. }
+      }
+      OPTIONAL { ?item wdt:P69 ?edu. }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    } LIMIT 1`;
     const res = await fetch(
       `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(
         sparql
@@ -2001,9 +1950,23 @@ async function resolveScholarIdViaWikidata(
     );
     if (res.ok) {
       const data = (await res.json()) as any;
-      const label = data?.results?.bindings?.[0]?.itemLabel?.value;
+      const row = data?.results?.bindings?.[0];
+      const label = row?.itemLabel?.value;
       if (label && typeof label === 'string' && !/^Q\d+$/.test(label)) {
-        return label;
+        const employer = row?.employerLabel?.value;
+        const edu = row?.eduLabel?.value;
+        const affil =
+          (employer && !/^Q\d+$/.test(employer) ? employer : '') ||
+          (edu && !/^Q\d+$/.test(edu) ? edu : '');
+        const cc = String(row?.countryCode?.value || '')
+          .trim()
+          .toUpperCase();
+        return {
+          name: label,
+          ...(affil ? { affiliationHint: affil } : {}),
+          ...(cc.length === 2 ? { countryCodeHint: cc } : {}),
+          source: 'wikidata',
+        };
       }
     }
   } catch {
@@ -2347,7 +2310,7 @@ async function resolveScholarIdentityByUserIdFallback(
     coAuthorMap: rawCoAuthorMap,
     verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
   });
-  if (fromBundledStores?.name) {
+  if (fromBundledStores?.name && fromBundledStores?.affiliationHint) {
     return fromBundledStores;
   }
 
@@ -2369,13 +2332,16 @@ async function resolveScholarIdentityByUserIdFallback(
     // Social store unavailable; proceed with static stores and external resolvers
   }
 
-  const fromDynamicStores = lookupScholarIdentityInStores({
+  const fromCombinedStores = lookupScholarIdentityInStores({
     scholarId: cleanId,
+    colleagueList: scholarColleagueList,
+    coAuthorMap: rawCoAuthorMap,
+    verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
     digests,
     registeredUsers,
   });
-  if (fromDynamicStores?.name) {
-    return fromDynamicStores;
+  if (fromCombinedStores?.name && fromCombinedStores?.affiliationHint) {
+    return fromCombinedStores;
   }
 
   const [wikidataRes, ddgRes, orcidRes, yahooRes] = await Promise.allSettled([
@@ -2385,20 +2351,26 @@ async function resolveScholarIdentityByUserIdFallback(
     resolveScholarIdentityViaYahoo(cleanId),
   ]);
 
-  if (wikidataRes.status === 'fulfilled' && wikidataRes.value) {
+  const externalHits = [
+    wikidataRes.status === 'fulfilled' ? wikidataRes.value : null,
+    ddgRes.status === 'fulfilled' ? ddgRes.value : null,
+    orcidRes.status === 'fulfilled' ? orcidRes.value : null,
+    yahooRes.status === 'fulfilled' ? yahooRes.value : null,
+  ].filter((x): x is ResolvedScholarIdentity => Boolean(x?.name));
+
+  // Prefer external hit that supplies an affiliationHint if combinedStores lacked one
+  const externalWithAffil = externalHits.find((x) => Boolean(x.affiliationHint));
+  if (externalWithAffil) {
     return {
-      name: wikidataRes.value,
-      source: 'wikidata',
+      ...externalWithAffil,
+      name: fromCombinedStores?.name || externalWithAffil.name,
     };
   }
-  if (ddgRes.status === 'fulfilled' && ddgRes.value?.name) {
-    return ddgRes.value;
+  if (fromCombinedStores?.name) {
+    return fromCombinedStores;
   }
-  if (orcidRes.status === 'fulfilled' && orcidRes.value?.name) {
-    return orcidRes.value;
-  }
-  if (yahooRes.status === 'fulfilled' && yahooRes.value?.name) {
-    return yahooRes.value;
+  if (externalHits[0]) {
+    return externalHits[0];
   }
 
   return null;
@@ -2428,7 +2400,7 @@ export async function buildLiveResearcherProfile(
     }
   }
 
-  // If bundled stores already identify this Scholar ID or a queryName is provided, cap GS scraping at 3.8s so blocked cloud proxies never starve OpenAlex
+  // If bundled stores already identify this Scholar ID or a queryName is provided, cap GS scraping so blocked cloud proxies never starve OpenAlex
   const fastStoreIdentity =
     !effectiveQueryName && isValidScholarId(effectiveUserId)
       ? lookupScholarIdentityInStores({
@@ -2438,6 +2410,16 @@ export async function buildLiveResearcherProfile(
           verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
         })
       : null;
+
+  const fastStoreEvidence: ScholarWorkEvidence =
+    !effectiveQueryName && isValidScholarId(effectiveUserId)
+      ? lookupScholarWorkEvidenceInStores({
+          scholarId: effectiveUserId,
+          colleagueList: scholarColleagueList,
+          coAuthorMap: rawCoAuthorMap,
+          verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
+        })
+      : { knownWorkTitles: [], knownCollaboratorNames: [] };
 
   let scraped = effectiveUserId
     ? effectiveQueryName || fastStoreIdentity?.name
@@ -2463,10 +2445,27 @@ export async function buildLiveResearcherProfile(
   }
 
   let fallbackIdentity: ResolvedScholarIdentity | null = fastStoreIdentity;
-  if (!scraped && !effectiveQueryName && !fallbackIdentity?.name && effectiveUserId) {
-    fallbackIdentity = await resolveScholarIdentityByUserIdFallback(
+  if (
+    !scraped &&
+    !effectiveQueryName &&
+    effectiveUserId &&
+    (!fallbackIdentity?.name || !fallbackIdentity?.affiliationHint)
+  ) {
+    const enrichedFallback = await resolveScholarIdentityByUserIdFallback(
       effectiveUserId
     );
+    if (enrichedFallback) {
+      fallbackIdentity = {
+        name: fallbackIdentity?.name || enrichedFallback.name,
+        affiliationHint:
+          fallbackIdentity?.affiliationHint || enrichedFallback.affiliationHint,
+        countryCodeHint:
+          fallbackIdentity?.countryCodeHint || enrichedFallback.countryCodeHint,
+        source: enrichedFallback.affiliationHint
+          ? enrichedFallback.source
+          : fallbackIdentity?.source || enrichedFallback.source,
+      };
+    }
   }
 
   // Never query OpenAlex with a raw Google Scholar userId when no researcher name could be resolved
@@ -2485,24 +2484,32 @@ export async function buildLiveResearcherProfile(
     scraped?.verifiedDomain
   );
 
-  // 1. Find all matching OpenAlex author records for targetName (stripping Dr./Prof. honorifics so OpenAlex search succeeds)
+  const rawAffilHintText = `${scraped?.affiliation || ''} ${fallbackIdentity?.affiliationHint || ''} ${domainResolvedHome?.universityName || ''}`.trim();
+  const effectiveCountryHint =
+    domainResolvedHome?.countryCode ||
+    fallbackIdentity?.countryCodeHint ||
+    fastStoreEvidence.countryCodeHint ||
+    inferCountryCodeFromAffiliationString(rawAffilHintText) ||
+    undefined;
+
+  // 1. Find matching OpenAlex author records for targetName (stripping Dr./Prof. honorifics so OpenAlex search succeeds)
   const openAlexAuthorIds: string[] = [];
   let primaryOpenAlexAuthor: any = null;
   let bestOaCandidateScore = -1;
   let bestAffilMatches = 0;
+  let affilMatchedCandidateCount = 0;
   let weakFallbackAuthor: any = null;
   let weakFallbackId = '';
   let weakFallbackScore = -1;
+  let weakFallbackCountryMatched = false;
   const cleanSearchName = stripAcademicHonorifics(targetName) || targetName;
-  const affilTokens = extractAffiliationKeywords(
-    `${scraped?.affiliation || ''} ${fallbackIdentity?.affiliationHint || ''} ${domainResolvedHome?.universityName || ''}`
-  );
+  const affilTokens = extractAffiliationKeywords(rawAffilHintText);
 
   try {
     let authorData = await fetchOpenAlexJson(
       `https://api.openalex.org/authors?search=${encodeURIComponent(
         cleanSearchName
-      )}&per-page=25&mailto=research@scholarlens.org`,
+      )}&per-page=50&mailto=research@scholarlens.org`,
       5500
     );
     const suffixStrippedName = cleanSearchName
@@ -2517,80 +2524,167 @@ export async function buildLiveResearcherProfile(
       authorData = await fetchOpenAlexJson(
         `https://api.openalex.org/authors?search=${encodeURIComponent(
           suffixStrippedName
-        )}&per-page=25&mailto=research@scholarlens.org`,
+        )}&per-page=50&mailto=research@scholarlens.org`,
         5500
       );
     }
-    if (authorData) {
-      const results: any[] = Array.isArray(authorData?.results)
-        ? authorData.results
-        : [];
-      const scoredCandidates = results
+
+    const rawResults: any[] = Array.isArray(authorData?.results)
+      ? [...authorData.results]
+      : [];
+
+    const scoreCandidateList = (candList: any[]) =>
+      candList
         .map((a) =>
           scoreOpenAlexAuthorCandidate(
             a,
             cleanSearchName,
             affilTokens,
-            domainResolvedHome?.countryCode,
+            effectiveCountryHint,
             isSameResearcherName
           )
         )
         .filter((x): x is NonNullable<typeof x> => Boolean(x))
         .sort((x, y) => y.score - x.score || y.worksCount - x.worksCount);
 
-      if (scoredCandidates.length > 0) {
-        const top = scoredCandidates[0];
-        bestAffilMatches = top.affilMatches;
-        weakFallbackAuthor = top.author;
-        weakFallbackId = top.id;
-        weakFallbackScore = top.score;
+    let scoredCandidates = scoreCandidateList(rawResults);
 
-        // Only lock author IDs upfront when no affiliation constraint exists or candidate matched affiliation
-        if (affilTokens.length === 0 || top.affilMatches > 0) {
-          primaryOpenAlexAuthor = top.author;
-          bestOaCandidateScore = top.score;
-          for (const sc of scoredCandidates) {
-            const strongSplitMatch =
-              affilTokens.length === 0 && sc.score >= Math.max(40, top.score - 20);
-            if (
-              openAlexAuthorIds.length === 0 ||
-              ((sc.affilMatches > 0 || strongSplitMatch) &&
-                openAlexAuthorIds.length < 4)
-            ) {
-              if (!openAlexAuthorIds.includes(sc.id)) {
-                openAlexAuthorIds.push(sc.id);
-              }
+    // When a common-name researcher isn't in the global top-50 by works_count, query OpenAlex scoped by country and/or resolved institution
+    if (
+      (affilTokens.length > 0 || effectiveCountryHint) &&
+      !scoredCandidates.some((c) => c.affilMatches > 0)
+    ) {
+      const seenAuthorIds = new Set(
+        rawResults.map((r) => String(r?.id || '')).filter(Boolean)
+      );
+      const scopedLookups: Promise<any[]>[] = [];
+      if (effectiveCountryHint) {
+        scopedLookups.push(
+          fetchOpenAlexJson(
+            `https://api.openalex.org/authors?search=${encodeURIComponent(
+              cleanSearchName
+            )}&filter=affiliations.institution.country_code:${encodeURIComponent(
+              effectiveCountryHint
+            )}&per-page=25&mailto=research@scholarlens.org`,
+            4500
+          )
+            .then((d) => (Array.isArray(d?.results) ? d.results : []))
+            .catch(() => [])
+        );
+      }
+      const primaryInstQuery = String(
+        scraped?.affiliation ||
+          fallbackIdentity?.affiliationHint ||
+          domainResolvedHome?.universityName ||
+          ''
+      ).trim();
+      if (primaryInstQuery && affilTokens.length > 0) {
+        scopedLookups.push(
+          (async () => {
+            try {
+              const instSearch = await fetchOpenAlexJson(
+                `https://api.openalex.org/institutions?search=${encodeURIComponent(
+                  primaryInstQuery
+                )}&per-page=3&select=id,display_name,country_code&mailto=research@scholarlens.org`,
+                3500
+              );
+              const matchedInst = (instSearch?.results || []).find((ins: any) => {
+                const iNorm = normalizeAsciiWords(String(ins?.display_name || ''));
+                return affilTokens.some((tok) => iNorm.includes(tok));
+              });
+              const instShortId = String(matchedInst?.id || '')
+                .replace('https://openalex.org/', '')
+                .trim();
+              if (!instShortId) return [];
+              const scopedAuth = await fetchOpenAlexJson(
+                `https://api.openalex.org/authors?search=${encodeURIComponent(
+                  cleanSearchName
+                )}&filter=affiliations.institution.id:${encodeURIComponent(
+                  instShortId
+                )}&per-page=25&mailto=research@scholarlens.org`,
+                4000
+              );
+              return Array.isArray(scopedAuth?.results) ? scopedAuth.results : [];
+            } catch {
+              return [];
+            }
+          })()
+        );
+      }
+      const scopedBatches = await Promise.all(scopedLookups);
+      for (const batch of scopedBatches) {
+        for (const rec of batch) {
+          const rid = String(rec?.id || '');
+          if (rid && !seenAuthorIds.has(rid)) {
+            seenAuthorIds.add(rid);
+            rawResults.push(rec);
+          }
+        }
+      }
+      scoredCandidates = scoreCandidateList(rawResults);
+    }
+
+    if (scoredCandidates.length > 0) {
+      const top = scoredCandidates[0];
+      bestAffilMatches = top.affilMatches;
+      affilMatchedCandidateCount = scoredCandidates.filter(
+        (c) => c.affilMatches > 0
+      ).length;
+      weakFallbackAuthor = top.author;
+      weakFallbackId = top.id;
+      weakFallbackScore = top.score;
+      weakFallbackCountryMatched = top.countryMatches > 0;
+
+      // Only lock author IDs upfront when no affiliation constraint exists or candidate matched affiliation
+      if (affilTokens.length === 0 || top.affilMatches > 0) {
+        primaryOpenAlexAuthor = top.author;
+        bestOaCandidateScore = top.score;
+        openAlexAuthorIds.push(top.id);
+        const primaryOrcid = normalizeOrcidUrl(top.author?.orcid);
+        for (const sc of scoredCandidates.slice(1)) {
+          if (openAlexAuthorIds.length >= 4) break;
+          if (areOrcidsConflicting(primaryOrcid, sc.author?.orcid)) continue;
+          const scOrcid = normalizeOrcidUrl(sc.author?.orcid);
+          const sameExactOrcid = Boolean(primaryOrcid && scOrcid && primaryOrcid === scOrcid);
+          // Only merge additional author IDs upfront when confirmed by exact ORCID or shared affiliation (never merge unconstrained homonyms)
+          if (sameExactOrcid || (affilTokens.length > 0 && sc.affilMatches > 0)) {
+            if (!openAlexAuthorIds.includes(sc.id)) {
+              openAlexAuthorIds.push(sc.id);
             }
           }
         }
-      } else if (results[0]) {
-        weakFallbackAuthor = results[0];
-        weakFallbackId = String(results[0].id || '')
-          .replace('https://openalex.org/', '')
-          .trim();
-        if (affilTokens.length === 0 && weakFallbackId) {
-          primaryOpenAlexAuthor = weakFallbackAuthor;
-          openAlexAuthorIds.push(weakFallbackId);
-        }
+      }
+    } else if (rawResults[0] && affilTokens.length === 0) {
+      weakFallbackAuthor = rawResults[0];
+      weakFallbackId = String(rawResults[0].id || '')
+        .replace('https://openalex.org/', '')
+        .trim();
+      if (weakFallbackId) {
+        primaryOpenAlexAuthor = weakFallbackAuthor;
+        openAlexAuthorIds.push(weakFallbackId);
       }
     }
   } catch {
     // Continue with scraped Scholar data if OpenAlex author lookup times out
   }
 
-  // Fallback disambiguation via multiple Google Scholar publication titles when author search missed or lacked affiliation confirmation
+  // Disambiguate via publication titles + collaborators (handles both GS scraped works and verified store co-authored works, as well as same-university homonyms)
+  const disambigCandidateTitles =
+    scraped && scraped.publications.length > 0
+      ? pickDisambiguationTitles(scraped.publications, 4)
+      : fastStoreEvidence.knownWorkTitles.slice(0, 4);
+
   if (
-    scraped &&
-    scraped.publications.length > 0 &&
+    disambigCandidateTitles.length > 0 &&
     (openAlexAuthorIds.length === 0 ||
       !primaryOpenAlexAuthor ||
-      bestOaCandidateScore < 30 ||
-      (affilTokens.length > 0 && bestAffilMatches === 0))
+      bestOaCandidateScore < 40 ||
+      (affilTokens.length > 0 && bestAffilMatches === 0) ||
+      affilMatchedCandidateCount > 1)
   ) {
     try {
-      const candidateTitles = pickDisambiguationTitles(scraped.publications, 4);
       const worksByTitle = await Promise.all(
-        candidateTitles.map(async (title) => {
+        disambigCandidateTitles.map(async (title) => {
           const wSearch = await fetchOpenAlexJson(
             `https://api.openalex.org/works?search=${encodeURIComponent(
               title
@@ -2608,39 +2702,122 @@ export async function buildLiveResearcherProfile(
         worksByTitle,
         cleanSearchName,
         affilTokens,
-        domainResolvedHome?.countryCode,
+        effectiveCountryHint,
         isSameResearcherName,
-        matchGsTitleToOpenAlexWork
+        matchGsTitleToOpenAlexWork,
+        fastStoreEvidence.knownCollaboratorNames
       );
 
       if (rankedFromWorks.length > 0) {
-        const verifiedIds = [
-          rankedFromWorks[0].id,
+        const topRanked = rankedFromWorks[0];
+        const topRankedOrcid = topRanked.orcid;
+        let verifiedIds = [
+          topRanked.id,
           ...rankedFromWorks
             .slice(1)
-            .filter((r) => r.affilHits > 0 || r.titleHits >= 2)
-            .slice(0, 2)
+            .filter(
+              (r) =>
+                !areOrcidsConflicting(topRankedOrcid, r.orcid) &&
+                (r.affilHits > 0 || r.titleHits >= 2 || r.collaboratorHits > 0)
+            )
+            .slice(0, 4)
             .map((r) => r.id),
         ];
-        openAlexAuthorIds.splice(0, openAlexAuthorIds.length, ...verifiedIds);
 
-        const directAuthor = await fetchOpenAlexJson(
-          `https://api.openalex.org/authors/${encodeURIComponent(
-            rankedFromWorks[0].id
-          )}?mailto=research@scholarlens.org`,
-          3500
+        const batchAuthors = await fetchOpenAlexJson(
+          `https://api.openalex.org/authors?filter=openalex:${encodeURIComponent(
+            verifiedIds.join('|')
+          )}&per-page=10&mailto=research@scholarlens.org`,
+          3800
         );
-        if (directAuthor?.id) {
-          primaryOpenAlexAuthor = directAuthor;
-          bestOaCandidateScore = 100;
+        const batchResults: any[] = Array.isArray(batchAuthors?.results)
+          ? batchAuthors.results
+          : [];
+        if (batchResults.length > 0) {
+          const rankById = new Map(rankedFromWorks.map((r) => [r.id, r]));
+          const nonConflictingBatch = batchResults.filter((cand) => {
+            if (!cand?.id) return false;
+            return !areOrcidsConflicting(topRankedOrcid, cand?.orcid);
+          });
+          const hasAffilEvidence = (cand: any): number => {
+            const cId = String(cand?.id || '')
+              .replace('https://openalex.org/', '')
+              .trim();
+            if ((rankById.get(cId)?.affilHits || 0) > 0) return 1;
+            const lki: any[] = Array.isArray(cand?.last_known_institutions)
+              ? cand.last_known_institutions
+              : [];
+            return lki.some((inst) => {
+              const iName = normalizeAsciiWords(String(inst?.display_name || ''));
+              return affilTokens.some((tok) => iName.includes(tok));
+            })
+              ? 1
+              : 0;
+          };
+          nonConflictingBatch.sort((a, b) => {
+            const affDiff = hasAffilEvidence(b) - hasAffilEvidence(a);
+            if (affDiff !== 0) return affDiff;
+            const orcidDiff =
+              (normalizeOrcidUrl(b?.orcid) ? 1 : 0) -
+              (normalizeOrcidUrl(a?.orcid) ? 1 : 0);
+            if (orcidDiff !== 0) return orcidDiff;
+            const citDiff =
+              Number(b?.cited_by_count || 0) - Number(a?.cited_by_count || 0);
+            if (citDiff !== 0) return citDiff;
+            return Number(b?.works_count || 0) - Number(a?.works_count || 0);
+          });
+          const canonicalAuthor = nonConflictingBatch[0];
+          if (canonicalAuthor?.id) {
+            primaryOpenAlexAuthor = canonicalAuthor;
+            const canonicalId = String(canonicalAuthor.id)
+              .replace('https://openalex.org/', '')
+              .trim();
+            const canonicalOrcid = normalizeOrcidUrl(canonicalAuthor?.orcid);
+            verifiedIds = verifiedIds.filter((vid) => {
+              const cand = batchResults.find(
+                (r) =>
+                  String(r?.id || '')
+                    .replace('https://openalex.org/', '')
+                    .trim() === vid
+              );
+              return !areOrcidsConflicting(canonicalOrcid, cand?.orcid);
+            });
+            if (canonicalId && !verifiedIds.includes(canonicalId)) {
+              verifiedIds.unshift(canonicalId);
+            }
+            const canonicalRank = rankById.get(canonicalId) || topRanked;
+            bestOaCandidateScore = 100;
+            if (canonicalRank.affilHits > 0) {
+              bestAffilMatches = Math.max(bestAffilMatches, canonicalRank.affilHits);
+            }
+          }
+        } else {
+          const directAuthor = await fetchOpenAlexJson(
+            `https://api.openalex.org/authors/${encodeURIComponent(
+              topRanked.id
+            )}?mailto=research@scholarlens.org`,
+            3500
+          );
+          if (directAuthor?.id) {
+            primaryOpenAlexAuthor = directAuthor;
+            bestOaCandidateScore = 100;
+            if (topRanked.affilHits > 0) {
+              bestAffilMatches = Math.max(bestAffilMatches, topRanked.affilHits);
+            }
+          }
         }
+        openAlexAuthorIds.splice(0, openAlexAuthorIds.length, ...verifiedIds);
       }
     } catch {
       // Ignore fallback error
     }
   }
 
-  if (openAlexAuthorIds.length === 0 && weakFallbackId) {
+  if (
+    openAlexAuthorIds.length === 0 &&
+    weakFallbackId &&
+    (affilTokens.length === 0 || bestAffilMatches > 0 || weakFallbackCountryMatched)
+  ) {
     openAlexAuthorIds.push(weakFallbackId);
     if (!primaryOpenAlexAuthor && weakFallbackAuthor) {
       primaryOpenAlexAuthor = weakFallbackAuthor;
@@ -2648,7 +2825,7 @@ export async function buildLiveResearcherProfile(
     }
   }
 
-  // Merge any split OpenAlex author IDs belonging to the same researcher at the confirmed primary institution
+  // Merge any split OpenAlex author IDs belonging to the same researcher at the confirmed primary institution (guarding against conflicting ORCIDs)
   if (primaryOpenAlexAuthor && cleanSearchName) {
     try {
       const lki: any[] = Array.isArray(primaryOpenAlexAuthor.last_known_institutions)
@@ -2662,24 +2839,59 @@ export async function buildLiveResearcherProfile(
       const primaryInstId = String(matchingInst?.id || '')
         .replace('https://openalex.org/', '')
         .trim();
-      if (primaryInstId && (affilTokens.length === 0 || bestOaCandidateScore >= 50 || bestAffilMatches > 0)) {
+      const primaryOrcid = normalizeOrcidUrl(primaryOpenAlexAuthor?.orcid);
+      if (
+        primaryInstId &&
+        (affilTokens.length > 0 || bestAffilMatches > 0 || Boolean(primaryOrcid))
+      ) {
         const splitAuthorsData = await fetchOpenAlexJson(
           `https://api.openalex.org/authors?filter=display_name.search:${encodeURIComponent(
             cleanSearchName
           )},affiliations.institution.id:${encodeURIComponent(
             primaryInstId
-          )}&per-page=25&select=id,display_name,works_count,last_known_institutions&mailto=research@scholarlens.org`,
+          )}&per-page=25&select=id,display_name,orcid,works_count,last_known_institutions&mailto=research@scholarlens.org`,
           3800
         );
         const sameInstIds = extractSameInstitutionAuthorIds(
           Array.isArray(splitAuthorsData?.results) ? splitAuthorsData.results : [],
           cleanSearchName,
           isSameResearcherName,
-          8
+          8,
+          primaryOrcid || undefined
         );
         for (const extraId of sameInstIds) {
           if (!openAlexAuthorIds.includes(extraId) && openAlexAuthorIds.length < 8) {
             openAlexAuthorIds.push(extraId);
+          }
+        }
+        if (
+          openAlexAuthorIds.length > 1 &&
+          !primaryOrcid &&
+          Number(primaryOpenAlexAuthor?.works_count || 0) <= 5
+        ) {
+          const promotedBatch = await fetchOpenAlexJson(
+            `https://api.openalex.org/authors?filter=openalex:${encodeURIComponent(
+              openAlexAuthorIds.join('|')
+            )}&per-page=10&mailto=research@scholarlens.org`,
+            3500
+          );
+          const promotedList: any[] = Array.isArray(promotedBatch?.results)
+            ? promotedBatch.results
+            : [];
+          if (promotedList.length > 0) {
+            promotedList.sort((a, b) => {
+              const orcidDiff =
+                (normalizeOrcidUrl(b?.orcid) ? 1 : 0) -
+                (normalizeOrcidUrl(a?.orcid) ? 1 : 0);
+              if (orcidDiff !== 0) return orcidDiff;
+              const citDiff =
+                Number(b?.cited_by_count || 0) - Number(a?.cited_by_count || 0);
+              if (citDiff !== 0) return citDiff;
+              return Number(b?.works_count || 0) - Number(a?.works_count || 0);
+            });
+            if (promotedList[0]?.id) {
+              primaryOpenAlexAuthor = promotedList[0];
+            }
           }
         }
       }
@@ -3099,6 +3311,7 @@ export async function buildLiveResearcherProfile(
   // 4. Resolve researcher's Home Institution dynamically from official sources (ROR Verified Domain / Explicit University in Affiliation / OpenAlex)
   let homeMapped: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>;
   const rawAffil = scraped?.affiliation || '';
+  const hintAffilForMatch = (rawAffil || fallbackIdentity?.affiliationHint || '').toLowerCase();
   const affilLower = rawAffil.toLowerCase();
 
   // Extract explicit university or institution phrases from Google Scholar affiliation string
@@ -3172,18 +3385,18 @@ export async function buildLiveResearcherProfile(
     primaryOpenAlexAuthor?.last_known_institutions &&
     primaryOpenAlexAuthor.last_known_institutions.length > 0
   ) {
-    if (rawAffil) {
+    if (hintAffilForMatch) {
       matchedInstRecord = primaryOpenAlexAuthor.last_known_institutions.find(
         (inst: any) => {
           const name = String(inst?.display_name || '').toLowerCase();
           if (!name) return false;
-          if (affilLower.includes(name)) return true;
+          if (hintAffilForMatch.includes(name)) return true;
           const distinctiveTokens = name
             .split(/[^a-z0-9]+/)
             .filter((w) => w.length >= 3 && !GENERIC_INST_WORDS.has(w));
           return (
             distinctiveTokens.length > 0 &&
-            distinctiveTokens.every((w) => affilLower.includes(w))
+            distinctiveTokens.every((w) => hintAffilForMatch.includes(w))
           );
         }
       );
@@ -4603,6 +4816,7 @@ function registerScholarColleague(
 const COMMON_RESEARCHER_NAMES = new Set([
   'mohammad', 'md', 'muhammad', 'mohammed', 'mohamed', 'abdul', 'abdullah', 'syed', 'sheikh', 'sk',
   'shah', 'mir', 'kazi', 'dewan', 'abu', 'abul', 'bin', 'binti', 'ibn', 'ibne', 'al', 'ul', 'ur',
+  'aminul', 'ashraful', 'rakibul', 'tariqul', 'kamrul', 'nazmul', 'saiful', 'shahidul', 'jahidul', 'touhidul', 'imamul',
   'rahman', 'islam', 'hossain', 'hossen', 'hussein', 'hasan', 'hassan', 'ahmed', 'ahamed', 'ahmad',
   'ali', 'khan', 'alam', 'mahmud', 'kabir', 'amin', 'haque', 'hoque', 'uddin', 'miah', 'mia',
   'chowdhury', 'sarkar', 'sarker', 'akter', 'begum', 'khatun', 'karim', 'rahim', 'hakim', 'halim',
@@ -4797,7 +5011,8 @@ function isStrictSameResearcherForAvatar(nameA: string, nameB: string): boolean 
   ) {
     const firstSame = shorter[0] === longer[0];
     const lastSame = shorter[1] === longer[longer.length - 1];
-    const secondMatchesMiddle = shorter[1] === longer[1];
+    const secondMatchesMiddle =
+      shorter[1] === longer[1] && !COMMON_RESEARCHER_NAMES.has(shorter[1]);
     const hasDistinctiveGiven =
       !COMMON_RESEARCHER_NAMES.has(shorter[0]) && shorter[0].length >= 4;
     const hasDistinctiveSecond =
