@@ -66,6 +66,7 @@ import {
   SiteResearcher,
 } from './components/ConnectionsSection';
 import { MessagingSection } from './components/MessagingSection';
+import { ScholarProfileLoadingVisualizer } from './components/ScholarProfileLoadingVisualizer';
 
 export type AppPage =
   | 'overview'
@@ -187,6 +188,11 @@ export default function App() {
   >([]);
   const [scholarUrlInput, setScholarUrlInput] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [analyzingTarget, setAnalyzingTarget] = useState<{
+    scholarUserId?: string;
+    label?: string;
+  } | null>(null);
+  const analyzeAbortRef = useRef<AbortController | null>(null);
   const [urlError, setUrlError] = useState<string | null>(null);
 
   const [filter, setFilter] = useState<PublicationFilterState>(
@@ -503,11 +509,30 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const handleCancelProfileLoading = () => {
+    if (analyzeAbortRef.current) {
+      analyzeAbortRef.current.abort();
+      analyzeAbortRef.current = null;
+    }
+    setIsAnalyzing(false);
+    setAnalyzingTarget(null);
+  };
+
   const fetchProfileFromServer = async (
     userId: string,
     queryName?: string
   ) => {
+    if (analyzeAbortRef.current) {
+      analyzeAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    analyzeAbortRef.current = controller;
+
     setIsAnalyzing(true);
+    setAnalyzingTarget({
+      scholarUserId: userId,
+      label: queryName?.trim() || undefined,
+    });
     setUrlError(null);
 
     try {
@@ -515,7 +540,9 @@ export default function App() {
         userId,
         ...(queryName ? { queryName } : {}),
       });
-      const res = await fetch(`/api/scholar/analyze?${params.toString()}`);
+      const res = await fetch(`/api/scholar/analyze?${params.toString()}`, {
+        signal: controller.signal,
+      });
       const data = await res.json();
       if (!res.ok || !data.profile) {
         setUrlError(
@@ -560,10 +587,15 @@ export default function App() {
       if (firstPartner) {
         setSelectedGlobeUniId(firstPartner.universityId);
       }
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       setUrlError('Network error while analyzing Google Scholar profile.');
     } finally {
-      setIsAnalyzing(false);
+      if (analyzeAbortRef.current === controller) {
+        analyzeAbortRef.current = null;
+        setIsAnalyzing(false);
+        setAnalyzingTarget(null);
+      }
     }
   };
 
@@ -1352,7 +1384,7 @@ export default function App() {
           }`}
         >
           {/* Profile Analytics Navigator Panel: Shown inside Profile view so users can analyze & generate PDF reports */}
-          {activeProfile && isProfileAnalyticsView && (
+          {!isAnalyzing && activeProfile && isProfileAnalyticsView && (
             <div className="shrink-0 space-y-2">
               <div className="w-full overflow-x-auto pb-0.5 flex justify-start lg:justify-center">
                 <nav
@@ -1410,8 +1442,9 @@ export default function App() {
           )}
 
           {/* Author Header & Toggleable Search Bar */}
-          {((activeProfile && activePage === 'overview') ||
-            (!activeProfile && isProfileAnalyticsView && !isAnalyzing)) && (
+          {!isAnalyzing &&
+            ((activeProfile && activePage === 'overview') ||
+              (!activeProfile && isProfileAnalyticsView)) && (
             <section
               aria-label="Google Scholar Profile Header"
               className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 md:p-7 space-y-4 shadow-xs"
@@ -1547,17 +1580,17 @@ export default function App() {
             </section>
           )}
 
-          {/* Loading State */}
-          {isAnalyzing && !activeProfile && (
-            <div className="bg-white border border-slate-200 rounded-xl p-12 text-center space-y-2">
-              <div className="text-sm font-semibold text-slate-800">
-                Loading Google Scholar profile...
-              </div>
-            </div>
+          {/* Interactive Loading Visualization (shown on initial load and when switching profiles) */}
+          {isAnalyzing && isProfileAnalyticsView && (
+            <ScholarProfileLoadingVisualizer
+              targetLabel={analyzingTarget?.label}
+              scholarUserId={analyzingTarget?.scholarUserId}
+              onCancel={handleCancelProfileLoading}
+            />
           )}
 
           {/* PAGE 1: OVERVIEW */}
-          {activeProfile && stats && activePage === 'overview' && (
+          {!isAnalyzing && activeProfile && stats && activePage === 'overview' && (
             <div className="space-y-5">
               {/* Row 1: Core Scholar Profile Summary Metrics */}
               <section
@@ -2042,7 +2075,7 @@ export default function App() {
           {activeProfile && stats && (
             <div
               className={
-                activePage === 'charts'
+                !isAnalyzing && activePage === 'charts'
                   ? 'block'
                   : 'fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0 select-none'
               }
@@ -2064,7 +2097,7 @@ export default function App() {
           {activeProfile && stats && (
             <div
               className={
-                activePage === 'map'
+                !isAnalyzing && activePage === 'map'
                   ? 'block lg:flex-1 lg:min-h-0 lg:flex lg:flex-col'
                   : 'fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0 select-none'
               }
@@ -2083,7 +2116,7 @@ export default function App() {
           )}
 
           {/* PAGE 4: PUBLICATIONS EXPLORER */}
-          {activeProfile && stats && activePage === 'publications' && (
+          {!isAnalyzing && activeProfile && stats && activePage === 'publications' && (
             <PublicationsExplorer
               allPublications={activeProfile.publications}
               filteredPublications={filteredPublications}
@@ -2098,7 +2131,7 @@ export default function App() {
           )}
 
           {/* PAGE 5: COLLABORATION DIRECTORIES */}
-          {activeProfile && stats && activePage === 'directories' && (
+          {!isAnalyzing && activeProfile && stats && activePage === 'directories' && (
             <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
               <ResearchDirectoriesSection
                 profile={activeProfile}

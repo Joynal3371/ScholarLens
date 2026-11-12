@@ -500,25 +500,34 @@ async function fetchOpenAlexJson(
   }mailto=${rotatingMailto}`;
 
   if (Date.now() >= openAlexDirectRateLimitedUntil) {
-    try {
-      const res = await fetch(fullUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; ScholarLens/2.0)',
-        },
-        signal: AbortSignal.timeout(timeoutMs),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        openAlexJsonCache.set(canonicalUrl, { ts: Date.now(), data });
-        return data;
+    const maxAttempts = timeoutMs >= 3000 ? 2 : 1;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const res = await fetch(fullUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; ScholarLens/2.0)',
+          },
+          signal: AbortSignal.timeout(
+            attempt === 0 ? timeoutMs : Math.min(timeoutMs + 2000, 8000)
+          ),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          openAlexJsonCache.set(canonicalUrl, { ts: Date.now(), data });
+          return data;
+        }
+        if (res.status === 429) {
+          openAlexDirectRateLimitedUntil = Date.now() + 10 * 60 * 1000;
+          break;
+        } else if (res.status < 500) {
+          return null;
+        }
+      } catch {
+        if (attempt + 1 < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 120));
+          continue;
+        }
       }
-      if (res.status === 429) {
-        openAlexDirectRateLimitedUntil = Date.now() + 10 * 60 * 1000;
-      } else if (res.status < 500) {
-        return null;
-      }
-    } catch {
-      // Fall through to relay below
     }
   }
 
@@ -2244,6 +2253,17 @@ async function resolveScholarIdentityByUserIdFallback(
   const cleanId = String(scholarId || '').trim();
   if (!isValidScholarId(cleanId)) return null;
 
+  // Check synchronous bundled stores in <1ms before any external network / Firestore lookup
+  const fromBundledStores = lookupScholarIdentityInStores({
+    scholarId: cleanId,
+    colleagueList: scholarColleagueList,
+    coAuthorMap: rawCoAuthorMap,
+    verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
+  });
+  if (fromBundledStores?.name) {
+    return fromBundledStores;
+  }
+
   let registeredUsers: Array<{
     name?: string;
     scholarUserId?: string;
@@ -2262,16 +2282,13 @@ async function resolveScholarIdentityByUserIdFallback(
     // Social store unavailable; proceed with static stores and external resolvers
   }
 
-  const fromStores = lookupScholarIdentityInStores({
+  const fromDynamicStores = lookupScholarIdentityInStores({
     scholarId: cleanId,
-    colleagueList: scholarColleagueList,
-    coAuthorMap: rawCoAuthorMap,
-    verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
     digests,
     registeredUsers,
   });
-  if (fromStores?.name) {
-    return fromStores;
+  if (fromDynamicStores?.name) {
+    return fromDynamicStores;
   }
 
   const [wikidataRes, yahooRes, orcidRes] = await Promise.allSettled([
@@ -2320,8 +2337,24 @@ export async function buildLiveResearcherProfile(
     }
   }
 
+  // If bundled stores already identify this Scholar ID or a queryName is provided, cap GS scraping at 3.8s so blocked cloud proxies never starve OpenAlex
+  const fastStoreIdentity =
+    !effectiveQueryName && isValidScholarId(effectiveUserId)
+      ? lookupScholarIdentityInStores({
+          scholarId: effectiveUserId,
+          colleagueList: scholarColleagueList,
+          coAuthorMap: rawCoAuthorMap,
+          verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
+        })
+      : null;
+
   let scraped = effectiveUserId
-    ? await scrapeGoogleScholarFullProfile(effectiveUserId)
+    ? effectiveQueryName || fastStoreIdentity?.name
+      ? await Promise.race([
+          scrapeGoogleScholarFullProfile(effectiveUserId),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3800)),
+        ])
+      : await scrapeGoogleScholarFullProfile(effectiveUserId)
     : null;
 
   // If direct userIdInput failed and looks like a typed name (not a Scholar ID), try resolving via Wikidata P1960 / web index
@@ -2338,8 +2371,8 @@ export async function buildLiveResearcherProfile(
     }
   }
 
-  let fallbackIdentity: ResolvedScholarIdentity | null = null;
-  if (!scraped && !effectiveQueryName && effectiveUserId) {
+  let fallbackIdentity: ResolvedScholarIdentity | null = fastStoreIdentity;
+  if (!scraped && !effectiveQueryName && !fallbackIdentity?.name && effectiveUserId) {
     fallbackIdentity = await resolveScholarIdentityByUserIdFallback(
       effectiveUserId
     );

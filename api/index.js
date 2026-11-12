@@ -95977,24 +95977,34 @@ async function fetchOpenAlexJson(url, timeoutMs = 3800) {
   )}-${Math.random().toString(36).slice(2, 6)}@scholarlens.org`;
   const fullUrl = `${canonicalUrl}${canonicalUrl.includes("?") ? "&" : "?"}mailto=${rotatingMailto}`;
   if (Date.now() >= openAlexDirectRateLimitedUntil) {
-    try {
-      const res = await fetch(fullUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; ScholarLens/2.0)"
-        },
-        signal: AbortSignal.timeout(timeoutMs)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        openAlexJsonCache.set(canonicalUrl, { ts: Date.now(), data });
-        return data;
+    const maxAttempts = timeoutMs >= 3e3 ? 2 : 1;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const res = await fetch(fullUrl, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (compatible; ScholarLens/2.0)"
+          },
+          signal: AbortSignal.timeout(
+            attempt === 0 ? timeoutMs : Math.min(timeoutMs + 2e3, 8e3)
+          )
+        });
+        if (res.ok) {
+          const data = await res.json();
+          openAlexJsonCache.set(canonicalUrl, { ts: Date.now(), data });
+          return data;
+        }
+        if (res.status === 429) {
+          openAlexDirectRateLimitedUntil = Date.now() + 10 * 60 * 1e3;
+          break;
+        } else if (res.status < 500) {
+          return null;
+        }
+      } catch {
+        if (attempt + 1 < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 120));
+          continue;
+        }
       }
-      if (res.status === 429) {
-        openAlexDirectRateLimitedUntil = Date.now() + 10 * 60 * 1e3;
-      } else if (res.status < 500) {
-        return null;
-      }
-    } catch {
     }
   }
   if (!process.env.VERCEL) {
@@ -97164,6 +97174,15 @@ async function resolveScholarIdentityViaOrcid(scholarId) {
 async function resolveScholarIdentityByUserIdFallback(scholarId) {
   const cleanId = String(scholarId || "").trim();
   if (!isValidScholarId(cleanId)) return null;
+  const fromBundledStores = lookupScholarIdentityInStores({
+    scholarId: cleanId,
+    colleagueList: scholarColleagueList,
+    coAuthorMap: rawCoAuthorMap,
+    verifiedSnapshot: verifiedScholarCache_default
+  });
+  if (fromBundledStores?.name) {
+    return fromBundledStores;
+  }
   let registeredUsers = [];
   let digests = {};
   try {
@@ -97176,16 +97195,13 @@ async function resolveScholarIdentityByUserIdFallback(scholarId) {
     digests = digMap;
   } catch {
   }
-  const fromStores = lookupScholarIdentityInStores({
+  const fromDynamicStores = lookupScholarIdentityInStores({
     scholarId: cleanId,
-    colleagueList: scholarColleagueList,
-    coAuthorMap: rawCoAuthorMap,
-    verifiedSnapshot: verifiedScholarCache_default,
     digests,
     registeredUsers
   });
-  if (fromStores?.name) {
-    return fromStores;
+  if (fromDynamicStores?.name) {
+    return fromDynamicStores;
   }
   const [wikidataRes, yahooRes, orcidRes] = await Promise.allSettled([
     resolveScholarIdViaWikidata(cleanId),
@@ -97218,7 +97234,16 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       effectiveUserId = resolvedScholarId;
     }
   }
-  let scraped = effectiveUserId ? await scrapeGoogleScholarFullProfile(effectiveUserId) : null;
+  const fastStoreIdentity = !effectiveQueryName && isValidScholarId(effectiveUserId) ? lookupScholarIdentityInStores({
+    scholarId: effectiveUserId,
+    colleagueList: scholarColleagueList,
+    coAuthorMap: rawCoAuthorMap,
+    verifiedSnapshot: verifiedScholarCache_default
+  }) : null;
+  let scraped = effectiveUserId ? effectiveQueryName || fastStoreIdentity?.name ? await Promise.race([
+    scrapeGoogleScholarFullProfile(effectiveUserId),
+    new Promise((resolve) => setTimeout(() => resolve(null), 3800))
+  ]) : await scrapeGoogleScholarFullProfile(effectiveUserId) : null;
   if (!scraped && !effectiveQueryName && effectiveUserId && !isValidScholarId(effectiveUserId)) {
     const byNameId = await resolveGoogleScholarIdByName(effectiveUserId);
     if (byNameId && byNameId !== effectiveUserId) {
@@ -97226,8 +97251,8 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       scraped = await scrapeGoogleScholarFullProfile(effectiveUserId);
     }
   }
-  let fallbackIdentity = null;
-  if (!scraped && !effectiveQueryName && effectiveUserId) {
+  let fallbackIdentity = fastStoreIdentity;
+  if (!scraped && !effectiveQueryName && !fallbackIdentity?.name && effectiveUserId) {
     fallbackIdentity = await resolveScholarIdentityByUserIdFallback(
       effectiveUserId
     );
