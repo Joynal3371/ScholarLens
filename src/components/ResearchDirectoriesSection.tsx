@@ -184,7 +184,7 @@ export const ResearchDirectoriesSection: React.FC<
                     >
                       <img
                         src={
-                          ca.avatarUrl ||
+                          (ca.avatarUrl && ca.avatarUrl.trim()) ||
                           `/api/scholar/avatar?v=3&name=${encodeURIComponent(
                             ca.name
                           )}&uni=${encodeURIComponent(ca.universityName)}${

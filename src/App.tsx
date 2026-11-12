@@ -805,9 +805,9 @@ export default function App() {
                 className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
               >
                 <div className="relative w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                  {authUser.photoURL ? (
+                  {authUser.photoURL && authUser.photoURL.trim() ? (
                     <img
-                      src={authUser.photoURL}
+                      src={authUser.photoURL.trim()}
                       alt={authUser.name}
                       className="w-full h-full object-cover rounded-full"
                       referrerPolicy="no-referrer"

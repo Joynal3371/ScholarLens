@@ -2136,7 +2136,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       >
                         <img
                           src={
-                            author.avatarUrl ||
+                            (author.avatarUrl && author.avatarUrl.trim()) ||
                             `/api/scholar/avatar?v=3&name=${encodeURIComponent(
                               author.name
                             )}&uni=${encodeURIComponent(

@@ -234,9 +234,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               aria-label="Change profile picture"
               className="relative group w-20 h-20 rounded-full bg-slate-100 border-2 border-slate-200 overflow-hidden flex items-center justify-center text-slate-600 font-bold text-lg cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
             >
-              {photoURL ? (
+              {photoURL && photoURL.trim() ? (
                 <img
-                  src={photoURL}
+                  src={photoURL.trim()}
                   alt={displayName || user.name}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
