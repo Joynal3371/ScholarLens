@@ -24,7 +24,6 @@ const AFFIL_STOPWORDS = new Set([
   'college',
   'school',
   'international',
-  'independent',
   'unlisted',
   'technology',
   'science',
@@ -47,9 +46,15 @@ export function normalizeAsciiWords(input: string): string {
 }
 
 export function extractAffiliationKeywords(text: string): string[] {
+  const cleaned = normalizeAsciiWords(text)
+    .replace(
+      /\bindependent\s+(?:researcher|scholar|scientist|author|consultant|unlisted)\b/g,
+      ' '
+    )
+    .replace(/^independent(?:\s+unlisted)?$/g, ' ');
   return Array.from(
     new Set(
-      normalizeAsciiWords(text)
+      cleaned
         .split(/\s+/)
         .filter((t) => t.length >= 3 && !AFFIL_STOPWORDS.has(t))
     )

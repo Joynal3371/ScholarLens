@@ -1393,6 +1393,76 @@ function getCanonicalUniKey(id?: string, name?: string): string {
   return (id || 'unlisted').toLowerCase();
 }
 
+const COUNTRY_NAME_GEO_LOOKUP: Record<
+  string,
+  { code: string; continent: CoAuthorAffiliation['continent'] }
+> = {
+  'united states': { code: 'US', continent: 'North America' },
+  usa: { code: 'US', continent: 'North America' },
+  canada: { code: 'CA', continent: 'North America' },
+  mexico: { code: 'MX', continent: 'North America' },
+  'united kingdom': { code: 'GB', continent: 'Europe' },
+  uk: { code: 'GB', continent: 'Europe' },
+  germany: { code: 'DE', continent: 'Europe' },
+  france: { code: 'FR', continent: 'Europe' },
+  switzerland: { code: 'CH', continent: 'Europe' },
+  denmark: { code: 'DK', continent: 'Europe' },
+  sweden: { code: 'SE', continent: 'Europe' },
+  norway: { code: 'NO', continent: 'Europe' },
+  finland: { code: 'FI', continent: 'Europe' },
+  netherlands: { code: 'NL', continent: 'Europe' },
+  belgium: { code: 'BE', continent: 'Europe' },
+  spain: { code: 'ES', continent: 'Europe' },
+  italy: { code: 'IT', continent: 'Europe' },
+  portugal: { code: 'PT', continent: 'Europe' },
+  austria: { code: 'AT', continent: 'Europe' },
+  poland: { code: 'PL', continent: 'Europe' },
+  ireland: { code: 'IE', continent: 'Europe' },
+  greece: { code: 'GR', continent: 'Europe' },
+  czechia: { code: 'CZ', continent: 'Europe' },
+  'czech republic': { code: 'CZ', continent: 'Europe' },
+  romania: { code: 'RO', continent: 'Europe' },
+  hungary: { code: 'HU', continent: 'Europe' },
+  estonia: { code: 'EE', continent: 'Europe' },
+  russia: { code: 'RU', continent: 'Europe' },
+  'russian federation': { code: 'RU', continent: 'Europe' },
+  ukraine: { code: 'UA', continent: 'Europe' },
+  turkey: { code: 'TR', continent: 'Asia' },
+  china: { code: 'CN', continent: 'Asia' },
+  'hong kong': { code: 'HK', continent: 'Asia' },
+  taiwan: { code: 'TW', continent: 'Asia' },
+  japan: { code: 'JP', continent: 'Asia' },
+  'south korea': { code: 'KR', continent: 'Asia' },
+  'republic of korea': { code: 'KR', continent: 'Asia' },
+  singapore: { code: 'SG', continent: 'Asia' },
+  india: { code: 'IN', continent: 'Asia' },
+  bangladesh: { code: 'BD', continent: 'Asia' },
+  pakistan: { code: 'PK', continent: 'Asia' },
+  malaysia: { code: 'MY', continent: 'Asia' },
+  indonesia: { code: 'ID', continent: 'Asia' },
+  thailand: { code: 'TH', continent: 'Asia' },
+  vietnam: { code: 'VN', continent: 'Asia' },
+  philippines: { code: 'PH', continent: 'Asia' },
+  'saudi arabia': { code: 'SA', continent: 'Asia' },
+  'united arab emirates': { code: 'AE', continent: 'Asia' },
+  qatar: { code: 'QA', continent: 'Asia' },
+  iran: { code: 'IR', continent: 'Asia' },
+  iraq: { code: 'IQ', continent: 'Asia' },
+  jordan: { code: 'JO', continent: 'Asia' },
+  israel: { code: 'IL', continent: 'Asia' },
+  australia: { code: 'AU', continent: 'Oceania' },
+  'new zealand': { code: 'NZ', continent: 'Oceania' },
+  brazil: { code: 'BR', continent: 'South America' },
+  argentina: { code: 'AR', continent: 'South America' },
+  chile: { code: 'CL', continent: 'South America' },
+  colombia: { code: 'CO', continent: 'South America' },
+  egypt: { code: 'EG', continent: 'Africa' },
+  'south africa': { code: 'ZA', continent: 'Africa' },
+  nigeria: { code: 'NG', continent: 'Africa' },
+  morocco: { code: 'MA', continent: 'Africa' },
+  kenya: { code: 'KE', continent: 'Africa' },
+};
+
 /**
  * Aggregates all universities with which the researcher has collaborated.
  */
@@ -1428,20 +1498,22 @@ export function aggregateUniversityCollaborations(
       : '';
 
   if (homeProfile && homeProfile.homeUniversity) {
+    const cLower = (homeProfile.homeCountry || '').trim().toLowerCase();
+    const mappedCountry = COUNTRY_NAME_GEO_LOOKUP[cLower];
     const homeMeta: CoAuthorAffiliation = {
       name: homeProfile.name,
       universityId: homeProfile.homeUniversityId || 'home',
       universityName: homeProfile.homeUniversity,
       city: homeProfile.homeCity || '',
       country: homeProfile.homeCountry || '',
-      countryCode: homeProfile.homeCountry
-        ? homeProfile.homeCountry.toLowerCase() === 'bangladesh'
-          ? 'BD'
-          : homeProfile.homeCountry.slice(0, 2).toUpperCase()
-        : 'BD',
-      continent: 'Asia',
-      lat: homeProfile.homeLat || 23.7548,
-      lng: homeProfile.homeLng || 90.3585,
+      countryCode: mappedCountry
+        ? mappedCountry.code
+        : homeProfile.homeCountry
+        ? homeProfile.homeCountry.slice(0, 2).toUpperCase()
+        : 'UN',
+      continent: mappedCountry ? mappedCountry.continent : 'Asia',
+      lat: homeProfile.homeLat ?? 0,
+      lng: homeProfile.homeLng ?? 0,
       isHomeInstitution: true,
     };
     uniMap.set(homeKey, {
@@ -1469,6 +1541,10 @@ export function aggregateUniversityCollaborations(
           papers: new Map(),
           authorMap: new Map(),
         });
+      } else if (tKey === homeKey && targetUni.countryCode && targetUni.countryCode !== 'UN') {
+        const existingMeta = uniMap.get(tKey)!.meta;
+        existingMeta.countryCode = targetUni.countryCode;
+        existingMeta.continent = targetUni.continent;
       }
       uniMap.get(tKey)!.papers.set(pub.id, pub);
     }
@@ -1503,6 +1579,10 @@ export function aggregateUniversityCollaborations(
           papers: new Map(),
           authorMap: new Map(),
         });
+      } else if (cKey === homeKey && ca.countryCode && ca.countryCode !== 'UN') {
+        const existingMeta = uniMap.get(cKey)!.meta;
+        existingMeta.countryCode = ca.countryCode;
+        existingMeta.continent = ca.continent;
       }
       const entry = uniMap.get(cKey)!;
       entry.papers.set(pub.id, pub);
