@@ -996,6 +996,7 @@ export default function App() {
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
+                ref={desktopSearchInputRef}
                 type="text"
                 value={globalSearchQuery}
                 onFocus={() => setIsHeaderSearchFocused(true)}
@@ -1349,45 +1350,6 @@ export default function App() {
                   aria-label="Profile Analytics Navigation"
                   className="inline-flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl shadow-2xs shrink-0"
                 >
-                  <form
-                    onSubmit={handleAnalyzeSubmit}
-                    noValidate
-                    className="relative flex items-center shrink-0 mr-1"
-                  >
-                    {isAnalyzing && (
-                      <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
-                        <span className="text-xs text-slate-400 font-sans tracking-tight">
-                          analyzing
-                        </span>
-                        <SearchLoadingDots size="xs" color="bg-slate-400" />
-                      </div>
-                    )}
-                    <input
-                      ref={desktopSearchInputRef}
-                      type="text"
-                      disabled={isAnalyzing}
-                      value={isAnalyzing ? '' : scholarUrlInput}
-                      onChange={(e) => {
-                        setScholarUrlInput(e.target.value);
-                        if (urlError) setUrlError(null);
-                      }}
-                      placeholder={isAnalyzing ? '' : 'Search Scholar ID / URL...'}
-                      aria-label="Search Google Scholar profile URL or User ID"
-                      className={`w-40 sm:w-44 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all disabled:bg-slate-50 ${
-                        isAnalyzing ? 'text-transparent' : ''
-                      }`}
-                    />
-                    <button
-                      type="submit"
-                      disabled={isAnalyzing}
-                      aria-label="Search Scholar Profile"
-                      title="Search Scholar Profile"
-                      className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-40"
-                    >
-                      <Search className="w-3.5 h-3.5" />
-                    </button>
-                  </form>
-
                   {PAGE_METADATA.map((item) => {
                     const Icon = item.icon;
                     const isActive = activePage === item.id;
