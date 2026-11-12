@@ -78,9 +78,9 @@ export const ResearchDirectoriesSection: React.FC<
     <section
       id="directories"
       aria-labelledby="directories-heading"
-      className="scroll-mt-20 bg-white border border-slate-200 rounded-xl overflow-hidden"
+      className="scroll-mt-20 bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col lg:flex-1 lg:min-h-0 shadow-xs"
     >
-      <div className="px-6 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
+      <div className="px-6 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 shrink-0 bg-white z-10">
         <div className="flex flex-wrap items-center gap-1.5">
           <h2 id="directories-heading" className="sr-only">
             Institutional &amp; Co-Author Registry
@@ -155,7 +155,7 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 1: Co-Authors */}
       {activeTab === 'coauthors' && (
-        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
+        <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
@@ -240,7 +240,7 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 2: Universities */}
       {activeTab === 'universities' && (
-        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
+        <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
@@ -293,7 +293,7 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 3: Countries */}
       {activeTab === 'countries' && (
-        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
+        <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
@@ -348,7 +348,7 @@ export const ResearchDirectoriesSection: React.FC<
 
       {/* Tab 4: Journals & Venues */}
       {activeTab === 'journals' && (
-        <div className="overflow-x-auto max-h-[calc(100vh-230px)] overflow-y-auto">
+        <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">

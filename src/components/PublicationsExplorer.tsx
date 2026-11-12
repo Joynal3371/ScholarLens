@@ -35,6 +35,7 @@ interface PublicationsExplorerProps {
   coAuthors: CoAuthorSummary[];
   countries: CountryCollaboration[];
   onInspectUniversityOnGlobe: (universityId: string) => void;
+  onSelectResearcher?: (authorName: string, scholarUserId?: string) => void;
 }
 
 const QUARTILE_OPTIONS: Quartile[] = ['Q1', 'Q2', 'Q3', 'Q4', 'Unranked'];
@@ -251,6 +252,7 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
   coAuthors,
   countries,
   onInspectUniversityOnGlobe,
+  onSelectResearcher,
 }) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState<boolean>(false);
 
@@ -755,8 +757,11 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
                             <button
                               type="button"
                               onClick={() =>
-                                onInspectUniversityOnGlobe(ca.universityId)
+                                onSelectResearcher
+                                  ? onSelectResearcher(ca.name, ca.scholarUserId)
+                                  : onInspectUniversityOnGlobe(ca.universityId)
                               }
+                              title={`View ${ca.name} in ScholarLens`}
                               className="hover:text-blue-700 hover:underline transition-colors cursor-pointer"
                             >
                               {ca.name} ({ca.universityName})

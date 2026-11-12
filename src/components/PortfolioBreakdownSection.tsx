@@ -18,6 +18,7 @@ interface PortfolioBreakdownSectionProps {
   onQuickFilterQuartile: (quartile: Quartile) => void;
   onQuickFilterType: (type: PublicationType) => void;
   onExportChartPng: (chartId: string, title: string, filename: string) => void;
+  onSelectResearcher?: (authorName: string, scholarUserId?: string) => void;
 }
 
 const PORTFOLIO_CATEGORY_COLORS: Record<
@@ -50,6 +51,7 @@ export const PortfolioBreakdownSection: React.FC<
   onQuickFilterQuartile,
   onQuickFilterType,
   onExportChartPng,
+  onSelectResearcher,
 }) => {
   const topCoAuthors = useMemo(() => {
     if (!coAuthors) return [];
@@ -1085,7 +1087,15 @@ export const PortfolioBreakdownSection: React.FC<
                   const barColor = coColors[idx % coColors.length];
 
                   return (
-                    <g key={ca.name} transform={`translate(0, ${y})`}>
+                    <g
+                      key={ca.name}
+                      transform={`translate(0, ${y})`}
+                      onClick={() => onSelectResearcher?.(ca.name, ca.scholarUserId)}
+                      className={onSelectResearcher ? 'cursor-pointer group' : ''}
+                      role={onSelectResearcher ? 'button' : undefined}
+                      tabIndex={onSelectResearcher ? 0 : undefined}
+                      aria-label={`View ${ca.name}'s profile in ScholarLens`}
+                    >
                       {/* 1. Rank Badge */}
                       <rect
                         x="4"
@@ -1113,6 +1123,7 @@ export const PortfolioBreakdownSection: React.FC<
                         fill="#0f172a"
                         fontSize="12"
                         fontWeight="700"
+                        className="group-hover:fill-blue-600 transition-colors"
                       >
                         {ca.name.length > 20 ? ca.name.slice(0, 19) + '…' : ca.name}
                       </text>

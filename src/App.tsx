@@ -636,7 +636,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-16 ${
-        activePage === 'map'
+        activePage === 'map' || activePage === 'directories'
           ? 'lg:h-screen lg:overflow-hidden lg:pb-0'
           : 'lg:pb-6'
       }`}
@@ -876,14 +876,14 @@ export default function App() {
       {/* Main Centered Multi-Page Workspace */}
       <div
         className={`flex-1 max-w-[1360px] w-full mx-auto px-3 sm:px-6 ${
-          activePage === 'map'
+          activePage === 'map' || activePage === 'directories'
             ? 'py-3 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden'
             : 'py-4 sm:py-5'
         }`}
       >
         <main
           className={`w-full ${
-            activePage === 'map'
+            activePage === 'map' || activePage === 'directories'
               ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col'
               : 'space-y-5'
           }`}
@@ -1538,6 +1538,7 @@ export default function App() {
                 onQuickFilterQuartile={handleQuickFilterQuartile}
                 onQuickFilterType={handleQuickFilterType}
                 onExportChartPng={handleRequestChartPng}
+                onSelectResearcher={handleOpenResearcherProfile}
               />
             </div>
           )}
@@ -1575,24 +1576,27 @@ export default function App() {
               coAuthors={coAuthors}
               countries={countries}
               onInspectUniversityOnGlobe={handleInspectUniversityOnGlobe}
+              onSelectResearcher={handleOpenResearcherProfile}
             />
           )}
 
           {/* PAGE 5: COLLABORATION DIRECTORIES */}
           {activeProfile && stats && activePage === 'directories' && (
-            <ResearchDirectoriesSection
-              profile={activeProfile}
-              coAuthors={coAuthors}
-              universities={universities}
-              countries={countries}
-              journals={journals}
-              onFilterByCoAuthor={handleFilterByCoAuthor}
-              onFilterByUniversity={handleFilterByUniversity}
-              onFilterByCountry={handleFilterByCountry}
-              onFilterByVenue={handleFilterByVenue}
-              onInspectUniversityOnGlobe={handleInspectUniversityOnGlobe}
-              onSelectResearcher={handleOpenResearcherProfile}
-            />
+            <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
+              <ResearchDirectoriesSection
+                profile={activeProfile}
+                coAuthors={coAuthors}
+                universities={universities}
+                countries={countries}
+                journals={journals}
+                onFilterByCoAuthor={handleFilterByCoAuthor}
+                onFilterByUniversity={handleFilterByUniversity}
+                onFilterByCountry={handleFilterByCountry}
+                onFilterByVenue={handleFilterByVenue}
+                onInspectUniversityOnGlobe={handleInspectUniversityOnGlobe}
+                onSelectResearcher={handleOpenResearcherProfile}
+              />
+            </div>
           )}
         </main>
       </div>

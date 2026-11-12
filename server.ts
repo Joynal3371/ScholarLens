@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import firebaseAppletConfig from './firebase-applet-config.json';
 import verifiedScholarSnapshot from './src/data/verifiedScholarCache.json';
 import verifiedColleagueDirectory from './src/data/verifiedColleagueDirectory.json';
+import verifiedAvatarStore from './src/data/verifiedAvatarStore.json';
 import {
   CoAuthorAffiliation,
   Publication,
@@ -3713,6 +3714,25 @@ for (const [k, v] of Object.entries(rawCoAuthorMap)) {
   }
 }
 
+// Pre-load all verified authentic Google Scholar profile photos into in-memory avatarBufferCache
+const rawStore = (verifiedAvatarStore as Record<string, string>) || {};
+for (const [key, b64] of Object.entries(rawStore)) {
+  if (b64 && b64.startsWith('data:image/')) {
+    const m = b64.match(/^data:(image\/[^;]+);base64,(.+)$/);
+    if (m) {
+      const entry = {
+        contentType: m[1],
+        buffer: Buffer.from(m[2], 'base64'),
+        timestamp: Date.now(),
+      };
+      avatarBufferCache.set(key, entry);
+      if (key.startsWith('name::')) {
+        avatarBufferCache.set(key.slice(6), entry);
+      }
+    }
+  }
+}
+
 function registerScholarColleague(
   name: string,
   userId: string,
@@ -4227,7 +4247,9 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
   if (nameKey) {
-    const cachedByName = avatarBufferCache.get(`name::${nameKey}`);
+    const cachedByName =
+      avatarBufferCache.get(`name::${nameKey}`) ||
+      avatarBufferCache.get(nameKey);
     if (
       cachedByName &&
       Date.now() - cachedByName.timestamp < 24 * 60 * 60 * 1000
@@ -4236,6 +4258,19 @@ app.get('/api/scholar/avatar', async (req, res) => {
       res.setHeader('Content-Type', cachedByName.contentType);
       res.send(cachedByName.buffer);
       return;
+    }
+
+    // Check if fallbackName resolves to a colleague whose ID has a photo in avatarBufferCache
+    const colMeta = lookupColleagueAvatarMeta(fallbackName);
+    if (colMeta?.userId) {
+      const cachedByColId = avatarBufferCache.get(colMeta.userId);
+      if (cachedByColId) {
+        avatarBufferCache.set(`name::${nameKey}`, cachedByColId);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Content-Type', cachedByColId.contentType);
+        res.send(cachedByColId.buffer);
+        return;
+      }
     }
   }
 
