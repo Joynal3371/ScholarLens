@@ -91,11 +91,26 @@ test('sortAndRankFeedItems orders Connected > Co-Author > Co-Authors Co-Author >
       author: { uid: 'u_stranger', name: 'Unrelated Researcher', scholarUserId: 'stranger_id' },
     },
     {
+      feedId: 'second_deg_with_coauthor_listed',
+      kind: 'work',
+      createdAt: '2026-04-05T00:00:00.000Z',
+      sortScore: 8900000000000,
+      author: { name: 'Second Degree Collaborator', scholarUserId: 'second_deg_id' },
+      work: { coAuthorNames: ['Aminul Islam'] },
+    },
+    {
       feedId: 'second_deg_1',
       kind: 'work',
       createdAt: '2026-04-01T00:00:00.000Z',
       sortScore: 9000000000000,
       author: { name: 'Second Degree Collaborator', scholarUserId: 'second_deg_id' },
+    },
+    {
+      feedId: 'wrong_case_sid_stranger',
+      kind: 'work',
+      createdAt: '2026-06-01T00:00:00.000Z',
+      sortScore: 9800000000000,
+      author: { name: 'Phyllis Robinson', scholarUserId: 'AMINUL_ID' },
     },
     {
       feedId: 'coauthor_1',
@@ -116,12 +131,22 @@ test('sortAndRankFeedItems orders Connected > Co-Author > Co-Authors Co-Author >
   const ranked = sortAndRankFeedItems(unsorted, network);
   assert.deepEqual(
     ranked.map((r) => r.feedId),
-    ['connected_1', 'coauthor_1', 'second_deg_1', 'community_1']
+    [
+      'connected_1',
+      'coauthor_1',
+      'second_deg_1',
+      'second_deg_with_coauthor_listed',
+      'community_1',
+      'wrong_case_sid_stranger',
+    ]
   );
   assert.equal(ranked[0].suggestionReason, 'connected');
   assert.equal(ranked[1].suggestionReason, 'coauthor');
   assert.equal(ranked[2].suggestionReason, 'coauthor_coauthor');
-  assert.equal(ranked[3].suggestionReason, 'community');
+  assert.equal(ranked[3].suggestionReason, 'coauthor_coauthor');
+  assert.equal(ranked[3].suggestionLabel, "Co-Author's Co-Author");
+  assert.equal(ranked[4].suggestionReason, 'community');
+  assert.equal(ranked[5].suggestionReason, 'community');
 });
 
 test('sliceEndlessFeed keeps streaming items past initial pool with unique feedIds', () => {

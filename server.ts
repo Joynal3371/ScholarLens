@@ -7057,10 +7057,14 @@ app.get('/api/social/feed', async (req, res) => {
         digest.avatarUrl ||
         `/api/scholar/avatar?userId=${encodeURIComponent(digest.scholarUserId)}`;
 
-      // Prefer full cached profile publications if available in memory so deep scroll has 100+ items
+      // Prefer full cached profile publications if available in memory (verifying exact case-sensitive ID match)
+      const cachedEntryProfile = profileCache.get(
+        `${String(digest.scholarUserId || '').toLowerCase()}::`
+      )?.data?.profile;
       const cachedFullPubs =
-        profileCache.get(`${String(digest.scholarUserId || '').toLowerCase()}::`)
-          ?.data?.profile?.publications;
+        cachedEntryProfile?.scholarUserId === digest.scholarUserId
+          ? cachedEntryProfile?.publications
+          : undefined;
       const sourceWorks: DigestWorkItem[] = Array.isArray(cachedFullPubs)
         ? cachedFullPubs.map((p: any) => ({
             id: p.id,

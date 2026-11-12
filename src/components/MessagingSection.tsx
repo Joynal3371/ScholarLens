@@ -241,7 +241,7 @@ export const MessagingSection: React.FC<MessagingSectionProps> = ({
   });
 
   return (
-    <div className="max-w-[1120px] mx-auto w-full bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden grid grid-cols-1 md:grid-cols-[320px_1fr] min-h-[540px] max-h-[76vh]">
+    <div className="w-full bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden grid grid-cols-1 md:grid-cols-[320px_1fr] min-h-[540px] max-h-[76vh]">
       {/* Left Sidebar: Conversations & Site Researchers */}
       <div
         className={`border-r border-slate-200 flex flex-col min-h-0 ${

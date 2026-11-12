@@ -225,11 +225,94 @@ export default function App() {
     null
   );
   const [messageTarget, setMessageTarget] = useState<SiteResearcher | null>(null);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState<string>('');
+  const [isHeaderSearchFocused, setIsHeaderSearchFocused] =
+    useState<boolean>(false);
+  const [isSearchingHeader, setIsSearchingHeader] = useState<boolean>(false);
+  const [headerMatchedResearchers, setHeaderMatchedResearchers] = useState<
+    SiteResearcher[]
+  >([]);
+  const [headerMatchedScholarProfiles, setHeaderMatchedScholarProfiles] =
+    useState<
+      Array<{
+        scholarUserId: string;
+        name: string;
+        affiliation: string;
+        country: string;
+        totalCitations: number;
+        hIndex: number;
+        publicationCount: number;
+      }>
+    >([]);
+  const headerSearchContainerRef = useRef<HTMLDivElement>(null);
   const [socialSummary, setSocialSummary] = useState({
     unreadMessagesCount: 0,
     pendingConnectionsCount: 0,
     acceptedConnectionsCount: 0,
   });
+
+  useEffect(() => {
+    const handleMouseDown = (event: MouseEvent) => {
+      if (
+        headerSearchContainerRef.current &&
+        !headerSearchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsHeaderSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, []);
+
+  useEffect(() => {
+    const trimmed = globalSearchQuery.trim();
+    if (!trimmed || activePage === 'feed') {
+      setHeaderMatchedResearchers([]);
+      setHeaderMatchedScholarProfiles([]);
+      setIsSearchingHeader(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsSearchingHeader(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const resp = await fetch(
+          `/api/social/researchers?q=${encodeURIComponent(trimmed)}`,
+          { credentials: 'include' }
+        );
+        if (!resp.ok || cancelled) return;
+        const data = await resp.json();
+        if (!cancelled) {
+          setHeaderMatchedResearchers(
+            Array.isArray(data.researchers) ? data.researchers : []
+          );
+          setHeaderMatchedScholarProfiles(
+            Array.isArray(data.scholarProfiles) ? data.scholarProfiles : []
+          );
+        }
+      } catch {
+        // Ignore transient header search errors
+      } finally {
+        if (!cancelled) {
+          setIsSearchingHeader(false);
+        }
+      }
+    }, 220);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [globalSearchQuery, activePage]);
+
+  const parsedHeaderSearchQuery = useMemo(
+    () =>
+      globalSearchQuery.trim()
+        ? parseGoogleScholarInput(globalSearchQuery)
+        : null,
+    [globalSearchQuery]
+  );
 
   const refreshSocialSummary = useCallback(async () => {
     if (!authUser) {
@@ -847,11 +930,11 @@ export default function App() {
           : 'lg:pb-20'
       }`}
     >
-      {/* Top Bar: Brand Logo, Centered Desktop Navigation Tabs, and Right Actions */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-2.5 shrink-0">
-        <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-4">
+      {/* Top Bar: Back Button + Brand Logo, Centered Global Search Bar, and Right Actions */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-3 sm:px-5 py-2.5 shrink-0">
+        <div className="max-w-[1760px] mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-4">
           {/* Left: Back Button (when navigating from a previous view) + Brand Logo */}
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink-0">
+          <div className="order-1 flex items-center gap-2 sm:gap-2.5 min-w-0 shrink-0">
             {navHistory.length > 0 && (
               <button
                 type="button"
@@ -905,8 +988,282 @@ export default function App() {
             </button>
           </div>
 
+          {/* Center: Global Search Bar (researchers, papers, journals, or Scholar ID / URL) */}
+          <div
+            ref={headerSearchContainerRef}
+            className="order-3 sm:order-2 w-full sm:w-auto sm:flex-1 sm:max-w-2xl relative"
+          >
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={globalSearchQuery}
+                onFocus={() => setIsHeaderSearchFocused(true)}
+                onChange={(e) => {
+                  setGlobalSearchQuery(e.target.value);
+                  setIsHeaderSearchFocused(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setIsHeaderSearchFocused(false);
+                  } else if (
+                    e.key === 'Enter' &&
+                    globalSearchQuery.trim() &&
+                    activePage !== 'feed'
+                  ) {
+                    e.preventDefault();
+                    if (headerMatchedResearchers.length > 0) {
+                      const first = headerMatchedResearchers[0];
+                      setIsHeaderSearchFocused(false);
+                      handleOpenResearcherProfile(
+                        first.name,
+                        first.scholarUserId
+                      );
+                    } else if (headerMatchedScholarProfiles.length > 0) {
+                      const first = headerMatchedScholarProfiles[0];
+                      setIsHeaderSearchFocused(false);
+                      handleOpenResearcherProfile(
+                        first.name,
+                        first.scholarUserId
+                      );
+                    } else if (
+                      parsedHeaderSearchQuery?.valid &&
+                      parsedHeaderSearchQuery.userId
+                    ) {
+                      setIsHeaderSearchFocused(false);
+                      handleOpenResearcherProfile(
+                        parsedHeaderSearchQuery.queryName ||
+                          parsedHeaderSearchQuery.userId ||
+                          globalSearchQuery.trim(),
+                        parsedHeaderSearchQuery.userId
+                      );
+                    } else {
+                      setIsHeaderSearchFocused(false);
+                      navigateToPage('feed');
+                    }
+                  }
+                }}
+                data-testid="header-global-search-input"
+                aria-label="Search researcher, paper, journal, or Scholar ID / URL"
+                placeholder="Search researcher, paper, journal, or Scholar ID / URL..."
+                className="w-full pl-9 pr-8 py-2 text-xs bg-slate-100/90 hover:bg-slate-100 border border-slate-200 rounded-full focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition-all text-slate-800 placeholder:text-slate-400"
+              />
+              {globalSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGlobalSearchQuery('');
+                    setHeaderMatchedResearchers([]);
+                    setHeaderMatchedScholarProfiles([]);
+                  }}
+                  aria-label="Clear search"
+                  data-testid="header-global-search-clear"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {isHeaderSearchFocused &&
+              globalSearchQuery.trim().length > 0 &&
+              activePage !== 'feed' && (
+                <div
+                  data-testid="header-researcher-search-dropdown"
+                  className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-lg p-3 space-y-2.5 z-50 max-h-[70vh] overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Researchers &amp; Search</span>
+                    </span>
+                    {isSearchingHeader && (
+                      <span className="text-[11px] text-blue-600 font-medium">
+                        Searching...
+                      </span>
+                    )}
+                  </div>
+
+                  {headerMatchedResearchers.length > 0 ||
+                  headerMatchedScholarProfiles.length > 0 ? (
+                    <div className="divide-y divide-slate-100">
+                      {headerMatchedResearchers.map((r) => (
+                        <div
+                          key={r.uid}
+                          className="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <ScholarProfileAvatar
+                              name={r.name}
+                              scholarUserId={r.scholarUserId || ''}
+                              orcid={r.orcidId}
+                              avatarUrl={r.photoURL}
+                              compact
+                              className="w-8 h-8 shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsHeaderSearchFocused(false);
+                                  handleOpenResearcherProfile(
+                                    r.name,
+                                    r.scholarUserId
+                                  );
+                                }}
+                                className="text-xs font-bold text-slate-900 hover:text-blue-600 hover:underline truncate block cursor-pointer max-w-full text-left"
+                              >
+                                {r.name}
+                              </button>
+                              <p className="text-[11px] text-slate-500 truncate">
+                                {r.orcidId
+                                  ? `ORCID: ${r.orcidId}`
+                                  : r.scholarUserId
+                                  ? `Scholar ID: ${r.scholarUserId}`
+                                  : 'ScholarLens Researcher'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsHeaderSearchFocused(false);
+                                handleOpenResearcherProfile(
+                                  r.name,
+                                  r.scholarUserId
+                                );
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold cursor-pointer"
+                            >
+                              Profile
+                            </button>
+                            {!r.isSelf && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsHeaderSearchFocused(false);
+                                  setMessageTarget(r);
+                                  navigateToPage('messages');
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[11px] font-semibold cursor-pointer inline-flex items-center gap-1"
+                              >
+                                <MessageSquare className="w-3 h-3" />
+                                <span>Message</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                      {headerMatchedScholarProfiles.map((p) => (
+                        <div
+                          key={p.scholarUserId}
+                          className="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <ScholarProfileAvatar
+                              name={p.name}
+                              scholarUserId={p.scholarUserId}
+                              university={p.affiliation}
+                              compact
+                              className="w-8 h-8 shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsHeaderSearchFocused(false);
+                                  handleOpenResearcherProfile(
+                                    p.name,
+                                    p.scholarUserId
+                                  );
+                                }}
+                                className="text-xs font-bold text-slate-900 hover:text-blue-600 hover:underline truncate block cursor-pointer max-w-full text-left"
+                              >
+                                {p.name}
+                              </button>
+                              <p className="text-[11px] text-slate-500 truncate">
+                                {[
+                                  p.affiliation || 'Google Scholar Researcher',
+                                  p.country,
+                                  p.totalCitations
+                                    ? `${p.totalCitations.toLocaleString()} citations`
+                                    : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsHeaderSearchFocused(false);
+                              handleOpenResearcherProfile(
+                                p.name,
+                                p.scholarUserId
+                              );
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold cursor-pointer shrink-0"
+                          >
+                            View Profile
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    !isSearchingHeader && (
+                      <p className="text-xs text-slate-500">
+                        No registered researchers matched &ldquo;
+                        {globalSearchQuery.trim()}&rdquo; yet.
+                      </p>
+                    )
+                  )}
+
+                  {parsedHeaderSearchQuery?.valid &&
+                    parsedHeaderSearchQuery.userId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsHeaderSearchFocused(false);
+                          handleOpenResearcherProfile(
+                            parsedHeaderSearchQuery.queryName ||
+                              parsedHeaderSearchQuery.userId ||
+                              globalSearchQuery.trim(),
+                            parsedHeaderSearchQuery.userId
+                          );
+                        }}
+                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-xs font-semibold text-blue-700 transition-colors cursor-pointer"
+                      >
+                        <span className="truncate">
+                          Look up Google Scholar profile for &ldquo;
+                          {globalSearchQuery.trim()}&rdquo;
+                        </span>
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                      </button>
+                    )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsHeaderSearchFocused(false);
+                      navigateToPage('feed');
+                    }}
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 text-xs font-semibold text-blue-700 transition-colors cursor-pointer"
+                  >
+                    <span className="truncate">
+                      Search newsfeed works &amp; posts for &ldquo;
+                      {globalSearchQuery.trim()}&rdquo;
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                  </button>
+                </div>
+              )}
+          </div>
+
           {/* Right: Corner User Account Badge / Sign In */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="order-2 sm:order-3 flex items-center gap-2 sm:gap-2.5 shrink-0">
             {authUser ? (
               <button
                 type="button"
@@ -968,9 +1325,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Centered Multi-Page Workspace */}
+      {/* Main Expanded Multi-Page Workspace */}
       <div
-        className={`flex-1 max-w-[1360px] w-full mx-auto px-3 sm:px-6 ${
+        className={`flex-1 max-w-[1760px] w-full mx-auto px-3 sm:px-5 ${
           activePage === 'map' || activePage === 'directories'
             ? 'py-3 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden'
             : 'py-4 sm:py-5'
@@ -1792,6 +2149,8 @@ export default function App() {
             <ResearchFeedSection
               authUser={authUser}
               activeProfile={activeProfile}
+              searchQuery={globalSearchQuery}
+              onSearchQueryChange={setGlobalSearchQuery}
               onRequireSignIn={() => {
                 setPendingExport(null);
                 setIsAuthModalOpen(true);

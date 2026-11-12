@@ -103,7 +103,8 @@ export function buildFeedNetworkSets(params: {
   if (params.viewerName) viewerNames.add(normalizeResearcherKey(params.viewerName));
   const viewerScholarIds = new Set<string>();
   if (params.viewerScholarUserId) {
-    viewerScholarIds.add(String(params.viewerScholarUserId).trim().toLowerCase());
+    // Google Scholar IDs are case-sensitive (e.g., X6_inMYAAAAJ !== x6_inmyaaaaj).
+    viewerScholarIds.add(String(params.viewerScholarUserId).trim());
   }
 
   const connectedUids = new Set<string>();
@@ -117,7 +118,7 @@ export function buildFeedNetworkSets(params: {
   for (const user of params.registeredUsers || []) {
     if (connectedUids.has(user.uid)) {
       if (user.scholarUserId) {
-        connectedScholarIds.add(user.scholarUserId.trim().toLowerCase());
+        connectedScholarIds.add(user.scholarUserId.trim());
       }
       if (user.name) {
         connectedNames.add(normalizeResearcherKey(user.name));
@@ -126,7 +127,11 @@ export function buildFeedNetworkSets(params: {
   }
 
   const isViewer = (name?: string, sid?: string): boolean => {
-    const cleanSid = String(sid || '').trim().toLowerCase();
+    const cleanSid = String(sid || '').trim();
+    if (cleanSid && viewerScholarIds.size > 0) {
+      if (viewerScholarIds.has(cleanSid)) return true;
+      return false;
+    }
     if (cleanSid && viewerScholarIds.has(cleanSid)) return true;
     return matchesNameSet(name, viewerNames);
   };
@@ -136,7 +141,7 @@ export function buildFeedNetworkSets(params: {
   const coAuthorNames = new Set<string>();
 
   const registerCoAuthor = (name?: string, sid?: string) => {
-    const cleanSid = String(sid || '').trim().toLowerCase();
+    const cleanSid = String(sid || '').trim();
     const cleanName = normalizeResearcherKey(name);
     if (isViewer(name, sid)) return;
     if (cleanSid && !connectedScholarIds.has(cleanSid)) {
@@ -148,10 +153,11 @@ export function buildFeedNetworkSets(params: {
   };
 
   for (const digest of Object.values(params.digests || {})) {
-    const digestSid = String(digest.scholarUserId || '').trim().toLowerCase();
+    const digestSid = String(digest.scholarUserId || '').trim();
     const viewerDigest =
-      (digestSid && viewerScholarIds.has(digestSid)) ||
-      matchesNameSet(digest.name, viewerNames);
+      digestSid && viewerScholarIds.size > 0
+        ? viewerScholarIds.has(digestSid)
+        : matchesNameSet(digest.name, viewerNames);
 
     if (viewerDigest) {
       for (const ca of digest.coAuthors || []) {
@@ -191,7 +197,7 @@ export function buildFeedNetworkSets(params: {
   const secondDegreeNames = new Set<string>();
 
   const registerSecondDegree = (name?: string, sid?: string) => {
-    const cleanSid = String(sid || '').trim().toLowerCase();
+    const cleanSid = String(sid || '').trim();
     const cleanName = normalizeResearcherKey(name);
     if (isViewer(name, sid)) return;
     if (cleanSid && connectedScholarIds.has(cleanSid)) return;
@@ -204,7 +210,7 @@ export function buildFeedNetworkSets(params: {
   };
 
   for (const digest of Object.values(params.digests || {})) {
-    const digestSid = String(digest.scholarUserId || '').trim().toLowerCase();
+    const digestSid = String(digest.scholarUserId || '').trim();
     const isDirectCoAuthorDigest =
       (digestSid && coAuthorScholarIds.has(digestSid)) ||
       matchesNameSet(digest.name, coAuthorNames);
@@ -269,30 +275,45 @@ export function classifyFeedItemPriority(
   label: string;
 } {
   const authorUid = String(item.author?.uid || '').trim();
-  const authorSid = String(item.author?.scholarUserId || '').trim().toLowerCase();
+  const authorSid = String(item.author?.scholarUserId || '').trim();
   const authorName = item.author?.name;
+
+  const isViewerAuthor =
+    (authorUid && authorUid === network.viewerUid) ||
+    (authorSid && network.viewerScholarIds.has(authorSid)) ||
+    (matchesNameSet(authorName, network.viewerNames) &&
+      (!authorSid || network.viewerScholarIds.size === 0 || network.viewerScholarIds.has(authorSid)));
+
+  if (isViewerAuthor) {
+    return {
+      tier: 1,
+      reason: 'connected',
+      label: 'Your Update',
+    };
+  }
 
   if (
     (authorUid && network.connectedUids.has(authorUid)) ||
     (authorSid && network.connectedScholarIds.has(authorSid)) ||
     matchesNameSet(authorName, network.connectedNames)
   ) {
-    const isSelf = authorUid && authorUid === network.viewerUid;
     return {
       tier: 1,
       reason: 'connected',
-      label: isSelf ? 'Your Update' : 'Connected',
+      label: 'Connected',
     };
   }
 
   const taggedList = (item.taggedCoAuthors || []).map((t) => t.name || '');
   const workCoAuthors = item.work?.coAuthorNames || [];
 
+  // Tier 2: Only label as "Co-Author" when the card's author IS a direct co-author of the viewer
+  // (or when the viewer themselves appears directly on this paper/post with the author).
   if (
     (authorSid && network.coAuthorScholarIds.has(authorSid)) ||
     matchesNameSet(authorName, network.coAuthorNames) ||
-    taggedList.some((n) => matchesNameSet(n, network.coAuthorNames)) ||
-    workCoAuthors.some((n) => matchesNameSet(n, network.coAuthorNames))
+    taggedList.some((n) => matchesNameSet(n, network.viewerNames)) ||
+    workCoAuthors.some((n) => matchesNameSet(n, network.viewerNames))
   ) {
     return {
       tier: 2,
@@ -301,16 +322,25 @@ export function classifyFeedItemPriority(
     };
   }
 
+  // Tier 3: Co-author's co-author (including papers where a co-author's co-author collaborated with our co-author)
   if (
     (authorSid && network.secondDegreeScholarIds.has(authorSid)) ||
     matchesNameSet(authorName, network.secondDegreeNames) ||
-    taggedList.some((n) => matchesNameSet(n, network.secondDegreeNames)) ||
-    workCoAuthors.some((n) => matchesNameSet(n, network.secondDegreeNames))
+    taggedList.some(
+      (n) =>
+        matchesNameSet(n, network.coAuthorNames) ||
+        matchesNameSet(n, network.secondDegreeNames)
+    ) ||
+    workCoAuthors.some(
+      (n) =>
+        matchesNameSet(n, network.coAuthorNames) ||
+        matchesNameSet(n, network.secondDegreeNames)
+    )
   ) {
     return {
       tier: 3,
       reason: 'coauthor_coauthor',
-      label: 'Co-Author Network',
+      label: "Co-Author's Co-Author",
     };
   }
 

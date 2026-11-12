@@ -1668,7 +1668,7 @@ function buildFeedNetworkSets(params) {
   if (params.viewerName) viewerNames.add(normalizeResearcherKey(params.viewerName));
   const viewerScholarIds = /* @__PURE__ */ new Set();
   if (params.viewerScholarUserId) {
-    viewerScholarIds.add(String(params.viewerScholarUserId).trim().toLowerCase());
+    viewerScholarIds.add(String(params.viewerScholarUserId).trim());
   }
   const connectedUids = /* @__PURE__ */ new Set();
   if (viewerUid) connectedUids.add(viewerUid);
@@ -1680,7 +1680,7 @@ function buildFeedNetworkSets(params) {
   for (const user of params.registeredUsers || []) {
     if (connectedUids.has(user.uid)) {
       if (user.scholarUserId) {
-        connectedScholarIds.add(user.scholarUserId.trim().toLowerCase());
+        connectedScholarIds.add(user.scholarUserId.trim());
       }
       if (user.name) {
         connectedNames.add(normalizeResearcherKey(user.name));
@@ -1688,14 +1688,18 @@ function buildFeedNetworkSets(params) {
     }
   }
   const isViewer = (name, sid) => {
-    const cleanSid = String(sid || "").trim().toLowerCase();
+    const cleanSid = String(sid || "").trim();
+    if (cleanSid && viewerScholarIds.size > 0) {
+      if (viewerScholarIds.has(cleanSid)) return true;
+      return false;
+    }
     if (cleanSid && viewerScholarIds.has(cleanSid)) return true;
     return matchesNameSet(name, viewerNames);
   };
   const coAuthorScholarIds = /* @__PURE__ */ new Set();
   const coAuthorNames = /* @__PURE__ */ new Set();
   const registerCoAuthor = (name, sid) => {
-    const cleanSid = String(sid || "").trim().toLowerCase();
+    const cleanSid = String(sid || "").trim();
     const cleanName = normalizeResearcherKey(name);
     if (isViewer(name, sid)) return;
     if (cleanSid && !connectedScholarIds.has(cleanSid)) {
@@ -1706,8 +1710,8 @@ function buildFeedNetworkSets(params) {
     }
   };
   for (const digest of Object.values(params.digests || {})) {
-    const digestSid = String(digest.scholarUserId || "").trim().toLowerCase();
-    const viewerDigest = digestSid && viewerScholarIds.has(digestSid) || matchesNameSet(digest.name, viewerNames);
+    const digestSid = String(digest.scholarUserId || "").trim();
+    const viewerDigest = digestSid && viewerScholarIds.size > 0 ? viewerScholarIds.has(digestSid) : matchesNameSet(digest.name, viewerNames);
     if (viewerDigest) {
       for (const ca of digest.coAuthors || []) {
         registerCoAuthor(ca.name, ca.scholarUserId);
@@ -1741,7 +1745,7 @@ function buildFeedNetworkSets(params) {
   const secondDegreeScholarIds = /* @__PURE__ */ new Set();
   const secondDegreeNames = /* @__PURE__ */ new Set();
   const registerSecondDegree = (name, sid) => {
-    const cleanSid = String(sid || "").trim().toLowerCase();
+    const cleanSid = String(sid || "").trim();
     const cleanName = normalizeResearcherKey(name);
     if (isViewer(name, sid)) return;
     if (cleanSid && connectedScholarIds.has(cleanSid)) return;
@@ -1752,7 +1756,7 @@ function buildFeedNetworkSets(params) {
     if (cleanName) secondDegreeNames.add(cleanName);
   };
   for (const digest of Object.values(params.digests || {})) {
-    const digestSid = String(digest.scholarUserId || "").trim().toLowerCase();
+    const digestSid = String(digest.scholarUserId || "").trim();
     const isDirectCoAuthorDigest = digestSid && coAuthorScholarIds.has(digestSid) || matchesNameSet(digest.name, coAuthorNames);
     if (isDirectCoAuthorDigest) {
       for (const ca of digest.coAuthors || []) {
@@ -1796,30 +1800,41 @@ function buildFeedNetworkSets(params) {
 }
 function classifyFeedItemPriority(item, network) {
   const authorUid = String(item.author?.uid || "").trim();
-  const authorSid = String(item.author?.scholarUserId || "").trim().toLowerCase();
+  const authorSid = String(item.author?.scholarUserId || "").trim();
   const authorName = item.author?.name;
-  if (authorUid && network.connectedUids.has(authorUid) || authorSid && network.connectedScholarIds.has(authorSid) || matchesNameSet(authorName, network.connectedNames)) {
-    const isSelf = authorUid && authorUid === network.viewerUid;
+  const isViewerAuthor = authorUid && authorUid === network.viewerUid || authorSid && network.viewerScholarIds.has(authorSid) || matchesNameSet(authorName, network.viewerNames) && (!authorSid || network.viewerScholarIds.size === 0 || network.viewerScholarIds.has(authorSid));
+  if (isViewerAuthor) {
     return {
       tier: 1,
       reason: "connected",
-      label: isSelf ? "Your Update" : "Connected"
+      label: "Your Update"
+    };
+  }
+  if (authorUid && network.connectedUids.has(authorUid) || authorSid && network.connectedScholarIds.has(authorSid) || matchesNameSet(authorName, network.connectedNames)) {
+    return {
+      tier: 1,
+      reason: "connected",
+      label: "Connected"
     };
   }
   const taggedList = (item.taggedCoAuthors || []).map((t) => t.name || "");
   const workCoAuthors = item.work?.coAuthorNames || [];
-  if (authorSid && network.coAuthorScholarIds.has(authorSid) || matchesNameSet(authorName, network.coAuthorNames) || taggedList.some((n) => matchesNameSet(n, network.coAuthorNames)) || workCoAuthors.some((n) => matchesNameSet(n, network.coAuthorNames))) {
+  if (authorSid && network.coAuthorScholarIds.has(authorSid) || matchesNameSet(authorName, network.coAuthorNames) || taggedList.some((n) => matchesNameSet(n, network.viewerNames)) || workCoAuthors.some((n) => matchesNameSet(n, network.viewerNames))) {
     return {
       tier: 2,
       reason: "coauthor",
       label: "Co-Author"
     };
   }
-  if (authorSid && network.secondDegreeScholarIds.has(authorSid) || matchesNameSet(authorName, network.secondDegreeNames) || taggedList.some((n) => matchesNameSet(n, network.secondDegreeNames)) || workCoAuthors.some((n) => matchesNameSet(n, network.secondDegreeNames))) {
+  if (authorSid && network.secondDegreeScholarIds.has(authorSid) || matchesNameSet(authorName, network.secondDegreeNames) || taggedList.some(
+    (n) => matchesNameSet(n, network.coAuthorNames) || matchesNameSet(n, network.secondDegreeNames)
+  ) || workCoAuthors.some(
+    (n) => matchesNameSet(n, network.coAuthorNames) || matchesNameSet(n, network.secondDegreeNames)
+  )) {
     return {
       tier: 3,
       reason: "coauthor_coauthor",
-      label: "Co-Author Network"
+      label: "Co-Author's Co-Author"
     };
   }
   return {
@@ -100865,7 +100880,10 @@ app.get("/api/social/feed", async (req, res) => {
       const regUser = userByScholarId.get(digest.scholarUserId);
       const authorUid = regUser?.uid || "";
       const authorPhoto = regUser?.photoURL || digest.avatarUrl || `/api/scholar/avatar?userId=${encodeURIComponent(digest.scholarUserId)}`;
-      const cachedFullPubs = profileCache.get(`${String(digest.scholarUserId || "").toLowerCase()}::`)?.data?.profile?.publications;
+      const cachedEntryProfile = profileCache.get(
+        `${String(digest.scholarUserId || "").toLowerCase()}::`
+      )?.data?.profile;
+      const cachedFullPubs = cachedEntryProfile?.scholarUserId === digest.scholarUserId ? cachedEntryProfile?.publications : void 0;
       const sourceWorks = Array.isArray(cachedFullPubs) ? cachedFullPubs.map((p) => ({
         id: p.id,
         title: p.title,

@@ -12,7 +12,6 @@ import {
   Send,
   Trash2,
   ExternalLink,
-  Search,
   X,
   ArrowUp,
   ShieldCheck,
@@ -118,6 +117,8 @@ type FeedFilter = 'all' | 'posts' | 'works' | 'connections';
 interface ResearchFeedSectionProps {
   authUser: AuthenticatedResearcher | null;
   activeProfile: ResearcherProfile | null;
+  searchQuery?: string;
+  onSearchQueryChange?: (value: string) => void;
   onRequireSignIn: () => void;
   onOpenMessage: (researcher: SiteResearcher) => void;
   onOpenScholarProfile: (name: string, scholarUserId?: string) => void;
@@ -212,13 +213,17 @@ function formatPostDate(iso: string): string {
 export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
   authUser,
   activeProfile,
+  searchQuery: controlledSearchQuery,
+  onSearchQueryChange,
   onRequireSignIn,
   onOpenMessage,
   onOpenScholarProfile,
   onSummaryChanged,
 }) => {
   const [filterMode, setFilterMode] = useState<FeedFilter>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const searchQuery =
+    controlledSearchQuery !== undefined ? controlledSearchQuery : internalSearchQuery;
   const [items, setItems] = useState<FeedItem[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -726,33 +731,12 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
   );
 
   return (
-    <div className="max-w-[680px] mx-auto w-full">
-      {/* Center Column: Facebook-Style Scrollable Newsfeed */}
+    <div className="w-full">
+      {/* Main Scrollable Newsfeed Column */}
       <div className="w-full space-y-4">
-        {/* Search & Filters */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs space-y-2.5">
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search researcher, paper, journal, or Scholar ID / URL..."
-              aria-label="Search researchers and newsfeed"
-              className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-500"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                aria-label="Clear search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+        {/* Feed Filters (Search moved to top header bar) */}
+        <div className="bg-white border border-slate-200 rounded-2xl px-3 py-2.5 shadow-2xs flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto">
             {(['all', 'posts', 'works', ...(authUser ? ['connections'] : [])] as FeedFilter[]).map(
               (f) => (
                 <button
@@ -776,6 +760,20 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
               )
             )}
           </div>
+          {searchQuery.trim() && (
+            <button
+              type="button"
+              onClick={() => {
+                onSearchQueryChange?.('');
+                if (controlledSearchQuery === undefined) {
+                  setInternalSearchQuery('');
+                }
+              }}
+              className="text-[11px] font-semibold text-blue-600 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Clear search
+            </button>
+          )}
         </div>
 
         {/* Researcher Search Matches */}
@@ -978,6 +976,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
             />
             <button
               type="button"
+              data-testid="composer-trigger-bar"
               onClick={() => {
                 if (!authUser) {
                   onRequireSignIn();
@@ -992,58 +991,6 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                 : 'Sign in with ORCID to post your research updates...'}
             </button>
           </div>
-
-          {/* Quick Action Strip */}
-          {!isComposerExpanded && (
-            <div className="grid grid-cols-4 gap-1 pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => {
-                  if (!authUser) return onRequireSignIn();
-                  setIsComposerExpanded(true);
-                  setShowWorkPicker(true);
-                }}
-                className="py-1.5 px-2 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-600 inline-flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <BookOpen className="w-4 h-4 text-blue-600" />
-                <span className="truncate">Work</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!authUser) return onRequireSignIn();
-                  imageFileInputRef.current?.click();
-                }}
-                className="py-1.5 px-2 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-600 inline-flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <ImageIcon className="w-4 h-4 text-emerald-600" />
-                <span className="truncate">Photo</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!authUser) return onRequireSignIn();
-                  videoFileInputRef.current?.click();
-                }}
-                className="py-1.5 px-2 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-600 inline-flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Video className="w-4 h-4 text-rose-500" />
-                <span className="truncate">Video</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!authUser) return onRequireSignIn();
-                  setIsComposerExpanded(true);
-                  setShowCoAuthorPicker(true);
-                }}
-                className="py-1.5 px-2 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-600 inline-flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Users className="w-4 h-4 text-indigo-600" />
-                <span className="truncate">Tag Authors</span>
-              </button>
-            </div>
-          )}
 
           {/* Expanded Post Composer Form */}
           {isComposerExpanded && authUser && (
@@ -1299,7 +1246,10 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
               )}
 
               {/* Composer Toolbar & Publish */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+              <div
+                data-testid="composer-action-toolbar"
+                className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100"
+              >
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
@@ -1331,7 +1281,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                     className="px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 text-xs font-semibold text-indigo-700 inline-flex items-center gap-1 cursor-pointer"
                   >
                     <Users className="w-3.5 h-3.5" />
-                    <span>Tag</span>
+                    <span>Tag Authors</span>
                   </button>
                 </div>
 
