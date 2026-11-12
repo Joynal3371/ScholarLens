@@ -7,6 +7,9 @@ import {
   Trash2,
   AlertCircle,
   User as UserIcon,
+  ShieldCheck,
+  ExternalLink,
+  BadgeCheck,
 } from 'lucide-react';
 import { AuthenticatedResearcher } from './AuthGateModal';
 import { updateCustomUserProfile, deleteCustomUserAccount } from '../firebase';
@@ -19,6 +22,7 @@ interface UserProfileModalProps {
   onUpdateUser: (updated: AuthenticatedResearcher) => void;
   onSignOut: () => void;
   onRemoveAccount: () => void;
+  onViewMyProfile?: () => void;
 }
 
 function resizeImageFileToDataUri(file: File): Promise<string> {
@@ -65,6 +69,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onUpdateUser,
   onSignOut,
   onRemoveAccount,
+  onViewMyProfile,
 }) => {
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState('');
@@ -285,6 +290,53 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600"
             />
           </div>
+
+          {/* ORCID Verified Identity Banner */}
+          {user.orcidId && (
+            <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-900">
+                  <span className="w-4 h-4 rounded-full bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[9px] shrink-0">
+                    iD
+                  </span>
+                  <span>ORCID Verified Identity</span>
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                  1-to-1 Locked
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-600 flex flex-wrap items-center gap-x-2">
+                <span>ORCID iD:</span>
+                <a
+                  href={`https://orcid.org/${user.orcidId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono font-medium text-emerald-800 hover:underline inline-flex items-center gap-1"
+                >
+                  <span>{user.orcidId}</span>
+                  <ExternalLink className="w-3 h-3 text-emerald-600" />
+                </a>
+              </div>
+              <p className="text-[11px] text-emerald-800/80">
+                This Google Scholar profile is verified and permanently bound to your ORCID account.
+              </p>
+            </div>
+          )}
+
+          {/* View My Profile in ScholarLens */}
+          {onViewMyProfile && (user.scholarUrl || user.scholarUserId) && (
+            <button
+              type="button"
+              onClick={() => {
+                onViewMyProfile();
+                onClose();
+              }}
+              className="w-full py-2 px-3 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <UserIcon className="w-4 h-4" />
+              <span>View My Profile in ScholarLens</span>
+            </button>
+          )}
 
           {error && (
             <div

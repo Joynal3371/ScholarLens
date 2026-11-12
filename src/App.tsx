@@ -498,7 +498,18 @@ export default function App() {
   const handleAuthenticatedSuccess = (user: AuthenticatedResearcher) => {
     saveSessionUser(user);
     setIsAuthModalOpen(false);
-    setIsProfileModalOpen(true);
+
+    // If verified with ORCID or has a linked Scholar profile, load their profile directly
+    const targetScholar = user.scholarUserId || user.scholarUrl;
+    if (targetScholar) {
+      const parsed = parseGoogleScholarInput(targetScholar);
+      const queryId = parsed.valid && parsed.userId ? parsed.userId : targetScholar;
+      void fetchProfileFromServer(queryId, user.name);
+      setActivePage('overview');
+    } else {
+      setIsProfileModalOpen(true);
+    }
+
     if (user.scholarUrl && pendingExport) {
       const task = pendingExport;
       setPendingExport(null);
@@ -793,38 +804,71 @@ export default function App() {
                 title="Profile Settings"
                 className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
               >
-                <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center overflow-hidden shrink-0">
+                <div className="relative w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
                   {authUser.photoURL ? (
                     <img
                       src={authUser.photoURL}
                       alt={authUser.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-full"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
                     <span>{userInitials || <User className="w-3.5 h-3.5" />}</span>
                   )}
+                  {authUser.orcidId && (
+                    <span
+                      title={`Verified ORCID: ${authUser.orcidId}`}
+                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#A6CE39] text-[#283800] rounded-full border border-white text-[8px] font-black flex items-center justify-center leading-none shadow-xs"
+                    >
+                      iD
+                    </span>
+                  )}
                 </div>
-                <span
-                  data-testid="authenticated-user-badge"
-                  className="text-xs font-semibold text-slate-800 max-w-[110px] sm:max-w-[140px] truncate"
-                >
-                  {authUser.name}
-                </span>
+                <div className="flex flex-col text-left">
+                  <span
+                    data-testid="authenticated-user-badge"
+                    className="text-xs font-semibold text-slate-800 max-w-[110px] sm:max-w-[140px] truncate"
+                  >
+                    {authUser.name}
+                  </span>
+                  {authUser.orcidId && (
+                    <span className="text-[9px] font-mono text-emerald-700 font-semibold leading-none">
+                      {authUser.orcidId}
+                    </span>
+                  )}
+                </div>
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setPendingExport(null);
-                  setIsAuthModalOpen(true);
-                }}
-                data-testid="corner-login-button"
-                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Sign In</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingExport(null);
+                    setIsAuthModalOpen(true);
+                  }}
+                  data-testid="corner-orcid-login-button"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-300 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
+                  title="Verify your Google Scholar profile and sign in with official ORCID"
+                >
+                  <span className="w-4 h-4 rounded-full bg-[#A6CE39] text-[#283800] font-black text-[9px] flex items-center justify-center shrink-0">
+                    iD
+                  </span>
+                  <span className="hidden sm:inline">Sign in with ORCID</span>
+                  <span className="sm:hidden">ORCID</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingExport(null);
+                    setIsAuthModalOpen(true);
+                  }}
+                  data-testid="corner-login-button"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Sign In</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -1665,6 +1709,16 @@ export default function App() {
         isOpen={isProfileModalOpen}
         user={authUser}
         onClose={() => setIsProfileModalOpen(false)}
+        onViewMyProfile={() => {
+          const targetScholar = authUser?.scholarUserId || authUser?.scholarUrl;
+          if (targetScholar) {
+            const parsed = parseGoogleScholarInput(targetScholar);
+            const queryId = parsed.valid && parsed.userId ? parsed.userId : targetScholar;
+            void fetchProfileFromServer(queryId, authUser?.name);
+            setActivePage('overview');
+            setIsProfileModalOpen(false);
+          }
+        }}
         onUpdateUser={(updated) => {
           saveSessionUser(updated);
           if (updated.scholarUrl) {

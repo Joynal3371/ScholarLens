@@ -66,6 +66,26 @@ service cloud.firestore {
         && data.createdAt is timestamp;
     }
 
+    function isValidScholarClaim(data) {
+      return data.keys().hasAll(['scholarUserId', 'orcidId', 'claimedByUid', 'researcherName', 'createdAt'])
+        && data.keys().hasOnly(['scholarUserId', 'orcidId', 'claimedByUid', 'researcherName', 'createdAt'])
+        && data.scholarUserId is string
+        && data.scholarUserId.size() >= 1
+        && data.scholarUserId.size() <= 64
+        && data.scholarUserId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.orcidId is string
+        && data.orcidId.size() >= 16
+        && data.orcidId.size() <= 40
+        && data.claimedByUid is string
+        && data.claimedByUid.size() >= 1
+        && data.claimedByUid.size() <= 128
+        && data.claimedByUid == request.auth.uid
+        && data.researcherName is string
+        && data.researcherName.size() >= 1
+        && data.researcherName.size() <= 160
+        && data.createdAt is timestamp;
+    }
+
     match /users/{userId} {
       allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
       allow create: if isVerifiedUser()
@@ -93,6 +113,28 @@ service cloud.firestore {
         && isValidExportRecord(incoming())
         && incoming().createdAt == request.time;
       allow update, delete: if false;
+    }
+
+    match /scholarClaims/{scholarUserId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(scholarUserId)
+        && !exists(/databases/$(database)/documents/scholarClaims/$(scholarUserId))
+        && incoming().scholarUserId == scholarUserId
+        && incoming().claimedByUid == request.auth.uid
+        && isValidScholarClaim(incoming())
+        && incoming().createdAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(scholarUserId)
+        && existing().claimedByUid == request.auth.uid
+        && incoming().claimedByUid == existing().claimedByUid
+        && incoming().scholarUserId == existing().scholarUserId
+        && isValidScholarClaim(incoming())
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isSignedIn()
+        && isValidId(scholarUserId)
+        && existing().claimedByUid == request.auth.uid;
     }
     function isBridgeWorker() {
       return isSignedIn() && request.auth.uid == 'WtRvyLbLwPgzKj6ZIAGbxHoM0bJ2';

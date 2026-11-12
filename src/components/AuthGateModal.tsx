@@ -8,6 +8,9 @@ import {
   CheckCircle2,
   RotateCcw,
   ExternalLink,
+  ShieldCheck,
+  BadgeCheck,
+  Lock,
 } from 'lucide-react';
 import {
   signInWithGoogleAccount,
@@ -22,6 +25,9 @@ export interface AuthenticatedResearcher {
   emailOrId: string;
   photoURL?: string;
   scholarUrl?: string;
+  scholarUserId?: string;
+  orcidId?: string;
+  verified?: boolean;
   provider: 'google' | 'orcid' | 'email';
 }
 
@@ -38,8 +44,15 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
   onClose,
   onAuthenticated,
 }) => {
-  // Method selection: 'email' (foolproof OTP) or 'google'
-  const [activeTab, setActiveTab] = useState<'email' | 'google'>('email');
+  // Method selection: 'orcid' (authoritative academic identity), 'email' (OTP), or 'google'
+  const [activeTab, setActiveTab] = useState<'orcid' | 'email' | 'google'>('orcid');
+
+  // ORCID Verified Researcher state
+  const [orcidMode, setOrcidMode] = useState<'verify' | 'login'>('verify');
+  const [scholarUrlInput, setScholarUrlInput] = useState('');
+  const [orcidIdInput, setOrcidIdInput] = useState('');
+  const [isOrcidVerifying, setIsOrcidVerifying] = useState(false);
+  const [isOrcidOAuthLoading, setIsOrcidOAuthLoading] = useState(false);
 
   // Email OTP state
   const [email, setEmail] = useState('');
@@ -73,6 +86,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
       setError(null);
       setSuccessMessage(null);
       setIsGoogleLoading(false);
+      setIsOrcidVerifying(false);
       setPopupBlocked(false);
     }
   }, [isOpen]);
@@ -86,64 +100,104 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
     }
   }, [emailStep]);
 
-  // Listen for Google Auth Bridge postMessage (for cross-window auth)
+  // Listen for ORCID and Google Auth postMessage events
   useEffect(() => {
-    const handleBridgeMessage = async (event: MessageEvent) => {
+    const handleAuthMessage = async (event: MessageEvent) => {
       const allowedOrigins = [
         AUTHORIZED_BRIDGE_ORIGIN,
         'https://scholarlens-analytics.vercel.app',
         'https://gen-lang-client-0156039264.firebaseapp.com',
         window.location.origin,
       ];
-      if (!allowedOrigins.includes(event.origin)) return;
-      const data = event.data;
-      if (!data || data.type !== 'GOOGLE_BRIDGE_AUTH_SUCCESS') return;
+      const isAllowed =
+        allowedOrigins.includes(event.origin) ||
+        event.origin.endsWith('.run.app') ||
+        event.origin.includes('localhost') ||
+        event.origin.includes('orcid.org');
 
-      setIsGoogleLoading(true);
-      setError(null);
-      setPopupBlocked(false);
-      try {
-        if (data.idToken) {
-          const { user, profile } = await signInWithGoogleIdToken(data.idToken);
-          onAuthenticated({
-            uid: user.uid,
-            name: profile.displayName,
-            emailOrId: user.email || user.uid,
-            photoURL: profile.photoURL,
-            scholarUrl: profile.scholarUrl || '',
-            provider: 'google',
-          });
-        } else if (data.uid) {
-          const localOverride = getLocalUserProfileOverride(data.uid);
-          onAuthenticated({
-            uid: data.uid,
-            name: localOverride?.displayName || data.name || 'Researcher',
-            emailOrId: data.email || data.uid,
-            photoURL: localOverride?.photoURL || data.photoURL || '',
-            scholarUrl: localOverride?.scholarUrl || '',
-            provider: 'google',
-          });
+      if (!isAllowed) return;
+      const data = event.data;
+      if (!data) return;
+
+      // 1. Handle ORCID Auth Success
+      if (data.type === 'ORCID_AUTH_SUCCESS') {
+        const returnedOrcid = String(data.orcidId || '').trim();
+        if (returnedOrcid) {
+          setOrcidIdInput(returnedOrcid);
+          setSuccessMessage(`ORCID connected (${returnedOrcid}). Authenticating...`);
+          if (orcidMode === 'login') {
+            try {
+              const resp = await fetch('/api/auth/orcid/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orcidId: returnedOrcid }),
+              });
+              const loginResult = await resp.json();
+              if (loginResult.found && loginResult.user) {
+                onAuthenticated(loginResult.user);
+                return;
+              }
+              setOrcidMode('verify');
+              setError(
+                'First-time setup: Enter your Google Scholar profile link below to verify and lock your profile.'
+              );
+            } catch {
+              setError('Failed to log in with ORCID.');
+            }
+          }
         }
-      } catch {
-        if (data.uid) {
-          const localOverride = getLocalUserProfileOverride(data.uid);
-          onAuthenticated({
-            uid: data.uid,
-            name: localOverride?.displayName || data.name || 'Researcher',
-            emailOrId: data.email || data.uid,
-            photoURL: localOverride?.photoURL || data.photoURL || '',
-            scholarUrl: localOverride?.scholarUrl || '',
-            provider: 'google',
-          });
+      } else if (data.type === 'ORCID_AUTH_ERROR') {
+        setError(data.error || 'ORCID authentication was cancelled.');
+      }
+
+      // 2. Handle Google Bridge Message
+      if (data.type === 'GOOGLE_BRIDGE_AUTH_SUCCESS') {
+        setIsGoogleLoading(true);
+        setError(null);
+        setPopupBlocked(false);
+        try {
+          if (data.idToken) {
+            const { user, profile } = await signInWithGoogleIdToken(data.idToken);
+            onAuthenticated({
+              uid: user.uid,
+              name: profile.displayName,
+              emailOrId: user.email || user.uid,
+              photoURL: profile.photoURL,
+              scholarUrl: profile.scholarUrl || '',
+              provider: 'google',
+            });
+          } else if (data.uid) {
+            const localOverride = getLocalUserProfileOverride(data.uid);
+            onAuthenticated({
+              uid: data.uid,
+              name: localOverride?.displayName || data.name || 'Researcher',
+              emailOrId: data.email || data.uid,
+              photoURL: localOverride?.photoURL || data.photoURL || '',
+              scholarUrl: localOverride?.scholarUrl || '',
+              provider: 'google',
+            });
+          }
+        } catch {
+          if (data.uid) {
+            const localOverride = getLocalUserProfileOverride(data.uid);
+            onAuthenticated({
+              uid: data.uid,
+              name: localOverride?.displayName || data.name || 'Researcher',
+              emailOrId: data.email || data.uid,
+              photoURL: localOverride?.photoURL || data.photoURL || '',
+              scholarUrl: localOverride?.scholarUrl || '',
+              provider: 'google',
+            });
+          }
+        } finally {
+          setIsGoogleLoading(false);
         }
-      } finally {
-        setIsGoogleLoading(false);
       }
     };
 
-    window.addEventListener('message', handleBridgeMessage);
-    return () => window.removeEventListener('message', handleBridgeMessage);
-  }, [onAuthenticated]);
+    window.addEventListener('message', handleAuthMessage);
+    return () => window.removeEventListener('message', handleAuthMessage);
+  }, [onAuthenticated, orcidMode]);
 
   if (!isOpen) return null;
 
@@ -266,6 +320,142 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
     }, 1000);
   };
 
+  const handleOrcidVerifyAndClaim = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanScholar = scholarUrlInput.trim();
+    const cleanOrcid = orcidIdInput
+      .trim()
+      .replace(/^https?:\/\/orcid\.org\//i, '')
+      .trim();
+
+    if (!cleanScholar) {
+      setError('Please enter your Google Scholar profile link or User ID.');
+      return;
+    }
+    if (!cleanOrcid || !/^\d{4}-\d{4}-\d{4}-[\dX]{4}$/.test(cleanOrcid)) {
+      setError(
+        'Please enter a valid 16-character ORCID iD (e.g. 0000-0002-1825-0097).'
+      );
+      return;
+    }
+
+    setIsOrcidVerifying(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const resp = await fetch('/api/auth/orcid/verify-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scholarInput: cleanScholar,
+          orcidId: cleanOrcid,
+        }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || 'Authenticity verification failed.');
+      }
+
+      setSuccessMessage(
+        data.message ||
+          'Profile successfully verified and locked to your ORCID account!'
+      );
+      setTimeout(() => {
+        onAuthenticated(data.user);
+      }, 600);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed.');
+    } finally {
+      setIsOrcidVerifying(false);
+    }
+  };
+
+  const handleOrcidLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanOrcid = orcidIdInput
+      .trim()
+      .replace(/^https?:\/\/orcid\.org\//i, '')
+      .trim();
+
+    if (!cleanOrcid || !/^\d{4}-\d{4}-\d{4}-[\dX]{4}$/.test(cleanOrcid)) {
+      setError(
+        'Please enter your 16-character ORCID iD (e.g. 0000-0002-1825-0097).'
+      );
+      return;
+    }
+
+    setIsOrcidVerifying(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const resp = await fetch('/api/auth/orcid/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orcidId: cleanOrcid }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || 'Failed to sign in with ORCID.');
+      }
+
+      if (data.found && data.user) {
+        setSuccessMessage('Welcome back! Loading your verified profile...');
+        setTimeout(() => {
+          onAuthenticated(data.user);
+        }, 500);
+      } else {
+        setOrcidMode('verify');
+        setError(
+          data.message ||
+            'No account linked yet. Please enter your Google Scholar profile link to complete verification.'
+        );
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign in failed.');
+    } finally {
+      setIsOrcidVerifying(false);
+    }
+  };
+
+  const handleConnectWithOrcidPopup = async () => {
+    setError(null);
+    setIsOrcidOAuthLoading(true);
+
+    try {
+      const resp = await fetch('/api/auth/orcid/url');
+      const data = await resp.json();
+      if (data.configured && data.url) {
+        const width = 600;
+        const height = 700;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        const popup = window.open(
+          data.url,
+          'orcid_oauth_popup',
+          `width=${width},height=${height},left=${left},top=${top},noopener=no`
+        );
+        if (!popup || popup.closed) {
+          setError(
+            'Popup was blocked. Please enter your 16-character ORCID iD directly below.'
+          );
+        }
+      } else {
+        setSuccessMessage(
+          'Official ORCID registry direct check active. Enter your 16-digit ORCID iD below.'
+        );
+      }
+    } catch {
+      setError(
+        'Could not initialize ORCID popup. Please enter your 16-character ORCID iD directly.'
+      );
+    } finally {
+      setIsOrcidOAuthLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setError(null);
     setPopupBlocked(false);
@@ -298,7 +488,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
         setError('Google sign-in was cancelled.');
       } else {
         setError(
-          'Google sign-in is restricted in this browser window. Please switch to the Email Code tab above to sign in instantly with your email address.'
+          'Google sign-in is restricted in this browser window. Please switch to ORCID or Email Code to sign in.'
         );
       }
       setIsGoogleLoading(false);
@@ -312,17 +502,21 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
-      <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 id="auth-modal-title" className="text-lg font-bold text-slate-900">
-              Sign In to ScholarLense
+            <h3 id="auth-modal-title" className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span>Sign In to ScholarLens</span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                Verified Identity
+              </span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               {pendingActionLabel
                 ? `Sign in to ${pendingActionLabel}`
-                : 'Sign in to export publication dossiers and save profile preferences.'}
+                : 'Connect your verified ORCID account to lock and manage your Google Scholar profile.'}
             </p>
           </div>
           <button
@@ -335,22 +529,39 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
           </button>
         </div>
 
-        {/* Tab Switcher: Email OTP vs Google */}
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+        {/* 3-Tab Switcher: ORCID vs Email Code vs Google */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('orcid');
+              setError(null);
+            }}
+            className={`py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+              activeTab === 'orcid'
+                ? 'bg-white text-emerald-800 shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <span className="w-3.5 h-3.5 rounded-full bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[8px] shrink-0">
+              iD
+            </span>
+            <span>ORCID</span>
+          </button>
           <button
             type="button"
             onClick={() => {
               setActiveTab('email');
               setError(null);
             }}
-            className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+            className={`py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'email'
-                ? 'bg-white text-blue-700 shadow-xs'
+                ? 'bg-white text-blue-700 shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Mail className="w-3.5 h-3.5" />
-            <span>Email Code</span>
+            <Mail className="w-3.5 h-3.5 shrink-0" />
+            <span>Email</span>
           </button>
           <button
             type="button"
@@ -358,9 +569,9 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
               setActiveTab('google');
               setError(null);
             }}
-            className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+            className={`py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'google'
-                ? 'bg-white text-slate-900 shadow-xs'
+                ? 'bg-white text-slate-900 shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -385,6 +596,205 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
             <span>Google</span>
           </button>
         </div>
+
+        {/* TAB 0: ORCID VERIFIED RESEARCHER IDENTITY */}
+        {activeTab === 'orcid' && (
+          <div className="space-y-4 pt-1">
+            {/* Mode Selector */}
+            <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => {
+                  setOrcidMode('verify');
+                  setError(null);
+                  setSuccessMessage(null);
+                }}
+                className={`flex-1 py-1.5 px-2 rounded-md transition-all text-center cursor-pointer ${
+                  orcidMode === 'verify'
+                    ? 'bg-white text-emerald-800 font-semibold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                1. Verify &amp; Link Profile
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOrcidMode('login');
+                  setError(null);
+                  setSuccessMessage(null);
+                }}
+                className={`flex-1 py-1.5 px-2 rounded-md transition-all text-center cursor-pointer ${
+                  orcidMode === 'login'
+                    ? 'bg-white text-emerald-800 font-semibold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                2. Returning ORCID Login
+              </button>
+            </div>
+
+            {orcidMode === 'verify' ? (
+              <form onSubmit={handleOrcidVerifyAndClaim} className="space-y-3.5">
+                <div>
+                  <label
+                    htmlFor="orcid-scholar-input"
+                    className="block text-xs font-semibold text-slate-700 mb-1"
+                  >
+                    Google Scholar Profile Link
+                  </label>
+                  <input
+                    id="orcid-scholar-input"
+                    type="text"
+                    required
+                    value={scholarUrlInput}
+                    onChange={(e) => {
+                      setScholarUrlInput(e.target.value);
+                      if (error) setError(null);
+                    }}
+                    placeholder="https://scholar.google.com/citations?user=... or User ID"
+                    className="w-full px-3 py-2 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Paste your public Google Scholar link (e.g. scholar.google.com/citations?user=...)
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label
+                      htmlFor="orcid-id-input"
+                      className="block text-xs font-semibold text-slate-700"
+                    >
+                      Your Official ORCID iD
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleConnectWithOrcidPopup}
+                      disabled={isOrcidOAuthLoading}
+                      className="text-[11px] text-emerald-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Connect via orcid.org</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                      <span className="w-4 h-4 rounded-full bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[9px]">
+                        iD
+                      </span>
+                    </div>
+                    <input
+                      id="orcid-id-input"
+                      type="text"
+                      required
+                      value={orcidIdInput}
+                      onChange={(e) => {
+                        setOrcidIdInput(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="0000-0002-1825-0097 or https://orcid.org/..."
+                      className="w-full pl-8 pr-3 py-2 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    16-character identifier (format: 0000-000X-XXXX-XXXX)
+                  </p>
+                </div>
+
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-lg text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 font-semibold text-emerald-900">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Authoritative 1-to-1 Profile Verification</span>
+                  </div>
+                  <p className="text-[11px] text-emerald-800 leading-relaxed">
+                    ScholarLens cross-references author name, affiliation, and publication titles on your ORCID record against the Google Scholar profile. Only the authentic profile owner can claim this profile, locking it from impersonation.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isOrcidVerifying}
+                  className="w-full py-2.5 px-4 text-xs font-bold text-white bg-[#82A824] hover:bg-[#72941e] rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  {isOrcidVerifying ? (
+                    <>
+                      <RotateCcw className="w-4 h-4 animate-spin" />
+                      <span>Verifying Authenticity with ORCID...</span>
+                    </>
+                  ) : (
+                    <>
+                      <BadgeCheck className="w-4 h-4" />
+                      <span>Verify &amp; Create Verified Account</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleOrcidLogin} className="space-y-3.5">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label
+                      htmlFor="orcid-login-input"
+                      className="block text-xs font-semibold text-slate-700"
+                    >
+                      Returning Researcher ORCID iD
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleConnectWithOrcidPopup}
+                      disabled={isOrcidOAuthLoading}
+                      className="text-[11px] text-emerald-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>OAuth Popup</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                      <span className="w-4 h-4 rounded-full bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[9px]">
+                        iD
+                      </span>
+                    </div>
+                    <input
+                      id="orcid-login-input"
+                      type="text"
+                      required
+                      value={orcidIdInput}
+                      onChange={(e) => {
+                        setOrcidIdInput(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="0000-0002-1825-0097"
+                      className="w-full pl-8 pr-3 py-2 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    If you have already verified your profile, sign in directly without re-verification.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isOrcidVerifying}
+                  className="w-full py-2.5 px-4 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  {isOrcidVerifying ? (
+                    <>
+                      <RotateCcw className="w-4 h-4 animate-spin" />
+                      <span>Signing in...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowRight className="w-4 h-4" />
+                      <span>Sign In with ORCID</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* Tab 1: EMAIL VERIFICATION CODE (Zero popup dependencies) */}
         {activeTab === 'email' && (
