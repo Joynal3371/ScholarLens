@@ -47,6 +47,10 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
   const firestoreDocs = new Map<string, Record<string, unknown>>();
   let expectedNonce = '';
   let simulateFirestoreForbidden = false;
+  let activeMockIdentity = {
+    orcid: '0000-0002-1825-0097',
+    name: 'Josiah Carberry',
+  };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -66,10 +70,10 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
       const idToken = createRs256Jwt(
         {
           iss: 'https://orcid.org',
-          sub: '0000-0002-1825-0097',
+          sub: activeMockIdentity.orcid,
           aud: 'APP-1234567890ABCDEF',
           nonce: expectedNonce,
-          name: 'Josiah Carberry',
+          name: activeMockIdentity.name,
           exp: Math.floor(Date.now() / 1000) + 600,
         },
         privateKey
@@ -77,8 +81,8 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
       return new Response(
         JSON.stringify({
           access_token: 'orcid-access-token-1',
-          orcid: '0000-0002-1825-0097',
-          name: 'Josiah Carberry',
+          orcid: activeMockIdentity.orcid,
+          name: activeMockIdentity.name,
           id_token: idToken,
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -96,9 +100,70 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
 
     if (url === 'https://orcid.org/oauth/userinfo') {
       return new Response(
-        JSON.stringify({ sub: '0000-0002-1825-0097', name: 'Josiah Carberry' }),
+        JSON.stringify({ sub: activeMockIdentity.orcid, name: activeMockIdentity.name }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+
+    if (url.startsWith('https://pub.orcid.org/v3.0/')) {
+      const parts = activeMockIdentity.name.split(' ');
+      const given = parts.slice(0, -1).join(' ') || activeMockIdentity.name;
+      const family = parts.slice(-1)[0] || '';
+      return new Response(
+        JSON.stringify({
+          person: {
+            name: {
+              'given-names': { value: given },
+              'family-name': { value: family },
+            },
+          },
+          'activities-summary': {
+            employments: { 'affiliation-group': [] },
+            works: {
+              group: [
+                {
+                  'work-summary': [
+                    { title: { title: { value: 'Toward Psychoceramics in Modern Academia' } } },
+                  ],
+                },
+              ],
+            },
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (url.includes('scholar.google.com/citations?user=')) {
+      const scholarHtml = `
+        <html><body>
+          <div id="gsc_prf_in">Josiah Carberry</div>
+          <div class="gsc_prf_il">Brown University</div>
+          <table id="gsc_a_b">
+            <tr class="gsc_a_tr">
+              <td class="gsc_a_t"><a class="gsc_a_at">Toward Psychoceramics in Modern Academia</a><div class="gs_gray">J Carberry</div><div class="gs_gray">Journal of Psychoceramics</div></td>
+              <td class="gsc_a_c"><a class="gsc_a_ac">42</a></td>
+              <td class="gsc_a_y"><span class="gsc_a_h">2022</span></td>
+            </tr>
+          </table>
+        </body></html>
+      `;
+      return new Response(scholarHtml, { status: 200, headers: { 'Content-Type': 'text/html' } });
+    }
+
+    if (
+      url.startsWith('https://api.openalex.org/') ||
+      url.startsWith('https://api.ror.org/') ||
+      url.startsWith('https://api.crossref.org/') ||
+      url.startsWith('https://api.semanticscholar.org/') ||
+      url.startsWith('https://query.wikidata.org/') ||
+      url.startsWith('https://www.google.com/amp/') ||
+      url.startsWith('https://allorigins.hexlet.app/')
+    ) {
+      return new Response(JSON.stringify({ results: [], items: [], message: { items: [] }, data: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (url.includes('identitytoolkit.googleapis.com/v1/accounts:signInWithPassword')) {
@@ -193,8 +258,47 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     process.env.ORCID_CLIENT_ID = 'APP-1234567890ABCDEF';
     process.env.ORCID_CLIENT_SECRET = 'secret-test-integration';
 
-    // 1. Initiate OAuth URL request
-    const urlResp = await originalFetch(`${base}/api/auth/orcid/url?mode=popup`);
+    // 0b. Missing or invalid Google Scholar link must be rejected before ORCID OAuth redirect
+    const missingScholarResp = await originalFetch(`${base}/api/auth/orcid/url?mode=popup`);
+    assert.equal(missingScholarResp.status, 400);
+    const badScholarResp = await originalFetch(
+      `${base}/api/auth/orcid/url?mode=popup&scholarInput=${encodeURIComponent('not-a-scholar-profile')}`
+    );
+    assert.equal(badScholarResp.status, 400);
+
+    // 1. Mismatch guard: if ORCID identity does not match submitted Google Scholar profile, reject account creation completely
+    const scholarParam = encodeURIComponent('https://scholar.google.com/citations?user=MockUser0001&hl=en');
+    activeMockIdentity = { orcid: '0000-0003-9999-9991', name: 'Impostor Researcher' };
+    const mismatchUrlResp = await originalFetch(
+      `${base}/api/auth/orcid/url?mode=popup&scholarInput=${scholarParam}`
+    );
+    assert.equal(mismatchUrlResp.status, 200);
+    const mismatchUrlJson = (await mismatchUrlResp.json()) as { url: string };
+    const mismatchAuthObj = new URL(mismatchUrlJson.url);
+    expectedNonce = mismatchAuthObj.searchParams.get('nonce') || '';
+    const mismatchStateCookie = extractCookieValue(
+      mismatchUrlResp.headers.getSetCookie(),
+      'scholarlens_orcid_state'
+    );
+    const mismatchCb = await originalFetch(
+      `${base}/auth/orcid/callback?code=mismatch-code&state=${encodeURIComponent(
+        mismatchAuthObj.searchParams.get('state') || ''
+      )}`,
+      { headers: { Cookie: `scholarlens_orcid_state=${mismatchStateCookie}` } }
+    );
+    assert.equal(mismatchCb.status, 401);
+    const mismatchHtml = await mismatchCb.text();
+    assert.match(mismatchHtml, /ORCID_AUTH_ERROR/);
+    assert.equal(extractCookieValue(mismatchCb.headers.getSetCookie(), 'scholarlens_session'), null);
+    assert.equal(firestoreDocs.has('orcidAccounts/0000-0003-9999-9991'), false);
+    assert.equal(firestoreDocs.has('users/orcid_0000000399999991'), false);
+    assert.equal(firestoreDocs.has('scholarClaims/MockUser0001'), false);
+
+    // 1b. Matching researcher initiates OAuth URL request with their Google Scholar profile
+    activeMockIdentity = { orcid: '0000-0002-1825-0097', name: 'Josiah Carberry' };
+    const urlResp = await originalFetch(
+      `${base}/api/auth/orcid/url?mode=popup&scholarInput=${scholarParam}`
+    );
     assert.equal(urlResp.status, 200);
     const urlJson = (await urlResp.json()) as {
       url: string;
@@ -235,8 +339,8 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
       `${base}/auth/orcid/callback?code=valid-code-1&state=${encodeURIComponent(stateParam)}`,
       { headers: { Cookie: `scholarlens_orcid_state=${stateCookieVal}` } }
     );
-    assert.equal(okCb.status, 200);
     const cbHtml = await okCb.text();
+    assert.equal(okCb.status, 200, cbHtml);
     assert.match(cbHtml, /ORCID_AUTH_SUCCESS/);
     assert.match(cbHtml, /window\.location\.origin/);
     assert.ok(!cbHtml.includes("postMessage(payload, '*')"));
@@ -246,6 +350,29 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     assert.ok(sessionCookieVal);
     assert.ok(firestoreDocs.has('orcidAccounts/0000-0002-1825-0097'));
     assert.ok(firestoreDocs.has('users/orcid_0000000218250097'));
+    assert.ok(firestoreDocs.has('scholarClaims/MockUser0001'));
+
+    // 4b. 1-to-1 lock guard: another ORCID cannot claim the already-verified Google Scholar profile
+    activeMockIdentity = { orcid: '0000-0003-9999-9991', name: 'Josiah Carberry' };
+    const dupUrlResp = await originalFetch(
+      `${base}/api/auth/orcid/url?mode=popup&scholarInput=${scholarParam}`
+    );
+    const dupUrlJson = (await dupUrlResp.json()) as { url: string };
+    const dupAuthObj = new URL(dupUrlJson.url);
+    expectedNonce = dupAuthObj.searchParams.get('nonce') || '';
+    const dupStateCookie = extractCookieValue(
+      dupUrlResp.headers.getSetCookie(),
+      'scholarlens_orcid_state'
+    );
+    const dupCb = await originalFetch(
+      `${base}/auth/orcid/callback?code=dup-code&state=${encodeURIComponent(
+        dupAuthObj.searchParams.get('state') || ''
+      )}`,
+      { headers: { Cookie: `scholarlens_orcid_state=${dupStateCookie}` } }
+    );
+    assert.equal(dupCb.status, 409);
+    assert.equal(firestoreDocs.has('orcidAccounts/0000-0003-9999-9991'), false);
+    activeMockIdentity = { orcid: '0000-0002-1825-0097', name: 'Josiah Carberry' };
 
     // 5. Session check returns authenticated researcher without cookie vs with cookie
     const unauthSession = await originalFetch(`${base}/api/auth/session`).then((r) => r.json());
@@ -297,9 +424,12 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     assert.equal(updatedJson.user.scholarUserId, 'JicYPdAAAAAJ');
 
     // 8. Redirect mode OAuth flow (/auth/orcid/authorize -> /auth/orcid/callback 302) logs back into same account
-    const authRedirectResp = await originalFetch(`${base}/auth/orcid/authorize?mode=redirect`, {
-      redirect: 'manual',
-    });
+    const authRedirectResp = await originalFetch(
+      `${base}/auth/orcid/authorize?mode=redirect&scholarInput=${scholarParam}`,
+      {
+        redirect: 'manual',
+      }
+    );
     assert.equal(authRedirectResp.status, 302);
     const redirectTarget = new URL(authRedirectResp.headers.get('location') || '');
     const stateParam2 = redirectTarget.searchParams.get('state') || '';
@@ -326,7 +456,7 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
       headers: { Cookie: `scholarlens_session=${sessionCookie2}` },
     }).then((r) => r.json());
     assert.equal(returningSession.user.uid, 'orcid_0000000218250097');
-    assert.equal(returningSession.user.scholarUserId, 'JicYPdAAAAAJ');
+    assert.equal(returningSession.user.scholarUserId, 'MockUser0001');
 
     // 9. Logout clears cookie, and Account Deletion removes DB records cleanly
     const logoutResp = await originalFetch(`${base}/api/auth/logout`, { method: 'POST' });
@@ -340,6 +470,7 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     assert.equal(delResp.status, 200);
     assert.equal(firestoreDocs.has('orcidAccounts/0000-0002-1825-0097'), false);
     assert.equal(firestoreDocs.has('users/orcid_0000000218250097'), false);
+    assert.equal(firestoreDocs.has('scholarClaims/MockUser0001'), false);
 
     // 10. Cold-lambda resilience: valid HMAC cookie stays authenticated if Firestore returns 403,
     //     but rejects deleted/missing accounts cleanly when Firestore returns 404

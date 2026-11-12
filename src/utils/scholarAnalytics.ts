@@ -729,6 +729,64 @@ export function parseGoogleScholarInput(rawInput: string): ScholarUrlParseResult
 }
 
 /**
+ * Strict parser for authentication/account-linking flows: requires either a valid
+ * Google Scholar profile URL (`scholar.google.<tld>/citations?user=...`) or a 12-character
+ * Google Scholar user ID (rejecting arbitrary names, non-Scholar URLs, or malformed strings).
+ */
+export function parseStrictGoogleScholarProfileInput(rawInput: string): ScholarUrlParseResult {
+  const trimmed = rawInput.trim();
+  if (!trimmed) {
+    return {
+      valid: false,
+      error:
+        'Please enter your Google Scholar profile link (https://scholar.google.com/citations?user=...) or 12-character Scholar ID.',
+    };
+  }
+
+  const looksLikeUrl =
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.includes('scholar.google.') ||
+    trimmed.includes('/') ||
+    trimmed.includes('.');
+
+  if (looksLikeUrl) {
+    const parsed = parseGoogleScholarInput(trimmed);
+    if (!parsed.valid || !parsed.userId || parsed.queryName) {
+      return {
+        valid: false,
+        error:
+          parsed.error ||
+          'Enter a valid Google Scholar profile link (e.g. https://scholar.google.com/citations?user=JicYPdAAAAAJ).',
+      };
+    }
+    if (!/^[A-Za-z0-9_-]{8,24}$/.test(parsed.userId)) {
+      return {
+        valid: false,
+        error: 'The Google Scholar "?user=" identifier appears invalid.',
+      };
+    }
+    return parsed;
+  }
+
+  if (/^[A-Za-z0-9_-]{12}$/.test(trimmed)) {
+    return {
+      valid: true,
+      userId: trimmed,
+      normalizedUrl: `https://scholar.google.com/citations?user=${encodeURIComponent(
+        trimmed
+      )}&hl=en`,
+    };
+  }
+
+  return {
+    valid: false,
+    error:
+      'Enter a full Google Scholar profile link (https://scholar.google.com/citations?user=...) or a 12-character Scholar ID.',
+  };
+}
+
+/**
  * Computes h-index from an array of citation counts.
  */
 export function calculateHIndex(citations: number[]): number {

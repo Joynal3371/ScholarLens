@@ -555,3 +555,86 @@ test('OrcidAccountStore evicts stale in-memory mirror entries when Firestore aut
   });
   assert.equal(recreated.isNewAccount, true);
 });
+
+test('createSignedOAuthState preserves scholarUserId and OrcidAccountStore manages scholarClaims lifecycle', async () => {
+  const secret = 'test-scholar-state-secret';
+  const { stateToken, payload } = createSignedOAuthState(
+    {
+      redirectUri: 'https://scholarlens.example/auth/orcid/callback',
+      env: 'production',
+      mode: 'popup',
+      scholarUserId: 'JicYPdAAAAAJ',
+      scholarQueryName: 'Josiah Carberry',
+    },
+    secret
+  );
+  assert.equal(payload.scholarUserId, 'JicYPdAAAAAJ');
+  const verified = verifySignedOAuthState(stateToken, secret, { expectedCsrf: payload.csrf });
+  assert.equal(verified?.scholarUserId, 'JicYPdAAAAAJ');
+  assert.equal(verified?.scholarQueryName, 'Josiah Carberry');
+
+  const docDb = new Map<string, Record<string, unknown>>();
+  const docBase = 'https://firestore.googleapis.com/v1/projects/p1/databases/d1/documents';
+  const mockFetch: typeof fetch = async (input, init) => {
+    const url = String(input);
+    const method = (init?.method || 'GET').toUpperCase();
+    if (url === `${docBase}:commit` && method === 'POST') {
+      const body = JSON.parse(String(init?.body || '{}')) as {
+        writes: Array<{ update: { name: string; fields: Record<string, any> } }>;
+      };
+      for (const write of body.writes) {
+        const key = write.update.name.replace(/^projects\/p1\/databases\/d1\/documents\//, '');
+        docDb.set(key, { fields: write.update.fields });
+      }
+      return new Response(JSON.stringify({ writeResults: [] }), { status: 200 });
+    }
+    const prefix = `${docBase}/`;
+    if (url.startsWith(prefix)) {
+      const key = decodeURIComponent(url.slice(prefix.length));
+      if (method === 'GET') {
+        const found = docDb.get(key);
+        return found
+          ? new Response(JSON.stringify(found), { status: 200 })
+          : new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
+      }
+      if (method === 'PATCH') {
+        const body = JSON.parse(String(init?.body || '{}'));
+        docDb.set(key, body);
+        return new Response(JSON.stringify(body), { status: 200 });
+      }
+      if (method === 'DELETE') {
+        docDb.delete(key);
+        return new Response('{}', { status: 200 });
+      }
+    }
+    return new Response('Bad request', { status: 400 });
+  };
+
+  const store = new OrcidAccountStore({
+    firestoreDocBase: docBase,
+    getBridgeToken: async () => 'mock-bridge-jwt',
+    fetchImpl: mockFetch,
+  });
+
+  const { user } = await store.authenticateOrRegisterOrcidUser({
+    orcidId: '0000-0002-1825-0097',
+    verifiedName: 'Josiah Carberry',
+    scholarUserId: 'JicYPdAAAAAJ',
+    scholarUrl: 'https://scholar.google.com/citations?user=JicYPdAAAAAJ',
+  });
+  assert.equal(user.scholarUserId, 'JicYPdAAAAAJ');
+
+  await store.upsertScholarClaim({
+    scholarUserId: 'JicYPdAAAAAJ',
+    orcidId: '0000-0002-1825-0097',
+    claimedByUid: user.uid,
+    researcherName: 'Josiah Carberry',
+    scholarUrl: 'https://scholar.google.com/citations?user=JicYPdAAAAAJ',
+  });
+  const savedClaim = await store.getScholarClaim('JicYPdAAAAAJ');
+  assert.equal(savedClaim?.orcidId, '0000-0002-1825-0097');
+
+  await store.deleteUserAccount(user.uid);
+  assert.equal(docDb.has('users/' + user.uid), false);
+  assert.equal(docDb.has('scholarClaims/JicYPdAAAAAJ'), false);
+});

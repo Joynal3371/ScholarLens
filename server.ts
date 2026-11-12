@@ -43,6 +43,7 @@ import {
   getJournalImpactFactor,
   getAuthoritativeQuartile,
   parseGoogleScholarInput,
+  parseStrictGoogleScholarProfileInput,
 } from './src/utils/scholarAnalytics';
 
 dotenv.config();
@@ -4513,8 +4514,10 @@ function parseOrcidRecordJson(orcidId: string, data: any): OrcidPublicData {
 
   const urls = person['researcher-urls']?.['researcher-url'] || [];
   for (const u of urls) {
-    const val = u?.['url-name']?.value || u?.url?.value;
-    if (val) researcherUrls.push(val.trim());
+    const rawUrl = u?.url?.value;
+    const labelVal = u?.['url-name']?.value;
+    if (rawUrl) researcherUrls.push(String(rawUrl).trim());
+    if (labelVal && labelVal !== rawUrl) researcherUrls.push(String(labelVal).trim());
   }
 
   return { orcidId, names, employments, works, researcherUrls };
@@ -4772,6 +4775,127 @@ function verifyAuthenticityBetweenOrcidAndScholar(
   };
 }
 
+function parseRequiredScholarInput(rawInput: string):
+  | { ok: true; scholarUserId: string; scholarQueryName?: string; scholarUrl: string }
+  | { ok: false; error: string } {
+  const parsed = parseStrictGoogleScholarProfileInput(String(rawInput || '').trim());
+  if (!parsed.valid || !parsed.userId) {
+    return {
+      ok: false,
+      error:
+        parsed.error ||
+        'Please enter a valid Google Scholar profile link (e.g. https://scholar.google.com/citations?user=...) or Scholar ID before continuing to ORCID.',
+    };
+  }
+  const scholarUserId = parsed.userId.trim();
+  return {
+    ok: true,
+    scholarUserId,
+    ...(parsed.queryName?.trim() ? { scholarQueryName: parsed.queryName.trim() } : {}),
+    scholarUrl: `https://scholar.google.com/citations?user=${scholarUserId}`,
+  };
+}
+
+async function verifyOrcidMatchesGoogleScholar(params: {
+  orcidId: string;
+  orcidFallbackName?: string;
+  scholarUserId: string;
+  scholarQueryName?: string;
+}): Promise<{
+  scholarUserId: string;
+  scholarUrl: string;
+  scholarProfile: ResearcherProfile;
+  authCheck: ReturnType<typeof verifyAuthenticityBetweenOrcidAndScholar>;
+}> {
+  const scholarUserId = params.scholarUserId.trim();
+  const scholarUrl = `https://scholar.google.com/citations?user=${scholarUserId}`;
+
+  // 1-to-1 Profile Locking Check (Firestore first, in-memory fallback)
+  const existingClaim =
+    (await getOrcidStore().getScholarClaim(scholarUserId)) ||
+    scholarClaimsData.claims[scholarUserId] ||
+    null;
+  if (existingClaim && existingClaim.orcidId !== params.orcidId) {
+    throw new OrcidConflictError(
+      `This Google Scholar profile has already been claimed and verified by another authentic researcher (ORCID: ${existingClaim.orcidId.slice(
+        0,
+        4
+      )}****${existingClaim.orcidId.slice(-4)}).`
+    );
+  }
+
+  const [scholarProfile, rawOrcidRecord] = await Promise.all([
+    getOrBuildProfileForVerification(scholarUserId, params.scholarQueryName),
+    fetchOrcidPublicRecord(params.orcidId),
+  ]);
+
+  if (!scholarProfile) {
+    throw new OrcidUnauthorizedError(
+      `Could not retrieve Google Scholar profile for ID '${scholarUserId}'. Account creation rejected.`
+    );
+  }
+
+  const fallbackName = String(params.orcidFallbackName || '').trim();
+  const hasUsableFallbackName = Boolean(fallbackName && fallbackName !== params.orcidId);
+  let effectiveOrcidData: OrcidPublicData | null = rawOrcidRecord;
+
+  if (effectiveOrcidData) {
+    if (
+      hasUsableFallbackName &&
+      !effectiveOrcidData.names.some((n) => n.toLowerCase() === fallbackName.toLowerCase())
+    ) {
+      effectiveOrcidData = {
+        ...effectiveOrcidData,
+        names: [...effectiveOrcidData.names, fallbackName],
+      };
+    }
+  } else if (hasUsableFallbackName) {
+    effectiveOrcidData = {
+      orcidId: params.orcidId,
+      names: [fallbackName],
+      employments: [],
+      works: [],
+      researcherUrls: [],
+    };
+  }
+
+  if (!effectiveOrcidData) {
+    throw new OrcidUnauthorizedError(
+      `ORCID iD '${params.orcidId}' details could not be retrieved from the official ORCID registry to verify profile ownership.`
+    );
+  }
+
+  const isSyntheticEmptyStub =
+    scholarProfile.name.trim().toLowerCase() === scholarUserId.toLowerCase() &&
+    (scholarProfile.publications?.length || 0) === 0;
+
+  const authCheck = verifyAuthenticityBetweenOrcidAndScholar(
+    effectiveOrcidData,
+    scholarProfile
+  );
+
+  if (isSyntheticEmptyStub && !authCheck.matchedDetails.matchedDirectUrl) {
+    throw new OrcidUnauthorizedError(
+      `Could not load Google Scholar profile metadata for '${scholarUserId}' to verify ownership against your ORCID account. Account creation rejected.`
+    );
+  }
+
+  if (!authCheck.verified) {
+    throw new OrcidUnauthorizedError(
+      `Verification failed: Your ORCID profile does not match the submitted Google Scholar profile (${
+        scholarProfile.name || scholarUserId
+      }). ${authCheck.reason} Account creation was rejected.`
+    );
+  }
+
+  return {
+    scholarUserId,
+    scholarUrl,
+    scholarProfile,
+    authCheck,
+  };
+}
+
 // 1. Helper: Get effective ORCID OAuth configuration
 function getEffectiveOrcidConfig(req: express.Request) {
   const envClientId = (process.env.ORCID_CLIENT_ID || '').trim();
@@ -4835,7 +4959,12 @@ function buildOrcidAuthorizationRequest(
   req: express.Request,
   res: express.Response,
   config: ReturnType<typeof getEffectiveOrcidConfig>,
-  options: { mode?: 'popup' | 'redirect'; linkUid?: string } = {}
+  options: {
+    mode?: 'popup' | 'redirect';
+    linkUid?: string;
+    scholarUserId?: string;
+    scholarQueryName?: string;
+  } = {}
 ): string {
   const { stateToken, payload } = createSignedOAuthState(
     {
@@ -4843,6 +4972,8 @@ function buildOrcidAuthorizationRequest(
       env: config.environment,
       mode: options.mode === 'redirect' ? 'redirect' : 'popup',
       linkUid: options.linkUid,
+      scholarUserId: options.scholarUserId,
+      scholarQueryName: options.scholarQueryName,
     },
     getAuthSecret()
   );
@@ -4870,11 +5001,32 @@ function buildOrcidAuthorizationRequest(
   return `${config.endpoints.authorizeUrl}?${authParams.toString()}`;
 }
 
-// 1. Get ORCID OAuth URL (supports popup & redirect modes + optional link mode for signed-in accounts)
+// 1. Get ORCID OAuth URL (requires Google Scholar link/ID first; supports popup & redirect modes + optional link mode)
 app.get('/api/auth/orcid/url', async (req, res) => {
   const config = getEffectiveOrcidConfig(req);
   const mode = req.query.mode === 'redirect' ? 'redirect' : 'popup';
   const wantsLink = req.query.link === '1' || req.query.link === 'true';
+
+  if (!config.isConfigured) {
+    res.json({
+      url: `${config.baseUrl}/auth/orcid/setup`,
+      configured: false,
+      configError: config.configError,
+      redirectUri: config.redirectUri,
+      environment: config.environment,
+      mode,
+    });
+    return;
+  }
+
+  const rawScholarInput = String(
+    req.query.scholarInput || req.query.scholarUrl || req.query.scholarUserId || ''
+  ).trim();
+  const parsedScholar = parseRequiredScholarInput(rawScholarInput);
+  if (!parsedScholar.ok) {
+    res.status(400).json({ error: parsedScholar.error });
+    return;
+  }
 
   let linkUid: string | undefined;
   if (wantsLink) {
@@ -4884,25 +5036,20 @@ app.get('/api/auth/orcid/url', async (req, res) => {
     }
   }
 
-  if (config.isConfigured) {
-    const authUrl = buildOrcidAuthorizationRequest(req, res, config, { mode, linkUid });
-    res.json({
-      url: authUrl,
-      configured: true,
-      redirectUri: config.redirectUri,
-      environment: config.environment,
-      mode,
-    });
-  } else {
-    res.json({
-      url: `${config.baseUrl}/auth/orcid/setup`,
-      configured: false,
-      configError: config.configError,
-      redirectUri: config.redirectUri,
-      environment: config.environment,
-      mode,
-    });
-  }
+  const authUrl = buildOrcidAuthorizationRequest(req, res, config, {
+    mode,
+    linkUid,
+    scholarUserId: parsedScholar.scholarUserId,
+    scholarQueryName: parsedScholar.scholarQueryName,
+  });
+  res.json({
+    url: authUrl,
+    configured: true,
+    redirectUri: config.redirectUri,
+    environment: config.environment,
+    mode,
+    scholarUserId: parsedScholar.scholarUserId,
+  });
 });
 
 // 1a. Full-page / direct redirect entry point (fallback when browser popups are blocked)
@@ -4913,7 +5060,25 @@ app.get(['/auth/orcid/authorize', '/auth/orcid/login'], async (req, res) => {
     res.redirect(`${config.baseUrl}/auth/orcid/setup`);
     return;
   }
-  const authUrl = buildOrcidAuthorizationRequest(req, res, config, { mode });
+
+  const rawScholarInput = String(
+    req.query.scholarInput || req.query.scholarUrl || req.query.scholarUserId || ''
+  ).trim();
+  const parsedScholar = parseRequiredScholarInput(rawScholarInput);
+  if (!parsedScholar.ok) {
+    if (mode === 'popup') {
+      res.status(400).send(renderOrcidCallbackHtml({ ok: false, error: parsedScholar.error }));
+    } else {
+      res.redirect(302, `/?orcid_auth_error=${encodeURIComponent(parsedScholar.error)}`);
+    }
+    return;
+  }
+
+  const authUrl = buildOrcidAuthorizationRequest(req, res, config, {
+    mode,
+    scholarUserId: parsedScholar.scholarUserId,
+    scholarQueryName: parsedScholar.scholarQueryName,
+  });
   res.redirect(authUrl);
 });
 
@@ -5419,14 +5584,48 @@ app.get(
         expectedNonce: verifiedState.nonce,
       });
 
-      // 3) Upsert or sign in user in database, strictly enforcing 1 ORCID iD -> 1 account
+      // 3) Automatically verify that the authenticated ORCID account matches the submitted Google Scholar profile
+      if (!verifiedState.scholarUserId) {
+        throw new OrcidValidationError(
+          'A valid Google Scholar profile link or Scholar ID is required before signing in with ORCID.'
+        );
+      }
+      const matchResult = await verifyOrcidMatchesGoogleScholar({
+        orcidId: verifiedIdentity.orcidId,
+        orcidFallbackName: verifiedIdentity.name,
+        scholarUserId: verifiedState.scholarUserId,
+        scholarQueryName: verifiedState.scholarQueryName,
+      });
+
+      // 4) Upsert or sign in user in database ONLY after ownership verification succeeds,
+      //    strictly enforcing 1 ORCID iD -> 1 ScholarLens account and 1 Scholar ID -> 1 ORCID iD
       const { user, isNewAccount } = await getOrcidStore().authenticateOrRegisterOrcidUser({
         orcidId: verifiedIdentity.orcidId,
         verifiedName: verifiedIdentity.name,
         linkToUid: verifiedState.linkUid,
+        scholarUserId: matchResult.scholarUserId,
+        scholarUrl: matchResult.scholarUrl,
+        photoURL: matchResult.scholarProfile.avatarUrl || undefined,
       });
 
-      // 4) Issue cryptographically signed HttpOnly session cookie
+      const persistedClaim = await getOrcidStore().upsertScholarClaim({
+        scholarUserId: matchResult.scholarUserId,
+        orcidId: verifiedIdentity.orcidId,
+        claimedByUid: user.uid,
+        researcherName: matchResult.scholarProfile.name || user.name || verifiedIdentity.orcidId,
+        scholarUrl: matchResult.scholarUrl,
+      });
+      scholarClaimsData.claims[matchResult.scholarUserId] = {
+        scholarUserId: persistedClaim.scholarUserId,
+        orcidId: persistedClaim.orcidId,
+        claimedByUid: persistedClaim.claimedByUid,
+        researcherName: persistedClaim.researcherName,
+        scholarUrl: persistedClaim.scholarUrl || matchResult.scholarUrl,
+        createdAt: persistedClaim.createdAt,
+      };
+      persistScholarClaimsToDisk();
+
+      // 5) Issue cryptographically signed HttpOnly session cookie
       setOrcidSessionCookie(res, config.baseUrl, user);
 
       if (verifiedState.mode === 'redirect') {
@@ -5573,81 +5772,61 @@ app.post('/api/auth/orcid/verify-claim', async (req, res) => {
 
   const cleanOrcid = sessionUser.orcidId;
   const { scholarInput } = req.body || {};
-  const parsedScholar = parseGoogleScholarInput(String(scholarInput || ''));
-  if (!parsedScholar.valid || !parsedScholar.userId) {
-    res.status(400).json({
-      error:
-        parsedScholar.error ||
-        'Please enter a valid Google Scholar profile link or user ID.',
-    });
+  const parsedScholar = parseRequiredScholarInput(String(scholarInput || ''));
+  if (!parsedScholar.ok) {
+    res.status(400).json({ error: parsedScholar.error });
     return;
   }
 
-  const scholarUserId = parsedScholar.userId.trim();
-
-  // 1-to-1 Profile Locking Check
-  const existingClaim = scholarClaimsData.claims[scholarUserId];
-  if (existingClaim && existingClaim.orcidId !== cleanOrcid) {
-    res.status(409).json({
-      error: `This Google Scholar profile has already been claimed and verified by another authentic researcher (ORCID: ${existingClaim.orcidId.slice(
-        0,
-        4
-      )}...${existingClaim.orcidId.slice(-4)}).`,
+  try {
+    const matchResult = await verifyOrcidMatchesGoogleScholar({
+      orcidId: cleanOrcid,
+      orcidFallbackName: sessionUser.name,
+      scholarUserId: parsedScholar.scholarUserId,
+      scholarQueryName: parsedScholar.scholarQueryName,
     });
-    return;
-  }
 
-  const scholarProfile = await getOrBuildProfileForVerification(
-    scholarUserId,
-    parsedScholar.queryName
-  );
-  if (!scholarProfile) {
-    res.status(404).json({
-      error: `Could not retrieve Google Scholar profile for ID '${scholarUserId}'.`,
+    const updatedUser = await getOrcidStore().updateUserProfile(
+      sessionUser.uid,
+      {
+        scholarUserId: matchResult.scholarUserId,
+        scholarUrl: matchResult.scholarUrl,
+        photoURL: sessionUser.photoURL || matchResult.scholarProfile.avatarUrl || '',
+      },
+      sessionUser
+    );
+
+    const persistedClaim = await getOrcidStore().upsertScholarClaim({
+      scholarUserId: matchResult.scholarUserId,
+      orcidId: cleanOrcid,
+      claimedByUid: sessionUser.uid,
+      researcherName:
+        updatedUser?.name || matchResult.scholarProfile.name || cleanOrcid,
+      scholarUrl: matchResult.scholarUrl,
     });
-    return;
-  }
+    scholarClaimsData.claims[matchResult.scholarUserId] = {
+      scholarUserId: persistedClaim.scholarUserId,
+      orcidId: persistedClaim.orcidId,
+      claimedByUid: persistedClaim.claimedByUid,
+      researcherName: persistedClaim.researcherName,
+      scholarUrl: persistedClaim.scholarUrl || matchResult.scholarUrl,
+      createdAt: persistedClaim.createdAt,
+    };
+    persistScholarClaimsToDisk();
 
-  const orcidRecord = await fetchOrcidPublicRecord(cleanOrcid);
-  if (!orcidRecord) {
-    res.status(404).json({
-      error: `ORCID iD '${cleanOrcid}' was not found in the official ORCID registry.`,
+    res.json({
+      success: true,
+      verified: true,
+      message: matchResult.authCheck.reason,
+      user: updatedUser,
+      profile: matchResult.scholarProfile,
     });
-    return;
-  }
-
-  const authCheck = verifyAuthenticityBetweenOrcidAndScholar(orcidRecord, scholarProfile);
-  if (!authCheck.verified) {
-    res.status(400).json({
-      error: `Authenticity verification failed: ${authCheck.reason}`,
+  } catch (err: any) {
+    const status = err instanceof OrcidConflictError ? 409 : 400;
+    res.status(status).json({
+      error: String(err?.message || 'Authenticity verification failed.'),
     });
-    return;
   }
-
-  const scholarUrl = `https://scholar.google.com/citations?user=${scholarUserId}`;
-  const updatedUser = await getOrcidStore().updateUserProfile(sessionUser.uid, {
-    scholarUserId,
-    scholarUrl,
-    photoURL: sessionUser.photoURL || scholarProfile.avatarUrl || '',
-  });
-
-  scholarClaimsData.claims[scholarUserId] = {
-    scholarUserId,
-    orcidId: cleanOrcid,
-    claimedByUid: sessionUser.uid,
-    researcherName: updatedUser?.name || scholarProfile.name || cleanOrcid,
-    scholarUrl,
-    createdAt: new Date().toISOString(),
-  };
-  persistScholarClaimsToDisk();
-
-  res.json({
-    success: true,
-    verified: true,
-    message: authCheck.reason,
-    user: updatedUser,
-    profile: scholarProfile,
-  });
 });
 
 // Legacy unauthenticated ORCID spoof endpoint intentionally disabled
@@ -5658,13 +5837,15 @@ app.post('/api/auth/orcid/login', (_req, res) => {
 });
 
 // 5. Query Claim Status of any Google Scholar profile
-app.get('/api/scholar/claim-status', (req, res) => {
+app.get('/api/scholar/claim-status', async (req, res) => {
   const scholarUserId = String(req.query.scholarUserId || '').trim();
   if (!scholarUserId) {
     res.json({ isClaimed: false });
     return;
   }
-  const claim = scholarClaimsData.claims[scholarUserId];
+  const claim =
+    (await getOrcidStore().getScholarClaim(scholarUserId)) ||
+    scholarClaimsData.claims[scholarUserId];
   if (!claim) {
     res.json({ isClaimed: false });
     return;

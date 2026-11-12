@@ -36,6 +36,8 @@ export interface SignedOAuthStatePayload {
   env: OrcidEnvironment;
   mode: 'popup' | 'redirect';
   linkUid?: string;
+  scholarUserId?: string;
+  scholarQueryName?: string;
   iat: number;
   exp: number;
 }
@@ -383,12 +385,17 @@ export function createSignedOAuthState(
     env: OrcidEnvironment;
     mode?: 'popup' | 'redirect';
     linkUid?: string;
+    scholarUserId?: string;
+    scholarQueryName?: string;
     ttlMs?: number;
     nowMs?: number;
   },
   secret: string
 ): { stateToken: string; payload: SignedOAuthStatePayload } {
   const nowMs = params.nowMs ?? Date.now();
+  const cleanScholarId = typeof params.scholarUserId === 'string' ? params.scholarUserId.trim() : '';
+  const cleanScholarQuery =
+    typeof params.scholarQueryName === 'string' ? params.scholarQueryName.trim() : '';
   const payload: SignedOAuthStatePayload = {
     nonce: base64UrlEncode(crypto.randomBytes(18)),
     csrf: base64UrlEncode(crypto.randomBytes(18)),
@@ -396,6 +403,8 @@ export function createSignedOAuthState(
     env: params.env,
     mode: params.mode === 'redirect' ? 'redirect' : 'popup',
     ...(params.linkUid ? { linkUid: params.linkUid } : {}),
+    ...(cleanScholarId ? { scholarUserId: cleanScholarId } : {}),
+    ...(cleanScholarQuery ? { scholarQueryName: cleanScholarQuery } : {}),
     iat: nowMs,
     exp: nowMs + (params.ttlMs ?? DEFAULT_STATE_TTL_MS),
   };
@@ -823,6 +832,16 @@ function decodeFirestoreValue(val: FirestorePrimitive | undefined): unknown {
   return undefined;
 }
 
+export interface StoredScholarClaimDoc {
+  scholarUserId: string;
+  orcidId: string;
+  claimedByUid: string;
+  researcherName: string;
+  scholarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface LocalMirrorFallback {
   getOrcidIndex(orcidId: string): { orcidId: string; uid: string; name?: string; createdAt: string; updatedAt: string } | null;
   setOrcidIndex(entry: { orcidId: string; uid: string; name?: string; createdAt: string; updatedAt: string }): void;
@@ -831,6 +850,9 @@ export interface LocalMirrorFallback {
   setUser(user: AuthenticatedResearcherRecord): void;
   deleteUser(uid: string): void;
   findUidByOrcidInUsers(orcidId: string): string | null;
+  getScholarClaim?(scholarUserId: string): StoredScholarClaimDoc | null;
+  setScholarClaim?(claim: StoredScholarClaimDoc): void;
+  deleteScholarClaim?(scholarUserId: string): void;
 }
 
 /**
@@ -842,6 +864,7 @@ export function createInMemoryAccountMirror(): LocalMirrorFallback {
     { orcidId: string; uid: string; name?: string; createdAt: string; updatedAt: string }
   >();
   const users = new Map<string, AuthenticatedResearcherRecord>();
+  const scholarClaims = new Map<string, StoredScholarClaimDoc>();
 
   return {
     getOrcidIndex(orcidId) {
@@ -868,6 +891,16 @@ export function createInMemoryAccountMirror(): LocalMirrorFallback {
         if (user.orcidId === orcidId) return user.uid;
       }
       return null;
+    },
+    getScholarClaim(scholarUserId) {
+      const found = scholarClaims.get(scholarUserId);
+      return found ? { ...found } : null;
+    },
+    setScholarClaim(claim) {
+      scholarClaims.set(claim.scholarUserId, { ...claim });
+    },
+    deleteScholarClaim(scholarUserId) {
+      scholarClaims.delete(scholarUserId);
     },
   };
 }
@@ -1113,6 +1146,9 @@ export class OrcidAccountStore {
     orcidId: string;
     verifiedName: string;
     linkToUid?: string;
+    scholarUserId?: string;
+    scholarUrl?: string;
+    photoURL?: string;
   }): Promise<{ user: AuthenticatedResearcherRecord; isNewAccount: boolean }> {
     const canonicalOrcid = normalizeOrcidId(params.orcidId);
     if (!canonicalOrcid) {
@@ -1121,6 +1157,9 @@ export class OrcidAccountStore {
 
     const nowIso = new Date().toISOString();
     const linkToUid = params.linkToUid?.trim() || undefined;
+    const cleanScholarUserId = params.scholarUserId?.trim() || undefined;
+    const cleanScholarUrl = params.scholarUrl?.trim() || undefined;
+    const cleanPhotoURL = params.photoURL?.trim() || undefined;
 
     // 1. Check authoritative unique index in Firestore first, then mirror fallback
     const remoteIndex = await this.getDoc('orcidAccounts', canonicalOrcid);
@@ -1168,6 +1207,21 @@ export class OrcidAccountStore {
             ? baseUser.name
             : params.verifiedName || canonicalOrcid,
         emailOrId: baseUser.emailOrId || canonicalOrcid,
+        ...(cleanPhotoURL
+          ? { photoURL: cleanPhotoURL }
+          : baseUser.photoURL
+          ? { photoURL: baseUser.photoURL }
+          : {}),
+        ...(cleanScholarUrl
+          ? { scholarUrl: cleanScholarUrl }
+          : baseUser.scholarUrl
+          ? { scholarUrl: baseUser.scholarUrl }
+          : {}),
+        ...(cleanScholarUserId
+          ? { scholarUserId: cleanScholarUserId }
+          : baseUser.scholarUserId
+          ? { scholarUserId: baseUser.scholarUserId }
+          : {}),
         orcidId: canonicalOrcid,
         verified: true,
         updatedAt: nowIso,
@@ -1222,9 +1276,15 @@ export class OrcidAccountStore {
         (params.verifiedName && params.verifiedName.trim()) ||
         canonicalOrcid,
       emailOrId: existingProfile?.emailOrId || canonicalOrcid,
-      ...(existingProfile?.photoURL ? { photoURL: existingProfile.photoURL } : {}),
-      ...(existingProfile?.scholarUrl ? { scholarUrl: existingProfile.scholarUrl } : {}),
-      ...(existingProfile?.scholarUserId ? { scholarUserId: existingProfile.scholarUserId } : {}),
+      ...(cleanPhotoURL || existingProfile?.photoURL
+        ? { photoURL: cleanPhotoURL || existingProfile?.photoURL }
+        : {}),
+      ...(cleanScholarUrl || existingProfile?.scholarUrl
+        ? { scholarUrl: cleanScholarUrl || existingProfile?.scholarUrl }
+        : {}),
+      ...(cleanScholarUserId || existingProfile?.scholarUserId
+        ? { scholarUserId: cleanScholarUserId || existingProfile?.scholarUserId }
+        : {}),
       orcidId: canonicalOrcid,
       verified: true,
       provider: existingProfile?.provider || 'orcid',
@@ -1357,6 +1417,66 @@ export class OrcidAccountStore {
     return nextUser;
   }
 
+  async getScholarClaim(scholarUserId: string): Promise<StoredScholarClaimDoc | null> {
+    const cleanId = scholarUserId.trim();
+    if (!cleanId) return null;
+
+    const remote = await this.getDoc('scholarClaims', cleanId);
+    if (remote && remote !== 'UNAVAILABLE' && typeof remote.orcidId === 'string') {
+      const claim: StoredScholarClaimDoc = {
+        scholarUserId: String(remote.scholarUserId || cleanId),
+        orcidId: String(remote.orcidId),
+        claimedByUid: String(remote.claimedByUid || ''),
+        researcherName: String(remote.researcherName || ''),
+        ...(typeof remote.scholarUrl === 'string' && remote.scholarUrl
+          ? { scholarUrl: remote.scholarUrl }
+          : {}),
+        createdAt: String(remote.createdAt || new Date().toISOString()),
+        updatedAt: String(remote.updatedAt || remote.createdAt || new Date().toISOString()),
+      };
+      this.mirror.setScholarClaim?.(claim);
+      return claim;
+    }
+    if (remote === null) {
+      this.mirror.deleteScholarClaim?.(cleanId);
+      return null;
+    }
+    return this.mirror.getScholarClaim?.(cleanId) || null;
+  }
+
+  async upsertScholarClaim(params: {
+    scholarUserId: string;
+    orcidId: string;
+    claimedByUid: string;
+    researcherName: string;
+    scholarUrl?: string;
+    createdAt?: string;
+  }): Promise<StoredScholarClaimDoc> {
+    const nowIso = new Date().toISOString();
+    const cleanScholarId = params.scholarUserId.trim();
+    const claim: StoredScholarClaimDoc = {
+      scholarUserId: cleanScholarId,
+      orcidId: params.orcidId.trim(),
+      claimedByUid: params.claimedByUid.trim(),
+      researcherName: params.researcherName.trim() || params.orcidId.trim(),
+      ...(params.scholarUrl?.trim() ? { scholarUrl: params.scholarUrl.trim() } : {}),
+      createdAt: params.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    await this.upsertDoc('scholarClaims', cleanScholarId, { ...claim });
+    this.mirror.setScholarClaim?.(claim);
+    this.onPersistMirror?.();
+    return claim;
+  }
+
+  async deleteScholarClaim(scholarUserId: string): Promise<void> {
+    const cleanId = scholarUserId.trim();
+    if (!cleanId) return;
+    await this.deleteDoc('scholarClaims', cleanId);
+    this.mirror.deleteScholarClaim?.(cleanId);
+    this.onPersistMirror?.();
+  }
+
   async deleteUserAccount(uid: string): Promise<boolean> {
     const existing = await this.getUserByUid(uid);
     const orcidId = existing?.orcidId ? normalizeOrcidId(existing.orcidId) : null;
@@ -1371,6 +1491,14 @@ export class OrcidAccountStore {
       if (!ownerUid || ownerUid === uid) {
         await this.deleteDoc('orcidAccounts', orcidId);
         this.mirror.deleteOrcidIndex(orcidId);
+      }
+    }
+
+    if (existing?.scholarUserId) {
+      const claim = await this.getScholarClaim(existing.scholarUserId);
+      if (!claim || claim.claimedByUid === uid || (orcidId && claim.orcidId === orcidId)) {
+        await this.deleteDoc('scholarClaims', existing.scholarUserId);
+        this.mirror.deleteScholarClaim?.(existing.scholarUserId);
       }
     }
 

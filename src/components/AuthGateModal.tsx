@@ -6,6 +6,7 @@ import {
   KeyRound,
   CheckCircle2,
   RotateCcw,
+  Link2,
 } from 'lucide-react';
 import {
   signInWithGoogleAccount,
@@ -13,6 +14,7 @@ import {
   getLocalUserProfileOverride,
   AUTHORIZED_BRIDGE_ORIGIN,
 } from '../firebase';
+import { parseStrictGoogleScholarProfileInput } from '../utils/scholarAnalytics';
 
 export interface AuthenticatedResearcher {
   uid: string;
@@ -38,12 +40,16 @@ interface AuthGateModalProps {
 export const AuthGateModal: React.FC<AuthGateModalProps> = ({
   isOpen,
   pendingActionLabel,
+  defaultScholarUrl,
   externalError,
   onClose,
   onAuthenticated,
 }) => {
   // Method selection: 'orcid' (default primary) or 'email'
   const [authMethod, setAuthMethod] = useState<'orcid' | 'email'>('orcid');
+
+  // Google Scholar input captured before ORCID redirect
+  const [scholarInput, setScholarInput] = useState(defaultScholarUrl || '');
 
   // Loading states
   const [isOrcidOAuthLoading, setIsOrcidOAuthLoading] = useState(false);
@@ -82,8 +88,9 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
       setIsGoogleLoading(false);
       setIsOrcidOAuthLoading(false);
       setAuthMethod('orcid');
+      setScholarInput(defaultScholarUrl || '');
     }
-  }, [isOpen, externalError]);
+  }, [isOpen, externalError, defaultScholarUrl]);
 
   // Focus code input when entering OTP step
   useEffect(() => {
@@ -207,18 +214,34 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Launch official ORCID OAuth 2.0 flow immediately (like Continue with Google)
-  const handleContinueWithOrcid = async () => {
+  // Validate Google Scholar link/ID first, then launch official ORCID OAuth 2.0 flow
+  const handleContinueWithOrcid = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     authCompletedRef.current = false;
     setError(null);
     setSuccessMessage(null);
+
+    const trimmedScholar = scholarInput.trim();
+    const parsedScholar = parseStrictGoogleScholarProfileInput(trimmedScholar);
+    if (!parsedScholar.valid || !parsedScholar.userId) {
+      setError(
+        parsedScholar.error ||
+          'Please enter your Google Scholar profile link (e.g. https://scholar.google.com/citations?user=...) or Scholar ID before continuing to ORCID.'
+      );
+      return;
+    }
+
     setIsOrcidOAuthLoading(true);
 
     try {
-      const resp = await fetch('/api/auth/orcid/url?mode=popup', {
+      const encodedScholar = encodeURIComponent(trimmedScholar);
+      const resp = await fetch(`/api/auth/orcid/url?mode=popup&scholarInput=${encodedScholar}`, {
         credentials: 'same-origin',
       });
       const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || 'Could not validate Google Scholar profile before ORCID redirect.');
+      }
       const isLocalHost =
         window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1';
@@ -247,7 +270,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
       if (!popup || popup.closed) {
         if (data.configured) {
           // Seamless same-window OAuth redirect fallback when popups are blocked
-          window.location.assign('/auth/orcid/authorize?mode=redirect');
+          window.location.assign(`/auth/orcid/authorize?mode=redirect&scholarInput=${encodedScholar}`);
           return;
         }
         setIsOrcidOAuthLoading(false);
@@ -422,31 +445,73 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
         {/* ORCID OAUTH SIGN IN / REGISTER */}
         {authMethod === 'orcid' && (
           <div className="space-y-3 pt-1">
-            <button
-              type="button"
-              onClick={handleContinueWithOrcid}
-              disabled={isLoading || isGoogleLoading}
-              data-testid="continue-with-orcid-btn"
-              className="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-gradient-to-b from-[#fdfdfd] to-[#eef0f2] hover:from-[#ffffff] hover:to-[#e2e6ea] active:to-[#d8dde3] border border-[#cbd5e1] rounded-[5px] shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-all cursor-pointer disabled:opacity-50"
-            >
-              {isLoading ? (
-                <>
-                  <RotateCcw className="w-4 h-4 animate-spin text-[#0047bb]" />
-                  <span className="text-sm font-bold text-[#0047bb]">
-                    Connecting to ORCID...
+            <form onSubmit={handleContinueWithOrcid} className="space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label
+                    htmlFor="orcid-scholar-input"
+                    className="block text-xs font-semibold text-slate-700"
+                  >
+                    Google Scholar Profile Link or Scholar ID
+                  </label>
+                  <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
+                    Step 1 of 2
                   </span>
-                </>
-              ) : (
-                <>
-                  <span className="w-5 h-5 rounded-full bg-[#A6CE39] text-[#283800] flex items-center justify-center font-black text-[11px] leading-none shrink-0 shadow-2xs">
-                    iD
-                  </span>
-                  <span className="text-sm font-bold text-[#0047bb] tracking-tight">
-                    Continue with ORCID
-                  </span>
-                </>
-              )}
-            </button>
+                </div>
+                <div className="relative">
+                  <Link2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="orcid-scholar-input"
+                    data-testid="orcid-scholar-input"
+                    type="text"
+                    required
+                    value={scholarInput}
+                    onChange={(e) => {
+                      setScholarInput(e.target.value);
+                      if (error) setError(null);
+                    }}
+                    placeholder="https://scholar.google.com/citations?user=..."
+                    className="w-full pl-9 pr-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#0047bb]/25 focus:border-[#0047bb]"
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500 leading-snug">
+                  Press Continue to verify with ORCID. Your account is created only after your ORCID profile matches this Google Scholar profile.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading || isGoogleLoading}
+                data-testid="continue-with-orcid-btn"
+                className="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-gradient-to-b from-[#fdfdfd] to-[#eef0f2] hover:from-[#ffffff] hover:to-[#e2e6ea] active:to-[#d8dde3] border border-[#cbd5e1] rounded-[5px] shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <>
+                    <RotateCcw className="w-4 h-4 animate-spin text-[#0047bb]" />
+                    <span className="text-sm font-bold text-[#0047bb]">
+                      Verifying with ORCID...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-5 h-5 rounded-full bg-[#A6CE39] text-[#283800] flex items-center justify-center font-black text-[11px] leading-none shrink-0 shadow-2xs">
+                      iD
+                    </span>
+                    <span className="text-sm font-bold text-[#0047bb] tracking-tight">
+                      Continue to ORCID Verification
+                    </span>
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="relative flex py-0.5 items-center">
+              <div className="flex-grow border-t border-slate-200" />
+              <span className="flex-shrink mx-2 text-[10px] uppercase tracking-wider text-slate-400">
+                or
+              </span>
+              <div className="flex-grow border-t border-slate-200" />
+            </div>
 
             <button
               type="button"
@@ -465,10 +530,6 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
                 {isGoogleLoading ? 'Connecting to Google...' : 'Continue with Google'}
               </span>
             </button>
-
-            <p className="text-[11px] text-slate-500 text-center leading-relaxed">
-              Registers or signs in automatically with your verified ORCID iD. You can link your Google Scholar profile anytime in settings.
-            </p>
           </div>
         )}
 
