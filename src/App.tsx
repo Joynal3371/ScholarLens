@@ -960,7 +960,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-24 ${
-        activePage === 'map' || activePage === 'directories'
+        activePage === 'directories'
           ? 'lg:h-screen lg:overflow-hidden lg:pb-16'
           : 'lg:pb-20'
       }`}
@@ -1371,14 +1371,14 @@ export default function App() {
       {/* Main Centered Multi-Page Workspace (80% width on desktop: 10% left & 10% right margins) */}
       <div
         className={`flex-1 w-[94%] sm:w-[90%] md:w-[80%] mx-auto ${
-          activePage === 'map' || activePage === 'directories'
+          activePage === 'directories'
             ? 'py-3 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden'
             : 'py-4 sm:py-5'
         }`}
       >
         <main
           className={`w-full ${
-            activePage === 'map' || activePage === 'directories'
+            activePage === 'directories'
               ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col gap-4'
               : 'space-y-5'
           }`}
@@ -2098,7 +2098,7 @@ export default function App() {
             <div
               className={
                 !isAnalyzing && activePage === 'map'
-                  ? 'block lg:flex-1 lg:min-h-0 lg:flex lg:flex-col'
+                  ? 'block'
                   : 'fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0 select-none'
               }
             >

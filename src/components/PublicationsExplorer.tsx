@@ -313,32 +313,9 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
   return (
     <section
       id="publications"
-      aria-labelledby="publications-explorer-heading"
+      aria-label="Publications Explorer"
       className="scroll-mt-20 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs"
     >
-      {/* Header & Live Summary */}
-      <div className="px-5 sm:px-6 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
-        <h2
-          id="publications-explorer-heading"
-          className="text-base font-bold text-slate-900 tracking-tight"
-        >
-          Publication Portfolio ({filteredPublications.length} / {allPublications.length})
-        </h2>
-
-        <div className="flex items-center gap-3 text-xs">
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Criteria</span>
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Top Search & Filter Toggle Bar */}
       <div className="p-3.5 sm:p-4 bg-slate-50/80 border-b border-slate-200">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
@@ -361,7 +338,18 @@ export const PublicationsExplorer: React.FC<PublicationsExplorerProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Criteria</span>
+              </button>
+            )}
+
             {/* The dedicated Filter toggle button */}
             <button
               type="button"

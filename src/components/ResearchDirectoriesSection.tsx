@@ -156,15 +156,15 @@ export const ResearchDirectoriesSection: React.FC<
       {/* Tab 1: Co-Authors */}
       {activeTab === 'coauthors' && (
         <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[680px] lg:min-w-0 lg:table-fixed text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
-                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">Co-Author</th>
-                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">University</th>
-                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Country</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
+                <th className="py-2.5 pl-5 pr-3 whitespace-nowrap bg-slate-50 lg:w-[26%]">Co-Author</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50 lg:w-[32%]">University</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50 lg:w-[14%]">Country</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[8%]">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[10%]">Citations</th>
+                <th className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap bg-slate-50 lg:w-[10%]">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
@@ -173,14 +173,14 @@ export const ResearchDirectoriesSection: React.FC<
                   key={ca.name}
                   className="hover:bg-slate-50/80 transition-colors"
                 >
-                  <td className="py-2.5 pl-6 pr-3 font-semibold text-slate-900">
+                  <td className="py-2.5 pl-5 pr-3 font-semibold text-slate-900">
                     <button
                       type="button"
                       onClick={() =>
                         onSelectResearcher?.(ca.name, ca.scholarUserId)
                       }
                       title={`View ${ca.name} in ScholarLens`}
-                      className="inline-flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none max-w-full"
+                      className="flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none w-full min-w-0"
                     >
                       <img
                         src={
@@ -216,17 +216,17 @@ export const ResearchDirectoriesSection: React.FC<
                       </span>
                     </button>
                   </td>
-                  <td className="py-2.5 px-3 text-slate-700">
+                  <td className="py-2.5 px-3 text-slate-700 truncate" title={ca.universityName}>
                     {ca.universityName}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-600">{ca.country}</td>
+                  <td className="py-2.5 px-3 text-slate-600 truncate" title={ca.country}>{ca.country}</td>
                   <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900 tabular-nums">
                     {ca.paperCount}
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono text-slate-900 tabular-nums">
                     {ca.totalCitations.toLocaleString()}
                   </td>
-                  <td className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap">
+                  <td className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => onFilterByCoAuthor(ca.name)}
@@ -245,30 +245,32 @@ export const ResearchDirectoriesSection: React.FC<
       {/* Tab 2: Universities */}
       {activeTab === 'universities' && (
         <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[700px] lg:min-w-0 lg:table-fixed text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
-                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">University</th>
-                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Country</th>
-                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Co-Authors</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Q1</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
+                <th className="py-2.5 pl-5 pr-3 whitespace-nowrap bg-slate-50 lg:w-[28%]">University</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50 lg:w-[14%]">Country</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50 lg:w-[27%]">Co-Authors</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[7%]">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[6%]">Q1</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[9%]">Citations</th>
+                <th className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap bg-slate-50 lg:w-[9%]">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
-              {filteredUniversities.map((u) => (
+              {filteredUniversities.map((u) => {
+                const coAuthorNames = u.coAuthors.map((a) => a.name).join(', ');
+                return (
                 <tr
                   key={u.universityId}
                   className="hover:bg-slate-50/80 transition-colors"
                 >
-                  <td className="py-2.5 pl-6 pr-3 font-semibold text-slate-900">
+                  <td className="py-2.5 pl-5 pr-3 font-semibold text-slate-900 truncate" title={u.universityName}>
                     {u.universityName}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-700">{u.country}</td>
-                  <td className="py-2.5 px-3 text-slate-600">
-                    {u.coAuthors.map((a) => a.name).join(', ')}
+                  <td className="py-2.5 px-3 text-slate-700 truncate" title={u.country}>{u.country}</td>
+                  <td className="py-2.5 px-3 text-slate-600 truncate" title={coAuthorNames}>
+                    {coAuthorNames}
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900 tabular-nums">
                     {u.paperCount}
@@ -279,7 +281,7 @@ export const ResearchDirectoriesSection: React.FC<
                   <td className="py-2.5 px-3 text-right font-mono text-slate-900 tabular-nums">
                     {u.totalCitations.toLocaleString()}
                   </td>
-                  <td className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap">
+                  <td className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => onFilterByUniversity(u.universityId)}
@@ -289,7 +291,8 @@ export const ResearchDirectoriesSection: React.FC<
                     </button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -298,29 +301,31 @@ export const ResearchDirectoriesSection: React.FC<
       {/* Tab 3: Countries */}
       {activeTab === 'countries' && (
         <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[700px] lg:min-w-0 lg:table-fixed text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
-                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">Country</th>
-                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Universities</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Co-Authors</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Share</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
+                <th className="py-2.5 pl-5 pr-3 whitespace-nowrap bg-slate-50 lg:w-[17%]">Country</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50 lg:w-[39%]">Universities</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[10%]">Co-Authors</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[8%]">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[7%]">Share</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[10%]">Citations</th>
+                <th className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap bg-slate-50 lg:w-[9%]">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
-              {filteredCountries.map((c) => (
+              {filteredCountries.map((c) => {
+                const uniList = c.universities.join(' · ');
+                return (
                 <tr
                   key={c.country}
                   className="hover:bg-slate-50/80 transition-colors"
                 >
-                  <td className="py-2.5 pl-6 pr-3 font-semibold text-slate-900">
+                  <td className="py-2.5 pl-5 pr-3 font-semibold text-slate-900 truncate" title={c.country}>
                     {c.country}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-700">
-                    {c.universities.join(' · ')}
+                  <td className="py-2.5 px-3 text-slate-700 truncate" title={uniList}>
+                    {uniList}
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono text-slate-700 tabular-nums">
                     {c.coAuthorCount}
@@ -334,7 +339,7 @@ export const ResearchDirectoriesSection: React.FC<
                   <td className="py-2.5 px-3 text-right font-mono text-slate-900 tabular-nums">
                     {c.totalCitations.toLocaleString()}
                   </td>
-                  <td className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap">
+                  <td className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => onFilterByCountry(c.country)}
@@ -344,7 +349,8 @@ export const ResearchDirectoriesSection: React.FC<
                     </button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -353,15 +359,15 @@ export const ResearchDirectoriesSection: React.FC<
       {/* Tab 4: Journals & Venues */}
       {activeTab === 'journals' && (
         <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[660px] lg:min-w-0 lg:table-fixed text-left border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-2xs">
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600">
-                <th className="py-2.5 pl-6 pr-3 whitespace-nowrap bg-slate-50">Journal / Conference Venue</th>
-                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Type</th>
-                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50">Quartile</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Papers</th>
-                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50">Total Citations</th>
-                <th className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap bg-slate-50">Action</th>
+                <th className="py-2.5 pl-5 pr-3 whitespace-nowrap bg-slate-50 lg:w-[44%]">Journal / Conference Venue</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50 lg:w-[13%]">Type</th>
+                <th className="py-2.5 px-3 whitespace-nowrap bg-slate-50 lg:w-[10%]">Quartile</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[10%]">Papers</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap bg-slate-50 lg:w-[13%]">Total Citations</th>
+                <th className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap bg-slate-50 lg:w-[10%]">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-xs">
@@ -370,10 +376,10 @@ export const ResearchDirectoriesSection: React.FC<
                   key={j.venue}
                   className="hover:bg-slate-50/80 transition-colors"
                 >
-                  <td className="py-2.5 pl-6 pr-3 font-semibold text-slate-900">
+                  <td className="py-2.5 pl-5 pr-3 font-semibold text-slate-900 truncate" title={j.venue}>
                     {j.venue}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-600">{j.type}</td>
+                  <td className="py-2.5 px-3 text-slate-600 truncate">{j.type}</td>
                   <td className="py-2.5 px-3 font-mono font-bold text-slate-800">
                     {j.quartile}
                   </td>
@@ -383,7 +389,7 @@ export const ResearchDirectoriesSection: React.FC<
                   <td className="py-2.5 px-3 text-right font-mono text-slate-900 tabular-nums">
                     {j.totalCitations.toLocaleString()}
                   </td>
-                  <td className="py-2.5 pl-3 pr-6 text-right whitespace-nowrap">
+                  <td className="py-2.5 pl-3 pr-5 text-right whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => onFilterByVenue(j.venue)}

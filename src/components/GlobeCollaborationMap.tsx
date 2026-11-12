@@ -116,74 +116,6 @@ function matchesCollaboratingCountry(
   return false;
 }
 
-interface SpaceStar {
-  id: string;
-  x: number;
-  y: number;
-  r: number;
-  opacity: number;
-  color: string;
-  haloColor: string;
-  hasGlow: boolean;
-  hasSpikes: boolean;
-  animClass: string;
-  duration: string;
-  delay: string;
-}
-
-// Deterministic multi-spectral celestial starfield (220 realistic astronomical stars)
-const STELLAR_COLORS = [
-  '#ffffff', // Diamond White (Class A)
-  '#f8fafc', // Radiant Soft White (Class F)
-  '#93c5fd', // Sapphire Blue (Class B)
-  '#60a5fa', // Electric Blue (Class O)
-  '#38bdf8', // Cyan Ice (Class O/B)
-  '#fef08a', // Sun Gold (Class G)
-  '#fcd34d', // Warm Yellow (Class G)
-  '#fdba74', // Amber Star (Class K)
-  '#fb923c', // Orange Giant (Class K)
-  '#f472b6', // Magenta Star (Emission Nebula)
-  '#c084fc', // Violet/Lilac (Distant cluster)
-  '#6ee7b7', // Subtle Mint/Teal
-];
-
-const DEEP_SPACE_STARS: SpaceStar[] = Array.from({ length: 220 }, (_, i) => {
-  const x = Number((((i * 197 + i * i * 47) % (GLOBE_WIDTH - 20)) + 10).toFixed(1));
-  const y = Number((((i * 151 + i * 71) % (GLOBE_HEIGHT - 20)) + 10).toFixed(1));
-
-  const isMajor = i % 13 === 0;
-  const isMedium = i % 4 === 0;
-  const r = isMajor ? 2.1 : isMedium ? 1.25 : 0.65;
-  const opacity = Number((0.35 + ((i * 23) % 65) / 100).toFixed(2));
-  const color = STELLAR_COLORS[i % STELLAR_COLORS.length];
-  const haloColor =
-    color === '#ffffff' || color === '#f8fafc'
-      ? '#38bdf8'
-      : color;
-  const hasGlow = isMajor || (isMedium && i % 8 === 0);
-  const hasSpikes = isMajor && i % 26 === 0;
-
-  const animClasses = ['star-twinkle-a', 'star-twinkle-b', 'star-twinkle-c', 'star-pulse'];
-  const animClass = animClasses[i % animClasses.length];
-  const duration = `${(1.8 + ((i * 37) % 25) / 10).toFixed(1)}s`;
-  const delay = `${(((i * 41) % 30) / 10).toFixed(1)}s`;
-
-  return {
-    id: `celestial-star-${i}`,
-    x,
-    y,
-    r,
-    opacity,
-    color,
-    haloColor,
-    hasGlow,
-    hasSpikes,
-    animClass,
-    duration,
-    delay,
-  };
-});
-
 interface FlatWorldCollaborationMapProps {
   profile: ResearcherProfile;
   universities: UniversityCollaboration[];
@@ -1244,7 +1176,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     <section
       id="global-map"
       aria-labelledby="globe-section-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs relative lg:flex-1 lg:min-h-0 lg:flex lg:flex-col"
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs relative"
     >
       {/* Offscreen Full Flattened World Map used when exporting PNG or PDF Report */}
       <div
@@ -1443,11 +1375,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
       </div>
 
       {/* Main Split Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
-        {/* Left 7 Columns: Full-Window Edge-to-Edge Globe Viewport (No inner bounding box) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 items-start">
+        {/* Left 7 Columns: Clean Globe Viewport */}
         <div
           id="chart-collaboration-globe"
-          className="lg:col-span-7 bg-slate-950 text-slate-100 flex items-center justify-center relative select-none overflow-hidden lg:h-full lg:min-h-0"
+          className="lg:col-span-7 bg-[#060d1c] text-slate-100 flex items-center justify-center relative select-none overflow-hidden h-[440px] sm:h-[520px] lg:h-[660px] lg:sticky lg:top-20"
         >
           <div
             ref={globeContainerRef}
@@ -1466,7 +1398,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 ),
               }));
             }}
-            className={`relative w-full h-full min-h-[420px] sm:min-h-[480px] lg:min-h-0 flex items-center justify-center overflow-hidden bg-slate-950 touch-none ${
+            className={`relative w-full h-full flex items-center justify-center overflow-hidden bg-[#060d1c] touch-none ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
           >
@@ -1477,37 +1409,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               aria-label="Interactive round-world collaboration globe with country and district boundaries"
             >
               <defs>
-                <style>{`
-                  @keyframes starTwinkleA {
-                    0%, 100% { opacity: 0.28; transform: scale(0.85); }
-                    50% { opacity: 1.0; transform: scale(1.18); }
-                  }
-                  @keyframes starTwinkleB {
-                    0%, 100% { opacity: 0.95; transform: scale(1.12); }
-                    50% { opacity: 0.22; transform: scale(0.82); }
-                  }
-                  @keyframes starTwinkleC {
-                    0%, 100% { opacity: 0.42; }
-                    35% { opacity: 0.18; }
-                    70% { opacity: 0.98; }
-                  }
-                  @keyframes starPulseGlow {
-                    0%, 100% { opacity: 0.35; transform: scale(0.92); }
-                    50% { opacity: 0.95; transform: scale(1.32); }
-                  }
-                  @keyframes cosmicMeteorTrail {
-                    0% { transform: translate(-120px, -60px); opacity: 0; }
-                    3% { opacity: 0.95; }
-                    12% { transform: translate(460px, 230px); opacity: 0; }
-                    100% { transform: translate(460px, 230px); opacity: 0; }
-                  }
-                  .star-twinkle-a { animation: starTwinkleA ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-                  .star-twinkle-b { animation: starTwinkleB ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-                  .star-twinkle-c { animation: starTwinkleC ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-                  .star-pulse { animation: starPulseGlow ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-                  .cosmic-meteor { animation: cosmicMeteorTrail 11s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
-                `}</style>
-
                 <radialGradient id="oceanSphereGrad" cx="35%" cy="30%" r="70%">
                   <stop offset="0%" stopColor="#162e4d" />
                   <stop offset="60%" stopColor="#0b1b32" />
@@ -1517,116 +1418,22 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                   <circle cx={CENTER_X} cy={CENTER_Y} r={projectedScale} />
                 </clipPath>
 
-                {/* Deep Space Starfield & Atmospheric Rim Gradients */}
-                <radialGradient id="deepSpaceBgGrad" cx="50%" cy="50%" r="75%">
-                  <stop offset="0%" stopColor="#09152b" />
-                  <stop offset="55%" stopColor="#050b18" />
-                  <stop offset="100%" stopColor="#02050b" />
-                </radialGradient>
+                {/* Clean Solid Globe Backdrop & Subtle Atmospheric Halo */}
                 <radialGradient id="earthAtmosphereHalo" cx="50%" cy="50%" r="50%">
                   <stop offset="78%" stopColor="#0ea5e9" stopOpacity="0" />
                   <stop offset="92%" stopColor="#38bdf8" stopOpacity="0.18" />
                   <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
                 </radialGradient>
-
-                {/* Deep Cosmic Nebulae Clouds */}
-                <radialGradient id="cosmicNebulaViolet" cx="18%" cy="22%" r="42%">
-                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.14" />
-                  <stop offset="50%" stopColor="#6366f1" stopOpacity="0.06" />
-                  <stop offset="100%" stopColor="#09152b" stopOpacity="0" />
-                </radialGradient>
-                <radialGradient id="cosmicNebulaCyan" cx="82%" cy="78%" r="45%">
-                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.12" />
-                  <stop offset="55%" stopColor="#0284c7" stopOpacity="0.05" />
-                  <stop offset="100%" stopColor="#02050b" stopOpacity="0" />
-                </radialGradient>
-
-                {/* Meteor Gradient Tail */}
-                <linearGradient id="meteorTailGrad" x1="0%" y1="0%" x2="100%" y2="50%">
-                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-                  <stop offset="40%" stopColor="#67e8f9" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                </linearGradient>
               </defs>
 
-              {/* 1. DEEP SPACE STARFIELD BACKGROUND & NEBULAR DUST */}
+              {/* 1. CLEAN SOLID BACKDROP BEHIND GLOBE (No Starfield) */}
               <rect
                 x={0}
                 y={0}
                 width={GLOBE_WIDTH}
                 height={GLOBE_HEIGHT}
-                fill="url(#deepSpaceBgGrad)"
+                fill="#060d1c"
               />
-              <rect
-                x={0}
-                y={0}
-                width={GLOBE_WIDTH}
-                height={GLOBE_HEIGHT}
-                fill="url(#cosmicNebulaViolet)"
-                className="pointer-events-none"
-              />
-              <rect
-                x={0}
-                y={0}
-                width={GLOBE_WIDTH}
-                height={GLOBE_HEIGHT}
-                fill="url(#cosmicNebulaCyan)"
-                className="pointer-events-none"
-              />
-
-              {/* Dynamic Celestial Multi-Spectral Starfield */}
-              <g id="deep-space-starfield" className="pointer-events-none select-none">
-                {DEEP_SPACE_STARS.map((star) => (
-                  <g
-                    key={star.id}
-                    className={star.animClass}
-                    style={{
-                      animationDuration: star.duration,
-                      animationDelay: star.delay,
-                    }}
-                  >
-                    {/* Multi-layered radial glow halo for bright stars */}
-                    {star.hasGlow && (
-                      <circle
-                        cx={star.x}
-                        cy={star.y}
-                        r={star.r * 2.8}
-                        fill={star.haloColor}
-                        opacity={star.opacity * 0.35}
-                      />
-                    )}
-                    {/* 4-point telescope diffraction spikes on focal beacons */}
-                    {star.hasSpikes && (
-                      <g stroke={star.color} strokeWidth={0.65} opacity={star.opacity * 0.75}>
-                        <line x1={star.x - star.r * 3.8} y1={star.y} x2={star.x + star.r * 3.8} y2={star.y} />
-                        <line x1={star.x} y1={star.y - star.r * 3.8} x2={star.x} y2={star.y + star.r * 3.8} />
-                      </g>
-                    )}
-                    {/* Star Core */}
-                    <circle
-                      cx={star.x}
-                      cy={star.y}
-                      r={star.r}
-                      fill={star.color}
-                      opacity={star.opacity}
-                    />
-                  </g>
-                ))}
-
-                {/* Subtle Passing Meteor / Shooting Star */}
-                <g className="cosmic-meteor pointer-events-none">
-                  <line
-                    x1="60"
-                    y1="35"
-                    x2="110"
-                    y2="60"
-                    stroke="url(#meteorTailGrad)"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="110" cy="60" r="1.4" fill="#ffffff" />
-                </g>
-              </g>
 
               {/* Subtle Blue Atmospheric Halo Around Earth */}
               <circle
@@ -1962,9 +1769,9 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         </div>
 
         {/* Right 5 Columns: Selected University Inspector */}
-        <div className="lg:col-span-5 p-4 sm:p-5 bg-white flex flex-col lg:h-full lg:min-h-0 lg:overflow-hidden">
+        <div className="lg:col-span-5 p-4 sm:p-5 bg-white flex flex-col">
           {selectedUni ? (
-            <div className="flex flex-col gap-3.5 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+            <div className="flex flex-col gap-4">
               <div ref={uniDropdownRef} className="relative shrink-0">
                 <button
                   id="inspector-university-select"
@@ -2100,12 +1907,12 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-col lg:flex-1 lg:min-h-0">
-                <div className="flex items-center justify-between gap-2 mb-1.5 shrink-0">
-                  <h4 className="text-xs font-semibold text-slate-700">
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between gap-2 mb-2 shrink-0">
+                  <h4 className="text-sm font-bold text-slate-800">
                     Co-Authors ({filteredSelectedCoAuthors.length})
                   </h4>
-                  <div className="relative w-44 sm:w-48">
+                  <div className="relative w-44 sm:w-52">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="text"
@@ -2113,15 +1920,15 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       onChange={(e) => setCoAuthorQuery(e.target.value)}
                       placeholder="Find co-author..."
                       aria-label="Find co-author in selected university"
-                      className="w-full pl-7 pr-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:border-blue-600"
+                      className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
-                <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg max-h-[160px] lg:max-h-none lg:flex-1 lg:min-h-0 overflow-y-auto">
+                <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg h-[250px] sm:h-[280px] overflow-y-auto">
                   {filteredSelectedCoAuthors.map((author) => (
                     <div
                       key={author.name}
-                      className="px-3 py-2 flex items-center justify-between gap-2 bg-slate-50/40 hover:bg-slate-50"
+                      className="px-3.5 py-2.5 flex items-center justify-between gap-2.5 bg-slate-50/40 hover:bg-slate-50"
                     >
                       <button
                         type="button"
@@ -2195,11 +2002,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-col lg:flex-1 lg:min-h-0">
-                <h4 className="text-xs font-semibold text-slate-700 mb-1.5 shrink-0">
+              <div className="flex flex-col">
+                <h4 className="text-sm font-bold text-slate-800 mb-2 shrink-0">
                   Collaborative Papers ({selectedUni.papers.length})
                 </h4>
-                <div className="space-y-2 max-h-[180px] lg:max-h-none lg:flex-1 lg:min-h-0 overflow-y-auto pr-1">
+                <div className="space-y-2.5 h-[300px] sm:h-[340px] overflow-y-auto pr-1">
                   {selectedUni.papers.map((paper) => (
                     <article
                       key={paper.id}
