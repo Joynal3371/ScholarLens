@@ -54,6 +54,11 @@ import {
   rankOpenAlexAuthorsFromWorks,
   scoreOpenAlexAuthorCandidate,
 } from './src/server/openAlexDisambiguation';
+import {
+  extractScholarIdentityFromYahooHtml,
+  lookupScholarIdentityInStores,
+  ResolvedScholarIdentity,
+} from './src/server/scholarIdentityResolver';
 import verifiedScholarSnapshot from './src/data/verifiedScholarCache.json';
 import verifiedColleagueDirectory from './src/data/verifiedColleagueDirectory.json';
 import verifiedAvatarStore from './src/data/verifiedAvatarStore.json';
@@ -2147,16 +2152,168 @@ async function resolveGoogleScholarIdByName(
   return null;
 }
 
+async function resolveScholarIdentityViaYahoo(
+  scholarId: string
+): Promise<ResolvedScholarIdentity | null> {
+  const cleanId = String(scholarId || '').trim();
+  if (!isValidScholarId(cleanId)) return null;
+
+  const queries = [
+    `site:scholar.google.com "user=${cleanId}"`,
+    `site:scholar.google.com "${cleanId}"`,
+  ];
+
+  for (const q of queries) {
+    try {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 3200);
+      const res = await fetch(
+        `https://search.yahoo.com/search?p=${encodeURIComponent(q)}`,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+          },
+          signal: controller.signal,
+        }
+      );
+      clearTimeout(t);
+      if (!res.ok) continue;
+      const html = await res.text();
+      const extracted = extractScholarIdentityFromYahooHtml(html, cleanId);
+      if (extracted?.name) return extracted;
+    } catch {
+      // Ignore individual search timeout/network error
+    }
+  }
+  return null;
+}
+
+async function resolveScholarIdentityViaOrcid(
+  scholarId: string
+): Promise<ResolvedScholarIdentity | null> {
+  const cleanId = String(scholarId || '').trim();
+  if (!isValidScholarId(cleanId)) return null;
+
+  try {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 2600);
+    const res = await fetch(
+      `https://pub.orcid.org/v3.0/expanded-search/?q=${encodeURIComponent(
+        `"${cleanId}"`
+      )}&rows=3`,
+      {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'ScholarLens/1.0',
+        },
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(t);
+    if (!res.ok) return null;
+    const data: any = await res.json();
+    const rows = Array.isArray(data?.['expanded-result'])
+      ? data['expanded-result']
+      : [];
+    for (const row of rows) {
+      const given = String(row?.['given-names'] || '').trim();
+      const family = String(row?.['family-names'] || '').trim();
+      const credit = String(row?.['credit-name'] || '').trim();
+      const name = credit || [given, family].filter(Boolean).join(' ').trim();
+      if (!name) continue;
+      const inst = Array.isArray(row?.['institution-name'])
+        ? String(row['institution-name'][0] || '').trim()
+        : '';
+      return {
+        name,
+        ...(inst ? { affiliationHint: inst } : {}),
+        source: 'orcid-search',
+      };
+    }
+  } catch {
+    // Ignore ORCID timeout/network failure
+  }
+  return null;
+}
+
+async function resolveScholarIdentityByUserIdFallback(
+  scholarId: string
+): Promise<ResolvedScholarIdentity | null> {
+  const cleanId = String(scholarId || '').trim();
+  if (!isValidScholarId(cleanId)) return null;
+
+  let registeredUsers: Array<{
+    name?: string;
+    scholarUserId?: string;
+    affiliation?: string;
+  }> = [];
+  let digests: Record<string, any> = {};
+  try {
+    const store = getSocialStore();
+    const [regs, digMap] = await Promise.all([
+      store.listRegisteredResearchers().catch(() => []),
+      store.listResearcherWorksDigests().catch(() => ({})),
+    ]);
+    registeredUsers = regs as any[];
+    digests = digMap;
+  } catch {
+    // Social store unavailable; proceed with static stores and external resolvers
+  }
+
+  const fromStores = lookupScholarIdentityInStores({
+    scholarId: cleanId,
+    colleagueList: scholarColleagueList,
+    coAuthorMap: rawCoAuthorMap,
+    verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
+    digests,
+    registeredUsers,
+  });
+  if (fromStores?.name) {
+    return fromStores;
+  }
+
+  const [wikidataRes, yahooRes, orcidRes] = await Promise.allSettled([
+    resolveScholarIdViaWikidata(cleanId),
+    resolveScholarIdentityViaYahoo(cleanId),
+    resolveScholarIdentityViaOrcid(cleanId),
+  ]);
+
+  if (wikidataRes.status === 'fulfilled' && wikidataRes.value) {
+    return {
+      name: wikidataRes.value,
+      source: 'wikidata',
+    };
+  }
+  if (yahooRes.status === 'fulfilled' && yahooRes.value?.name) {
+    return yahooRes.value;
+  }
+  if (orcidRes.status === 'fulfilled' && orcidRes.value?.name) {
+    return orcidRes.value;
+  }
+
+  return null;
+}
+
 export async function buildLiveResearcherProfile(
   userIdInput: string,
   queryNameInput: string
 ): Promise<{ profile: ResearcherProfile; source: string } | null> {
-  let effectiveUserId = userIdInput;
+  const cleanQueryNameInput = String(queryNameInput || '').trim();
+  const effectiveQueryName =
+    cleanQueryNameInput &&
+    cleanQueryNameInput !== String(userIdInput || '').trim() &&
+    !isValidScholarId(cleanQueryNameInput)
+      ? cleanQueryNameInput
+      : '';
+
+  let effectiveUserId = String(userIdInput || '').trim();
 
   // If the user searched by researcher name (and userIdInput is not already a valid 12-char Google Scholar ID), resolve their official Google Scholar ID first
-  if (queryNameInput && !isValidScholarId(userIdInput)) {
+  if (effectiveQueryName && !isValidScholarId(effectiveUserId)) {
     const resolvedScholarId = await resolveGoogleScholarIdByName(
-      queryNameInput
+      effectiveQueryName
     );
     if (resolvedScholarId) {
       effectiveUserId = resolvedScholarId;
@@ -2167,22 +2324,33 @@ export async function buildLiveResearcherProfile(
     ? await scrapeGoogleScholarFullProfile(effectiveUserId)
     : null;
 
-  // If direct userIdInput failed and looks like a typed name, try resolving via Wikidata P1960 / web index
-  if (!scraped && !queryNameInput && userIdInput) {
-    const byNameId = await resolveGoogleScholarIdByName(userIdInput);
+  // If direct userIdInput failed and looks like a typed name (not a Scholar ID), try resolving via Wikidata P1960 / web index
+  if (
+    !scraped &&
+    !effectiveQueryName &&
+    effectiveUserId &&
+    !isValidScholarId(effectiveUserId)
+  ) {
+    const byNameId = await resolveGoogleScholarIdByName(effectiveUserId);
     if (byNameId && byNameId !== effectiveUserId) {
       effectiveUserId = byNameId;
       scraped = await scrapeGoogleScholarFullProfile(effectiveUserId);
     }
   }
 
-  let resolvedWikidataName: string | null = null;
-  if (!scraped && !queryNameInput && effectiveUserId) {
-    resolvedWikidataName = await resolveScholarIdViaWikidata(effectiveUserId);
+  let fallbackIdentity: ResolvedScholarIdentity | null = null;
+  if (!scraped && !effectiveQueryName && effectiveUserId) {
+    fallbackIdentity = await resolveScholarIdentityByUserIdFallback(
+      effectiveUserId
+    );
   }
 
+  // Never query OpenAlex with a raw Google Scholar userId when no researcher name could be resolved
+  const resolvedCandidateName =
+    scraped?.name || effectiveQueryName || fallbackIdentity?.name || '';
   const targetName =
-    scraped?.name || queryNameInput || resolvedWikidataName || userIdInput;
+    resolvedCandidateName ||
+    (!isValidScholarId(effectiveUserId) ? effectiveUserId : '');
   if (!targetName) return null;
 
   // Pre-resolve the verified email domain via ROR so its official institution name aids OpenAlex author disambiguation and home institution mapping
@@ -2200,7 +2368,7 @@ export async function buildLiveResearcherProfile(
   let weakFallbackScore = -1;
   const cleanSearchName = stripAcademicHonorifics(targetName) || targetName;
   const affilTokens = extractAffiliationKeywords(
-    `${scraped?.affiliation || ''} ${domainResolvedHome?.universityName || ''}`
+    `${scraped?.affiliation || ''} ${fallbackIdentity?.affiliationHint || ''} ${domainResolvedHome?.universityName || ''}`
   );
 
   try {

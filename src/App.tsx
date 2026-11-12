@@ -888,20 +888,23 @@ export default function App() {
     scholarUserId?: string
   ) => {
     const cleanName = authorName.trim();
-    if (!cleanName) return;
     const cleanId = scholarUserId?.trim() || '';
+    if (!cleanName && !cleanId) return;
     pushNavHistory();
     navigateToPage('overview', { skipHistory: true });
     if (cleanId) {
-      void fetchProfileFromServer(cleanId, cleanName);
+      const effectiveName =
+        cleanName && cleanName !== cleanId ? cleanName : undefined;
+      void fetchProfileFromServer(cleanId, effectiveName);
       return;
     }
     const parsed = parseGoogleScholarInput(cleanName);
     if (parsed.valid && parsed.userId) {
-      void fetchProfileFromServer(
-        parsed.userId,
-        parsed.queryName || cleanName
-      );
+      const effectiveName =
+        parsed.queryName && parsed.queryName !== parsed.userId
+          ? parsed.queryName
+          : undefined;
+      void fetchProfileFromServer(parsed.userId, effectiveName);
     }
   };
 
@@ -1007,40 +1010,49 @@ export default function App() {
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') {
                     setIsHeaderSearchFocused(false);
-                  } else if (
-                    e.key === 'Enter' &&
-                    globalSearchQuery.trim() &&
-                    activePage !== 'feed'
-                  ) {
-                    e.preventDefault();
-                    if (headerMatchedResearchers.length > 0) {
-                      const first = headerMatchedResearchers[0];
-                      setIsHeaderSearchFocused(false);
-                      handleOpenResearcherProfile(
-                        first.name,
-                        first.scholarUserId
-                      );
-                    } else if (headerMatchedScholarProfiles.length > 0) {
-                      const first = headerMatchedScholarProfiles[0];
-                      setIsHeaderSearchFocused(false);
-                      handleOpenResearcherProfile(
-                        first.name,
-                        first.scholarUserId
-                      );
-                    } else if (
+                  } else if (e.key === 'Enter' && globalSearchQuery.trim()) {
+                    const isDirectScholarUrlOrId =
                       parsedHeaderSearchQuery?.valid &&
-                      parsedHeaderSearchQuery.userId
-                    ) {
+                      parsedHeaderSearchQuery.userId &&
+                      !parsedHeaderSearchQuery.queryName;
+                    if (isDirectScholarUrlOrId) {
+                      e.preventDefault();
                       setIsHeaderSearchFocused(false);
                       handleOpenResearcherProfile(
-                        parsedHeaderSearchQuery.queryName ||
-                          parsedHeaderSearchQuery.userId ||
-                          globalSearchQuery.trim(),
+                        '',
                         parsedHeaderSearchQuery.userId
                       );
-                    } else {
-                      setIsHeaderSearchFocused(false);
-                      navigateToPage('feed');
+                      return;
+                    }
+                    if (activePage !== 'feed') {
+                      e.preventDefault();
+                      if (headerMatchedResearchers.length > 0) {
+                        const first = headerMatchedResearchers[0];
+                        setIsHeaderSearchFocused(false);
+                        handleOpenResearcherProfile(
+                          first.name,
+                          first.scholarUserId
+                        );
+                      } else if (headerMatchedScholarProfiles.length > 0) {
+                        const first = headerMatchedScholarProfiles[0];
+                        setIsHeaderSearchFocused(false);
+                        handleOpenResearcherProfile(
+                          first.name,
+                          first.scholarUserId
+                        );
+                      } else if (
+                        parsedHeaderSearchQuery?.valid &&
+                        parsedHeaderSearchQuery.userId
+                      ) {
+                        setIsHeaderSearchFocused(false);
+                        handleOpenResearcherProfile(
+                          parsedHeaderSearchQuery.queryName || '',
+                          parsedHeaderSearchQuery.userId
+                        );
+                      } else {
+                        setIsHeaderSearchFocused(false);
+                        navigateToPage('feed');
+                      }
                     }
                   }
                 }}
@@ -1229,9 +1241,7 @@ export default function App() {
                         onClick={() => {
                           setIsHeaderSearchFocused(false);
                           handleOpenResearcherProfile(
-                            parsedHeaderSearchQuery.queryName ||
-                              parsedHeaderSearchQuery.userId ||
-                              globalSearchQuery.trim(),
+                            parsedHeaderSearchQuery.queryName || '',
                             parsedHeaderSearchQuery.userId
                           );
                         }}

@@ -2187,6 +2187,171 @@ function extractSameInstitutionAuthorIds(instAuthors, cleanSearchName, isSameNam
   return ids;
 }
 
+// src/server/scholarIdentityResolver.ts
+function decodeHtmlEntitiesBasic(raw) {
+  return String(raw || "").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&nbsp;/gi, " ").replace(/&#(\d+);/g, (_m, n) => String.fromCharCode(Number(n))).replace(
+    /&#x([0-9a-f]+);/gi,
+    (_m, h) => String.fromCharCode(parseInt(h, 16))
+  );
+}
+function cleanTextFragment(raw) {
+  return decodeHtmlEntitiesBasic(
+    String(raw || "").replace(/<[^>]+>/g, " ").replace(/[\u202A-\u202E\u200E\u200F]/g, " ")
+  ).replace(/\s+/g, " ").trim();
+}
+function escapeRegExp(val) {
+  return val.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function extractNameFromScholarTitle(rawTitle) {
+  const cleaned = cleanTextFragment(rawTitle).replace(/\s*[-–|]\s*Google\s+(?:Scholar|Acad[eè]mic|Akademik|Cendekia).*$/i, "").replace(/^Google\s+Scholar(?:\s+Profiles)?$/i, "").replace(/^(?:Citations|Profil)\s*$/i, "").trim();
+  if (!cleaned || cleaned.length < 3 || /^google\s*scholar$/i.test(cleaned) || /^citations$/i.test(cleaned)) {
+    return "";
+  }
+  return cleaned;
+}
+function extractScholarIdentityFromYahooHtml(html, scholarId) {
+  if (!html || !scholarId) return null;
+  const escapedId = escapeRegExp(scholarId.trim());
+  const exactUserUrlRe = new RegExp(
+    `scholar\\.google\\.[^"'\\s<]*citations[^"'\\s<]*[?&]user=${escapedId}(?:&|$|#|"|')`
+  );
+  const directUserParamRe = new RegExp(`[?&]user=${escapedId}(?:&|$|#)`);
+  const blocks = html.split(/<div[^>]*class="[^"]*algo(?:-sr)?[^"]*"/i).slice(1);
+  for (const rawBlock of blocks) {
+    const seg = rawBlock.slice(0, 5e3);
+    const hrefMatches = [...seg.matchAll(/href="([^"]+)"/gi)].map(
+      (m) => m[1]
+    );
+    let pointsToExactUser = false;
+    for (const href of hrefMatches) {
+      let decoded = decodeHtmlEntitiesBasic(href);
+      try {
+        decoded = decodeURIComponent(decoded);
+        decoded = decodeURIComponent(decoded);
+      } catch {
+      }
+      if (exactUserUrlRe.test(decoded) || decoded.includes("scholar.google.") && directUserParamRe.test(decoded)) {
+        pointsToExactUser = true;
+        break;
+      }
+    }
+    if (!pointsToExactUser) continue;
+    const titleMatch = seg.match(
+      /<h3[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i
+    );
+    const titleName = titleMatch?.[1] ? extractNameFromScholarTitle(titleMatch[1]) : "";
+    const snippetMatch = seg.match(/<div[^>]*class="[^"]*compText[^"]*"[^>]*>([\s\S]*?)<\/div>/i) || seg.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const snippetText = snippetMatch?.[1] ? cleanTextFragment(snippetMatch[1]) : "";
+    let resolvedName = titleName;
+    let affiliationHint = "";
+    if (snippetText) {
+      const beforeCitedBy = snippetText.split(/\bCited\s+by\b/i)[0] || "";
+      const cleanParts = beforeCitedBy.split(/\s+[-–]\s+/).map((p) => p.replace(/^Verified email at\s+\S+/i, "").trim()).filter((p) => p && !/^google\s+scholar$/i.test(p));
+      if (!resolvedName && cleanParts.length >= 1) {
+        const candidateName = extractNameFromScholarTitle(cleanParts[0]);
+        if (candidateName && candidateName.split(/\s+/).length <= 6) {
+          resolvedName = candidateName;
+        }
+      }
+      if (cleanParts.length >= 2) {
+        affiliationHint = cleanParts.slice(resolvedName && cleanParts[0].includes(resolvedName) ? 1 : 0).join(", ").slice(0, 140);
+      } else if (resolvedName && cleanParts.length === 1 && cleanParts[0] !== resolvedName) {
+        affiliationHint = cleanParts[0].slice(0, 140);
+      }
+    }
+    if (resolvedName) {
+      return {
+        name: resolvedName,
+        ...affiliationHint ? { affiliationHint } : {},
+        source: "yahoo-scholar-index"
+      };
+    }
+  }
+  return null;
+}
+function lookupScholarIdentityInStores(params) {
+  const targetId = String(params.scholarId || "").trim();
+  if (!targetId) return null;
+  for (const reg of params.registeredUsers || []) {
+    if (String(reg?.scholarUserId || "").trim() === targetId && reg?.name) {
+      return {
+        name: reg.name.trim(),
+        ...reg.affiliation ? { affiliationHint: reg.affiliation } : {},
+        source: "registered-user"
+      };
+    }
+  }
+  for (const digest of Object.values(params.digests || {})) {
+    if (String(digest?.scholarUserId || "").trim() === targetId && digest?.name) {
+      return {
+        name: String(digest.name).trim(),
+        ...digest.affiliation ? { affiliationHint: String(digest.affiliation) } : {},
+        source: "works-digest"
+      };
+    }
+    for (const ca of digest?.coAuthors || []) {
+      if (String(ca?.scholarUserId || "").trim() === targetId && ca?.name) {
+        return {
+          name: String(ca.name).trim(),
+          ...ca.universityName ? { affiliationHint: String(ca.universityName) } : {},
+          source: "digest-coauthor"
+        };
+      }
+    }
+  }
+  for (const item of params.colleagueList || []) {
+    const id = String(item?.u || item?.userId || "").trim();
+    const nm = String(item?.n || item?.name || "").trim();
+    if (id === targetId && nm) {
+      return {
+        name: nm,
+        ...item?.university ? { affiliationHint: String(item.university) } : {},
+        source: "colleague-list"
+      };
+    }
+  }
+  for (const [rawKey, entry] of Object.entries(params.coAuthorMap || {})) {
+    if (String(entry?.u || "").trim() === targetId && rawKey.trim()) {
+      return {
+        name: rawKey.trim(),
+        source: "coauthor-map"
+      };
+    }
+  }
+  for (const entry of Object.values(params.colleagueDirectory || {})) {
+    if (String(entry?.userId || "").trim() === targetId && entry?.name) {
+      return {
+        name: String(entry.name).trim(),
+        ...entry.university ? { affiliationHint: String(entry.university) } : {},
+        source: "colleague-directory"
+      };
+    }
+  }
+  for (const snapVal of Object.values(params.verifiedSnapshot || {})) {
+    const prof = snapVal?.profile || (snapVal?.publications ? snapVal : void 0);
+    if (!prof) continue;
+    if (String(prof.scholarUserId || "").trim() === targetId && prof.name) {
+      return {
+        name: String(prof.name).trim(),
+        ...prof.homeUniversity || prof.affiliation ? { affiliationHint: String(prof.homeUniversity || prof.affiliation) } : {},
+        source: "snapshot-profile"
+      };
+    }
+    for (const pub of prof.publications || []) {
+      for (const ca of pub?.coAuthors || []) {
+        if (String(ca?.scholarUserId || "").trim() === targetId && ca?.name) {
+          return {
+            name: String(ca.name).trim(),
+            ...ca.universityName ? { affiliationHint: String(ca.universityName) } : {},
+            source: "snapshot-coauthor"
+          };
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // src/data/verifiedScholarCache.json
 var verifiedScholarCache_default = {
   be8uiCkAAAAJ: {
@@ -96926,29 +97091,149 @@ async function resolveGoogleScholarIdByName(researcherName, affiliationHint) {
   }
   return null;
 }
+async function resolveScholarIdentityViaYahoo(scholarId) {
+  const cleanId = String(scholarId || "").trim();
+  if (!isValidScholarId(cleanId)) return null;
+  const queries = [
+    `site:scholar.google.com "user=${cleanId}"`,
+    `site:scholar.google.com "${cleanId}"`
+  ];
+  for (const q of queries) {
+    try {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 3200);
+      const res = await fetch(
+        `https://search.yahoo.com/search?p=${encodeURIComponent(q)}`,
+        {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9"
+          },
+          signal: controller.signal
+        }
+      );
+      clearTimeout(t);
+      if (!res.ok) continue;
+      const html = await res.text();
+      const extracted = extractScholarIdentityFromYahooHtml(html, cleanId);
+      if (extracted?.name) return extracted;
+    } catch {
+    }
+  }
+  return null;
+}
+async function resolveScholarIdentityViaOrcid(scholarId) {
+  const cleanId = String(scholarId || "").trim();
+  if (!isValidScholarId(cleanId)) return null;
+  try {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 2600);
+    const res = await fetch(
+      `https://pub.orcid.org/v3.0/expanded-search/?q=${encodeURIComponent(
+        `"${cleanId}"`
+      )}&rows=3`,
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "ScholarLens/1.0"
+        },
+        signal: controller.signal
+      }
+    );
+    clearTimeout(t);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const rows = Array.isArray(data?.["expanded-result"]) ? data["expanded-result"] : [];
+    for (const row of rows) {
+      const given = String(row?.["given-names"] || "").trim();
+      const family = String(row?.["family-names"] || "").trim();
+      const credit = String(row?.["credit-name"] || "").trim();
+      const name = credit || [given, family].filter(Boolean).join(" ").trim();
+      if (!name) continue;
+      const inst = Array.isArray(row?.["institution-name"]) ? String(row["institution-name"][0] || "").trim() : "";
+      return {
+        name,
+        ...inst ? { affiliationHint: inst } : {},
+        source: "orcid-search"
+      };
+    }
+  } catch {
+  }
+  return null;
+}
+async function resolveScholarIdentityByUserIdFallback(scholarId) {
+  const cleanId = String(scholarId || "").trim();
+  if (!isValidScholarId(cleanId)) return null;
+  let registeredUsers = [];
+  let digests = {};
+  try {
+    const store = getSocialStore();
+    const [regs, digMap] = await Promise.all([
+      store.listRegisteredResearchers().catch(() => []),
+      store.listResearcherWorksDigests().catch(() => ({}))
+    ]);
+    registeredUsers = regs;
+    digests = digMap;
+  } catch {
+  }
+  const fromStores = lookupScholarIdentityInStores({
+    scholarId: cleanId,
+    colleagueList: scholarColleagueList,
+    coAuthorMap: rawCoAuthorMap,
+    verifiedSnapshot: verifiedScholarCache_default,
+    digests,
+    registeredUsers
+  });
+  if (fromStores?.name) {
+    return fromStores;
+  }
+  const [wikidataRes, yahooRes, orcidRes] = await Promise.allSettled([
+    resolveScholarIdViaWikidata(cleanId),
+    resolveScholarIdentityViaYahoo(cleanId),
+    resolveScholarIdentityViaOrcid(cleanId)
+  ]);
+  if (wikidataRes.status === "fulfilled" && wikidataRes.value) {
+    return {
+      name: wikidataRes.value,
+      source: "wikidata"
+    };
+  }
+  if (yahooRes.status === "fulfilled" && yahooRes.value?.name) {
+    return yahooRes.value;
+  }
+  if (orcidRes.status === "fulfilled" && orcidRes.value?.name) {
+    return orcidRes.value;
+  }
+  return null;
+}
 async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
-  let effectiveUserId = userIdInput;
-  if (queryNameInput && !isValidScholarId(userIdInput)) {
+  const cleanQueryNameInput = String(queryNameInput || "").trim();
+  const effectiveQueryName = cleanQueryNameInput && cleanQueryNameInput !== String(userIdInput || "").trim() && !isValidScholarId(cleanQueryNameInput) ? cleanQueryNameInput : "";
+  let effectiveUserId = String(userIdInput || "").trim();
+  if (effectiveQueryName && !isValidScholarId(effectiveUserId)) {
     const resolvedScholarId = await resolveGoogleScholarIdByName(
-      queryNameInput
+      effectiveQueryName
     );
     if (resolvedScholarId) {
       effectiveUserId = resolvedScholarId;
     }
   }
   let scraped = effectiveUserId ? await scrapeGoogleScholarFullProfile(effectiveUserId) : null;
-  if (!scraped && !queryNameInput && userIdInput) {
-    const byNameId = await resolveGoogleScholarIdByName(userIdInput);
+  if (!scraped && !effectiveQueryName && effectiveUserId && !isValidScholarId(effectiveUserId)) {
+    const byNameId = await resolveGoogleScholarIdByName(effectiveUserId);
     if (byNameId && byNameId !== effectiveUserId) {
       effectiveUserId = byNameId;
       scraped = await scrapeGoogleScholarFullProfile(effectiveUserId);
     }
   }
-  let resolvedWikidataName = null;
-  if (!scraped && !queryNameInput && effectiveUserId) {
-    resolvedWikidataName = await resolveScholarIdViaWikidata(effectiveUserId);
+  let fallbackIdentity = null;
+  if (!scraped && !effectiveQueryName && effectiveUserId) {
+    fallbackIdentity = await resolveScholarIdentityByUserIdFallback(
+      effectiveUserId
+    );
   }
-  const targetName = scraped?.name || queryNameInput || resolvedWikidataName || userIdInput;
+  const resolvedCandidateName = scraped?.name || effectiveQueryName || fallbackIdentity?.name || "";
+  const targetName = resolvedCandidateName || (!isValidScholarId(effectiveUserId) ? effectiveUserId : "");
   if (!targetName) return null;
   const domainResolvedHome = await resolveInstitutionByVerifiedDomain(
     scraped?.verifiedDomain
@@ -96962,7 +97247,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
   let weakFallbackScore = -1;
   const cleanSearchName = stripAcademicHonorifics(targetName) || targetName;
   const affilTokens = extractAffiliationKeywords(
-    `${scraped?.affiliation || ""} ${domainResolvedHome?.universityName || ""}`
+    `${scraped?.affiliation || ""} ${fallbackIdentity?.affiliationHint || ""} ${domainResolvedHome?.universityName || ""}`
   );
   try {
     const authorData = await fetchOpenAlexJson(

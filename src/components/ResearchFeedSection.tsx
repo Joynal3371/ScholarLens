@@ -931,9 +931,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                 type="button"
                 onClick={() =>
                   onOpenScholarProfile(
-                    parsedFeedScholarQuery.queryName ||
-                      parsedFeedScholarQuery.userId ||
-                      searchQuery.trim(),
+                    parsedFeedScholarQuery.queryName || '',
                     parsedFeedScholarQuery.userId
                   )
                 }
