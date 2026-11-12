@@ -1325,9 +1325,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Expanded Multi-Page Workspace */}
+      {/* Main Centered Multi-Page Workspace (80% width on desktop: 10% left & 10% right margins) */}
       <div
-        className={`flex-1 max-w-[1760px] w-full mx-auto px-3 sm:px-5 ${
+        className={`flex-1 w-[94%] sm:w-[90%] md:w-[80%] mx-auto ${
           activePage === 'map' || activePage === 'directories'
             ? 'py-3 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden'
             : 'py-4 sm:py-5'
