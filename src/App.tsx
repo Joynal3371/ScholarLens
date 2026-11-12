@@ -1091,22 +1091,34 @@ export default function App() {
                 data-testid="header-global-search-input"
                 aria-label="Search researcher, paper, journal, or Scholar ID / URL"
                 placeholder="Search researcher, paper, journal, or Scholar ID / URL..."
-                className="w-full pl-9 pr-8 py-2 text-xs bg-slate-100/90 hover:bg-slate-100 border border-slate-200 rounded-full focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition-all text-slate-800 placeholder:text-slate-400"
+                className={`w-full pl-9 ${
+                  isAnalyzing ? 'pr-28' : 'pr-8'
+                } py-2 text-xs bg-slate-100/90 hover:bg-slate-100 border border-slate-200 rounded-full focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition-all text-slate-800 placeholder:text-slate-400`}
               />
-              {globalSearchQuery && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGlobalSearchQuery('');
-                    setHeaderMatchedResearchers([]);
-                    setHeaderMatchedScholarProfiles([]);
-                  }}
-                  aria-label="Clear search"
-                  data-testid="header-global-search-clear"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+              {isAnalyzing ? (
+                <div
+                  data-testid="header-search-loading-badge"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200/80 text-[11px] font-semibold text-blue-700 pointer-events-none select-none"
                 >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+                  <span>Loading</span>
+                  <SearchLoadingDots size="xs" color="bg-blue-600" />
+                </div>
+              ) : (
+                globalSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGlobalSearchQuery('');
+                      setHeaderMatchedResearchers([]);
+                      setHeaderMatchedScholarProfiles([]);
+                    }}
+                    aria-label="Clear search"
+                    data-testid="header-global-search-clear"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )
               )}
             </div>
 

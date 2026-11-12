@@ -139,15 +139,51 @@ export const ScholarProfileLoadingVisualizer: React.FC<
         </div>
 
         {/* Header Row */}
+        <style>{`
+          @keyframes scholarDotWave {
+            0%, 100% { transform: translateY(0px); opacity: 0.45; }
+            50% { transform: translateY(-6px); opacity: 1; }
+          }
+          .scholar-loading-dot {
+            display: inline-block;
+            animation: scholarDotWave 0.78s ease-in-out infinite;
+          }
+        `}</style>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/70 flex items-center justify-center shrink-0">
               <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
             </div>
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate">
-                  Analyzing Researcher Profile
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h2
+                  data-testid="scholar-loading-title"
+                  className="text-base sm:text-lg font-extrabold text-slate-900 inline-flex items-baseline"
+                >
+                  <span>Loading</span>
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex items-center gap-0.5 ml-1 text-blue-600 font-extrabold"
+                  >
+                    <span
+                      className="scholar-loading-dot"
+                      style={{ animationDelay: '-0.3s' }}
+                    >
+                      .
+                    </span>
+                    <span
+                      className="scholar-loading-dot"
+                      style={{ animationDelay: '-0.15s' }}
+                    >
+                      .
+                    </span>
+                    <span
+                      className="scholar-loading-dot"
+                      style={{ animationDelay: '0s' }}
+                    >
+                      .
+                    </span>
+                  </span>
                 </h2>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/70 max-w-full truncate">
                   {displayTarget}
