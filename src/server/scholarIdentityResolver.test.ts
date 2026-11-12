@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  extractCandidateScholarIdsFromSearchHtml,
+  extractScholarIdentityFromDdgHtml,
   extractScholarIdentityFromYahooHtml,
   lookupScholarIdentityInStores,
 } from './scholarIdentityResolver';
@@ -62,4 +64,48 @@ test('lookupScholarIdentityInStores finds identity from digests, co-authors, and
     name: 'Kim Branner',
     source: 'colleague-list',
   });
+});
+
+test('extractScholarIdentityFromDdgHtml resolves identity from DDG encoded uddg links and BiDi marks', () => {
+  const html = `
+    <div class="result results_links results_links_deep web-result">
+      <div class="links_main links_deep result__body">
+        <h2 class="result__title">
+          <a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fscholar.google.com%2Fcitations%3Fuser%3DmG4imMEAAAAJ%26hl%3Den&amp;rut=123">\u202AAndrew Ng\u202C - \u202AGoogle Scholar\u202C</a>
+        </h2>
+        <a class="result__snippet" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fscholar.google.com%2Fcitations%3Fuser%3DmG4imMEAAAAJ%26hl%3Den">Stanford University - Cited by 312,000</a>
+      </div>
+    </div>
+  `;
+
+  const resolved = extractScholarIdentityFromDdgHtml(html, 'mG4imMEAAAAJ');
+  assert.ok(resolved);
+  assert.equal(resolved.name, 'Andrew Ng');
+  assert.equal(resolved.affiliationHint, 'Stanford University');
+  assert.equal(resolved.source, 'ddg-scholar-index');
+});
+
+test('extractCandidateScholarIdsFromSearchHtml ranks matching Scholar IDs with affiliation hits first', () => {
+  const html = `
+    <div class="result results_links">
+      <h2 class="result__title">
+        <a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fscholar.google.com%2Fcitations%3Fuser%3DAAAA1111BBBB%26hl%3Den">Aini Hussain - Google Scholar</a>
+      </h2>
+      <a class="result__snippet">Unrelated Company</a>
+    </div>
+    <div class="result results_links">
+      <h2 class="result__title">
+        <a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fscholar.google.com%2Fcitations%3Fuser%3D_4sL4XUAAAAJ%26hl%3Den">Aini Hussain - Google Scholar</a>
+      </h2>
+      <a class="result__snippet">National University of Malaysia (UKM) - Cited by 9,100</a>
+    </div>
+  `;
+
+  const ids = extractCandidateScholarIdsFromSearchHtml(
+    html,
+    'Aini Hussain',
+    'National University of Malaysia',
+    (cand, target) => cand.toLowerCase() === target.toLowerCase()
+  );
+  assert.deepEqual(ids, ['_4sL4XUAAAAJ', 'AAAA1111BBBB']);
 });

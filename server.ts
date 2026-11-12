@@ -55,10 +55,20 @@ import {
   scoreOpenAlexAuthorCandidate,
 } from './src/server/openAlexDisambiguation';
 import {
+  extractCandidateScholarIdsFromSearchHtml,
+  extractGeneralUrlsFromDdgHtml,
+  extractScholarIdentityFromDdgHtml,
   extractScholarIdentityFromYahooHtml,
   lookupScholarIdentityInStores,
   ResolvedScholarIdentity,
 } from './src/server/scholarIdentityResolver';
+import {
+  ContinentName,
+  ISO_COUNTRY_INFO,
+  extractInstitutionFromRawAffiliations,
+  getCountryGeoInfo,
+  inferCountryCodeFromAffiliationString,
+} from './src/server/affiliationParser';
 import verifiedScholarSnapshot from './src/data/verifiedScholarCache.json';
 import verifiedColleagueDirectory from './src/data/verifiedColleagueDirectory.json';
 import verifiedAvatarStore from './src/data/verifiedAvatarStore.json';
@@ -78,67 +88,6 @@ import {
 } from './src/utils/scholarAnalytics';
 
 dotenv.config();
-
-type ContinentName =
-  | 'North America'
-  | 'Europe'
-  | 'Asia'
-  | 'Oceania'
-  | 'South America'
-  | 'Africa';
-
-// ISO-3166 Country Code to Continent & Country Name (Standard ISO Reference)
-const ISO_COUNTRY_INFO: Record<
-  string,
-  { country: string; continent: ContinentName; lat: number; lng: number }
-> = {
-  BD: { country: 'Bangladesh', continent: 'Asia', lat: 23.8103, lng: 90.4125 },
-  US: { country: 'United States', continent: 'North America', lat: 38.8951, lng: -77.0364 },
-  CA: { country: 'Canada', continent: 'North America', lat: 45.4215, lng: -75.6972 },
-  GB: { country: 'United Kingdom', continent: 'Europe', lat: 51.5074, lng: -0.1278 },
-  DK: { country: 'Denmark', continent: 'Europe', lat: 55.6761, lng: 12.5683 },
-  FR: { country: 'France', continent: 'Europe', lat: 48.8566, lng: 2.3522 },
-  DE: { country: 'Germany', continent: 'Europe', lat: 52.52, lng: 13.405 },
-  ES: { country: 'Spain', continent: 'Europe', lat: 40.4168, lng: -3.7038 },
-  PT: { country: 'Portugal', continent: 'Europe', lat: 38.7223, lng: -9.1393 },
-  IT: { country: 'Italy', continent: 'Europe', lat: 41.9028, lng: 12.4964 },
-  NL: { country: 'Netherlands', continent: 'Europe', lat: 52.3676, lng: 4.9041 },
-  CH: { country: 'Switzerland', continent: 'Europe', lat: 47.3769, lng: 8.5417 },
-  SE: { country: 'Sweden', continent: 'Europe', lat: 59.3293, lng: 18.0686 },
-  NO: { country: 'Norway', continent: 'Europe', lat: 59.9139, lng: 10.7522 },
-  FI: { country: 'Finland', continent: 'Europe', lat: 60.1699, lng: 24.9384 },
-  BE: { country: 'Belgium', continent: 'Europe', lat: 50.8503, lng: 4.3517 },
-  AT: { country: 'Austria', continent: 'Europe', lat: 48.2082, lng: 16.3738 },
-  IE: { country: 'Ireland', continent: 'Europe', lat: 53.3498, lng: -6.2603 },
-  PL: { country: 'Poland', continent: 'Europe', lat: 52.2297, lng: 21.0122 },
-  CZ: { country: 'Czechia', continent: 'Europe', lat: 50.0755, lng: 14.4378 },
-  GR: { country: 'Greece', continent: 'Europe', lat: 37.9838, lng: 23.7275 },
-  TR: { country: 'Turkey', continent: 'Asia', lat: 39.9334, lng: 32.8597 },
-  MY: { country: 'Malaysia', continent: 'Asia', lat: 3.139, lng: 101.6869 },
-  SG: { country: 'Singapore', continent: 'Asia', lat: 1.3521, lng: 103.8198 },
-  CN: { country: 'China', continent: 'Asia', lat: 39.9042, lng: 116.4074 },
-  HK: { country: 'China (Hong Kong)', continent: 'Asia', lat: 22.3193, lng: 114.1694 },
-  JP: { country: 'Japan', continent: 'Asia', lat: 35.6762, lng: 139.6503 },
-  KR: { country: 'South Korea', continent: 'Asia', lat: 37.5665, lng: 126.978 },
-  IN: { country: 'India', continent: 'Asia', lat: 28.6139, lng: 77.209 },
-  PK: { country: 'Pakistan', continent: 'Asia', lat: 33.6844, lng: 73.0479 },
-  SA: { country: 'Saudi Arabia', continent: 'Asia', lat: 24.7136, lng: 46.6753 },
-  AE: { country: 'United Arab Emirates', continent: 'Asia', lat: 24.4539, lng: 54.3773 },
-  QA: { country: 'Qatar', continent: 'Asia', lat: 25.2854, lng: 51.531 },
-  TH: { country: 'Thailand', continent: 'Asia', lat: 13.7563, lng: 100.5018 },
-  VN: { country: 'Vietnam', continent: 'Asia', lat: 21.0278, lng: 105.8342 },
-  ID: { country: 'Indonesia', continent: 'Asia', lat: -6.2088, lng: 106.8456 },
-  AU: { country: 'Australia', continent: 'Oceania', lat: -33.8688, lng: 151.2093 },
-  NZ: { country: 'New Zealand', continent: 'Oceania', lat: -36.8485, lng: 174.7633 },
-  EG: { country: 'Egypt', continent: 'Africa', lat: 30.0444, lng: 31.2357 },
-  ZA: { country: 'South Africa', continent: 'Africa', lat: -33.9249, lng: 18.4241 },
-  NG: { country: 'Nigeria', continent: 'Africa', lat: 9.0765, lng: 7.3986 },
-  BR: { country: 'Brazil', continent: 'South America', lat: -23.5505, lng: -46.6333 },
-  MX: { country: 'Mexico', continent: 'North America', lat: 19.4326, lng: -99.1332 },
-  AR: { country: 'Argentina', continent: 'South America', lat: -34.6037, lng: -58.3816 },
-  CL: { country: 'Chile', continent: 'South America', lat: -33.4489, lng: -70.6693 },
-  CO: { country: 'Colombia', continent: 'South America', lat: 4.711, lng: -74.0721 },
-};
 
 function slugifyInstitution(name: string): string {
   return (
@@ -578,12 +527,7 @@ async function resolveInstitutionFromOfficialSources(
       rawCountryCode ||
       'US'
     ).toUpperCase();
-    const countryInfo = ISO_COUNTRY_INFO[cc] || {
-      country: rec.geo?.country || cc,
-      continent: 'Asia' as ContinentName,
-      lat: 23.8103,
-      lng: 90.4125,
-    };
+    const countryInfo = getCountryGeoInfo(cc, rec.geo?.country);
 
     let lat =
       typeof rec.geo?.latitude === 'number'
@@ -659,7 +603,7 @@ async function resolveInstitutionFromOfficialSources(
           rawCountryCode ||
           'US'
       ).toUpperCase();
-      const countryInfo = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.US;
+      const countryInfo = getCountryGeoInfo(cc, topInst.geo?.country);
       let lat =
         typeof topInst.geo?.latitude === 'number'
           ? topInst.geo.latitude
@@ -764,7 +708,7 @@ async function resolveInstitutionFromOfficialSources(
         const cc = String(
           loc.country_code || rawCountryCode || 'US'
         ).toUpperCase();
-        const countryInfo = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.US;
+        const countryInfo = getCountryGeoInfo(cc, topInst.geo?.country);
         const rorDisplay =
           item.names?.find((n: any) => n.types?.includes('ror_display'))
             ?.value || cleanName;
@@ -816,7 +760,7 @@ async function resolveInstitutionFromOfficialSources(
     else if (cLower.includes('uk') || cLower.includes('united kingdom') || cLower.includes('london') || cLower.includes('oxford') || cLower.includes('cambridge')) resolvedCC = 'GB';
     else resolvedCC = 'US';
   }
-  const base = ISO_COUNTRY_INFO[resolvedCC] || ISO_COUNTRY_INFO.US;
+  const base = getCountryGeoInfo(resolvedCC);
   const fallbackResolved: Omit<
     CoAuthorAffiliation,
     'name' | 'isHomeInstitution'
@@ -943,7 +887,7 @@ async function resolveInstitutionByVerifiedDomain(
         const rorCC = String(
           loc?.country_code || loc?.country_subdivision_code || 'US'
         ).toUpperCase();
-        const base = ISO_COUNTRY_INFO[rorCC] || ISO_COUNTRY_INFO.US;
+        const base = getCountryGeoInfo(rorCC, loc?.country_name);
         const rorLat = Number(loc?.lat);
         const rorLng = Number(loc?.lng);
         if (rorName) {
@@ -2074,6 +2018,120 @@ function isValidScholarId(id?: string): boolean {
   return /^[a-zA-Z0-9_-]{8,14}$/.test(trimmed) && !trimmed.includes(' ');
 }
 
+const ddgHtmlCache = new Map<string, { html: string; timestamp: number }>();
+let ddgQueueChain: Promise<void> = Promise.resolve();
+let ddgLastRequestAt = 0;
+
+async function fetchDuckDuckGoHtmlWithQueue(
+  query: string,
+  timeoutMs: number = 4200
+): Promise<string | null> {
+  const cleanQuery = String(query || '').trim();
+  if (!cleanQuery) return null;
+
+  const cached = ddgHtmlCache.get(cleanQuery);
+  if (cached && Date.now() - cached.timestamp < 1000 * 60 * 15) {
+    return cached.html || null;
+  }
+
+  let releaseSlot!: () => void;
+  const prevSlot = ddgQueueChain;
+  ddgQueueChain = new Promise<void>((resolve) => {
+    releaseSlot = resolve;
+  });
+
+  await prevSlot;
+  try {
+    const gapMs = Date.now() - ddgLastRequestAt;
+    if (gapMs < 280) {
+      await new Promise((r) => setTimeout(r, 280 - gapMs));
+    }
+
+    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(
+      cleanQuery
+    )}`;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      ddgLastRequestAt = Date.now();
+      try {
+        const res = await fetch(url, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+            Accept: 'text/html,application/xhtml+xml',
+          },
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+        if (res.status === 202 || res.status === 429) {
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 650));
+            continue;
+          }
+          return null;
+        }
+        if (!res.ok) return null;
+        const html = await res.text();
+        if (html && html.includes('result__a')) {
+          ddgHtmlCache.set(cleanQuery, { html, timestamp: Date.now() });
+          return html;
+        }
+        if (attempt === 0 && (!html || html.length < 2500)) {
+          await new Promise((r) => setTimeout(r, 500));
+          continue;
+        }
+        if (html && html.length > 2500) {
+          ddgHtmlCache.set(cleanQuery, { html, timestamp: Date.now() });
+          return html;
+        }
+        return null;
+      } catch {
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 350));
+          continue;
+        }
+        return null;
+      }
+    }
+    return null;
+  } finally {
+    releaseSlot();
+  }
+}
+
+async function findCandidateScholarIdsViaDdg(
+  researcherName: string,
+  affiliationHint?: string
+): Promise<string[]> {
+  const clean = stripAcademicHonorifics(researcherName).trim();
+  if (!clean || clean.length < 3) return [];
+  const queries = buildYahooScholarSearchQueries(clean, affiliationHint).slice(
+    0,
+    2
+  );
+  const found: string[] = [];
+  const seen = new Set<string>();
+
+  for (const q of queries) {
+    const html = await fetchDuckDuckGoHtmlWithQueue(q, 4200);
+    if (!html) continue;
+    const ids = extractCandidateScholarIdsFromSearchHtml(
+      html,
+      clean,
+      affiliationHint,
+      isStrictSameResearcherForAvatar
+    );
+    for (const id of ids) {
+      if (!seen.has(id) && isValidScholarId(id)) {
+        seen.add(id);
+        found.push(id);
+      }
+    }
+    if (found.length > 0) break;
+  }
+
+  return found;
+}
+
 async function resolveGoogleScholarIdByName(
   researcherName: string,
   affiliationHint?: string
@@ -2129,7 +2187,16 @@ async function resolveGoogleScholarIdByName(
     // Ignore Wikidata lookup timeout
   }
 
-  // Fallback for researchers not in Wikidata P1960: discover their Google Scholar citation user ID via web index
+  // 3. Discover verified Google Scholar user ID via serialized DuckDuckGo HTML search
+  const ddgCandidates = await findCandidateScholarIdsViaDdg(
+    clean,
+    affiliationHint
+  );
+  if (ddgCandidates.length > 0) {
+    return ddgCandidates[0];
+  }
+
+  // 4. Legacy Yahoo fallback
   const yQueries = buildYahooScholarSearchQueries(clean, affiliationHint);
   for (const yQuery of yQueries) {
     try {
@@ -2141,7 +2208,7 @@ async function resolveGoogleScholarIdByName(
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         },
-        signal: AbortSignal.timeout(2600),
+        signal: AbortSignal.timeout(2200),
       });
       if (yRes.ok) {
         const html = await yRes.text();
@@ -2158,6 +2225,26 @@ async function resolveGoogleScholarIdByName(
     }
   }
 
+  return null;
+}
+
+async function resolveScholarIdentityViaDdg(
+  scholarId: string
+): Promise<ResolvedScholarIdentity | null> {
+  const cleanId = String(scholarId || '').trim();
+  if (!isValidScholarId(cleanId)) return null;
+
+  const queries = [
+    `site:scholar.google.com "user=${cleanId}"`,
+    `"user=${cleanId}" "Google Scholar"`,
+  ];
+
+  for (const q of queries) {
+    const html = await fetchDuckDuckGoHtmlWithQueue(q, 4200);
+    if (!html) continue;
+    const extracted = extractScholarIdentityFromDdgHtml(html, cleanId);
+    if (extracted?.name) return extracted;
+  }
   return null;
 }
 
@@ -2291,10 +2378,11 @@ async function resolveScholarIdentityByUserIdFallback(
     return fromDynamicStores;
   }
 
-  const [wikidataRes, yahooRes, orcidRes] = await Promise.allSettled([
+  const [wikidataRes, ddgRes, orcidRes, yahooRes] = await Promise.allSettled([
     resolveScholarIdViaWikidata(cleanId),
-    resolveScholarIdentityViaYahoo(cleanId),
+    resolveScholarIdentityViaDdg(cleanId),
     resolveScholarIdentityViaOrcid(cleanId),
+    resolveScholarIdentityViaYahoo(cleanId),
   ]);
 
   if (wikidataRes.status === 'fulfilled' && wikidataRes.value) {
@@ -2303,11 +2391,14 @@ async function resolveScholarIdentityByUserIdFallback(
       source: 'wikidata',
     };
   }
-  if (yahooRes.status === 'fulfilled' && yahooRes.value?.name) {
-    return yahooRes.value;
+  if (ddgRes.status === 'fulfilled' && ddgRes.value?.name) {
+    return ddgRes.value;
   }
   if (orcidRes.status === 'fulfilled' && orcidRes.value?.name) {
     return orcidRes.value;
+  }
+  if (yahooRes.status === 'fulfilled' && yahooRes.value?.name) {
+    return yahooRes.value;
   }
 
   return null;
@@ -2383,7 +2474,10 @@ export async function buildLiveResearcherProfile(
     scraped?.name || effectiveQueryName || fallbackIdentity?.name || '';
   const targetName =
     resolvedCandidateName ||
-    (!isValidScholarId(effectiveUserId) ? effectiveUserId : '');
+    (!isValidScholarId(effectiveUserId) ||
+    /^[a-z]{6,14}$/.test(effectiveUserId)
+      ? effectiveUserId
+      : '');
   if (!targetName) return null;
 
   // Pre-resolve the verified email domain via ROR so its official institution name aids OpenAlex author disambiguation and home institution mapping
@@ -2405,12 +2499,28 @@ export async function buildLiveResearcherProfile(
   );
 
   try {
-    const authorData = await fetchOpenAlexJson(
+    let authorData = await fetchOpenAlexJson(
       `https://api.openalex.org/authors?search=${encodeURIComponent(
         cleanSearchName
       )}&per-page=25&mailto=research@scholarlens.org`,
       5500
     );
+    const suffixStrippedName = cleanSearchName
+      .replace(/,?\s+\b(?:jr\.?|sr\.?|ii|iii|iv|phd|m\.?d\.?)\b\.?$/gi, '')
+      .trim();
+    if (
+      (!Array.isArray(authorData?.results) ||
+        authorData.results.length === 0) &&
+      suffixStrippedName &&
+      suffixStrippedName !== cleanSearchName
+    ) {
+      authorData = await fetchOpenAlexJson(
+        `https://api.openalex.org/authors?search=${encodeURIComponent(
+          suffixStrippedName
+        )}&per-page=25&mailto=research@scholarlens.org`,
+        5500
+      );
+    }
     if (authorData) {
       const results: any[] = Array.isArray(authorData?.results)
         ? authorData.results
@@ -2575,29 +2685,50 @@ export async function buildLiveResearcherProfile(
     }
   }
 
-  // 2. Fetch works from OpenAlex (both top-cited impact works AND recent works by publication year)
+  // 2. Fetch works from OpenAlex (top-cited impact works + up to 4 recent pages by publication year)
   let rawOaWorks: any[] = [];
   if (openAlexAuthorIds.length > 0) {
     try {
       const filterIds = openAlexAuthorIds.slice(0, 8).join('|');
+      const selectFields =
+        'id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count';
+      const baseRecentUrl = `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
+        filterIds
+      )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&select=${selectFields}&mailto=research@scholarlens.org`;
       const fetchUrls = [
         `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
           filterIds
-        )}&sort=cited_by_count:desc&per-page=200&page=1&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
-        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
-          filterIds
-        )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&page=1&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
-        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
-          filterIds
-        )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&page=2&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
+        )}&sort=cited_by_count:desc&per-page=200&page=1&select=${selectFields}&mailto=research@scholarlens.org`,
+        `${baseRecentUrl}&page=1`,
+        `${baseRecentUrl}&page=2`,
       ];
-      const pageResults = await Promise.all(
+      const pageMetaResults = await Promise.all(
         fetchUrls.map(async (url) => {
           const worksData = await fetchOpenAlexJson(url, 6500);
-          return Array.isArray(worksData?.results) ? worksData.results : [];
+          return {
+            results: Array.isArray(worksData?.results) ? worksData.results : [],
+            count: Number(worksData?.meta?.count || 0),
+          };
         })
       );
-      const combinedOa = pageResults.flat();
+      const recent1Count = pageMetaResults[1]?.count || 0;
+      const recent2Len = pageMetaResults[2]?.results.length || 0;
+      let extraPageResults: any[][] = [];
+      if (recent1Count > 400 || recent2Len === 200) {
+        extraPageResults = await Promise.all(
+          [3, 4].map(async (pageNum) => {
+            const worksData = await fetchOpenAlexJson(
+              `${baseRecentUrl}&page=${pageNum}`,
+              6000
+            );
+            return Array.isArray(worksData?.results) ? worksData.results : [];
+          })
+        );
+      }
+      const combinedOa = [
+        ...pageMetaResults.flatMap((p) => p.results),
+        ...extraPageResults.flat(),
+      ];
       const seenOaWorkIdSet = new Set<string>();
       rawOaWorks = [];
       for (const w of combinedOa) {
@@ -2608,6 +2739,84 @@ export async function buildLiveResearcherProfile(
       }
     } catch {
       rawOaWorks = [];
+    }
+  }
+
+  // Crossref author fallback when both Google Scholar scraping and OpenAlex yielded 0 works
+  if ((!scraped || scraped.publications.length === 0) && rawOaWorks.length === 0) {
+    try {
+      const crRes = await fetch(
+        `https://api.crossref.org/works?query.author=${encodeURIComponent(
+          cleanSearchName
+        )}&rows=40&mailto=research@scholarlens.org`,
+        {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(4800),
+        }
+      );
+      if (crRes.ok) {
+        const crData = (await crRes.json()) as any;
+        const items: any[] = Array.isArray(crData?.message?.items)
+          ? crData.message.items
+          : [];
+        for (const item of items) {
+          const title = String(
+            Array.isArray(item.title) ? item.title[0] : item.title || ''
+          ).trim();
+          if (!title) continue;
+          const authors: any[] = Array.isArray(item.author) ? item.author : [];
+          const hasMatchingAuthor = authors.some((au) => {
+            const full = `${au?.given || ''} ${au?.family || ''}`.trim();
+            return full && isSameResearcherName(full, targetName);
+          });
+          if (!hasMatchingAuthor) continue;
+          const venue = String(
+            (Array.isArray(item['container-title'])
+              ? item['container-title'][0]
+              : item['container-title']) || 'Academic Venue'
+          ).trim();
+          const yearParts =
+            item?.published?.['date-parts']?.[0] ||
+            item?.['published-print']?.['date-parts']?.[0] ||
+            item?.['published-online']?.['date-parts']?.[0] ||
+            [];
+          const year = Number(yearParts[0]) || 2020;
+          const doi = item.DOI ? String(item.DOI).trim() : undefined;
+          rawOaWorks.push({
+            id: doi ? `crossref:${doi}` : `crossref:${title.slice(0, 48)}`,
+            title,
+            display_name: title,
+            publication_year: year,
+            type: String(item.type || 'journal-article').replace(/-/g, '_'),
+            doi: doi ? `https://doi.org/${doi}` : undefined,
+            open_access: { is_oa: false },
+            cited_by_count: Number(item['is-referenced-by-count']) || 0,
+            primary_location: {
+              source: { display_name: venue, type: 'journal' },
+              landing_page_url:
+                item.URL || (doi ? `https://doi.org/${doi}` : undefined),
+            },
+            authorships: authors.map((au) => ({
+              author_position:
+                au?.sequence === 'first' ? 'first' : 'middle',
+              author: {
+                display_name: `${au?.given || ''} ${au?.family || ''}`.trim(),
+                orcid: au?.ORCID || undefined,
+              },
+              institutions: [],
+              raw_affiliation_strings: Array.isArray(au?.affiliation)
+                ? au.affiliation
+                    .map((af: any) => String(af?.name || '').trim())
+                    .filter(Boolean)
+                : [],
+            })),
+          });
+        }
+      }
+    } catch {
+      // Ignore Crossref fallback timeout
     }
   }
 
@@ -2701,9 +2910,14 @@ export async function buildLiveResearcherProfile(
     }
   }
 
-  // 3. Batch-fetch official institution GeoNames/ROR records from OpenAlex /institutions AND journal metrics from /sources
+  // 3. Batch-fetch missing co-author profiles (ORCID + last_known_institutions), official institution GeoNames/ROR records, and journal metrics
   const instIdsSet = new Set<string>();
   const sourceIdsSet = new Set<string>();
+  const coAuthorIdsNeedingAffil = new Set<string>();
+  const coAuthorInstsFromAuthorsApi = new Map<string, any[]>();
+  const coAuthorOrcidByOaId = new Map<string, string>();
+  const oaAuthorIdHasWorkInst = new Set<string>();
+
   if (primaryOpenAlexAuthor?.last_known_institutions) {
     for (const inst of primaryOpenAlexAuthor.last_known_institutions) {
       if (inst?.id) {
@@ -2717,12 +2931,87 @@ export async function buildLiveResearcherProfile(
       sourceIdsSet.add(String(srcId).replace('https://openalex.org/', ''));
     }
     for (const a of w.authorships || []) {
-      for (const inst of a.institutions || []) {
+      const aId = String(a.author?.id || '')
+        .replace('https://openalex.org/', '')
+        .trim();
+      const rawOrcid = a.author?.orcid
+        ? String(a.author.orcid)
+            .replace(/^https?:\/\/orcid\.org\//i, '')
+            .trim()
+        : '';
+      if (aId && rawOrcid && !coAuthorOrcidByOaId.has(aId)) {
+        coAuthorOrcidByOaId.set(aId, rawOrcid);
+      }
+      const insts: any[] = Array.isArray(a.institutions) ? a.institutions : [];
+      for (const inst of insts) {
         if (inst?.id) {
           instIdsSet.add(String(inst.id).replace('https://openalex.org/', ''));
         }
       }
+      if (insts.some((inst) => inst?.display_name)) {
+        if (aId) oaAuthorIdHasWorkInst.add(aId);
+      } else if (
+        aId &&
+        /^A\d+$/i.test(aId) &&
+        !openAlexAuthorIds.includes(aId) &&
+        !(Array.isArray(a.raw_affiliation_strings) && a.raw_affiliation_strings.some((s: any) => String(s || '').trim()))
+      ) {
+        coAuthorIdsNeedingAffil.add(aId);
+      }
     }
+  }
+
+  // Batch-fetch OpenAlex /authors for co-authors missing paper-level institutions/raw_affiliation_strings (up to 150 unique IDs = max 3 calls)
+  const missingCoAuthorIds = Array.from(coAuthorIdsNeedingAffil)
+    .filter((id) => !oaAuthorIdHasWorkInst.has(id))
+    .slice(0, 150);
+  if (missingCoAuthorIds.length > 0) {
+    const authorBatches: Promise<void>[] = [];
+    for (let i = 0; i < missingCoAuthorIds.length; i += 50) {
+      const chunk = missingCoAuthorIds.slice(i, i + 50);
+      authorBatches.push(
+        (async () => {
+          try {
+            const authData = await fetchOpenAlexJson(
+              `https://api.openalex.org/authors?filter=openalex:${chunk.join(
+                '|'
+              )}&per-page=50&select=id,display_name,orcid,last_known_institutions&mailto=research@scholarlens.org`,
+              4200
+            );
+            for (const rec of authData?.results || []) {
+              const shortAId = String(rec.id || '')
+                .replace('https://openalex.org/', '')
+                .trim();
+              if (!shortAId) continue;
+              const rawOrcid = rec.orcid
+                ? String(rec.orcid)
+                    .replace(/^https?:\/\/orcid\.org\//i, '')
+                    .trim()
+                : '';
+              if (rawOrcid && !coAuthorOrcidByOaId.has(shortAId)) {
+                coAuthorOrcidByOaId.set(shortAId, rawOrcid);
+              }
+              const lastInsts: any[] = Array.isArray(rec.last_known_institutions)
+                ? rec.last_known_institutions.filter((i: any) => i?.display_name)
+                : [];
+              if (lastInsts.length > 0) {
+                coAuthorInstsFromAuthorsApi.set(shortAId, lastInsts);
+                for (const inst of lastInsts) {
+                  if (inst?.id) {
+                    instIdsSet.add(
+                      String(inst.id).replace('https://openalex.org/', '')
+                    );
+                  }
+                }
+              }
+            }
+          } catch {
+            // Ignore co-author batch lookup timeout
+          }
+        })()
+      );
+    }
+    await Promise.all(authorBatches);
   }
 
   const geoCache = new Map<string, OpenAlexGeoRecord>();
@@ -3107,6 +3396,56 @@ export async function buildLiveResearcherProfile(
     );
   }
 
+  const knownCoAuthorByName = new Map<
+    string,
+    {
+      mapped?: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>;
+      orcid?: string;
+      scholarUserId?: string;
+    }
+  >();
+  const knownAbbrevOwnerMap = new Map<string, string>();
+  const ambiguousKnownAbbrev = new Set<string>();
+
+  function indexKnownCoAuthorProfile(
+    fullName: string,
+    mapped?: Omit<CoAuthorAffiliation, 'name' | 'isHomeInstitution'>,
+    orcid?: string,
+    scholarUserId?: string
+  ) {
+    const clean = fullName.trim();
+    if (!clean) return;
+    const lower = clean.toLowerCase();
+    const prev = knownCoAuthorByName.get(lower);
+    const mergedMapped =
+      mapped && mapped.universityId !== 'unlisted' ? mapped : prev?.mapped;
+    const mergedOrcid = orcid || prev?.orcid;
+    const mergedUserId = scholarUserId || prev?.scholarUserId;
+    if (!mergedMapped && !mergedOrcid && !mergedUserId) return;
+
+    const entry = {
+      ...(mergedMapped ? { mapped: mergedMapped } : {}),
+      ...(mergedOrcid ? { orcid: mergedOrcid } : {}),
+      ...(mergedUserId ? { scholarUserId: mergedUserId } : {}),
+    };
+    knownCoAuthorByName.set(lower, entry);
+
+    const words = lower.replace(/[^a-z\s-]/g, ' ').split(/\s+/).filter(Boolean);
+    if (words.length >= 2) {
+      const firstInit = words[0][0];
+      const last = words[words.length - 1];
+      const abbrev = `${firstInit} ${last}`;
+      const existingOwner = knownAbbrevOwnerMap.get(abbrev);
+      if (existingOwner && existingOwner !== lower) {
+        ambiguousKnownAbbrev.add(abbrev);
+        knownCoAuthorByName.delete(abbrev);
+      } else if (!ambiguousKnownAbbrev.has(abbrev)) {
+        knownAbbrevOwnerMap.set(abbrev, lower);
+        knownCoAuthorByName.set(abbrev, entry);
+      }
+    }
+  }
+
   for (const w of strictScholarOaWorks) {
     const hasBangladeshiAuthor = (w.authorships || []).some((au: any) =>
       (au.institutions || []).some(
@@ -3120,6 +3459,16 @@ export async function buildLiveResearcherProfile(
         ''
       );
       if (!aName || isSameResearcherName(aName, targetName)) continue;
+      const authorOrcid =
+        (a.author?.orcid
+          ? String(a.author.orcid)
+              .replace(/^https?:\/\/orcid\.org\//i, '')
+              .trim()
+          : '') ||
+        (aId ? coAuthorOrcidByOaId.get(aId) : '') ||
+        '';
+      const colMeta = lookupColleagueAvatarMeta(aName);
+
       for (const inst of a.institutions || []) {
         if (!inst?.display_name) continue;
         let dispName = String(inst.display_name);
@@ -3152,6 +3501,51 @@ export async function buildLiveResearcherProfile(
             knownByOaAuthorId.set(aId, mapped);
           }
         }
+        indexKnownCoAuthorProfile(
+          aName,
+          mapped.universityId !== 'unlisted' ? mapped : undefined,
+          authorOrcid || undefined,
+          colMeta?.userId
+        );
+      }
+
+      if (
+        (!Array.isArray(a.institutions) || a.institutions.length === 0) &&
+        aId &&
+        !knownByOaAuthorId.has(aId) &&
+        coAuthorInstsFromAuthorsApi.has(aId)
+      ) {
+        const lastInsts = coAuthorInstsFromAuthorsApi.get(aId)!;
+        for (const inst of lastInsts) {
+          if (!inst?.display_name) continue;
+          const shortId = String(inst.id || '').replace(
+            'https://openalex.org/',
+            ''
+          );
+          const mapped = await resolveInstitutionFromOfficialSources(
+            String(inst.display_name),
+            String(inst.country_code || ''),
+            shortId,
+            geoCache
+          );
+          if (mapped.universityId !== 'unlisted') {
+            knownByOaAuthorId.set(aId, mapped);
+            indexKnownCoAuthorProfile(
+              aName,
+              mapped,
+              authorOrcid || undefined,
+              colMeta?.userId
+            );
+            break;
+          }
+        }
+      } else if (authorOrcid || colMeta?.userId) {
+        indexKnownCoAuthorProfile(
+          aName,
+          undefined,
+          authorOrcid || undefined,
+          colMeta?.userId
+        );
       }
     }
   }
@@ -3267,11 +3661,14 @@ export async function buildLiveResearcherProfile(
       ) {
         continue;
       }
-      const cleanOrcid = a.author?.orcid
-        ? String(a.author.orcid)
-            .replace(/^https?:\/\/orcid\.org\//i, '')
-            .trim()
-        : '';
+      const cleanOrcid =
+        (a.author?.orcid
+          ? String(a.author.orcid)
+              .replace(/^https?:\/\/orcid\.org\//i, '')
+              .trim()
+          : '') ||
+        (aId ? coAuthorOrcidByOaId.get(aId) : '') ||
+        '';
 
       const rawInsts: any[] = Array.isArray(a.institutions)
         ? a.institutions.filter((i: any) => i?.display_name)
@@ -3321,29 +3718,82 @@ export async function buildLiveResearcherProfile(
           });
         }
       } else {
-        // Author has no explicit affiliation on this specific work: use their disambiguated OpenAlex Author ID or sidebar co-author match
+        // Author has no explicit institutions[] on this work:
+        // 1) Parse raw_affiliation_strings / countries[] first
         let mapped: Omit<
           CoAuthorAffiliation,
           'name' | 'isHomeInstitution'
         > | null = null;
-        if (aId && knownByOaAuthorId.has(aId)) {
+
+        const rawAffilInfo = extractInstitutionFromRawAffiliations(
+          a.raw_affiliation_strings,
+          a.countries
+        );
+        if (rawAffilInfo?.institutionName) {
+          const resolvedFromRaw = await resolveInstitutionFromOfficialSources(
+            rawAffilInfo.institutionName,
+            rawAffilInfo.countryCode || '',
+            undefined,
+            geoCache
+          );
+          if (resolvedFromRaw.universityId !== 'unlisted') {
+            mapped = resolvedFromRaw;
+            if (aId && !knownByOaAuthorId.has(aId)) {
+              knownByOaAuthorId.set(aId, resolvedFromRaw);
+            }
+          }
+        }
+        if (!mapped && aId && knownByOaAuthorId.has(aId)) {
           mapped = knownByOaAuthorId.get(aId)!;
-        } else {
+        }
+        if (!mapped) {
           mapped = matchAuthorToSidebar(aName);
+        }
+        const inferredCountryCode = rawAffilInfo?.countryCode
+          ? rawAffilInfo.countryCode.trim().toUpperCase()
+          : '';
+        if (
+          !mapped &&
+          inferredCountryCode &&
+          inferredCountryCode !== 'UN'
+        ) {
+          const geo = getCountryGeoInfo(inferredCountryCode);
+          if (geo) {
+            mapped = {
+              universityId: 'unlisted',
+              universityName: 'Independent / Unlisted',
+              city: geo.country,
+              country: geo.country,
+              countryCode: inferredCountryCode,
+              continent: geo.continent,
+              lat: geo.lat,
+              lng: geo.lng,
+            };
+          }
         }
 
         const dedupKey = `${aName.toLowerCase()}::${
           mapped?.universityId || 'unlisted'
-        }`;
+        }::${mapped?.countryCode || 'UN'}`;
         if (seenAuthorInstKeys.has(dedupKey)) continue;
         seenAuthorInstKeys.add(dedupKey);
 
         const colMeta = lookupColleagueAvatarMeta(aName, mapped?.countryCode);
         if (mapped) {
+          if (mapped.universityId !== 'unlisted') {
+            indexKnownCoAuthorProfile(
+              aName,
+              mapped,
+              cleanOrcid || undefined,
+              colMeta?.userId
+            );
+          }
           coAuthors.push({
             name: aName,
             ...mapped,
-            isHomeInstitution: mapped.universityId === homeMapped.universityId,
+            isHomeInstitution:
+              mapped.universityId !== 'unlisted' &&
+              mapped.universityId === homeMapped.universityId,
             ...(cleanOrcid ? { orcid: cleanOrcid } : {}),
             ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
           });
@@ -3400,21 +3850,32 @@ export async function buildLiveResearcherProfile(
 
     for (const rawAuth of rawAuthorParts) {
       const lower = rawAuth.toLowerCase().trim();
-      const matchedInst = matchAuthorToSidebar(rawAuth);
       if (seenCoAuthorNames.has(lower)) continue;
       seenCoAuthorNames.add(lower);
 
+      const words = lower.replace(/[^a-z\s-]/g, ' ').split(/\s+/).filter(Boolean);
+      const abbrevLookup =
+        words.length >= 2 ? `${words[0][0]} ${words[words.length - 1]}` : '';
+      const knownEntry =
+        knownCoAuthorByName.get(lower) ||
+        (abbrevLookup ? knownCoAuthorByName.get(abbrevLookup) : undefined);
+
+      const matchedInst = matchAuthorToSidebar(rawAuth) || knownEntry?.mapped;
       const colMeta = lookupColleagueAvatarMeta(
         rawAuth,
         matchedInst?.countryCode || homeMapped.countryCode
       );
+      const resolvedUserId = colMeta?.userId || knownEntry?.scholarUserId;
+      const resolvedOrcid = knownEntry?.orcid;
+
       if (matchedInst) {
         coAuthors.push({
           name: rawAuth,
           ...matchedInst,
           isHomeInstitution:
             matchedInst.universityId === homeMapped.universityId,
-          ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
+          ...(resolvedOrcid ? { orcid: resolvedOrcid } : {}),
+          ...(resolvedUserId ? { scholarUserId: resolvedUserId } : {}),
         });
       } else {
         coAuthors.push({
@@ -3428,7 +3889,8 @@ export async function buildLiveResearcherProfile(
           lat: 0,
           lng: 0,
           isHomeInstitution: false,
-          ...(colMeta?.userId ? { scholarUserId: colMeta.userId } : {}),
+          ...(resolvedOrcid ? { orcid: resolvedOrcid } : {}),
+          ...(resolvedUserId ? { scholarUserId: resolvedUserId } : {}),
         });
       }
     }
@@ -3437,9 +3899,82 @@ export async function buildLiveResearcherProfile(
 
   // 6. Build finalPublications strictly from verified peer-reviewed journal & conference papers!
   const finalPublications: Publication[] = [];
+  const normalizeTitleDedup = (t: string): string =>
+    t.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const publishedTitleKeys = new Set<string>();
+  const consumedOaWorks = new Set<any>();
+
+  async function appendOpenAlexWorkAsPublication(w: any, idx: number) {
+    const title = String(
+      w.title || w.display_name || `Publication #${idx + 1}`
+    ).trim();
+    const titleKey = normalizeTitleDedup(title);
+    if (!title || (titleKey && publishedTitleKeys.has(titleKey))) return;
+
+    const oaDetails = await extractOaWorkDetails(w);
+    const citations = Number(w.cited_by_count) || 0;
+
+    if (
+      shouldExcludeNonPaperRecord({
+        title,
+        venue: oaDetails.venue,
+        workType: oaDetails.workType,
+        sourceType: oaDetails.sourceType,
+        citations,
+      })
+    ) {
+      return;
+    }
+
+    let srcMetrics = oaDetails.sourceId
+      ? sourceMetricsCache.get(oaDetails.sourceId)
+      : undefined;
+    if (!srcMetrics && oaDetails.venue !== 'Academic Venue') {
+      srcMetrics = await resolveOfficialJournalMetricsByVenue(
+        oaDetails.venue
+      );
+    }
+
+    const type = classifyPublicationType(
+      oaDetails.sourceType,
+      oaDetails.workType,
+      oaDetails.venue,
+      title
+    );
+    const quartile = classifyQuartileFromOfficialMetrics(
+      type,
+      oaDetails.venue,
+      srcMetrics
+    );
+    const paperUrl =
+      oaDetails.landingPageUrl ||
+      `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
+
+    if (titleKey) publishedTitleKeys.add(titleKey);
+    finalPublications.push({
+      id: String(w.id || `oa-${idx}`).replace('https://openalex.org/', ''),
+      title,
+      year: oaDetails.year || 2020,
+      citations,
+      venue: oaDetails.venue,
+      quartile,
+      type,
+      authorshipRole: oaDetails.authorshipRole,
+      openAccess: oaDetails.openAccess,
+      doi: oaDetails.doi,
+      url: paperUrl,
+      coAuthors: oaDetails.coAuthors,
+      authorAffiliation: oaDetails.authorAffiliation,
+      impactFactor: getJournalImpactFactor(
+        oaDetails.venue,
+        type,
+        srcMetrics?.twoYrMeanCitedness
+      ),
+    });
+  }
 
   if (scraped && scraped.publications.length > 0) {
-    // Pre-warm unique journal venues in parallel (capped to 12 uncached venues) so large profiles (e.g. 300 papers) complete in <2.5s
+    // Pre-warm unique journal venues in parallel (capped to 40 uncached venues)
     const candidateVenues = new Set<string>();
     for (let gIdx = 0; gIdx < scraped.publications.length; gIdx++) {
       if (gsMatchedOaWorkByIndex.has(gIdx)) continue;
@@ -3471,6 +4006,7 @@ export async function buildLiveResearcherProfile(
       const matchedOaWork = gsMatchedOaWorkByIndex.get(gIdx);
 
       if (matchedOaWork) {
+        consumedOaWorks.add(matchedOaWork);
         const oaDetails = await extractOaWorkDetails(matchedOaWork);
         const venue = cleanVenueName(
           oaDetails.venue && oaDetails.venue !== 'Academic Venue'
@@ -3521,6 +4057,8 @@ export async function buildLiveResearcherProfile(
             gsPub.title
           )}`;
 
+        const gsKey = normalizeTitleDedup(gsPub.title);
+        if (gsKey) publishedTitleKeys.add(gsKey);
         finalPublications.push({
           id: `gs-${gIdx}`,
           title: gsPub.title,
@@ -3587,6 +4125,8 @@ export async function buildLiveResearcherProfile(
             gsPub.title
           )}`;
 
+        const gsKey = normalizeTitleDedup(gsPub.title);
+        if (gsKey) publishedTitleKeys.add(gsKey);
         finalPublications.push({
           id: `gs-${gIdx}`,
           title: gsPub.title,
@@ -3612,71 +4152,16 @@ export async function buildLiveResearcherProfile(
         });
       }
     }
-  } else {
+
+    // Append remaining verified OpenAlex works beyond the Google Scholar page cap so co-authors, institutions, and countries are never lost
     for (let idx = 0; idx < strictScholarOaWorks.length; idx++) {
       const w = strictScholarOaWorks[idx];
-      const oaDetails = await extractOaWorkDetails(w);
-      const title = String(
-        w.title || w.display_name || `Publication #${idx + 1}`
-      ).trim();
-      const citations = Number(w.cited_by_count) || 0;
-
-      if (
-        shouldExcludeNonPaperRecord({
-          title,
-          venue: oaDetails.venue,
-          workType: oaDetails.workType,
-          sourceType: oaDetails.sourceType,
-          citations,
-        })
-      ) {
-        continue;
-      }
-
-      let srcMetrics = oaDetails.sourceId
-        ? sourceMetricsCache.get(oaDetails.sourceId)
-        : undefined;
-      if (!srcMetrics && oaDetails.venue !== 'Academic Venue') {
-        srcMetrics = await resolveOfficialJournalMetricsByVenue(
-          oaDetails.venue
-        );
-      }
-
-      const type = classifyPublicationType(
-        oaDetails.sourceType,
-        oaDetails.workType,
-        oaDetails.venue,
-        title
-      );
-      const quartile = classifyQuartileFromOfficialMetrics(
-        type,
-        oaDetails.venue,
-        srcMetrics
-      );
-      const paperUrl =
-        oaDetails.landingPageUrl ||
-        `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
-
-      finalPublications.push({
-        id: String(w.id || `oa-${idx}`).replace('https://openalex.org/', ''),
-        title,
-        year: oaDetails.year || 2020,
-        citations,
-        venue: oaDetails.venue,
-        quartile,
-        type,
-        authorshipRole: oaDetails.authorshipRole,
-        openAccess: oaDetails.openAccess,
-        doi: oaDetails.doi,
-        url: paperUrl,
-        coAuthors: oaDetails.coAuthors,
-        authorAffiliation: oaDetails.authorAffiliation,
-        impactFactor: getJournalImpactFactor(
-          oaDetails.venue,
-          type,
-          srcMetrics?.twoYrMeanCitedness
-        ),
-      });
+      if (consumedOaWorks.has(w)) continue;
+      await appendOpenAlexWorkAsPublication(w, idx);
+    }
+  } else {
+    for (let idx = 0; idx < strictScholarOaWorks.length; idx++) {
+      await appendOpenAlexWorkAsPublication(strictScholarOaWorks[idx], idx);
     }
   }
 
@@ -4338,14 +4823,17 @@ function lookupColleagueAvatarMeta(
   const clean = name.trim();
   if (!clean) return null;
   const lower = clean.toLowerCase();
-  const fullWordCount = parseStrictNameTokens(clean).filter(
-    (w) => w.length >= 3
-  ).length;
+  const strictTokens = parseStrictNameTokens(clean);
+  const fullWordCount = strictTokens.filter((w) => w.length >= 3).length;
+  const surnameToken = strictTokens[strictTokens.length - 1] || '';
   const upperCountry = String(countryCodeHint || '').trim().toUpperCase();
-  // Legacy static coAuthorPortraitDirectory entries are Bangladesh-scoped; avoid matching initial-only forms or foreign-affiliated OpenAlex co-authors
+  // Match verified colleague entries across BD/UN or when the multi-word surname isn't a generic high-collision token
   const allowStaticDirectory =
     fullWordCount >= 2 &&
-    (!upperCountry || upperCountry === 'BD' || upperCountry === 'UN');
+    (!upperCountry ||
+      upperCountry === 'BD' ||
+      upperCountry === 'UN' ||
+      (surnameToken.length >= 4 && !COMMON_RESEARCHER_NAMES.has(surnameToken)));
 
   const direct = coAuthorPortraitDirectory.get(lower);
   if (
@@ -4406,9 +4894,8 @@ async function fetchStaticImageBuffer(
   }
 }
 
-// Controlled concurrency queue (max 3 concurrent outbound requests + 60ms spacing) & in-flight deduplication
-// Prevents Google Scholar CDN (scholar.googleusercontent.com) from rate-limiting bursts when 50+ co-author avatars load at once
-const MAX_CONCURRENT_SCHOLAR_AVATAR_FETCHES = 3;
+// Controlled concurrency queue (max 5 concurrent outbound requests + 40ms spacing) & in-flight deduplication
+const MAX_CONCURRENT_SCHOLAR_AVATAR_FETCHES = 5;
 let activeScholarAvatarFetches = 0;
 const scholarAvatarQueue: Array<() => void> = [];
 const inflightAvatarPromises = new Map<
@@ -4435,7 +4922,7 @@ function releaseScholarAvatarSlot(): void {
     activeScholarAvatarFetches = Math.max(0, activeScholarAvatarFetches - 1);
     const next = scholarAvatarQueue.shift();
     if (next) next();
-  }, 60);
+  }, 40);
 }
 
 async function fetchScholarAvatarWithQueue(
@@ -4450,7 +4937,7 @@ async function fetchScholarAvatarWithQueue(
   }
 
   const negTs = negativeScholarPhotoCache.get(cleanId);
-  if (negTs && Date.now() - negTs < 6 * 60 * 60 * 1000) {
+  if (negTs && Date.now() - negTs < 2 * 60 * 60 * 1000) {
     return null;
   }
 
@@ -4462,27 +4949,66 @@ async function fetchScholarAvatarWithQueue(
   const taskPromise = (async () => {
     await acquireScholarAvatarSlot();
     try {
-      const gsCdnUrl = `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-        cleanId
-      )}`;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const res = await fetchStaticImageBuffer(gsCdnUrl, true, 4200);
-        if (res && res.status === 200 && res.buffer.length > 200) {
-          avatarBufferCache.set(cleanId, {
-            contentType: res.contentType,
-            buffer: res.buffer,
-            timestamp: Date.now(),
-          });
-          return { contentType: res.contentType, buffer: res.buffer };
-        }
-        // If Google Scholar explicitly redirects to default silhouette avatar_scholar_*.png, user has no custom photo
-        if (res && res.status === 302 && res.location?.includes('avatar_scholar')) {
-          negativeScholarPhotoCache.set(cleanId, Date.now());
-          return null;
-        }
-        // Otherwise transient rate-limit or timeout — pause briefly and retry once
-        if (attempt === 0) {
-          await new Promise((r) => setTimeout(r, 220));
+      const candidateUrls = [
+        `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+          cleanId
+        )}`,
+        `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
+          cleanId
+        )}`,
+      ];
+
+      for (const gsCdnUrl of candidateUrls) {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const res = await fetchStaticImageBuffer(gsCdnUrl, true, 4200);
+          if (res && res.status === 200 && res.buffer.length > 200) {
+            avatarBufferCache.set(cleanId, {
+              contentType: res.contentType,
+              buffer: res.buffer,
+              timestamp: Date.now(),
+            });
+            return { contentType: res.contentType, buffer: res.buffer };
+          }
+          // If Google Scholar redirects to the generic default silhouette avatar_scholar_*.png, user has no custom photo
+          if (
+            res &&
+            res.status &&
+            res.status >= 300 &&
+            res.status < 400 &&
+            res.location
+          ) {
+            if (res.location.includes('avatar_scholar')) {
+              negativeScholarPhotoCache.set(cleanId, Date.now());
+              return null;
+            }
+            const resolvedRedirectUrl = new URL(
+              res.location,
+              gsCdnUrl
+            ).toString();
+            const redirRes = await fetchStaticImageBuffer(
+              resolvedRedirectUrl,
+              false,
+              4200
+            );
+            if (
+              redirRes &&
+              redirRes.status === 200 &&
+              redirRes.buffer.length > 200
+            ) {
+              avatarBufferCache.set(cleanId, {
+                contentType: redirRes.contentType,
+                buffer: redirRes.buffer,
+                timestamp: Date.now(),
+              });
+              return {
+                contentType: redirRes.contentType,
+                buffer: redirRes.buffer,
+              };
+            }
+          }
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 200));
+          }
         }
       }
       return null;
@@ -4704,6 +5230,97 @@ async function resolveOrcidInstitutionalPortrait(
   return null;
 }
 
+const wikipediaPortraitCache = new Map<
+  string,
+  { imageUrl?: string; checkedAt: number }
+>();
+
+async function resolveWikipediaPortraitUrl(
+  researcherName: string,
+  universityHint?: string
+): Promise<string | null> {
+  const cleanName = stripAcademicHonorifics(researcherName).trim();
+  if (!cleanName || cleanName.split(/\s+/).length < 2) return null;
+  const cacheKey = cleanName.toLowerCase();
+  const cached = wikipediaPortraitCache.get(cacheKey);
+  if (cached && Date.now() - cached.checkedAt < 24 * 60 * 60 * 1000) {
+    return cached.imageUrl || null;
+  }
+
+  try {
+    const searchRes = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+        cleanName
+      )}&srlimit=3&format=json`,
+      {
+        headers: {
+          'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+        },
+        signal: AbortSignal.timeout(2500),
+      }
+    );
+    if (!searchRes.ok) return null;
+    const searchJson = (await searchRes.json()) as any;
+    const hits: any[] = Array.isArray(searchJson?.query?.search)
+      ? searchJson.query.search
+      : [];
+
+    const uniTokens = normalizeAsciiWords(universityHint || '')
+      .split(/\s+/)
+      .filter((t) => t.length >= 4 && !/^(university|institute|college|school)$/i.test(t));
+
+    for (const hit of hits) {
+      const title = String(hit?.title || '').trim();
+      if (!title || !isStrictSameResearcherForAvatar(cleanName, title)) continue;
+      const summaryRes = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+          title.replace(/\s+/g, '_')
+        )}`,
+        {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(2400),
+        }
+      );
+      if (!summaryRes.ok) continue;
+      const summary = (await summaryRes.json()) as any;
+      const bioText = `${summary?.description || ''} ${summary?.extract || ''}`.toLowerCase();
+      const isAcademicBio =
+        /\b(?:professor|researcher|scientist|computer\s+scientist|physicist|biologist|chemist|mathematician|physician|engineer|scholar|academic|fellow|university|faculty|dean|director)\b/i.test(
+          bioText
+        );
+      if (!isAcademicBio) continue;
+      if (uniTokens.length > 0) {
+        const hasUniMatch = uniTokens.some((tok) => bioText.includes(tok));
+        if (
+          !hasUniMatch &&
+          !/\b(?:stanford|berkeley|mit|harvard|oxford|cambridge|toronto|virginia|johns hopkins|columbia|nyu|cornell|eth|epfl|tsinghua)\b/i.test(
+            bioText
+          )
+        ) {
+          continue;
+        }
+      }
+      const imgUrl = String(
+        summary?.thumbnail?.source || summary?.originalimage?.source || ''
+      ).trim();
+      if (imgUrl && !imgUrl.endsWith('.svg')) {
+        wikipediaPortraitCache.set(cacheKey, {
+          imageUrl: imgUrl,
+          checkedAt: Date.now(),
+        });
+        return imgUrl;
+      }
+    }
+  } catch {
+    // Ignore Wikipedia timeout
+  }
+
+  wikipediaPortraitCache.set(cacheKey, { checkedAt: Date.now() });
+  return null;
+}
+
 async function resolveCoAuthorPhotoBuffer(params: {
   name?: string;
   university?: string;
@@ -4720,7 +5337,7 @@ async function resolveCoAuthorPhotoBuffer(params: {
   if (!cleanOrcid && !cleanName) return null;
 
   const negTs = negativeCoAuthorPhotoCache.get(inflightKey);
-  if (negTs && Date.now() - negTs < 12 * 60 * 60 * 1000) {
+  if (negTs && Date.now() - negTs < 15 * 60 * 1000) {
     return null;
   }
 
@@ -4748,6 +5365,7 @@ async function resolveCoAuthorPhotoBuffer(params: {
         `name::${cleanName.toLowerCase()}${uniNorm ? `::${uniNorm}` : ''}`,
         stamped
       );
+      avatarBufferCache.set(`name::${cleanName.toLowerCase()}`, stamped);
     }
     return img;
   };
@@ -4787,7 +5405,26 @@ async function resolveCoAuthorPhotoBuffer(params: {
         }
       }
 
-      // 2. Institutional profile portrait via ORCID researcher-urls (Pure, DTU Orbit, faculty pages)
+      // 2. Strict Wikipedia academic portrait lookup
+      if (cleanName) {
+        const wikiImgUrl = await resolveWikipediaPortraitUrl(cleanName, uni);
+        if (wikiImgUrl) {
+          const wikiImg = await fetchStaticImageBuffer(wikiImgUrl, false, 3500);
+          if (
+            wikiImg &&
+            wikiImg.status === 200 &&
+            !wikiImg.contentType.includes('svg') &&
+            wikiImg.buffer.length > 800
+          ) {
+            return storeResolved({
+              contentType: wikiImg.contentType,
+              buffer: wikiImg.buffer,
+            });
+          }
+        }
+      }
+
+      // 3. Institutional profile portrait via ORCID researcher-urls (Pure, DTU Orbit, faculty pages)
       if (cleanOrcid) {
         const orcidImg = await resolveOrcidInstitutionalPortrait(cleanOrcid);
         if (orcidImg) {
@@ -4795,23 +5432,65 @@ async function resolveCoAuthorPhotoBuffer(params: {
         }
       }
 
-      // 3. Affiliation-guided Google Scholar author lookup + Scholar CDN fetch
+      // 4. Queued DuckDuckGo candidate Google Scholar IDs (testing up to 2 matched profiles)
       if (cleanName) {
-        const discoveredScholarId = await resolveGoogleScholarIdByName(
-          cleanName,
-          uni
-        );
-        if (
-          discoveredScholarId &&
-          discoveredScholarId !== params.skipScholarId
-        ) {
-          const gsImg = await fetchScholarAvatarWithQueue(discoveredScholarId);
+        const candidateIds = await findCandidateScholarIdsViaDdg(cleanName, uni);
+        for (const candId of candidateIds.slice(0, 2)) {
+          if (candId === params.skipScholarId) continue;
+          const gsImg = await fetchScholarAvatarWithQueue(candId);
           if (gsImg) {
-            registerScholarColleague(cleanName, discoveredScholarId, true);
+            registerScholarColleague(cleanName, candId, true);
             return storeResolved({
               ...gsImg,
-              resolvedScholarId: discoveredScholarId,
+              resolvedScholarId: candId,
             });
+          }
+        }
+
+        // 5. Fallback to queued DuckDuckGo search for university faculty profile portraits
+        const facultyQuery = uni
+          ? `"${stripAcademicHonorifics(cleanName)}" "${uni}"`
+          : `"${stripAcademicHonorifics(cleanName)}" professor OR faculty`;
+        const ddgHtml = await fetchDuckDuckGoHtmlWithQueue(facultyQuery, 4000);
+        if (ddgHtml) {
+          const urls = extractGeneralUrlsFromDdgHtml(ddgHtml)
+            .filter((u) =>
+              /\.(?:edu|ac\.[a-z]{2,3}|org)\b|\/(?:faculty|people|person|profile|staff|researchers|directory)\b/i.test(
+                u
+              )
+            )
+            .slice(0, 2);
+          for (const pageUrl of urls) {
+            try {
+              const pageRes = await fetch(pageUrl, {
+                headers: {
+                  'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36',
+                },
+                signal: AbortSignal.timeout(2600),
+              });
+              if (!pageRes.ok) continue;
+              const ct = String(pageRes.headers.get('content-type') || '');
+              if (!ct.includes('html')) continue;
+              const html = await pageRes.text();
+              const portraitUrl = extractPortraitUrlFromHtml(html, pageUrl);
+              if (!portraitUrl) continue;
+              const img = await fetchStaticImageBuffer(portraitUrl, false, 3000);
+              if (
+                img &&
+                img.status === 200 &&
+                img.contentType.startsWith('image/') &&
+                !img.contentType.includes('svg') &&
+                img.buffer.length > 1200
+              ) {
+                return storeResolved({
+                  contentType: img.contentType,
+                  buffer: img.buffer,
+                });
+              }
+            } catch {
+              // Ignore individual faculty page fetch error
+            }
           }
         }
       }
@@ -4829,6 +5508,10 @@ async function resolveCoAuthorPhotoBuffer(params: {
 
 function enrichAndPrewarmProfileCoAuthors(publications: Publication[]): Publication[] {
   const coAuthorCounts = new Map<string, number>();
+  const unresolvedCoAuthorStats = new Map<
+    string,
+    { name: string; university: string; orcid?: string; count: number }
+  >();
   const enriched = publications.map((pub) => ({
     ...pub,
     coAuthors: (pub.coAuthors || []).map((ca) => {
@@ -4840,6 +5523,16 @@ function enrichAndPrewarmProfileCoAuthors(publications: Publication[]): Publicat
         coAuthorCounts.set(resolvedId, (coAuthorCounts.get(resolvedId) || 0) + 1);
         return { ...ca, scholarUserId: resolvedId };
       }
+      const cleanKey = ca.name.trim().toLowerCase();
+      if (cleanKey && cleanKey.split(/\s+/).length >= 2) {
+        const prev = unresolvedCoAuthorStats.get(cleanKey);
+        unresolvedCoAuthorStats.set(cleanKey, {
+          name: ca.name.trim(),
+          university: ca.universityName || '',
+          orcid: ca.orcid || prev?.orcid,
+          count: (prev?.count || 0) + 1,
+        });
+      }
       return ca;
     }),
   }));
@@ -4849,11 +5542,24 @@ function enrichAndPrewarmProfileCoAuthors(publications: Publication[]): Publicat
     .sort((a, b) => b[1] - a[1])
     .slice(0, 80)
     .map(([id]) => id);
+  const topUnresolved = [...unresolvedCoAuthorStats.values()]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 15);
 
   setTimeout(async () => {
     for (const id of sortedIds) {
       if (!avatarBufferCache.has(id) && !negativeScholarPhotoCache.has(id)) {
         await fetchScholarAvatarWithQueue(id);
+      }
+    }
+    for (const ca of topUnresolved) {
+      const nameKey = `name::${ca.name.toLowerCase()}`;
+      if (!avatarBufferCache.has(nameKey)) {
+        await resolveCoAuthorPhotoBuffer({
+          name: ca.name,
+          university: ca.university,
+          orcid: ca.orcid,
+        });
       }
     }
   }, 10);
@@ -7560,7 +8266,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
       return;
     }
   }
-  if (!userId && !orcidParam && nameKey) {
+  if (nameKey) {
     const cachedByName =
       (nameUniCacheKey ? avatarBufferCache.get(nameUniCacheKey) : undefined) ||
       avatarBufferCache.get(`name::${nameKey}`) ||
@@ -7575,15 +8281,17 @@ app.get('/api/scholar/avatar', async (req, res) => {
       return;
     }
 
-    const colMeta = lookupColleagueAvatarMeta(rawName);
-    if (colMeta?.userId) {
-      const cachedByColId = avatarBufferCache.get(colMeta.userId);
-      if (cachedByColId) {
-        if (nameUniCacheKey) avatarBufferCache.set(nameUniCacheKey, cachedByColId);
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        res.setHeader('Content-Type', cachedByColId.contentType);
-        res.send(cachedByColId.buffer);
-        return;
+    if (!userId && !orcidParam) {
+      const colMeta = lookupColleagueAvatarMeta(rawName);
+      if (colMeta?.userId) {
+        const cachedByColId = avatarBufferCache.get(colMeta.userId);
+        if (cachedByColId) {
+          if (nameUniCacheKey) avatarBufferCache.set(nameUniCacheKey, cachedByColId);
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+          res.setHeader('Content-Type', cachedByColId.contentType);
+          res.send(cachedByColId.buffer);
+          return;
+        }
       }
     }
   }

@@ -1030,6 +1030,22 @@ export default function App() {
           >
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              {isAnalyzing && (
+                <div
+                  data-testid="header-search-loading-badge"
+                  className="absolute left-9 right-8 top-1/2 -translate-y-1/2 flex items-center justify-between gap-2 pointer-events-none select-none z-10"
+                >
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700">
+                    <span>Loading</span>
+                    <SearchLoadingDots size="xs" color="bg-blue-600" />
+                  </span>
+                  {analyzingTarget?.label && (
+                    <span className="hidden sm:inline text-[11px] text-slate-400 truncate max-w-[200px]">
+                      {analyzingTarget.label}
+                    </span>
+                  )}
+                </div>
+              )}
               <input
                 ref={desktopSearchInputRef}
                 type="text"
@@ -1056,46 +1072,52 @@ export default function App() {
                       );
                       return;
                     }
-                    if (activePage !== 'feed') {
-                      e.preventDefault();
-                      if (headerMatchedResearchers.length > 0) {
-                        const first = headerMatchedResearchers[0];
-                        setIsHeaderSearchFocused(false);
-                        handleOpenResearcherProfile(
-                          first.name,
-                          first.scholarUserId
-                        );
-                      } else if (headerMatchedScholarProfiles.length > 0) {
-                        const first = headerMatchedScholarProfiles[0];
-                        setIsHeaderSearchFocused(false);
-                        handleOpenResearcherProfile(
-                          first.name,
-                          first.scholarUserId
-                        );
-                      } else if (
-                        parsedHeaderSearchQuery?.valid &&
+                    e.preventDefault();
+                    if (headerMatchedResearchers.length > 0) {
+                      const first = headerMatchedResearchers[0];
+                      setIsHeaderSearchFocused(false);
+                      handleOpenResearcherProfile(
+                        first.name,
+                        first.scholarUserId
+                      );
+                    } else if (headerMatchedScholarProfiles.length > 0) {
+                      const first = headerMatchedScholarProfiles[0];
+                      setIsHeaderSearchFocused(false);
+                      handleOpenResearcherProfile(
+                        first.name,
+                        first.scholarUserId
+                      );
+                    } else if (
+                      parsedHeaderSearchQuery?.valid &&
+                      parsedHeaderSearchQuery.userId
+                    ) {
+                      setIsHeaderSearchFocused(false);
+                      handleOpenResearcherProfile(
+                        parsedHeaderSearchQuery.queryName || '',
                         parsedHeaderSearchQuery.userId
-                      ) {
-                        setIsHeaderSearchFocused(false);
-                        handleOpenResearcherProfile(
-                          parsedHeaderSearchQuery.queryName || '',
-                          parsedHeaderSearchQuery.userId
-                        );
-                      } else {
-                        setIsHeaderSearchFocused(false);
-                        navigateToPage('feed');
-                      }
+                      );
+                    } else if (activePage !== 'feed') {
+                      setIsHeaderSearchFocused(false);
+                      navigateToPage('feed');
                     }
                   }
                 }}
                 data-testid="header-global-search-input"
                 aria-label="Search researcher, paper, journal, or Scholar ID / URL"
-                placeholder="Search researcher, paper, journal, or Scholar ID / URL..."
+                placeholder={
+                  isAnalyzing
+                    ? ''
+                    : 'Search researcher, paper, journal, or Scholar ID / URL...'
+                }
                 className={`w-full pl-9 ${
-                  isAnalyzing ? 'pr-28' : 'pr-8'
-                } py-2 text-xs bg-slate-100/90 hover:bg-slate-100 border border-slate-200 rounded-full focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition-all text-slate-800 placeholder:text-slate-400`}
+                  isAnalyzing
+                    ? 'pr-8 text-transparent caret-transparent select-none'
+                    : isSearchingHeader
+                    ? 'pr-28 text-slate-800'
+                    : 'pr-8 text-slate-800'
+                } py-2 text-xs bg-slate-100/90 hover:bg-slate-100 border border-slate-200 rounded-full focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition-all placeholder:text-slate-400`}
               />
-              {isAnalyzing ? (
+              {!isAnalyzing && isSearchingHeader ? (
                 <div
                   data-testid="header-search-loading-badge"
                   className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200/80 text-[11px] font-semibold text-blue-700 pointer-events-none select-none"
@@ -1103,23 +1125,21 @@ export default function App() {
                   <span>Loading</span>
                   <SearchLoadingDots size="xs" color="bg-blue-600" />
                 </div>
-              ) : (
-                globalSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGlobalSearchQuery('');
-                      setHeaderMatchedResearchers([]);
-                      setHeaderMatchedScholarProfiles([]);
-                    }}
-                    aria-label="Clear search"
-                    data-testid="header-global-search-clear"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )
-              )}
+              ) : !isAnalyzing && globalSearchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGlobalSearchQuery('');
+                    setHeaderMatchedResearchers([]);
+                    setHeaderMatchedScholarProfiles([]);
+                  }}
+                  aria-label="Clear search"
+                  data-testid="header-global-search-clear"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              ) : null}
             </div>
 
             {isHeaderSearchFocused &&
@@ -1529,15 +1549,14 @@ export default function App() {
                         Google Scholar Profile Link or User ID
                       </label>
                       {isAnalyzing ? (
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
-                          <span className="text-xs sm:text-sm text-slate-400 font-sans tracking-tight">
-                            analyzing
+                        <div className="absolute left-10 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
+                          <span className="text-xs sm:text-sm font-semibold text-blue-700 font-sans tracking-tight">
+                            Loading
                           </span>
-                          <SearchLoadingDots size="xs" color="bg-slate-400" />
+                          <SearchLoadingDots size="xs" color="bg-blue-600" />
                         </div>
-                      ) : (
-                        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      )}
+                      ) : null}
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
                         id="scholar-url-input-initial"
                         type="text"
@@ -1567,7 +1586,7 @@ export default function App() {
                       {isAnalyzing ? (
                         <>
                           <SearchLoadingDots size="xs" color="bg-white" />
-                          <span>Analyzing...</span>
+                          <span>Loading...</span>
                         </>
                       ) : (
                         <>

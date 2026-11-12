@@ -1944,11 +1944,15 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                         <img
                           src={
                             (author.avatarUrl && author.avatarUrl.trim()) ||
-                            `/api/scholar/avatar?v=3&name=${encodeURIComponent(
+                            `/api/scholar/avatar?v=4&name=${encodeURIComponent(
                               author.name
                             )}&uni=${encodeURIComponent(
                               selectedUni.universityName
                             )}${
+                              author.orcid
+                                ? `&orcid=${encodeURIComponent(author.orcid)}`
+                                : ''
+                            }${
                               author.scholarUserId
                                 ? `&userId=${encodeURIComponent(
                                     author.scholarUserId
@@ -1961,11 +1965,15 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                           referrerPolicy="no-referrer"
                           onError={(e) => {
                             const target = e.currentTarget;
-                            const fallbackUrl = `/api/scholar/avatar?v=3&name=${encodeURIComponent(
+                            const fallbackUrl = `/api/scholar/avatar?v=4&name=${encodeURIComponent(
                               author.name
                             )}&uni=${encodeURIComponent(
                               selectedUni.universityName
-                            )}`;
+                            )}${
+                              author.orcid
+                                ? `&orcid=${encodeURIComponent(author.orcid)}`
+                                : ''
+                            }`;
                             if (!target.src.endsWith(fallbackUrl)) {
                               target.src = fallbackUrl;
                             }

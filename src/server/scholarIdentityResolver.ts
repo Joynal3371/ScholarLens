@@ -243,3 +243,209 @@ export function lookupScholarIdentityInStores(params: {
 
   return null;
 }
+
+export function decodeSearchRedirectUrl(rawHref: string): string {
+  const unescaped = decodeHtmlEntitiesBasic(rawHref);
+  try {
+    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
+    if (uddgMatch?.[1]) {
+      return decodeURIComponent(decodeURIComponent(uddgMatch[1]));
+    }
+  } catch {
+    // Fallback to standard decode
+  }
+  try {
+    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
+    if (uddgMatch?.[1]) {
+      return decodeURIComponent(uddgMatch[1]);
+    }
+  } catch {
+    // Ignore malformed encoding
+  }
+  try {
+    return decodeURIComponent(unescaped);
+  } catch {
+    return unescaped;
+  }
+}
+
+/**
+ * Parses DuckDuckGo HTML results (`html.duckduckgo.com/html/`) for results pointing
+ * to a researcher's Google Scholar profile (`scholar.google.<tld>/citations?...user=<scholarId>`).
+ */
+export function extractScholarIdentityFromDdgHtml(
+  html: string,
+  scholarId: string
+): ResolvedScholarIdentity | null {
+  if (!html || !scholarId) return null;
+  const escapedId = escapeRegExp(scholarId.trim());
+  const exactUserParamRe = new RegExp(`[?&]user=${escapedId}(?:&|$|#)`);
+  const titleAnchorRe =
+    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
+  const snippetRe =
+    /class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/(?:a|div|span)>/i;
+
+  const blocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
+  const segments =
+    blocks.length > 0
+      ? blocks
+      : [...html.matchAll(/<h2[^>]*class="[^"]*result__title[^"]*"[\s\S]{0,1800}/gi)].map(
+          (m) => m[0]
+        );
+
+  for (const rawSeg of segments) {
+    const seg = rawSeg.slice(0, 4000);
+    const anchor = seg.match(titleAnchorRe);
+    if (!anchor) continue;
+    const decodedHref = decodeSearchRedirectUrl(anchor[1] || '');
+    const hrefMatchesExact =
+      decodedHref.includes('scholar.google.') &&
+      exactUserParamRe.test(decodedHref);
+
+    if (!hrefMatchesExact) continue;
+
+    const titleName = extractNameFromScholarTitle(anchor[2] || '');
+    const snippetRaw = seg.match(snippetRe)?.[1] || '';
+    const snippetText = snippetRaw ? cleanTextFragment(snippetRaw) : '';
+
+    let resolvedName = titleName;
+    let affiliationHint = '';
+
+    if (snippetText) {
+      const beforeCitedBy = snippetText.split(/\bCited\s+by\b/i)[0] || '';
+      const cleanParts = beforeCitedBy
+        .split(/\s+[-–]\s+/)
+        .map((p) => p.replace(/^Verified email at\s+\S+/i, '').trim())
+        .filter((p) => p && !/^google\s+scholar$/i.test(p));
+
+      if (!resolvedName && cleanParts.length >= 1) {
+        const candidateName = extractNameFromScholarTitle(cleanParts[0]);
+        if (candidateName && candidateName.split(/\s+/).length <= 6) {
+          resolvedName = candidateName;
+        }
+      }
+      if (cleanParts.length >= 2) {
+        affiliationHint = cleanParts
+          .slice(resolvedName && cleanParts[0].includes(resolvedName) ? 1 : 0)
+          .join(', ')
+          .slice(0, 140);
+      } else if (resolvedName && cleanParts.length === 1 && cleanParts[0] !== resolvedName) {
+        affiliationHint = cleanParts[0].slice(0, 140);
+      }
+    }
+
+    if (resolvedName) {
+      return {
+        name: resolvedName,
+        ...(affiliationHint ? { affiliationHint } : {}),
+        source: 'ddg-scholar-index',
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Extracts ranked 12-character Google Scholar user IDs from DuckDuckGo or Yahoo SERP HTML,
+ * verifying researcher name match and scoring affiliation hits first.
+ */
+export function extractCandidateScholarIdsFromSearchHtml(
+  html: string,
+  researcherName: string,
+  affiliationHint?: string,
+  nameMatcher?: (candidateName: string, targetName: string) => boolean
+): string[] {
+  if (!html || !researcherName) return [];
+  const cleanTarget = researcherName.trim();
+  const affTokens = String(affiliationHint || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(
+      (t) =>
+        t.length >= 4 &&
+        !new Set([
+          'university',
+          'institute',
+          'college',
+          'department',
+          'research',
+          'school',
+          'center',
+          'centre',
+          'national',
+          'international',
+        ]).has(t)
+    );
+
+  const scored: Array<{ id: string; score: number }> = [];
+  const seen = new Set<string>();
+
+  const ddgBlocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
+  const yahooBlocks = html.split(/<div[^>]*class="[^"]*algo(?:-sr)?[^"]*"/i).slice(1);
+  const blocks = ddgBlocks.length > 0 ? ddgBlocks : yahooBlocks;
+
+  for (const rawBlock of blocks) {
+    const seg = rawBlock.slice(0, 4500);
+    const hrefs = [...seg.matchAll(/href="([^"]+)"/gi)].map((m) =>
+      decodeSearchRedirectUrl(m[1])
+    );
+    const scholarHref = hrefs.find(
+      (h) => h.includes('scholar.google.') && /[?&]user=([a-zA-Z0-9_-]{10,14})/.test(h)
+    );
+    if (!scholarHref) continue;
+    const idMatch = scholarHref.match(/[?&]user=([a-zA-Z0-9_-]{10,14})/);
+    const candId = idMatch?.[1]?.trim();
+    if (!candId || seen.has(candId)) continue;
+
+    const titleHtml =
+      seg.match(/<a[^>]*class="[^"]*result__a[^"]*"[^>]*>([\s\S]*?)<\/a>/i)?.[1] ||
+      seg.match(/<h3[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i)?.[1] ||
+      '';
+    const titleName = extractNameFromScholarTitle(titleHtml);
+    if (!titleName) continue;
+
+    const matchesName = nameMatcher
+      ? nameMatcher(titleName, cleanTarget)
+      : titleName.toLowerCase() === cleanTarget.toLowerCase();
+    if (!matchesName) continue;
+
+    const fullText = cleanTextFragment(seg).toLowerCase();
+    const affHits = affTokens.filter((tok) => fullText.includes(tok)).length;
+    seen.add(candId);
+    scored.push({
+      id: candId,
+      score: 10 + affHits * 15,
+    });
+  }
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .map((entry) => entry.id);
+}
+
+export function extractGeneralUrlsFromDdgHtml(html: string): string[] {
+  if (!html) return [];
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const matches = html.matchAll(
+    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"/gi
+  );
+  for (const m of matches) {
+    const decoded = decodeSearchRedirectUrl(m[1] || '').trim();
+    if (!decoded || !/^https?:\/\//i.test(decoded)) continue;
+    if (
+      /duckduckgo\.com|google\.com\/search|scholar\.google\.|youtube\.com|facebook\.com|twitter\.com|x\.com|linkedin\.com\/pub\/dir/i.test(
+        decoded
+      )
+    ) {
+      continue;
+    }
+    if (!seen.has(decoded)) {
+      seen.add(decoded);
+      urls.push(decoded);
+    }
+  }
+  return urls;
+}

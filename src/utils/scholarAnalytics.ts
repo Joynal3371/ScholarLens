@@ -536,6 +536,7 @@ export interface UniversityCollaboration {
     paperCount: number;
     citations: number;
     scholarUserId?: string;
+    orcid?: string;
     avatarUrl?: string;
   }[];
   papers: Publication[];
@@ -1410,6 +1411,7 @@ export function aggregateUniversityCollaborations(
           paperIds: Set<string>;
           citations: number;
           scholarUserId?: string;
+          orcid?: string;
           avatarUrl?: string;
         }
       >;
@@ -1536,12 +1538,16 @@ export function aggregateUniversityCollaborations(
           paperIds: new Set([pub.id]),
           citations: pub.citations,
           scholarUserId: ca.scholarUserId,
+          orcid: ca.orcid,
           avatarUrl: ca.avatarUrl,
         });
       } else {
         const authorEntry = entry.authorMap.get(matchedKey)!;
         if (!authorEntry.scholarUserId && ca.scholarUserId) {
           authorEntry.scholarUserId = ca.scholarUserId;
+        }
+        if (!authorEntry.orcid && ca.orcid) {
+          authorEntry.orcid = ca.orcid;
         }
         if (!authorEntry.avatarUrl && ca.avatarUrl) {
           authorEntry.avatarUrl = ca.avatarUrl;
@@ -1624,6 +1630,7 @@ export function aggregateUniversityCollaborations(
         paperCount: stats.paperIds.size,
         citations: stats.citations,
         ...(stats.scholarUserId ? { scholarUserId: stats.scholarUserId } : {}),
+        ...(stats.orcid ? { orcid: stats.orcid } : {}),
         ...(stats.avatarUrl ? { avatarUrl: stats.avatarUrl } : {}),
       }))
       .sort((a, b) => b.paperCount - a.paperCount || b.citations - a.citations);
@@ -2066,7 +2073,7 @@ export function aggregateCountries(
 
   for (const pub of publications) {
     for (const ca of pub.coAuthors) {
-      if (ca.universityId === 'unlisted' || !ca.country || ca.country === 'Unlisted') {
+      if (!ca.country || ca.country === 'Unlisted' || ca.countryCode === 'UN') {
         continue;
       }
       if (!countryMap.has(ca.country)) {
@@ -2079,7 +2086,13 @@ export function aggregateCountries(
         });
       }
       const entry = countryMap.get(ca.country)!;
-      entry.universities.add(ca.universityName || (ca as any).affiliation || 'Unknown University');
+      if (
+        ca.universityId !== 'unlisted' &&
+        ca.universityName &&
+        ca.universityName !== 'Independent / Unlisted'
+      ) {
+        entry.universities.add(ca.universityName);
+      }
       entry.coAuthors.add(ca.name);
       entry.papers.set(pub.id, pub);
     }

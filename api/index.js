@@ -2351,6 +2351,476 @@ function lookupScholarIdentityInStores(params) {
   }
   return null;
 }
+function decodeSearchRedirectUrl(rawHref) {
+  const unescaped = decodeHtmlEntitiesBasic(rawHref);
+  try {
+    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
+    if (uddgMatch?.[1]) {
+      return decodeURIComponent(decodeURIComponent(uddgMatch[1]));
+    }
+  } catch {
+  }
+  try {
+    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
+    if (uddgMatch?.[1]) {
+      return decodeURIComponent(uddgMatch[1]);
+    }
+  } catch {
+  }
+  try {
+    return decodeURIComponent(unescaped);
+  } catch {
+    return unescaped;
+  }
+}
+function extractScholarIdentityFromDdgHtml(html, scholarId) {
+  if (!html || !scholarId) return null;
+  const escapedId = escapeRegExp(scholarId.trim());
+  const exactUserParamRe = new RegExp(`[?&]user=${escapedId}(?:&|$|#)`);
+  const titleAnchorRe = /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
+  const snippetRe = /class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/(?:a|div|span)>/i;
+  const blocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
+  const segments = blocks.length > 0 ? blocks : [...html.matchAll(/<h2[^>]*class="[^"]*result__title[^"]*"[\s\S]{0,1800}/gi)].map(
+    (m) => m[0]
+  );
+  for (const rawSeg of segments) {
+    const seg = rawSeg.slice(0, 4e3);
+    const anchor = seg.match(titleAnchorRe);
+    if (!anchor) continue;
+    const decodedHref = decodeSearchRedirectUrl(anchor[1] || "");
+    const hrefMatchesExact = decodedHref.includes("scholar.google.") && exactUserParamRe.test(decodedHref);
+    if (!hrefMatchesExact) continue;
+    const titleName = extractNameFromScholarTitle(anchor[2] || "");
+    const snippetRaw = seg.match(snippetRe)?.[1] || "";
+    const snippetText = snippetRaw ? cleanTextFragment(snippetRaw) : "";
+    let resolvedName = titleName;
+    let affiliationHint = "";
+    if (snippetText) {
+      const beforeCitedBy = snippetText.split(/\bCited\s+by\b/i)[0] || "";
+      const cleanParts = beforeCitedBy.split(/\s+[-–]\s+/).map((p) => p.replace(/^Verified email at\s+\S+/i, "").trim()).filter((p) => p && !/^google\s+scholar$/i.test(p));
+      if (!resolvedName && cleanParts.length >= 1) {
+        const candidateName = extractNameFromScholarTitle(cleanParts[0]);
+        if (candidateName && candidateName.split(/\s+/).length <= 6) {
+          resolvedName = candidateName;
+        }
+      }
+      if (cleanParts.length >= 2) {
+        affiliationHint = cleanParts.slice(resolvedName && cleanParts[0].includes(resolvedName) ? 1 : 0).join(", ").slice(0, 140);
+      } else if (resolvedName && cleanParts.length === 1 && cleanParts[0] !== resolvedName) {
+        affiliationHint = cleanParts[0].slice(0, 140);
+      }
+    }
+    if (resolvedName) {
+      return {
+        name: resolvedName,
+        ...affiliationHint ? { affiliationHint } : {},
+        source: "ddg-scholar-index"
+      };
+    }
+  }
+  return null;
+}
+function extractCandidateScholarIdsFromSearchHtml(html, researcherName, affiliationHint, nameMatcher) {
+  if (!html || !researcherName) return [];
+  const cleanTarget = researcherName.trim();
+  const affTokens = String(affiliationHint || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(
+    (t) => t.length >= 4 && !(/* @__PURE__ */ new Set([
+      "university",
+      "institute",
+      "college",
+      "department",
+      "research",
+      "school",
+      "center",
+      "centre",
+      "national",
+      "international"
+    ])).has(t)
+  );
+  const scored = [];
+  const seen = /* @__PURE__ */ new Set();
+  const ddgBlocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
+  const yahooBlocks = html.split(/<div[^>]*class="[^"]*algo(?:-sr)?[^"]*"/i).slice(1);
+  const blocks = ddgBlocks.length > 0 ? ddgBlocks : yahooBlocks;
+  for (const rawBlock of blocks) {
+    const seg = rawBlock.slice(0, 4500);
+    const hrefs = [...seg.matchAll(/href="([^"]+)"/gi)].map(
+      (m) => decodeSearchRedirectUrl(m[1])
+    );
+    const scholarHref = hrefs.find(
+      (h) => h.includes("scholar.google.") && /[?&]user=([a-zA-Z0-9_-]{10,14})/.test(h)
+    );
+    if (!scholarHref) continue;
+    const idMatch = scholarHref.match(/[?&]user=([a-zA-Z0-9_-]{10,14})/);
+    const candId = idMatch?.[1]?.trim();
+    if (!candId || seen.has(candId)) continue;
+    const titleHtml = seg.match(/<a[^>]*class="[^"]*result__a[^"]*"[^>]*>([\s\S]*?)<\/a>/i)?.[1] || seg.match(/<h3[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i)?.[1] || "";
+    const titleName = extractNameFromScholarTitle(titleHtml);
+    if (!titleName) continue;
+    const matchesName = nameMatcher ? nameMatcher(titleName, cleanTarget) : titleName.toLowerCase() === cleanTarget.toLowerCase();
+    if (!matchesName) continue;
+    const fullText = cleanTextFragment(seg).toLowerCase();
+    const affHits = affTokens.filter((tok) => fullText.includes(tok)).length;
+    seen.add(candId);
+    scored.push({
+      id: candId,
+      score: 10 + affHits * 15
+    });
+  }
+  return scored.sort((a, b) => b.score - a.score).map((entry) => entry.id);
+}
+function extractGeneralUrlsFromDdgHtml(html) {
+  if (!html) return [];
+  const urls = [];
+  const seen = /* @__PURE__ */ new Set();
+  const matches = html.matchAll(
+    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"/gi
+  );
+  for (const m of matches) {
+    const decoded = decodeSearchRedirectUrl(m[1] || "").trim();
+    if (!decoded || !/^https?:\/\//i.test(decoded)) continue;
+    if (/duckduckgo\.com|google\.com\/search|scholar\.google\.|youtube\.com|facebook\.com|twitter\.com|x\.com|linkedin\.com\/pub\/dir/i.test(
+      decoded
+    )) {
+      continue;
+    }
+    if (!seen.has(decoded)) {
+      seen.add(decoded);
+      urls.push(decoded);
+    }
+  }
+  return urls;
+}
+
+// src/server/affiliationParser.ts
+var ISO_COUNTRY_INFO = {
+  AF: { country: "Afghanistan", continent: "Asia", lat: 34.5553, lng: 69.2075 },
+  AL: { country: "Albania", continent: "Europe", lat: 41.3275, lng: 19.8187 },
+  DZ: { country: "Algeria", continent: "Africa", lat: 36.7538, lng: 3.0588 },
+  AR: { country: "Argentina", continent: "South America", lat: -34.6037, lng: -58.3816 },
+  AM: { country: "Armenia", continent: "Asia", lat: 40.1792, lng: 44.4991 },
+  AU: { country: "Australia", continent: "Oceania", lat: -33.8688, lng: 151.2093 },
+  AT: { country: "Austria", continent: "Europe", lat: 48.2082, lng: 16.3738 },
+  AZ: { country: "Azerbaijan", continent: "Asia", lat: 40.4093, lng: 49.8671 },
+  BH: { country: "Bahrain", continent: "Asia", lat: 26.2285, lng: 50.586 },
+  BD: { country: "Bangladesh", continent: "Asia", lat: 23.8103, lng: 90.4125 },
+  BY: { country: "Belarus", continent: "Europe", lat: 53.9006, lng: 27.559 },
+  BE: { country: "Belgium", continent: "Europe", lat: 50.8503, lng: 4.3517 },
+  BA: { country: "Bosnia and Herzegovina", continent: "Europe", lat: 43.8563, lng: 18.4131 },
+  BR: { country: "Brazil", continent: "South America", lat: -23.5505, lng: -46.6333 },
+  BN: { country: "Brunei", continent: "Asia", lat: 4.9031, lng: 114.9398 },
+  BG: { country: "Bulgaria", continent: "Europe", lat: 42.6977, lng: 23.3219 },
+  KH: { country: "Cambodia", continent: "Asia", lat: 11.5564, lng: 104.9282 },
+  CM: { country: "Cameroon", continent: "Africa", lat: 3.848, lng: 11.5021 },
+  CA: { country: "Canada", continent: "North America", lat: 45.4215, lng: -75.6972 },
+  CL: { country: "Chile", continent: "South America", lat: -33.4489, lng: -70.6693 },
+  CN: { country: "China", continent: "Asia", lat: 39.9042, lng: 116.4074 },
+  CO: { country: "Colombia", continent: "South America", lat: 4.711, lng: -74.0721 },
+  CR: { country: "Costa Rica", continent: "North America", lat: 9.9281, lng: -84.0907 },
+  HR: { country: "Croatia", continent: "Europe", lat: 45.815, lng: 15.9819 },
+  CU: { country: "Cuba", continent: "North America", lat: 23.1136, lng: -82.3666 },
+  CY: { country: "Cyprus", continent: "Europe", lat: 35.1856, lng: 33.3823 },
+  CZ: { country: "Czechia", continent: "Europe", lat: 50.0755, lng: 14.4378 },
+  DK: { country: "Denmark", continent: "Europe", lat: 55.6761, lng: 12.5683 },
+  EC: { country: "Ecuador", continent: "South America", lat: -0.1807, lng: -78.4678 },
+  EG: { country: "Egypt", continent: "Africa", lat: 30.0444, lng: 31.2357 },
+  EE: { country: "Estonia", continent: "Europe", lat: 59.437, lng: 24.7536 },
+  ET: { country: "Ethiopia", continent: "Africa", lat: 9.032, lng: 38.7469 },
+  FI: { country: "Finland", continent: "Europe", lat: 60.1699, lng: 24.9384 },
+  FR: { country: "France", continent: "Europe", lat: 48.8566, lng: 2.3522 },
+  GE: { country: "Georgia", continent: "Asia", lat: 41.7151, lng: 44.8271 },
+  DE: { country: "Germany", continent: "Europe", lat: 52.52, lng: 13.405 },
+  GH: { country: "Ghana", continent: "Africa", lat: 5.6037, lng: -0.187 },
+  GR: { country: "Greece", continent: "Europe", lat: 37.9838, lng: 23.7275 },
+  HK: { country: "China (Hong Kong)", continent: "Asia", lat: 22.3193, lng: 114.1694 },
+  HU: { country: "Hungary", continent: "Europe", lat: 47.4979, lng: 19.0402 },
+  IS: { country: "Iceland", continent: "Europe", lat: 64.1466, lng: -21.9426 },
+  IN: { country: "India", continent: "Asia", lat: 28.6139, lng: 77.209 },
+  ID: { country: "Indonesia", continent: "Asia", lat: -6.2088, lng: 106.8456 },
+  IR: { country: "Iran", continent: "Asia", lat: 35.6892, lng: 51.389 },
+  IQ: { country: "Iraq", continent: "Asia", lat: 33.3152, lng: 44.3661 },
+  IE: { country: "Ireland", continent: "Europe", lat: 53.3498, lng: -6.2603 },
+  IL: { country: "Israel", continent: "Asia", lat: 31.7683, lng: 35.2137 },
+  IT: { country: "Italy", continent: "Europe", lat: 41.9028, lng: 12.4964 },
+  JP: { country: "Japan", continent: "Asia", lat: 35.6762, lng: 139.6503 },
+  JO: { country: "Jordan", continent: "Asia", lat: 31.9454, lng: 35.9284 },
+  KZ: { country: "Kazakhstan", continent: "Asia", lat: 51.1694, lng: 71.4491 },
+  KE: { country: "Kenya", continent: "Africa", lat: -1.2921, lng: 36.8219 },
+  KW: { country: "Kuwait", continent: "Asia", lat: 29.3759, lng: 47.9774 },
+  LV: { country: "Latvia", continent: "Europe", lat: 56.9496, lng: 24.1052 },
+  LB: { country: "Lebanon", continent: "Asia", lat: 33.8938, lng: 35.5018 },
+  LY: { country: "Libya", continent: "Africa", lat: 32.8872, lng: 13.1913 },
+  LT: { country: "Lithuania", continent: "Europe", lat: 54.6872, lng: 25.2797 },
+  LU: { country: "Luxembourg", continent: "Europe", lat: 49.6116, lng: 6.1319 },
+  MO: { country: "Macau", continent: "Asia", lat: 22.1987, lng: 113.5439 },
+  MY: { country: "Malaysia", continent: "Asia", lat: 3.139, lng: 101.6869 },
+  MT: { country: "Malta", continent: "Europe", lat: 35.8989, lng: 14.5146 },
+  MX: { country: "Mexico", continent: "North America", lat: 19.4326, lng: -99.1332 },
+  MA: { country: "Morocco", continent: "Africa", lat: 34.0209, lng: -6.8416 },
+  MM: { country: "Myanmar", continent: "Asia", lat: 16.8661, lng: 96.1951 },
+  NP: { country: "Nepal", continent: "Asia", lat: 27.7172, lng: 85.324 },
+  NL: { country: "Netherlands", continent: "Europe", lat: 52.3676, lng: 4.9041 },
+  NZ: { country: "New Zealand", continent: "Oceania", lat: -36.8485, lng: 174.7633 },
+  NG: { country: "Nigeria", continent: "Africa", lat: 9.0765, lng: 7.3986 },
+  NO: { country: "Norway", continent: "Europe", lat: 59.9139, lng: 10.7522 },
+  OM: { country: "Oman", continent: "Asia", lat: 23.588, lng: 58.3829 },
+  PK: { country: "Pakistan", continent: "Asia", lat: 33.6844, lng: 73.0479 },
+  PS: { country: "Palestine", continent: "Asia", lat: 31.9038, lng: 35.2034 },
+  PE: { country: "Peru", continent: "South America", lat: -12.0464, lng: -77.0428 },
+  PH: { country: "Philippines", continent: "Asia", lat: 14.5995, lng: 120.9842 },
+  PL: { country: "Poland", continent: "Europe", lat: 52.2297, lng: 21.0122 },
+  PT: { country: "Portugal", continent: "Europe", lat: 38.7223, lng: -9.1393 },
+  QA: { country: "Qatar", continent: "Asia", lat: 25.2854, lng: 51.531 },
+  RO: { country: "Romania", continent: "Europe", lat: 44.4268, lng: 26.1025 },
+  RU: { country: "Russia", continent: "Europe", lat: 55.7558, lng: 37.6173 },
+  RW: { country: "Rwanda", continent: "Africa", lat: -1.9441, lng: 30.0619 },
+  SA: { country: "Saudi Arabia", continent: "Asia", lat: 24.7136, lng: 46.6753 },
+  SN: { country: "Senegal", continent: "Africa", lat: 14.7167, lng: -17.4677 },
+  RS: { country: "Serbia", continent: "Europe", lat: 44.7866, lng: 20.4489 },
+  SG: { country: "Singapore", continent: "Asia", lat: 1.3521, lng: 103.8198 },
+  SK: { country: "Slovakia", continent: "Europe", lat: 48.1486, lng: 17.1077 },
+  SI: { country: "Slovenia", continent: "Europe", lat: 46.0569, lng: 14.5058 },
+  ZA: { country: "South Africa", continent: "Africa", lat: -33.9249, lng: 18.4241 },
+  KR: { country: "South Korea", continent: "Asia", lat: 37.5665, lng: 126.978 },
+  ES: { country: "Spain", continent: "Europe", lat: 40.4168, lng: -3.7038 },
+  LK: { country: "Sri Lanka", continent: "Asia", lat: 6.9271, lng: 79.8612 },
+  SD: { country: "Sudan", continent: "Africa", lat: 15.5007, lng: 32.5599 },
+  SE: { country: "Sweden", continent: "Europe", lat: 59.3293, lng: 18.0686 },
+  CH: { country: "Switzerland", continent: "Europe", lat: 47.3769, lng: 8.5417 },
+  SY: { country: "Syria", continent: "Asia", lat: 33.5138, lng: 36.2765 },
+  TW: { country: "Taiwan", continent: "Asia", lat: 25.033, lng: 121.5654 },
+  TZ: { country: "Tanzania", continent: "Africa", lat: -6.163, lng: 35.7516 },
+  TH: { country: "Thailand", continent: "Asia", lat: 13.7563, lng: 100.5018 },
+  TN: { country: "Tunisia", continent: "Africa", lat: 36.8065, lng: 10.1815 },
+  TR: { country: "Turkey", continent: "Asia", lat: 39.9334, lng: 32.8597 },
+  UG: { country: "Uganda", continent: "Africa", lat: 0.3476, lng: 32.5825 },
+  UA: { country: "Ukraine", continent: "Europe", lat: 50.4501, lng: 30.5234 },
+  AE: { country: "United Arab Emirates", continent: "Asia", lat: 24.4539, lng: 54.3773 },
+  GB: { country: "United Kingdom", continent: "Europe", lat: 51.5074, lng: -0.1278 },
+  US: { country: "United States", continent: "North America", lat: 38.8951, lng: -77.0364 },
+  UY: { country: "Uruguay", continent: "South America", lat: -34.9011, lng: -56.1645 },
+  UZ: { country: "Uzbekistan", continent: "Asia", lat: 41.2995, lng: 69.2401 },
+  VE: { country: "Venezuela", continent: "South America", lat: 10.4806, lng: -66.9036 },
+  VN: { country: "Vietnam", continent: "Asia", lat: 21.0278, lng: 105.8342 },
+  YE: { country: "Yemen", continent: "Asia", lat: 15.3694, lng: 44.191 },
+  ZM: { country: "Zambia", continent: "Africa", lat: -15.3875, lng: 28.3228 },
+  ZW: { country: "Zimbabwe", continent: "Africa", lat: -17.8252, lng: 31.0335 }
+};
+var regionDisplayNames = typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames(["en"], { type: "region" }) : null;
+function getCountryGeoInfo(countryCodeRaw, fallbackCountryName) {
+  const cc = String(countryCodeRaw || "").trim().toUpperCase();
+  if (cc && ISO_COUNTRY_INFO[cc]) {
+    return ISO_COUNTRY_INFO[cc];
+  }
+  if (/^[A-Z]{2}$/.test(cc) && cc !== "UN") {
+    let resolvedName = fallbackCountryName?.trim() || "";
+    if (!resolvedName && regionDisplayNames) {
+      try {
+        resolvedName = regionDisplayNames.of(cc) || "";
+      } catch {
+      }
+    }
+    return {
+      country: resolvedName || cc,
+      continent: "Asia",
+      lat: 20,
+      lng: 10
+    };
+  }
+  return ISO_COUNTRY_INFO.US;
+}
+var COUNTRY_NAME_ALIASES = [
+  [/\b(?:united states(?: of america)?|u\.s\.a\.|usa|u\.s\.)\b/i, "US"],
+  [/\b(?:united kingdom|u\.k\.|england|scotland|wales|northern ireland)\b/i, "GB"],
+  [/\b(?:people'?s republic of china|p\.?r\.?\s*china|china)\b/i, "CN"],
+  [/\bhong kong\b/i, "HK"],
+  [/\b(?:republic of korea|south korea)\b/i, "KR"],
+  [/\btaiwan\b/i, "TW"],
+  [/\bbangladesh\b/i, "BD"],
+  [/\bmalaysia\b/i, "MY"],
+  [/\blibya\b/i, "LY"],
+  [/\bgermany|deutschland\b/i, "DE"],
+  [/\bfrance\b/i, "FR"],
+  [/\bcanada\b/i, "CA"],
+  [/\baustralia\b/i, "AU"],
+  [/\bjapan\b/i, "JP"],
+  [/\bindia\b/i, "IN"],
+  [/\bpakistan\b/i, "PK"],
+  [/\bsingapore\b/i, "SG"],
+  [/\bindonesia\b/i, "ID"],
+  [/\bthailand\b/i, "TH"],
+  [/\bvietnam\b/i, "VN"],
+  [/\bsaudi arabia|ksa\b/i, "SA"],
+  [/\b(?:united arab emirates|uae)\b/i, "AE"],
+  [/\bqatar\b/i, "QA"],
+  [/\boman\b/i, "OM"],
+  [/\bkuwait\b/i, "KW"],
+  [/\bjordan\b/i, "JO"],
+  [/\biran\b/i, "IR"],
+  [/\biraq\b/i, "IQ"],
+  [/\bisrael\b/i, "IL"],
+  [/\bturkey|türkiye\b/i, "TR"],
+  [/\begypt\b/i, "EG"],
+  [/\bmorocco\b/i, "MA"],
+  [/\balgeria\b/i, "DZ"],
+  [/\btunisia\b/i, "TN"],
+  [/\bnigeria\b/i, "NG"],
+  [/\bsouth africa\b/i, "ZA"],
+  [/\bkenya\b/i, "KE"],
+  [/\bethiopia\b/i, "ET"],
+  [/\bghana\b/i, "GH"],
+  [/\bspain|españa\b/i, "ES"],
+  [/\bitaly|italia\b/i, "IT"],
+  [/\b(?:the )?netherlands|holland\b/i, "NL"],
+  [/\bswitzerland|schweiz|suisse\b/i, "CH"],
+  [/\bsweden\b/i, "SE"],
+  [/\bnorway\b/i, "NO"],
+  [/\bdenmark\b/i, "DK"],
+  [/\bfinland\b/i, "FI"],
+  [/\bbelgium\b/i, "BE"],
+  [/\baustria\b/i, "AT"],
+  [/\bireland\b/i, "IE"],
+  [/\bportugal\b/i, "PT"],
+  [/\bpoland\b/i, "PL"],
+  [/\bgreece\b/i, "GR"],
+  [/\bromania\b/i, "RO"],
+  [/\bhungary\b/i, "HU"],
+  [/\bczech(?:ia| republic)\b/i, "CZ"],
+  [/\brussia(?:n federation)?\b/i, "RU"],
+  [/\bukraine\b/i, "UA"],
+  [/\bbrazil|brasil\b/i, "BR"],
+  [/\bmexico|méxico\b/i, "MX"],
+  [/\bargentina\b/i, "AR"],
+  [/\bchile\b/i, "CL"],
+  [/\bcolombia\b/i, "CO"],
+  [/\bnew zealand\b/i, "NZ"],
+  [/\bnepal\b/i, "NP"],
+  [/\bsri lanka\b/i, "LK"],
+  [/\bphilippines\b/i, "PH"]
+];
+var US_STATE_CODES = /* @__PURE__ */ new Set([
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC"
+]);
+function inferCountryCodeFromAffiliationString(rawAffil, explicitCountries) {
+  for (const rawCode of explicitCountries || []) {
+    const upper = String(rawCode || "").trim().toUpperCase();
+    if (/^[A-Z]{2}$/.test(upper) && upper !== "UN") {
+      return upper;
+    }
+  }
+  const text = String(rawAffil || "").replace(/#TAB#/g, " ").trim();
+  if (!text) return "";
+  const parts = text.split(",").map((p) => p.trim()).filter(Boolean);
+  for (let i = parts.length - 1; i >= Math.max(0, parts.length - 3); i--) {
+    const seg = parts[i];
+    for (const [pattern, code] of COUNTRY_NAME_ALIASES) {
+      if (pattern.test(seg)) {
+        return code;
+      }
+    }
+    const trailingUsState = seg.match(/\b([A-Z]{2})(?:\s+\d{5}(?:-\d{4})?)?$/);
+    if (trailingUsState && US_STATE_CODES.has(trailingUsState[1])) {
+      return "US";
+    }
+  }
+  for (const [pattern, code] of COUNTRY_NAME_ALIASES) {
+    if (pattern.test(text)) {
+      return code;
+    }
+  }
+  if (/(?:,|\s)UK\b/.test(text)) return "GB";
+  return "";
+}
+var PURE_SUBUNIT_PREFIX_RE = /^(?:department|dept\.?|school|faculty|division|chair|group|unit|branch|program|programme)\s+of\b/i;
+var STRONG_INSTITUTION_KEYWORD_RE = /\b(?:university|universiti|universit[eéaàä]|universitat|universidad|universidade|polytechnic|polytechnique|institute|institut|college|academy|hospital|medical\s+center|medical\s+centre|national\s+laboratory|laboratories|research\s+center|research\s+centre|meta\s+ai|google|deepmind|openai|microsoft|ibm|nvidia|fair|cnrs|inria|csiro|cern|max\s+planck)\b/i;
+var PURE_GEO_OR_POSTAL_RE = /^(?:p\.?\s*o\.?\s*box\b.*|\d{4,6}(?:-\d{4})?|[a-z]{1,2}\d{1,2}\s*\d[a-z]{2}|[A-Z]{2}(?:\s+\d{5})?|usa|u\.s\.a\.|uk|u\.k\.|p\.?r\.?\s*china|china|germany|malaysia|libya|bangladesh|canada|australia|japan|india|france|italy|spain|singapore|south korea|brazil|netherlands|switzerland|sweden|norway|denmark|finland|belgium|austria|ireland|portugal|poland|greece|turkey|egypt|saudi arabia|pakistan|indonesia|thailand|vietnam|taiwan)$/i;
+function extractInstitutionFromRawAffiliations(rawStrings, rawCountries) {
+  const cleanedLines = (rawStrings || []).map(
+    (s) => String(s || "").replace(/#TAB#/g, " ").replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim()
+  ).filter((s) => s.length >= 3);
+  const explicitCC = inferCountryCodeFromAffiliationString("", rawCountries);
+  for (const line of cleanedLines) {
+    const countryCode = inferCountryCodeFromAffiliationString(line, rawCountries);
+    const segments = line.split(/\s*(?:,|;|\|)\s*/).map(
+      (seg) => seg.replace(/Universiti\s+Kebagsaan\s+Malaysia/gi, "Universiti Kebangsaan Malaysia").replace(/\b\d{4,6}\b$/g, "").trim()
+    ).filter((seg) => seg.length >= 3 && !PURE_GEO_OR_POSTAL_RE.test(seg) && !/^\d+$/.test(seg));
+    const primarySeg = segments.find(
+      (seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg) && !PURE_SUBUNIT_PREFIX_RE.test(seg) && !/^faculty\s+of\b/i.test(seg) && !/^school\s+of\b/i.test(seg)
+    ) || segments.find(
+      (seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg) && !PURE_SUBUNIT_PREFIX_RE.test(seg)
+    ) || segments.find((seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg));
+    if (primarySeg) {
+      return {
+        institutionName: primarySeg,
+        countryCode
+      };
+    }
+    const orgSeg = segments.find((seg) => !PURE_SUBUNIT_PREFIX_RE.test(seg));
+    if (orgSeg && orgSeg.length >= 4) {
+      return {
+        institutionName: orgSeg,
+        countryCode
+      };
+    }
+  }
+  if (explicitCC) {
+    return {
+      institutionName: "",
+      countryCode: explicitCC
+    };
+  }
+  return null;
+}
 
 // src/data/verifiedScholarCache.json
 var verifiedScholarCache_default = {
@@ -95716,54 +96186,6 @@ function parseStrictGoogleScholarProfileInput(rawInput) {
 
 // server.ts
 dotenv.config();
-var ISO_COUNTRY_INFO = {
-  BD: { country: "Bangladesh", continent: "Asia", lat: 23.8103, lng: 90.4125 },
-  US: { country: "United States", continent: "North America", lat: 38.8951, lng: -77.0364 },
-  CA: { country: "Canada", continent: "North America", lat: 45.4215, lng: -75.6972 },
-  GB: { country: "United Kingdom", continent: "Europe", lat: 51.5074, lng: -0.1278 },
-  DK: { country: "Denmark", continent: "Europe", lat: 55.6761, lng: 12.5683 },
-  FR: { country: "France", continent: "Europe", lat: 48.8566, lng: 2.3522 },
-  DE: { country: "Germany", continent: "Europe", lat: 52.52, lng: 13.405 },
-  ES: { country: "Spain", continent: "Europe", lat: 40.4168, lng: -3.7038 },
-  PT: { country: "Portugal", continent: "Europe", lat: 38.7223, lng: -9.1393 },
-  IT: { country: "Italy", continent: "Europe", lat: 41.9028, lng: 12.4964 },
-  NL: { country: "Netherlands", continent: "Europe", lat: 52.3676, lng: 4.9041 },
-  CH: { country: "Switzerland", continent: "Europe", lat: 47.3769, lng: 8.5417 },
-  SE: { country: "Sweden", continent: "Europe", lat: 59.3293, lng: 18.0686 },
-  NO: { country: "Norway", continent: "Europe", lat: 59.9139, lng: 10.7522 },
-  FI: { country: "Finland", continent: "Europe", lat: 60.1699, lng: 24.9384 },
-  BE: { country: "Belgium", continent: "Europe", lat: 50.8503, lng: 4.3517 },
-  AT: { country: "Austria", continent: "Europe", lat: 48.2082, lng: 16.3738 },
-  IE: { country: "Ireland", continent: "Europe", lat: 53.3498, lng: -6.2603 },
-  PL: { country: "Poland", continent: "Europe", lat: 52.2297, lng: 21.0122 },
-  CZ: { country: "Czechia", continent: "Europe", lat: 50.0755, lng: 14.4378 },
-  GR: { country: "Greece", continent: "Europe", lat: 37.9838, lng: 23.7275 },
-  TR: { country: "Turkey", continent: "Asia", lat: 39.9334, lng: 32.8597 },
-  MY: { country: "Malaysia", continent: "Asia", lat: 3.139, lng: 101.6869 },
-  SG: { country: "Singapore", continent: "Asia", lat: 1.3521, lng: 103.8198 },
-  CN: { country: "China", continent: "Asia", lat: 39.9042, lng: 116.4074 },
-  HK: { country: "China (Hong Kong)", continent: "Asia", lat: 22.3193, lng: 114.1694 },
-  JP: { country: "Japan", continent: "Asia", lat: 35.6762, lng: 139.6503 },
-  KR: { country: "South Korea", continent: "Asia", lat: 37.5665, lng: 126.978 },
-  IN: { country: "India", continent: "Asia", lat: 28.6139, lng: 77.209 },
-  PK: { country: "Pakistan", continent: "Asia", lat: 33.6844, lng: 73.0479 },
-  SA: { country: "Saudi Arabia", continent: "Asia", lat: 24.7136, lng: 46.6753 },
-  AE: { country: "United Arab Emirates", continent: "Asia", lat: 24.4539, lng: 54.3773 },
-  QA: { country: "Qatar", continent: "Asia", lat: 25.2854, lng: 51.531 },
-  TH: { country: "Thailand", continent: "Asia", lat: 13.7563, lng: 100.5018 },
-  VN: { country: "Vietnam", continent: "Asia", lat: 21.0278, lng: 105.8342 },
-  ID: { country: "Indonesia", continent: "Asia", lat: -6.2088, lng: 106.8456 },
-  AU: { country: "Australia", continent: "Oceania", lat: -33.8688, lng: 151.2093 },
-  NZ: { country: "New Zealand", continent: "Oceania", lat: -36.8485, lng: 174.7633 },
-  EG: { country: "Egypt", continent: "Africa", lat: 30.0444, lng: 31.2357 },
-  ZA: { country: "South Africa", continent: "Africa", lat: -33.9249, lng: 18.4241 },
-  NG: { country: "Nigeria", continent: "Africa", lat: 9.0765, lng: 7.3986 },
-  BR: { country: "Brazil", continent: "South America", lat: -23.5505, lng: -46.6333 },
-  MX: { country: "Mexico", continent: "North America", lat: 19.4326, lng: -99.1332 },
-  AR: { country: "Argentina", continent: "South America", lat: -34.6037, lng: -58.3816 },
-  CL: { country: "Chile", continent: "South America", lat: -33.4489, lng: -70.6693 },
-  CO: { country: "Colombia", continent: "South America", lat: 4.711, lng: -74.0721 }
-};
 function slugifyInstitution(name) {
   return name.toLowerCase().replace(/–|—/g, "-").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 42) || "institution";
 }
@@ -96034,12 +96456,7 @@ async function resolveInstitutionFromOfficialSources(rawInstName, rawCountryCode
   if (openAlexId && geoCache?.has(openAlexId)) {
     const rec = geoCache.get(openAlexId);
     const cc = (rec.geo?.country_code || rec.country_code || rawCountryCode || "US").toUpperCase();
-    const countryInfo = ISO_COUNTRY_INFO[cc] || {
-      country: rec.geo?.country || cc,
-      continent: "Asia",
-      lat: 23.8103,
-      lng: 90.4125
-    };
+    const countryInfo = getCountryGeoInfo(cc, rec.geo?.country);
     let lat = typeof rec.geo?.latitude === "number" ? rec.geo.latitude : countryInfo.lat;
     let lng = typeof rec.geo?.longitude === "number" ? rec.geo.longitude : countryInfo.lng;
     if (typeof rec.geo?.latitude !== "number" || typeof rec.geo?.longitude !== "number") {
@@ -96096,7 +96513,7 @@ async function resolveInstitutionFromOfficialSources(rawInstName, rawCountryCode
       const cc = String(
         topInst.geo?.country_code || topInst.country_code || rawCountryCode || "US"
       ).toUpperCase();
-      const countryInfo = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.US;
+      const countryInfo = getCountryGeoInfo(cc, topInst.geo?.country);
       let lat = typeof topInst.geo?.latitude === "number" ? topInst.geo.latitude : countryInfo.lat;
       let lng = typeof topInst.geo?.longitude === "number" ? topInst.geo.longitude : countryInfo.lng;
       if (typeof topInst.geo?.latitude !== "number" || typeof topInst.geo?.longitude !== "number") {
@@ -96171,7 +96588,7 @@ async function resolveInstitutionFromOfficialSources(rawInstName, rawCountryCode
         const cc = String(
           loc.country_code || rawCountryCode || "US"
         ).toUpperCase();
-        const countryInfo = ISO_COUNTRY_INFO[cc] || ISO_COUNTRY_INFO.US;
+        const countryInfo = getCountryGeoInfo(cc, topInst.geo?.country);
         const rorDisplay = item.names?.find((n) => n.types?.includes("ror_display"))?.value || cleanName;
         let lat = typeof loc.lat === "number" ? loc.lat : countryInfo.lat;
         let lng = typeof loc.lng === "number" ? loc.lng : countryInfo.lng;
@@ -96214,7 +96631,7 @@ async function resolveInstitutionFromOfficialSources(rawInstName, rawCountryCode
     else if (cLower.includes("uk") || cLower.includes("united kingdom") || cLower.includes("london") || cLower.includes("oxford") || cLower.includes("cambridge")) resolvedCC = "GB";
     else resolvedCC = "US";
   }
-  const base = ISO_COUNTRY_INFO[resolvedCC] || ISO_COUNTRY_INFO.US;
+  const base = getCountryGeoInfo(resolvedCC);
   const fallbackResolved = {
     universityId: slugifyInstitution(cleanName),
     universityName: cleanName,
@@ -96294,7 +96711,7 @@ async function resolveInstitutionByVerifiedDomain(rawDomain) {
         const rorCC = String(
           loc?.country_code || loc?.country_subdivision_code || "US"
         ).toUpperCase();
-        const base = ISO_COUNTRY_INFO[rorCC] || ISO_COUNTRY_INFO.US;
+        const base = getCountryGeoInfo(rorCC, loc?.country_name);
         const rorLat = Number(loc?.lat);
         const rorLng = Number(loc?.lng);
         if (rorName) {
@@ -97032,6 +97449,104 @@ function isValidScholarId(id) {
   const trimmed = id.trim();
   return /^[a-zA-Z0-9_-]{8,14}$/.test(trimmed) && !trimmed.includes(" ");
 }
+var ddgHtmlCache = /* @__PURE__ */ new Map();
+var ddgQueueChain = Promise.resolve();
+var ddgLastRequestAt = 0;
+async function fetchDuckDuckGoHtmlWithQueue(query, timeoutMs = 4200) {
+  const cleanQuery = String(query || "").trim();
+  if (!cleanQuery) return null;
+  const cached = ddgHtmlCache.get(cleanQuery);
+  if (cached && Date.now() - cached.timestamp < 1e3 * 60 * 15) {
+    return cached.html || null;
+  }
+  let releaseSlot;
+  const prevSlot = ddgQueueChain;
+  ddgQueueChain = new Promise((resolve) => {
+    releaseSlot = resolve;
+  });
+  await prevSlot;
+  try {
+    const gapMs = Date.now() - ddgLastRequestAt;
+    if (gapMs < 280) {
+      await new Promise((r) => setTimeout(r, 280 - gapMs));
+    }
+    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(
+      cleanQuery
+    )}`;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      ddgLastRequestAt = Date.now();
+      try {
+        const res = await fetch(url, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+            Accept: "text/html,application/xhtml+xml"
+          },
+          signal: AbortSignal.timeout(timeoutMs)
+        });
+        if (res.status === 202 || res.status === 429) {
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 650));
+            continue;
+          }
+          return null;
+        }
+        if (!res.ok) return null;
+        const html = await res.text();
+        if (html && html.includes("result__a")) {
+          ddgHtmlCache.set(cleanQuery, { html, timestamp: Date.now() });
+          return html;
+        }
+        if (attempt === 0 && (!html || html.length < 2500)) {
+          await new Promise((r) => setTimeout(r, 500));
+          continue;
+        }
+        if (html && html.length > 2500) {
+          ddgHtmlCache.set(cleanQuery, { html, timestamp: Date.now() });
+          return html;
+        }
+        return null;
+      } catch {
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 350));
+          continue;
+        }
+        return null;
+      }
+    }
+    return null;
+  } finally {
+    releaseSlot();
+  }
+}
+async function findCandidateScholarIdsViaDdg(researcherName, affiliationHint) {
+  const clean = stripAcademicHonorifics(researcherName).trim();
+  if (!clean || clean.length < 3) return [];
+  const queries = buildYahooScholarSearchQueries(clean, affiliationHint).slice(
+    0,
+    2
+  );
+  const found = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const q of queries) {
+    const html = await fetchDuckDuckGoHtmlWithQueue(q, 4200);
+    if (!html) continue;
+    const ids = extractCandidateScholarIdsFromSearchHtml(
+      html,
+      clean,
+      affiliationHint,
+      isStrictSameResearcherForAvatar
+    );
+    for (const id of ids) {
+      if (!seen.has(id) && isValidScholarId(id)) {
+        seen.add(id);
+        found.push(id);
+      }
+    }
+    if (found.length > 0) break;
+  }
+  return found;
+}
 async function resolveGoogleScholarIdByName(researcherName, affiliationHint) {
   const clean = stripAcademicHonorifics(researcherName).trim();
   if (!clean || clean.length < 3) return null;
@@ -97074,6 +97589,13 @@ async function resolveGoogleScholarIdByName(researcherName, affiliationHint) {
     }
   } catch {
   }
+  const ddgCandidates = await findCandidateScholarIdsViaDdg(
+    clean,
+    affiliationHint
+  );
+  if (ddgCandidates.length > 0) {
+    return ddgCandidates[0];
+  }
   const yQueries = buildYahooScholarSearchQueries(clean, affiliationHint);
   for (const yQuery of yQueries) {
     try {
@@ -97084,7 +97606,7 @@ async function resolveGoogleScholarIdByName(researcherName, affiliationHint) {
         headers: {
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         },
-        signal: AbortSignal.timeout(2600)
+        signal: AbortSignal.timeout(2200)
       });
       if (yRes.ok) {
         const html = await yRes.text();
@@ -97098,6 +97620,21 @@ async function resolveGoogleScholarIdByName(researcherName, affiliationHint) {
       }
     } catch {
     }
+  }
+  return null;
+}
+async function resolveScholarIdentityViaDdg(scholarId) {
+  const cleanId = String(scholarId || "").trim();
+  if (!isValidScholarId(cleanId)) return null;
+  const queries = [
+    `site:scholar.google.com "user=${cleanId}"`,
+    `"user=${cleanId}" "Google Scholar"`
+  ];
+  for (const q of queries) {
+    const html = await fetchDuckDuckGoHtmlWithQueue(q, 4200);
+    if (!html) continue;
+    const extracted = extractScholarIdentityFromDdgHtml(html, cleanId);
+    if (extracted?.name) return extracted;
   }
   return null;
 }
@@ -97203,10 +97740,11 @@ async function resolveScholarIdentityByUserIdFallback(scholarId) {
   if (fromDynamicStores?.name) {
     return fromDynamicStores;
   }
-  const [wikidataRes, yahooRes, orcidRes] = await Promise.allSettled([
+  const [wikidataRes, ddgRes, orcidRes, yahooRes] = await Promise.allSettled([
     resolveScholarIdViaWikidata(cleanId),
-    resolveScholarIdentityViaYahoo(cleanId),
-    resolveScholarIdentityViaOrcid(cleanId)
+    resolveScholarIdentityViaDdg(cleanId),
+    resolveScholarIdentityViaOrcid(cleanId),
+    resolveScholarIdentityViaYahoo(cleanId)
   ]);
   if (wikidataRes.status === "fulfilled" && wikidataRes.value) {
     return {
@@ -97214,11 +97752,14 @@ async function resolveScholarIdentityByUserIdFallback(scholarId) {
       source: "wikidata"
     };
   }
-  if (yahooRes.status === "fulfilled" && yahooRes.value?.name) {
-    return yahooRes.value;
+  if (ddgRes.status === "fulfilled" && ddgRes.value?.name) {
+    return ddgRes.value;
   }
   if (orcidRes.status === "fulfilled" && orcidRes.value?.name) {
     return orcidRes.value;
+  }
+  if (yahooRes.status === "fulfilled" && yahooRes.value?.name) {
+    return yahooRes.value;
   }
   return null;
 }
@@ -97258,7 +97799,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     );
   }
   const resolvedCandidateName = scraped?.name || effectiveQueryName || fallbackIdentity?.name || "";
-  const targetName = resolvedCandidateName || (!isValidScholarId(effectiveUserId) ? effectiveUserId : "");
+  const targetName = resolvedCandidateName || (!isValidScholarId(effectiveUserId) || /^[a-z]{6,14}$/.test(effectiveUserId) ? effectiveUserId : "");
   if (!targetName) return null;
   const domainResolvedHome = await resolveInstitutionByVerifiedDomain(
     scraped?.verifiedDomain
@@ -97275,12 +97816,21 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     `${scraped?.affiliation || ""} ${fallbackIdentity?.affiliationHint || ""} ${domainResolvedHome?.universityName || ""}`
   );
   try {
-    const authorData = await fetchOpenAlexJson(
+    let authorData = await fetchOpenAlexJson(
       `https://api.openalex.org/authors?search=${encodeURIComponent(
         cleanSearchName
       )}&per-page=25&mailto=research@scholarlens.org`,
       5500
     );
+    const suffixStrippedName = cleanSearchName.replace(/,?\s+\b(?:jr\.?|sr\.?|ii|iii|iv|phd|m\.?d\.?)\b\.?$/gi, "").trim();
+    if ((!Array.isArray(authorData?.results) || authorData.results.length === 0) && suffixStrippedName && suffixStrippedName !== cleanSearchName) {
+      authorData = await fetchOpenAlexJson(
+        `https://api.openalex.org/authors?search=${encodeURIComponent(
+          suffixStrippedName
+        )}&per-page=25&mailto=research@scholarlens.org`,
+        5500
+      );
+    }
     if (authorData) {
       const results = Array.isArray(authorData?.results) ? authorData.results : [];
       const scoredCandidates = results.map(
@@ -97408,24 +97958,44 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
   if (openAlexAuthorIds.length > 0) {
     try {
       const filterIds = openAlexAuthorIds.slice(0, 8).join("|");
+      const selectFields = "id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count";
+      const baseRecentUrl = `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
+        filterIds
+      )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&select=${selectFields}&mailto=research@scholarlens.org`;
       const fetchUrls = [
         `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
           filterIds
-        )}&sort=cited_by_count:desc&per-page=200&page=1&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
-        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
-          filterIds
-        )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&page=1&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`,
-        `https://api.openalex.org/works?filter=author.id:${encodeURIComponent(
-          filterIds
-        )}&sort=publication_year:desc,cited_by_count:desc&per-page=200&page=2&select=id,title,display_name,publication_year,type,type_crossref,doi,open_access,primary_location,authorships,cited_by_count&mailto=research@scholarlens.org`
+        )}&sort=cited_by_count:desc&per-page=200&page=1&select=${selectFields}&mailto=research@scholarlens.org`,
+        `${baseRecentUrl}&page=1`,
+        `${baseRecentUrl}&page=2`
       ];
-      const pageResults = await Promise.all(
+      const pageMetaResults = await Promise.all(
         fetchUrls.map(async (url) => {
           const worksData = await fetchOpenAlexJson(url, 6500);
-          return Array.isArray(worksData?.results) ? worksData.results : [];
+          return {
+            results: Array.isArray(worksData?.results) ? worksData.results : [],
+            count: Number(worksData?.meta?.count || 0)
+          };
         })
       );
-      const combinedOa = pageResults.flat();
+      const recent1Count = pageMetaResults[1]?.count || 0;
+      const recent2Len = pageMetaResults[2]?.results.length || 0;
+      let extraPageResults = [];
+      if (recent1Count > 400 || recent2Len === 200) {
+        extraPageResults = await Promise.all(
+          [3, 4].map(async (pageNum) => {
+            const worksData = await fetchOpenAlexJson(
+              `${baseRecentUrl}&page=${pageNum}`,
+              6e3
+            );
+            return Array.isArray(worksData?.results) ? worksData.results : [];
+          })
+        );
+      }
+      const combinedOa = [
+        ...pageMetaResults.flatMap((p) => p.results),
+        ...extraPageResults.flat()
+      ];
       const seenOaWorkIdSet = /* @__PURE__ */ new Set();
       rawOaWorks = [];
       for (const w of combinedOa) {
@@ -97436,6 +98006,67 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       }
     } catch {
       rawOaWorks = [];
+    }
+  }
+  if ((!scraped || scraped.publications.length === 0) && rawOaWorks.length === 0) {
+    try {
+      const crRes = await fetch(
+        `https://api.crossref.org/works?query.author=${encodeURIComponent(
+          cleanSearchName
+        )}&rows=40&mailto=research@scholarlens.org`,
+        {
+          headers: {
+            "User-Agent": "ScholarLens/2.0 (mailto:research@scholarlens.org)"
+          },
+          signal: AbortSignal.timeout(4800)
+        }
+      );
+      if (crRes.ok) {
+        const crData = await crRes.json();
+        const items = Array.isArray(crData?.message?.items) ? crData.message.items : [];
+        for (const item of items) {
+          const title = String(
+            Array.isArray(item.title) ? item.title[0] : item.title || ""
+          ).trim();
+          if (!title) continue;
+          const authors = Array.isArray(item.author) ? item.author : [];
+          const hasMatchingAuthor = authors.some((au) => {
+            const full = `${au?.given || ""} ${au?.family || ""}`.trim();
+            return full && isSameResearcherName(full, targetName);
+          });
+          if (!hasMatchingAuthor) continue;
+          const venue = String(
+            (Array.isArray(item["container-title"]) ? item["container-title"][0] : item["container-title"]) || "Academic Venue"
+          ).trim();
+          const yearParts = item?.published?.["date-parts"]?.[0] || item?.["published-print"]?.["date-parts"]?.[0] || item?.["published-online"]?.["date-parts"]?.[0] || [];
+          const year = Number(yearParts[0]) || 2020;
+          const doi = item.DOI ? String(item.DOI).trim() : void 0;
+          rawOaWorks.push({
+            id: doi ? `crossref:${doi}` : `crossref:${title.slice(0, 48)}`,
+            title,
+            display_name: title,
+            publication_year: year,
+            type: String(item.type || "journal-article").replace(/-/g, "_"),
+            doi: doi ? `https://doi.org/${doi}` : void 0,
+            open_access: { is_oa: false },
+            cited_by_count: Number(item["is-referenced-by-count"]) || 0,
+            primary_location: {
+              source: { display_name: venue, type: "journal" },
+              landing_page_url: item.URL || (doi ? `https://doi.org/${doi}` : void 0)
+            },
+            authorships: authors.map((au) => ({
+              author_position: au?.sequence === "first" ? "first" : "middle",
+              author: {
+                display_name: `${au?.given || ""} ${au?.family || ""}`.trim(),
+                orcid: au?.ORCID || void 0
+              },
+              institutions: [],
+              raw_affiliation_strings: Array.isArray(au?.affiliation) ? au.affiliation.map((af) => String(af?.name || "").trim()).filter(Boolean) : []
+            }))
+          });
+        }
+      }
+    } catch {
     }
   }
   const gsMatchedOaWorkByIndex = /* @__PURE__ */ new Map();
@@ -97521,6 +98152,10 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
   }
   const instIdsSet = /* @__PURE__ */ new Set();
   const sourceIdsSet = /* @__PURE__ */ new Set();
+  const coAuthorIdsNeedingAffil = /* @__PURE__ */ new Set();
+  const coAuthorInstsFromAuthorsApi = /* @__PURE__ */ new Map();
+  const coAuthorOrcidByOaId = /* @__PURE__ */ new Map();
+  const oaAuthorIdHasWorkInst = /* @__PURE__ */ new Set();
   if (primaryOpenAlexAuthor?.last_known_institutions) {
     for (const inst of primaryOpenAlexAuthor.last_known_institutions) {
       if (inst?.id) {
@@ -97534,12 +98169,63 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       sourceIdsSet.add(String(srcId).replace("https://openalex.org/", ""));
     }
     for (const a of w.authorships || []) {
-      for (const inst of a.institutions || []) {
+      const aId = String(a.author?.id || "").replace("https://openalex.org/", "").trim();
+      const rawOrcid = a.author?.orcid ? String(a.author.orcid).replace(/^https?:\/\/orcid\.org\//i, "").trim() : "";
+      if (aId && rawOrcid && !coAuthorOrcidByOaId.has(aId)) {
+        coAuthorOrcidByOaId.set(aId, rawOrcid);
+      }
+      const insts = Array.isArray(a.institutions) ? a.institutions : [];
+      for (const inst of insts) {
         if (inst?.id) {
           instIdsSet.add(String(inst.id).replace("https://openalex.org/", ""));
         }
       }
+      if (insts.some((inst) => inst?.display_name)) {
+        if (aId) oaAuthorIdHasWorkInst.add(aId);
+      } else if (aId && /^A\d+$/i.test(aId) && !openAlexAuthorIds.includes(aId) && !(Array.isArray(a.raw_affiliation_strings) && a.raw_affiliation_strings.some((s) => String(s || "").trim()))) {
+        coAuthorIdsNeedingAffil.add(aId);
+      }
     }
+  }
+  const missingCoAuthorIds = Array.from(coAuthorIdsNeedingAffil).filter((id) => !oaAuthorIdHasWorkInst.has(id)).slice(0, 150);
+  if (missingCoAuthorIds.length > 0) {
+    const authorBatches = [];
+    for (let i = 0; i < missingCoAuthorIds.length; i += 50) {
+      const chunk = missingCoAuthorIds.slice(i, i + 50);
+      authorBatches.push(
+        (async () => {
+          try {
+            const authData = await fetchOpenAlexJson(
+              `https://api.openalex.org/authors?filter=openalex:${chunk.join(
+                "|"
+              )}&per-page=50&select=id,display_name,orcid,last_known_institutions&mailto=research@scholarlens.org`,
+              4200
+            );
+            for (const rec of authData?.results || []) {
+              const shortAId = String(rec.id || "").replace("https://openalex.org/", "").trim();
+              if (!shortAId) continue;
+              const rawOrcid = rec.orcid ? String(rec.orcid).replace(/^https?:\/\/orcid\.org\//i, "").trim() : "";
+              if (rawOrcid && !coAuthorOrcidByOaId.has(shortAId)) {
+                coAuthorOrcidByOaId.set(shortAId, rawOrcid);
+              }
+              const lastInsts = Array.isArray(rec.last_known_institutions) ? rec.last_known_institutions.filter((i2) => i2?.display_name) : [];
+              if (lastInsts.length > 0) {
+                coAuthorInstsFromAuthorsApi.set(shortAId, lastInsts);
+                for (const inst of lastInsts) {
+                  if (inst?.id) {
+                    instIdsSet.add(
+                      String(inst.id).replace("https://openalex.org/", "")
+                    );
+                  }
+                }
+              }
+            }
+          } catch {
+          }
+        })()
+      );
+    }
+    await Promise.all(authorBatches);
   }
   const geoCache = /* @__PURE__ */ new Map();
   const sourceMetricsCache = /* @__PURE__ */ new Map();
@@ -97843,6 +98529,39 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       })
     );
   }
+  const knownCoAuthorByName = /* @__PURE__ */ new Map();
+  const knownAbbrevOwnerMap = /* @__PURE__ */ new Map();
+  const ambiguousKnownAbbrev = /* @__PURE__ */ new Set();
+  function indexKnownCoAuthorProfile(fullName, mapped, orcid, scholarUserId) {
+    const clean = fullName.trim();
+    if (!clean) return;
+    const lower = clean.toLowerCase();
+    const prev = knownCoAuthorByName.get(lower);
+    const mergedMapped = mapped && mapped.universityId !== "unlisted" ? mapped : prev?.mapped;
+    const mergedOrcid = orcid || prev?.orcid;
+    const mergedUserId = scholarUserId || prev?.scholarUserId;
+    if (!mergedMapped && !mergedOrcid && !mergedUserId) return;
+    const entry = {
+      ...mergedMapped ? { mapped: mergedMapped } : {},
+      ...mergedOrcid ? { orcid: mergedOrcid } : {},
+      ...mergedUserId ? { scholarUserId: mergedUserId } : {}
+    };
+    knownCoAuthorByName.set(lower, entry);
+    const words = lower.replace(/[^a-z\s-]/g, " ").split(/\s+/).filter(Boolean);
+    if (words.length >= 2) {
+      const firstInit = words[0][0];
+      const last = words[words.length - 1];
+      const abbrev = `${firstInit} ${last}`;
+      const existingOwner = knownAbbrevOwnerMap.get(abbrev);
+      if (existingOwner && existingOwner !== lower) {
+        ambiguousKnownAbbrev.add(abbrev);
+        knownCoAuthorByName.delete(abbrev);
+      } else if (!ambiguousKnownAbbrev.has(abbrev)) {
+        knownAbbrevOwnerMap.set(abbrev, lower);
+        knownCoAuthorByName.set(abbrev, entry);
+      }
+    }
+  }
   for (const w of strictScholarOaWorks) {
     const hasBangladeshiAuthor = (w.authorships || []).some(
       (au) => (au.institutions || []).some(
@@ -97856,6 +98575,8 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         ""
       );
       if (!aName || isSameResearcherName(aName, targetName)) continue;
+      const authorOrcid = (a.author?.orcid ? String(a.author.orcid).replace(/^https?:\/\/orcid\.org\//i, "").trim() : "") || (aId ? coAuthorOrcidByOaId.get(aId) : "") || "";
+      const colMeta = lookupColleagueAvatarMeta(aName);
       for (const inst of a.institutions || []) {
         if (!inst?.display_name) continue;
         let dispName = String(inst.display_name);
@@ -97884,6 +98605,45 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
             knownByOaAuthorId.set(aId, mapped);
           }
         }
+        indexKnownCoAuthorProfile(
+          aName,
+          mapped.universityId !== "unlisted" ? mapped : void 0,
+          authorOrcid || void 0,
+          colMeta?.userId
+        );
+      }
+      if ((!Array.isArray(a.institutions) || a.institutions.length === 0) && aId && !knownByOaAuthorId.has(aId) && coAuthorInstsFromAuthorsApi.has(aId)) {
+        const lastInsts = coAuthorInstsFromAuthorsApi.get(aId);
+        for (const inst of lastInsts) {
+          if (!inst?.display_name) continue;
+          const shortId = String(inst.id || "").replace(
+            "https://openalex.org/",
+            ""
+          );
+          const mapped = await resolveInstitutionFromOfficialSources(
+            String(inst.display_name),
+            String(inst.country_code || ""),
+            shortId,
+            geoCache
+          );
+          if (mapped.universityId !== "unlisted") {
+            knownByOaAuthorId.set(aId, mapped);
+            indexKnownCoAuthorProfile(
+              aName,
+              mapped,
+              authorOrcid || void 0,
+              colMeta?.userId
+            );
+            break;
+          }
+        }
+      } else if (authorOrcid || colMeta?.userId) {
+        indexKnownCoAuthorProfile(
+          aName,
+          void 0,
+          authorOrcid || void 0,
+          colMeta?.userId
+        );
       }
     }
   }
@@ -97961,7 +98721,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       if (!aName || aId && openAlexAuthorIds.includes(aId) || isSameResearcherName(aName, targetName)) {
         continue;
       }
-      const cleanOrcid = a.author?.orcid ? String(a.author.orcid).replace(/^https?:\/\/orcid\.org\//i, "").trim() : "";
+      const cleanOrcid = (a.author?.orcid ? String(a.author.orcid).replace(/^https?:\/\/orcid\.org\//i, "").trim() : "") || (aId ? coAuthorOrcidByOaId.get(aId) : "") || "";
       const rawInsts = Array.isArray(a.institutions) ? a.institutions.filter((i) => i?.display_name) : [];
       const filteredInsts = rawInsts.filter((inst) => {
         const dName = String(inst.display_name || "");
@@ -98003,20 +98763,63 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         }
       } else {
         let mapped = null;
-        if (aId && knownByOaAuthorId.has(aId)) {
+        const rawAffilInfo = extractInstitutionFromRawAffiliations(
+          a.raw_affiliation_strings,
+          a.countries
+        );
+        if (rawAffilInfo?.institutionName) {
+          const resolvedFromRaw = await resolveInstitutionFromOfficialSources(
+            rawAffilInfo.institutionName,
+            rawAffilInfo.countryCode || "",
+            void 0,
+            geoCache
+          );
+          if (resolvedFromRaw.universityId !== "unlisted") {
+            mapped = resolvedFromRaw;
+            if (aId && !knownByOaAuthorId.has(aId)) {
+              knownByOaAuthorId.set(aId, resolvedFromRaw);
+            }
+          }
+        }
+        if (!mapped && aId && knownByOaAuthorId.has(aId)) {
           mapped = knownByOaAuthorId.get(aId);
-        } else {
+        }
+        if (!mapped) {
           mapped = matchAuthorToSidebar(aName);
         }
-        const dedupKey = `${aName.toLowerCase()}::${mapped?.universityId || "unlisted"}`;
+        const inferredCountryCode = rawAffilInfo?.countryCode ? rawAffilInfo.countryCode.trim().toUpperCase() : "";
+        if (!mapped && inferredCountryCode && inferredCountryCode !== "UN") {
+          const geo = getCountryGeoInfo(inferredCountryCode);
+          if (geo) {
+            mapped = {
+              universityId: "unlisted",
+              universityName: "Independent / Unlisted",
+              city: geo.country,
+              country: geo.country,
+              countryCode: inferredCountryCode,
+              continent: geo.continent,
+              lat: geo.lat,
+              lng: geo.lng
+            };
+          }
+        }
+        const dedupKey = `${aName.toLowerCase()}::${mapped?.universityId || "unlisted"}::${mapped?.countryCode || "UN"}`;
         if (seenAuthorInstKeys.has(dedupKey)) continue;
         seenAuthorInstKeys.add(dedupKey);
         const colMeta = lookupColleagueAvatarMeta(aName, mapped?.countryCode);
         if (mapped) {
+          if (mapped.universityId !== "unlisted") {
+            indexKnownCoAuthorProfile(
+              aName,
+              mapped,
+              cleanOrcid || void 0,
+              colMeta?.userId
+            );
+          }
           coAuthors.push({
             name: aName,
             ...mapped,
-            isHomeInstitution: mapped.universityId === homeMapped.universityId,
+            isHomeInstitution: mapped.universityId !== "unlisted" && mapped.universityId === homeMapped.universityId,
             ...cleanOrcid ? { orcid: cleanOrcid } : {},
             ...colMeta?.userId ? { scholarUserId: colMeta.userId } : {}
           });
@@ -98060,19 +98863,25 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     const seenCoAuthorNames = /* @__PURE__ */ new Set();
     for (const rawAuth of rawAuthorParts) {
       const lower = rawAuth.toLowerCase().trim();
-      const matchedInst = matchAuthorToSidebar(rawAuth);
       if (seenCoAuthorNames.has(lower)) continue;
       seenCoAuthorNames.add(lower);
+      const words = lower.replace(/[^a-z\s-]/g, " ").split(/\s+/).filter(Boolean);
+      const abbrevLookup = words.length >= 2 ? `${words[0][0]} ${words[words.length - 1]}` : "";
+      const knownEntry = knownCoAuthorByName.get(lower) || (abbrevLookup ? knownCoAuthorByName.get(abbrevLookup) : void 0);
+      const matchedInst = matchAuthorToSidebar(rawAuth) || knownEntry?.mapped;
       const colMeta = lookupColleagueAvatarMeta(
         rawAuth,
         matchedInst?.countryCode || homeMapped.countryCode
       );
+      const resolvedUserId = colMeta?.userId || knownEntry?.scholarUserId;
+      const resolvedOrcid = knownEntry?.orcid;
       if (matchedInst) {
         coAuthors.push({
           name: rawAuth,
           ...matchedInst,
           isHomeInstitution: matchedInst.universityId === homeMapped.universityId,
-          ...colMeta?.userId ? { scholarUserId: colMeta.userId } : {}
+          ...resolvedOrcid ? { orcid: resolvedOrcid } : {},
+          ...resolvedUserId ? { scholarUserId: resolvedUserId } : {}
         });
       } else {
         coAuthors.push({
@@ -98086,13 +98895,74 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
           lat: 0,
           lng: 0,
           isHomeInstitution: false,
-          ...colMeta?.userId ? { scholarUserId: colMeta.userId } : {}
+          ...resolvedOrcid ? { orcid: resolvedOrcid } : {},
+          ...resolvedUserId ? { scholarUserId: resolvedUserId } : {}
         });
       }
     }
     return coAuthors;
   }
   const finalPublications = [];
+  const normalizeTitleDedup = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const publishedTitleKeys = /* @__PURE__ */ new Set();
+  const consumedOaWorks = /* @__PURE__ */ new Set();
+  async function appendOpenAlexWorkAsPublication(w, idx) {
+    const title = String(
+      w.title || w.display_name || `Publication #${idx + 1}`
+    ).trim();
+    const titleKey = normalizeTitleDedup(title);
+    if (!title || titleKey && publishedTitleKeys.has(titleKey)) return;
+    const oaDetails = await extractOaWorkDetails(w);
+    const citations = Number(w.cited_by_count) || 0;
+    if (shouldExcludeNonPaperRecord({
+      title,
+      venue: oaDetails.venue,
+      workType: oaDetails.workType,
+      sourceType: oaDetails.sourceType,
+      citations
+    })) {
+      return;
+    }
+    let srcMetrics = oaDetails.sourceId ? sourceMetricsCache.get(oaDetails.sourceId) : void 0;
+    if (!srcMetrics && oaDetails.venue !== "Academic Venue") {
+      srcMetrics = await resolveOfficialJournalMetricsByVenue(
+        oaDetails.venue
+      );
+    }
+    const type = classifyPublicationType(
+      oaDetails.sourceType,
+      oaDetails.workType,
+      oaDetails.venue,
+      title
+    );
+    const quartile = classifyQuartileFromOfficialMetrics(
+      type,
+      oaDetails.venue,
+      srcMetrics
+    );
+    const paperUrl = oaDetails.landingPageUrl || `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
+    if (titleKey) publishedTitleKeys.add(titleKey);
+    finalPublications.push({
+      id: String(w.id || `oa-${idx}`).replace("https://openalex.org/", ""),
+      title,
+      year: oaDetails.year || 2020,
+      citations,
+      venue: oaDetails.venue,
+      quartile,
+      type,
+      authorshipRole: oaDetails.authorshipRole,
+      openAccess: oaDetails.openAccess,
+      doi: oaDetails.doi,
+      url: paperUrl,
+      coAuthors: oaDetails.coAuthors,
+      authorAffiliation: oaDetails.authorAffiliation,
+      impactFactor: getJournalImpactFactor(
+        oaDetails.venue,
+        type,
+        srcMetrics?.twoYrMeanCitedness
+      )
+    });
+  }
   if (scraped && scraped.publications.length > 0) {
     const candidateVenues = /* @__PURE__ */ new Set();
     for (let gIdx = 0; gIdx < scraped.publications.length; gIdx++) {
@@ -98117,6 +98987,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       const gsPub = scraped.publications[gIdx];
       const matchedOaWork = gsMatchedOaWorkByIndex.get(gIdx);
       if (matchedOaWork) {
+        consumedOaWorks.add(matchedOaWork);
         const oaDetails = await extractOaWorkDetails(matchedOaWork);
         const venue = cleanVenueName(
           oaDetails.venue && oaDetails.venue !== "Academic Venue" ? oaDetails.venue : gsPub.venueText && gsPub.venueText !== "Academic Venue" && !gsPub.venueText.endsWith("...") ? gsPub.venueText : oaDetails.venue
@@ -98147,6 +99018,8 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         const paperUrl = oaDetails.landingPageUrl || gsPub.scholarUrl || `https://scholar.google.com/scholar?q=${encodeURIComponent(
           gsPub.title
         )}`;
+        const gsKey = normalizeTitleDedup(gsPub.title);
+        if (gsKey) publishedTitleKeys.add(gsKey);
         finalPublications.push({
           id: `gs-${gIdx}`,
           title: gsPub.title,
@@ -98199,6 +99072,8 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         const paperUrl = crossref?.url || gsPub.scholarUrl || `https://scholar.google.com/scholar?q=${encodeURIComponent(
           gsPub.title
         )}`;
+        const gsKey = normalizeTitleDedup(gsPub.title);
+        if (gsKey) publishedTitleKeys.add(gsKey);
         finalPublications.push({
           id: `gs-${gIdx}`,
           title: gsPub.title,
@@ -98220,61 +99095,14 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
         });
       }
     }
-  } else {
     for (let idx = 0; idx < strictScholarOaWorks.length; idx++) {
       const w = strictScholarOaWorks[idx];
-      const oaDetails = await extractOaWorkDetails(w);
-      const title = String(
-        w.title || w.display_name || `Publication #${idx + 1}`
-      ).trim();
-      const citations = Number(w.cited_by_count) || 0;
-      if (shouldExcludeNonPaperRecord({
-        title,
-        venue: oaDetails.venue,
-        workType: oaDetails.workType,
-        sourceType: oaDetails.sourceType,
-        citations
-      })) {
-        continue;
-      }
-      let srcMetrics = oaDetails.sourceId ? sourceMetricsCache.get(oaDetails.sourceId) : void 0;
-      if (!srcMetrics && oaDetails.venue !== "Academic Venue") {
-        srcMetrics = await resolveOfficialJournalMetricsByVenue(
-          oaDetails.venue
-        );
-      }
-      const type = classifyPublicationType(
-        oaDetails.sourceType,
-        oaDetails.workType,
-        oaDetails.venue,
-        title
-      );
-      const quartile = classifyQuartileFromOfficialMetrics(
-        type,
-        oaDetails.venue,
-        srcMetrics
-      );
-      const paperUrl = oaDetails.landingPageUrl || `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
-      finalPublications.push({
-        id: String(w.id || `oa-${idx}`).replace("https://openalex.org/", ""),
-        title,
-        year: oaDetails.year || 2020,
-        citations,
-        venue: oaDetails.venue,
-        quartile,
-        type,
-        authorshipRole: oaDetails.authorshipRole,
-        openAccess: oaDetails.openAccess,
-        doi: oaDetails.doi,
-        url: paperUrl,
-        coAuthors: oaDetails.coAuthors,
-        authorAffiliation: oaDetails.authorAffiliation,
-        impactFactor: getJournalImpactFactor(
-          oaDetails.venue,
-          type,
-          srcMetrics?.twoYrMeanCitedness
-        )
-      });
+      if (consumedOaWorks.has(w)) continue;
+      await appendOpenAlexWorkAsPublication(w, idx);
+    }
+  } else {
+    for (let idx = 0; idx < strictScholarOaWorks.length; idx++) {
+      await appendOpenAlexWorkAsPublication(strictScholarOaWorks[idx], idx);
     }
   }
   if (finalPublications.length === 0) {
@@ -98907,11 +99735,11 @@ function lookupColleagueAvatarMeta(name, countryCodeHint) {
   const clean = name.trim();
   if (!clean) return null;
   const lower = clean.toLowerCase();
-  const fullWordCount = parseStrictNameTokens(clean).filter(
-    (w) => w.length >= 3
-  ).length;
+  const strictTokens = parseStrictNameTokens(clean);
+  const fullWordCount = strictTokens.filter((w) => w.length >= 3).length;
+  const surnameToken = strictTokens[strictTokens.length - 1] || "";
   const upperCountry = String(countryCodeHint || "").trim().toUpperCase();
-  const allowStaticDirectory = fullWordCount >= 2 && (!upperCountry || upperCountry === "BD" || upperCountry === "UN");
+  const allowStaticDirectory = fullWordCount >= 2 && (!upperCountry || upperCountry === "BD" || upperCountry === "UN" || surnameToken.length >= 4 && !COMMON_RESEARCHER_NAMES.has(surnameToken));
   const direct = coAuthorPortraitDirectory.get(lower);
   if (direct?.u && (runtimeRegisteredColleagueKeys.has(lower) || allowStaticDirectory)) {
     return { userId: direct.u };
@@ -98959,7 +99787,7 @@ async function fetchStaticImageBuffer(url, manualRedirect = false, timeoutMs = 4
     return null;
   }
 }
-var MAX_CONCURRENT_SCHOLAR_AVATAR_FETCHES = 3;
+var MAX_CONCURRENT_SCHOLAR_AVATAR_FETCHES = 5;
 var activeScholarAvatarFetches = 0;
 var scholarAvatarQueue = [];
 var inflightAvatarPromises = /* @__PURE__ */ new Map();
@@ -98981,7 +99809,7 @@ function releaseScholarAvatarSlot() {
     activeScholarAvatarFetches = Math.max(0, activeScholarAvatarFetches - 1);
     const next = scholarAvatarQueue.shift();
     if (next) next();
-  }, 60);
+  }, 40);
 }
 async function fetchScholarAvatarWithQueue(scholarUserId) {
   const cleanId = scholarUserId.trim();
@@ -98991,7 +99819,7 @@ async function fetchScholarAvatarWithQueue(scholarUserId) {
     return { contentType: cached.contentType, buffer: cached.buffer };
   }
   const negTs = negativeScholarPhotoCache.get(cleanId);
-  if (negTs && Date.now() - negTs < 6 * 60 * 60 * 1e3) {
+  if (negTs && Date.now() - negTs < 2 * 60 * 60 * 1e3) {
     return null;
   }
   const existingInflight = inflightAvatarPromises.get(cleanId);
@@ -99001,25 +99829,54 @@ async function fetchScholarAvatarWithQueue(scholarUserId) {
   const taskPromise = (async () => {
     await acquireScholarAvatarSlot();
     try {
-      const gsCdnUrl = `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-        cleanId
-      )}`;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const res = await fetchStaticImageBuffer(gsCdnUrl, true, 4200);
-        if (res && res.status === 200 && res.buffer.length > 200) {
-          avatarBufferCache.set(cleanId, {
-            contentType: res.contentType,
-            buffer: res.buffer,
-            timestamp: Date.now()
-          });
-          return { contentType: res.contentType, buffer: res.buffer };
-        }
-        if (res && res.status === 302 && res.location?.includes("avatar_scholar")) {
-          negativeScholarPhotoCache.set(cleanId, Date.now());
-          return null;
-        }
-        if (attempt === 0) {
-          await new Promise((r) => setTimeout(r, 220));
+      const candidateUrls = [
+        `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+          cleanId
+        )}`,
+        `https://scholar.googleusercontent.com/citations?view_op=view_photo&user=${encodeURIComponent(
+          cleanId
+        )}`
+      ];
+      for (const gsCdnUrl of candidateUrls) {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const res = await fetchStaticImageBuffer(gsCdnUrl, true, 4200);
+          if (res && res.status === 200 && res.buffer.length > 200) {
+            avatarBufferCache.set(cleanId, {
+              contentType: res.contentType,
+              buffer: res.buffer,
+              timestamp: Date.now()
+            });
+            return { contentType: res.contentType, buffer: res.buffer };
+          }
+          if (res && res.status && res.status >= 300 && res.status < 400 && res.location) {
+            if (res.location.includes("avatar_scholar")) {
+              negativeScholarPhotoCache.set(cleanId, Date.now());
+              return null;
+            }
+            const resolvedRedirectUrl = new URL(
+              res.location,
+              gsCdnUrl
+            ).toString();
+            const redirRes = await fetchStaticImageBuffer(
+              resolvedRedirectUrl,
+              false,
+              4200
+            );
+            if (redirRes && redirRes.status === 200 && redirRes.buffer.length > 200) {
+              avatarBufferCache.set(cleanId, {
+                contentType: redirRes.contentType,
+                buffer: redirRes.buffer,
+                timestamp: Date.now()
+              });
+              return {
+                contentType: redirRes.contentType,
+                buffer: redirRes.buffer
+              };
+            }
+          }
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 200));
+          }
         }
       }
       return null;
@@ -99192,6 +100049,76 @@ async function resolveOrcidInstitutionalPortrait(orcidParam) {
   orcidPortraitLookupCache.set(cleanOrcid, { checkedAt: Date.now() });
   return null;
 }
+var wikipediaPortraitCache = /* @__PURE__ */ new Map();
+async function resolveWikipediaPortraitUrl(researcherName, universityHint) {
+  const cleanName = stripAcademicHonorifics(researcherName).trim();
+  if (!cleanName || cleanName.split(/\s+/).length < 2) return null;
+  const cacheKey = cleanName.toLowerCase();
+  const cached = wikipediaPortraitCache.get(cacheKey);
+  if (cached && Date.now() - cached.checkedAt < 24 * 60 * 60 * 1e3) {
+    return cached.imageUrl || null;
+  }
+  try {
+    const searchRes = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+        cleanName
+      )}&srlimit=3&format=json`,
+      {
+        headers: {
+          "User-Agent": "ScholarLens/2.0 (mailto:research@scholarlens.org)"
+        },
+        signal: AbortSignal.timeout(2500)
+      }
+    );
+    if (!searchRes.ok) return null;
+    const searchJson = await searchRes.json();
+    const hits = Array.isArray(searchJson?.query?.search) ? searchJson.query.search : [];
+    const uniTokens = normalizeAsciiWords(universityHint || "").split(/\s+/).filter((t) => t.length >= 4 && !/^(university|institute|college|school)$/i.test(t));
+    for (const hit of hits) {
+      const title = String(hit?.title || "").trim();
+      if (!title || !isStrictSameResearcherForAvatar(cleanName, title)) continue;
+      const summaryRes = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+          title.replace(/\s+/g, "_")
+        )}`,
+        {
+          headers: {
+            "User-Agent": "ScholarLens/2.0 (mailto:research@scholarlens.org)"
+          },
+          signal: AbortSignal.timeout(2400)
+        }
+      );
+      if (!summaryRes.ok) continue;
+      const summary = await summaryRes.json();
+      const bioText = `${summary?.description || ""} ${summary?.extract || ""}`.toLowerCase();
+      const isAcademicBio = /\b(?:professor|researcher|scientist|computer\s+scientist|physicist|biologist|chemist|mathematician|physician|engineer|scholar|academic|fellow|university|faculty|dean|director)\b/i.test(
+        bioText
+      );
+      if (!isAcademicBio) continue;
+      if (uniTokens.length > 0) {
+        const hasUniMatch = uniTokens.some((tok) => bioText.includes(tok));
+        if (!hasUniMatch && !/\b(?:stanford|berkeley|mit|harvard|oxford|cambridge|toronto|virginia|johns hopkins|columbia|nyu|cornell|eth|epfl|tsinghua)\b/i.test(
+          bioText
+        )) {
+          continue;
+        }
+      }
+      const imgUrl = String(
+        summary?.thumbnail?.source || summary?.originalimage?.source || ""
+      ).trim();
+      if (imgUrl && !imgUrl.endsWith(".svg")) {
+        wikipediaPortraitCache.set(cacheKey, {
+          imageUrl: imgUrl,
+          checkedAt: Date.now()
+        });
+        return imgUrl;
+      }
+    }
+  } catch {
+  }
+  wikipediaPortraitCache.set(cacheKey, { checkedAt: Date.now() });
+  return null;
+}
 async function resolveCoAuthorPhotoBuffer(params) {
   const rawName = String(params.name || "").trim();
   const cleanName = rawName && rawName.toLowerCase() !== "scholar" ? rawName : "";
@@ -99201,7 +100128,7 @@ async function resolveCoAuthorPhotoBuffer(params) {
   const inflightKey = `${cleanOrcid}::${cleanName.toLowerCase()}::${uniNorm}`;
   if (!cleanOrcid && !cleanName) return null;
   const negTs = negativeCoAuthorPhotoCache.get(inflightKey);
-  if (negTs && Date.now() - negTs < 12 * 60 * 60 * 1e3) {
+  if (negTs && Date.now() - negTs < 15 * 60 * 1e3) {
     return null;
   }
   const existing = coAuthorResolvedPhotoInflight.get(inflightKey);
@@ -99223,6 +100150,7 @@ async function resolveCoAuthorPhotoBuffer(params) {
         `name::${cleanName.toLowerCase()}${uniNorm ? `::${uniNorm}` : ""}`,
         stamped
       );
+      avatarBufferCache.set(`name::${cleanName.toLowerCase()}`, stamped);
     }
     return img;
   };
@@ -99251,6 +100179,18 @@ async function resolveCoAuthorPhotoBuffer(params) {
           });
         }
       }
+      if (cleanName) {
+        const wikiImgUrl = await resolveWikipediaPortraitUrl(cleanName, uni);
+        if (wikiImgUrl) {
+          const wikiImg = await fetchStaticImageBuffer(wikiImgUrl, false, 3500);
+          if (wikiImg && wikiImg.status === 200 && !wikiImg.contentType.includes("svg") && wikiImg.buffer.length > 800) {
+            return storeResolved({
+              contentType: wikiImg.contentType,
+              buffer: wikiImg.buffer
+            });
+          }
+        }
+      }
       if (cleanOrcid) {
         const orcidImg = await resolveOrcidInstitutionalPortrait(cleanOrcid);
         if (orcidImg) {
@@ -99258,18 +100198,49 @@ async function resolveCoAuthorPhotoBuffer(params) {
         }
       }
       if (cleanName) {
-        const discoveredScholarId = await resolveGoogleScholarIdByName(
-          cleanName,
-          uni
-        );
-        if (discoveredScholarId && discoveredScholarId !== params.skipScholarId) {
-          const gsImg = await fetchScholarAvatarWithQueue(discoveredScholarId);
+        const candidateIds = await findCandidateScholarIdsViaDdg(cleanName, uni);
+        for (const candId of candidateIds.slice(0, 2)) {
+          if (candId === params.skipScholarId) continue;
+          const gsImg = await fetchScholarAvatarWithQueue(candId);
           if (gsImg) {
-            registerScholarColleague(cleanName, discoveredScholarId, true);
+            registerScholarColleague(cleanName, candId, true);
             return storeResolved({
               ...gsImg,
-              resolvedScholarId: discoveredScholarId
+              resolvedScholarId: candId
             });
+          }
+        }
+        const facultyQuery = uni ? `"${stripAcademicHonorifics(cleanName)}" "${uni}"` : `"${stripAcademicHonorifics(cleanName)}" professor OR faculty`;
+        const ddgHtml = await fetchDuckDuckGoHtmlWithQueue(facultyQuery, 4e3);
+        if (ddgHtml) {
+          const urls = extractGeneralUrlsFromDdgHtml(ddgHtml).filter(
+            (u) => /\.(?:edu|ac\.[a-z]{2,3}|org)\b|\/(?:faculty|people|person|profile|staff|researchers|directory)\b/i.test(
+              u
+            )
+          ).slice(0, 2);
+          for (const pageUrl of urls) {
+            try {
+              const pageRes = await fetch(pageUrl, {
+                headers: {
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"
+                },
+                signal: AbortSignal.timeout(2600)
+              });
+              if (!pageRes.ok) continue;
+              const ct = String(pageRes.headers.get("content-type") || "");
+              if (!ct.includes("html")) continue;
+              const html = await pageRes.text();
+              const portraitUrl = extractPortraitUrlFromHtml(html, pageUrl);
+              if (!portraitUrl) continue;
+              const img = await fetchStaticImageBuffer(portraitUrl, false, 3e3);
+              if (img && img.status === 200 && img.contentType.startsWith("image/") && !img.contentType.includes("svg") && img.buffer.length > 1200) {
+                return storeResolved({
+                  contentType: img.contentType,
+                  buffer: img.buffer
+                });
+              }
+            } catch {
+            }
           }
         }
       }
@@ -99284,6 +100255,7 @@ async function resolveCoAuthorPhotoBuffer(params) {
 }
 function enrichAndPrewarmProfileCoAuthors(publications) {
   const coAuthorCounts = /* @__PURE__ */ new Map();
+  const unresolvedCoAuthorStats = /* @__PURE__ */ new Map();
   const enriched = publications.map((pub) => ({
     ...pub,
     coAuthors: (pub.coAuthors || []).map((ca) => {
@@ -99293,14 +100265,35 @@ function enrichAndPrewarmProfileCoAuthors(publications) {
         coAuthorCounts.set(resolvedId, (coAuthorCounts.get(resolvedId) || 0) + 1);
         return { ...ca, scholarUserId: resolvedId };
       }
+      const cleanKey = ca.name.trim().toLowerCase();
+      if (cleanKey && cleanKey.split(/\s+/).length >= 2) {
+        const prev = unresolvedCoAuthorStats.get(cleanKey);
+        unresolvedCoAuthorStats.set(cleanKey, {
+          name: ca.name.trim(),
+          university: ca.universityName || "",
+          orcid: ca.orcid || prev?.orcid,
+          count: (prev?.count || 0) + 1
+        });
+      }
       return ca;
     })
   }));
   const sortedIds = [...coAuthorCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 80).map(([id]) => id);
+  const topUnresolved = [...unresolvedCoAuthorStats.values()].sort((a, b) => b.count - a.count).slice(0, 15);
   setTimeout(async () => {
     for (const id of sortedIds) {
       if (!avatarBufferCache.has(id) && !negativeScholarPhotoCache.has(id)) {
         await fetchScholarAvatarWithQueue(id);
+      }
+    }
+    for (const ca of topUnresolved) {
+      const nameKey = `name::${ca.name.toLowerCase()}`;
+      if (!avatarBufferCache.has(nameKey)) {
+        await resolveCoAuthorPhotoBuffer({
+          name: ca.name,
+          university: ca.university,
+          orcid: ca.orcid
+        });
       }
     }
   }, 10);
@@ -101448,7 +102441,7 @@ app.get("/api/scholar/avatar", async (req, res) => {
       return;
     }
   }
-  if (!userId && !orcidParam && nameKey) {
+  if (nameKey) {
     const cachedByName = (nameUniCacheKey ? avatarBufferCache.get(nameUniCacheKey) : void 0) || avatarBufferCache.get(`name::${nameKey}`) || avatarBufferCache.get(nameKey);
     if (cachedByName && Date.now() - cachedByName.timestamp < 24 * 60 * 60 * 1e3) {
       res.setHeader("Cache-Control", "public, max-age=86400");
@@ -101456,15 +102449,17 @@ app.get("/api/scholar/avatar", async (req, res) => {
       res.send(cachedByName.buffer);
       return;
     }
-    const colMeta = lookupColleagueAvatarMeta(rawName);
-    if (colMeta?.userId) {
-      const cachedByColId = avatarBufferCache.get(colMeta.userId);
-      if (cachedByColId) {
-        if (nameUniCacheKey) avatarBufferCache.set(nameUniCacheKey, cachedByColId);
-        res.setHeader("Cache-Control", "public, max-age=86400");
-        res.setHeader("Content-Type", cachedByColId.contentType);
-        res.send(cachedByColId.buffer);
-        return;
+    if (!userId && !orcidParam) {
+      const colMeta = lookupColleagueAvatarMeta(rawName);
+      if (colMeta?.userId) {
+        const cachedByColId = avatarBufferCache.get(colMeta.userId);
+        if (cachedByColId) {
+          if (nameUniCacheKey) avatarBufferCache.set(nameUniCacheKey, cachedByColId);
+          res.setHeader("Cache-Control", "public, max-age=86400");
+          res.setHeader("Content-Type", cachedByColId.contentType);
+          res.send(cachedByColId.buffer);
+          return;
+        }
       }
     }
   }

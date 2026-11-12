@@ -230,3 +230,47 @@ test('aggregateCoAuthors and aggregateUniversityCollaborations strictly exclude 
     assert.ok(!u.coAuthors.some((ca) => ca.name.toLowerCase().includes(primaryName.toLowerCase())));
   }
 });
+
+test('aggregateCountries counts resolved countries on unlisted-university co-authors while excluding Unlisted placeholders', () => {
+  const pubs = [
+    {
+      ...PRESET_PROFILES[0].publications[0],
+      id: 'pub-country-mix',
+      coAuthors: [
+        {
+          name: 'Salem Ben Ali',
+          universityId: 'unlisted',
+          universityName: 'Independent / Unlisted',
+          city: 'Tripoli',
+          country: 'Libya',
+          countryCode: 'LY',
+          continent: 'Africa' as const,
+          lat: 32.89,
+          lng: 13.19,
+        },
+        {
+          name: 'Unknown Researcher',
+          universityId: 'unlisted',
+          universityName: 'Independent / Unlisted',
+          city: 'Unlisted',
+          country: 'Unlisted',
+          countryCode: 'UN',
+          continent: 'Asia' as const,
+          lat: 0,
+          lng: 0,
+        },
+      ],
+    },
+  ];
+
+  const countries = aggregateCountries(pubs);
+  const libya = countries.find((c) => c.countryCode === 'LY');
+  assert.ok(libya, 'Expected Libya to be counted in Collaborating Nations');
+  assert.equal(libya?.coAuthorCount, 1);
+  assert.equal(libya?.paperCount, 1);
+  assert.equal(libya?.universityCount, 0);
+  assert.equal(
+    countries.some((c) => c.country === 'Unlisted' || c.countryCode === 'UN'),
+    false
+  );
+});
