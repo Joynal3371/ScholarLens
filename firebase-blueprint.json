@@ -2,12 +2,12 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Authenticated researcher user profile for Google or ORCID sign-in.",
+      "description": "Authenticated researcher user profile for Google, ORCID, or Email sign-in.",
       "type": "object",
       "properties": {
         "uid": {
           "type": "string",
-          "description": "Unique user identifier matching request.auth.uid.",
+          "description": "Unique user identifier matching Firebase Auth UID or canonical orcid_<digits>.",
           "minLength": 1,
           "maxLength": 128,
           "pattern": "^[a-zA-Z0-9_\\-]+$"
@@ -16,18 +16,40 @@
           "type": "string",
           "description": "Display name of the researcher.",
           "minLength": 1,
-          "maxLength": 120
+          "maxLength": 160
+        },
+        "name": {
+          "type": "string",
+          "description": "Normalized researcher name.",
+          "minLength": 1,
+          "maxLength": 160
         },
         "provider": {
           "type": "string",
-          "description": "Authentication provider used (google or orcid).",
-          "enum": ["google", "orcid"]
+          "description": "Authentication provider used (google, orcid, or email).",
+          "enum": ["google", "orcid", "email"]
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address for Google/Email providers.",
+          "minLength": 0,
+          "maxLength": 320
+        },
+        "emailOrId": {
+          "type": "string",
+          "description": "Primary identifier displayed in profile UI (email or ORCID iD).",
+          "minLength": 0,
+          "maxLength": 320
         },
         "orcidId": {
           "type": "string",
-          "description": "Optional ORCID identifier.",
+          "description": "Unique canonical ORCID iD bound to this account.",
           "minLength": 0,
           "maxLength": 40
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "True when identity was verified via official ORCID OAuth or verified provider."
         },
         "photoURL": {
           "type": "string",
@@ -37,9 +59,15 @@
         },
         "scholarUrl": {
           "type": "string",
-          "description": "Mandatory Google Scholar profile link for the researcher.",
+          "description": "Optional Google Scholar profile link for the researcher.",
           "minLength": 0,
           "maxLength": 500
+        },
+        "scholarUserId": {
+          "type": "string",
+          "description": "Optional extracted Google Scholar user ID.",
+          "minLength": 0,
+          "maxLength": 64
         },
         "createdAt": {
           "type": "string",
@@ -50,6 +78,11 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp when user profile was last updated."
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of last authenticated sign-in."
         }
       },
       "required": ["uid", "displayName", "provider", "createdAt", "updatedAt"]
@@ -130,13 +163,54 @@
       },
       "required": ["ownerId", "scholarName", "exportType", "targetName", "createdAt"]
     }
+    "OrcidAccount": {
+      "title": "OrcidAccount",
+      "description": "Enforces strict 1-to-1 unique constraint mapping each canonical ORCID iD to a single ScholarLens account UID.",
+      "type": "object",
+      "properties": {
+        "orcidId": {
+          "type": "string",
+          "description": "Canonical 19-character ORCID identifier (XXXX-XXXX-XXXX-XXXX).",
+          "pattern": "^\\d{4}-\\d{4}-\\d{4}-[\\dX]{4}$"
+        },
+        "uid": {
+          "type": "string",
+          "description": "The single owning ScholarLens user UID bound to this ORCID iD.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Verified display name from ORCID.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when ORCID binding was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when ORCID binding was last refreshed."
+        }
+      },
+      "required": ["orcidId", "uid", "createdAt", "updatedAt"]
+    }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": {
         "$ref": "#/entities/UserProfile"
       },
-      "description": "Stores public/non-PII researcher user profile keyed by user UID."
+      "description": "Stores researcher user profile keyed by user UID."
+    },
+    "/orcidAccounts/{orcidId}": {
+      "schema": {
+        "$ref": "#/entities/OrcidAccount"
+      },
+      "description": "Authoritative 1-to-1 unique constraint index binding each ORCID iD to exactly one account UID."
     },
     "/scholarClaims/{scholarUserId}": {
       "schema": {

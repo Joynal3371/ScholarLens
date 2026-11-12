@@ -3,6 +3,31 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import firebaseAppletConfig from './firebase-applet-config.json';
+import {
+  AuthProvider,
+  AuthenticatedResearcherRecord,
+  ORCID_SESSION_COOKIE_NAME,
+  ORCID_STATE_COOKIE_NAME,
+  OrcidAccountStore,
+  OrcidConflictError,
+  OrcidEnvironment,
+  OrcidUnauthorizedError,
+  OrcidValidationError,
+  createInMemoryAccountMirror,
+  createSignedOAuthState,
+  createSignedSessionToken,
+  deriveAuthSecret,
+  exchangeOrcidAuthorizationCode,
+  getOrcidEndpoints,
+  normalizeOrcidId,
+  parseCookies,
+  resolvePublicBaseUrl,
+  serializeCookie,
+  validateOrcidClientId,
+  verifyAndResolveOrcidIdentity,
+  verifySignedOAuthState,
+  verifySignedSessionToken,
+} from './src/server/orcidAuth';
 import verifiedScholarSnapshot from './src/data/verifiedScholarCache.json';
 import verifiedColleagueDirectory from './src/data/verifiedColleagueDirectory.json';
 import verifiedAvatarStore from './src/data/verifiedAvatarStore.json';
@@ -3561,6 +3586,7 @@ if (rawSnapshot && typeof rawSnapshot === 'object') {
 }
 
 export const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => {
@@ -4280,25 +4306,161 @@ try {
 
 function persistScholarClaimsToDisk(): void {
   try {
+    if (process.env.VERCEL || process.env.READ_ONLY_FS === 'true') return;
     fs.writeFileSync(
       SCHOLAR_CLAIMS_FILE,
       JSON.stringify(scholarClaimsData, null, 2),
       'utf-8'
     );
   } catch (err) {
-    console.error('Failed to persist scholar claims to disk:', err);
+    console.warn('Could not persist scholar claims to disk (using Firestore/memory):', err);
   }
 }
 
-function getPublicBaseUrl(req: express.Request): string {
-  if (process.env.APP_URL && !process.env.APP_URL.includes('MY_APP_URL')) {
-    return process.env.APP_URL.replace(/\/$/, '');
+const orcidAccountMirror = createInMemoryAccountMirror();
+for (const [key, legacyUser] of Object.entries(scholarClaimsData.users || {})) {
+  const canonicalOrcid = normalizeOrcidId(legacyUser?.orcidId || key);
+  if (!canonicalOrcid || !legacyUser?.uid) continue;
+  const nowIso = legacyUser.createdAt || new Date().toISOString();
+  orcidAccountMirror.setOrcidIndex({
+    orcidId: canonicalOrcid,
+    uid: legacyUser.uid,
+    name: legacyUser.displayName || canonicalOrcid,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  });
+  orcidAccountMirror.setUser({
+    uid: legacyUser.uid,
+    name: legacyUser.displayName || canonicalOrcid,
+    emailOrId: canonicalOrcid,
+    photoURL: legacyUser.photoURL || undefined,
+    scholarUrl: legacyUser.scholarUrl || undefined,
+    scholarUserId: legacyUser.scholarUserId || undefined,
+    orcidId: canonicalOrcid,
+    verified: Boolean(legacyUser.verified ?? true),
+    provider: 'orcid',
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  });
+}
+
+function getAuthSecret(): string {
+  return deriveAuthSecret({
+    sessionSecret: process.env.SESSION_SECRET,
+    authSecret: process.env.AUTH_SECRET,
+    orcidClientSecret: (process.env.ORCID_CLIENT_SECRET || '').trim(),
+    firebaseProjectId: firebaseAppletConfig.projectId,
+    firebaseApiKey: firebaseAppletConfig.apiKey,
+  });
+}
+
+let _orcidStore: OrcidAccountStore | null = null;
+function getOrcidStore(): OrcidAccountStore {
+  if (!_orcidStore) {
+    _orcidStore = new OrcidAccountStore({
+      firestoreDocBase: FIRESTORE_DOC_BASE,
+      getBridgeToken: getBridgeIdToken,
+      mirror: orcidAccountMirror,
+      onPersistMirror: () => {
+        // Keep backward-compatible snapshot structure synced when disk is writable
+        persistScholarClaimsToDisk();
+      },
+    });
   }
-  const origin = req.get('origin');
-  if (origin) return origin.replace(/\/$/, '');
-  const proto = req.get('x-forwarded-proto') || req.protocol || 'http';
-  const host = req.get('x-forwarded-host') || req.get('host') || 'localhost:3000';
-  return `${proto}://${host}`.replace(/\/$/, '');
+  return _orcidStore;
+}
+
+function isLocalHostname(req: express.Request): boolean {
+  const host = String(req.get('x-forwarded-host') || req.get('host') || '').toLowerCase();
+  return host.startsWith('localhost') || host.startsWith('127.0.0.1');
+}
+
+function setOrcidSessionCookie(
+  res: express.Response,
+  baseUrl: string,
+  user: AuthenticatedResearcherRecord
+): void {
+  const sessionToken = createSignedSessionToken(
+    { uid: user.uid, orcidId: user.orcidId, name: user.name, provider: user.provider },
+    getAuthSecret()
+  );
+  res.append(
+    'Set-Cookie',
+    serializeCookie(ORCID_SESSION_COOKIE_NAME, sessionToken, {
+      httpOnly: true,
+      secure: baseUrl.startsWith('https://'),
+      sameSite: 'Lax',
+      path: '/',
+      maxAgeSeconds: 7 * 24 * 60 * 60,
+    })
+  );
+}
+
+function clearAuthCookie(res: express.Response, name: string, baseUrl: string): void {
+  res.append(
+    'Set-Cookie',
+    serializeCookie(name, '', {
+      httpOnly: true,
+      secure: baseUrl.startsWith('https://'),
+      sameSite: 'Lax',
+      path: '/',
+      maxAgeSeconds: 0,
+    })
+  );
+}
+
+async function verifySessionUserFromRequest(
+  req: express.Request
+): Promise<AuthenticatedResearcherRecord | null> {
+  const cookies = parseCookies(req.headers.cookie);
+  const rawToken = cookies[ORCID_SESSION_COOKIE_NAME];
+  if (!rawToken) return null;
+
+  const session = verifySignedSessionToken(rawToken, getAuthSecret());
+  if (!session?.uid) return null;
+
+  const lookup = await getOrcidStore().getUserLookupResult(session.uid);
+  if (lookup.status === 'FOUND') {
+    return lookup.user;
+  }
+  if (lookup.status === 'UNAVAILABLE') {
+    const canonicalOrcid = normalizeOrcidId(session.orcidId) || undefined;
+    return {
+      uid: session.uid,
+      name: session.name || canonicalOrcid || 'ORCID Researcher',
+      emailOrId: canonicalOrcid || session.uid,
+      ...(canonicalOrcid ? { orcidId: canonicalOrcid } : {}),
+      verified: Boolean(canonicalOrcid),
+      provider: session.provider,
+    };
+  }
+  return null;
+}
+
+function escapeHtml(text: string): string {
+  return String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function serializeForInlineScript(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function getPublicBaseUrl(req: express.Request): string {
+  return resolvePublicBaseUrl({
+    appUrlEnv: process.env.APP_URL,
+    headers: req.headers,
+    protocol: req.protocol,
+  });
 }
 
 interface OrcidPublicData {
@@ -4616,22 +4778,37 @@ function getEffectiveOrcidConfig(req: express.Request) {
   const envClientSecret = (process.env.ORCID_CLIENT_SECRET || '').trim();
   const savedConfig = scholarClaimsData.config || {};
 
-  const clientId =
+  const rawClientId =
     envClientId && envClientId !== 'MY_ORCID_CLIENT_ID'
       ? envClientId
       : (savedConfig.orcidClientId || '').trim();
-  const clientSecret =
+  const rawClientSecret =
     envClientSecret && envClientSecret !== 'MY_ORCID_CLIENT_SECRET'
       ? envClientSecret
       : (savedConfig.orcidClientSecret || '').trim();
-  const environment: 'production' | 'sandbox' =
-    savedConfig.orcidEnvironment ||
-    (process.env.ORCID_ENVIRONMENT === 'sandbox' ? 'sandbox' : 'production');
+  const environment: OrcidEnvironment =
+    process.env.ORCID_ENVIRONMENT === 'sandbox'
+      ? 'sandbox'
+      : savedConfig.orcidEnvironment === 'sandbox'
+      ? 'sandbox'
+      : 'production';
 
-  const isConfigured = Boolean(
-    clientId && clientId.length > 5 && clientSecret && clientSecret.length > 5
+  const clientIdCheck = validateOrcidClientId(rawClientId);
+  const clientId = clientIdCheck.valid ? clientIdCheck.clientId : '';
+  const hasSecret = Boolean(
+    rawClientSecret &&
+      rawClientSecret !== 'MY_ORCID_CLIENT_SECRET' &&
+      rawClientSecret.length > 5
   );
-  const domain = environment === 'sandbox' ? 'sandbox.orcid.org' : 'orcid.org';
+  const clientSecret = hasSecret ? rawClientSecret : '';
+  const isConfigured = Boolean(clientIdCheck.valid && hasSecret);
+  const configError = !clientIdCheck.valid
+    ? clientIdCheck.error
+    : !hasSecret
+    ? 'ORCID_CLIENT_SECRET is missing or invalid. Copy your Client Secret from ORCID Developer Tools.'
+    : undefined;
+
+  const endpoints = getOrcidEndpoints(environment);
   const baseUrl = getPublicBaseUrl(req);
   const redirectUri = `${baseUrl}/auth/orcid/callback`;
 
@@ -4640,48 +4817,135 @@ function getEffectiveOrcidConfig(req: express.Request) {
     clientSecret,
     environment,
     isConfigured,
-    domain,
+    configError,
+    configuredViaEnv: Boolean(
+      envClientId &&
+        envClientId !== 'MY_ORCID_CLIENT_ID' &&
+        envClientSecret &&
+        envClientSecret !== 'MY_ORCID_CLIENT_SECRET'
+    ),
+    domain: endpoints.baseDomain,
+    endpoints,
     baseUrl,
     redirectUri,
   };
 }
 
-// 1. Get ORCID OAuth URL for popup authentication
-app.get('/api/auth/orcid/url', (req, res) => {
+function buildOrcidAuthorizationRequest(
+  req: express.Request,
+  res: express.Response,
+  config: ReturnType<typeof getEffectiveOrcidConfig>,
+  options: { mode?: 'popup' | 'redirect'; linkUid?: string } = {}
+): string {
+  const { stateToken, payload } = createSignedOAuthState(
+    {
+      redirectUri: config.redirectUri,
+      env: config.environment,
+      mode: options.mode === 'redirect' ? 'redirect' : 'popup',
+      linkUid: options.linkUid,
+    },
+    getAuthSecret()
+  );
+
+  res.append(
+    'Set-Cookie',
+    serializeCookie(ORCID_STATE_COOKIE_NAME, payload.csrf, {
+      httpOnly: true,
+      secure: config.baseUrl.startsWith('https://'),
+      sameSite: 'Lax',
+      path: '/',
+      maxAgeSeconds: 10 * 60,
+    })
+  );
+
+  const authParams = new URLSearchParams({
+    client_id: config.clientId,
+    response_type: 'code',
+    scope: 'openid',
+    redirect_uri: config.redirectUri,
+    state: stateToken,
+    nonce: payload.nonce,
+  });
+
+  return `${config.endpoints.authorizeUrl}?${authParams.toString()}`;
+}
+
+// 1. Get ORCID OAuth URL (supports popup & redirect modes + optional link mode for signed-in accounts)
+app.get('/api/auth/orcid/url', async (req, res) => {
   const config = getEffectiveOrcidConfig(req);
+  const mode = req.query.mode === 'redirect' ? 'redirect' : 'popup';
+  const wantsLink = req.query.link === '1' || req.query.link === 'true';
+
+  let linkUid: string | undefined;
+  if (wantsLink) {
+    const existingSession = await verifySessionUserFromRequest(req);
+    if (existingSession?.uid) {
+      linkUid = existingSession.uid;
+    }
+  }
+
   if (config.isConfigured) {
-    const authUrl = `https://${config.domain}/oauth/authorize?client_id=${encodeURIComponent(
-      config.clientId
-    )}&response_type=code&scope=/authenticate&redirect_uri=${encodeURIComponent(
-      config.redirectUri
-    )}`;
+    const authUrl = buildOrcidAuthorizationRequest(req, res, config, { mode, linkUid });
     res.json({
       url: authUrl,
       configured: true,
       redirectUri: config.redirectUri,
       environment: config.environment,
+      mode,
     });
   } else {
     res.json({
       url: `${config.baseUrl}/auth/orcid/setup`,
       configured: false,
+      configError: config.configError,
       redirectUri: config.redirectUri,
       environment: config.environment,
+      mode,
     });
   }
 });
 
-// 1b. Save ORCID OAuth App Configuration & Credentials
+// 1a. Full-page / direct redirect entry point (fallback when browser popups are blocked)
+app.get(['/auth/orcid/authorize', '/auth/orcid/login'], async (req, res) => {
+  const config = getEffectiveOrcidConfig(req);
+  const mode = req.query.mode === 'popup' ? 'popup' : 'redirect';
+  if (!config.isConfigured) {
+    res.redirect(`${config.baseUrl}/auth/orcid/setup`);
+    return;
+  }
+  const authUrl = buildOrcidAuthorizationRequest(req, res, config, { mode });
+  res.redirect(authUrl);
+});
+
+// 1b. Save ORCID OAuth App Configuration & Credentials (localhost development only)
 app.post('/api/auth/orcid/save-config', (req, res) => {
+  const currentConfig = getEffectiveOrcidConfig(req);
+  if (currentConfig.configuredViaEnv) {
+    res.status(403).json({
+      error: 'ORCID credentials are managed via server environment variables.',
+    });
+    return;
+  }
+  if (!isLocalHostname(req)) {
+    res.status(403).json({
+      error:
+        'Runtime credential setup is restricted to localhost. Configure ORCID_CLIENT_ID and ORCID_CLIENT_SECRET in your deployment environment variables.',
+    });
+    return;
+  }
+
   const { clientId, clientSecret, environment } = req.body || {};
   const cleanClientId = String(clientId || '').trim();
   const cleanClientSecret = String(clientSecret || '').trim();
-  const cleanEnv: 'production' | 'sandbox' =
+  const cleanEnv: OrcidEnvironment =
     environment === 'sandbox' ? 'sandbox' : 'production';
 
-  if (!cleanClientId || cleanClientId.length < 5) {
+  const clientIdCheck = validateOrcidClientId(cleanClientId);
+  if (!clientIdCheck.valid) {
     res.status(400).json({
-      error: 'Please enter a valid ORCID Client ID (e.g. APP-XXXXXXXXXXXXXXXX).',
+      error:
+        clientIdCheck.error ||
+        'Please enter a valid ORCID Client ID (e.g. APP-1234567890ABCDEF).',
     });
     return;
   }
@@ -4693,19 +4957,14 @@ app.post('/api/auth/orcid/save-config', (req, res) => {
   }
 
   scholarClaimsData.config = {
-    orcidClientId: cleanClientId,
+    orcidClientId: clientIdCheck.clientId,
     orcidClientSecret: cleanClientSecret,
     orcidEnvironment: cleanEnv,
   };
   persistScholarClaimsToDisk();
 
-  const domain = cleanEnv === 'sandbox' ? 'sandbox.orcid.org' : 'orcid.org';
-  const redirectUri = `${getPublicBaseUrl(req)}/auth/orcid/callback`;
-  const authUrl = `https://${domain}/oauth/authorize?client_id=${encodeURIComponent(
-    cleanClientId
-  )}&response_type=code&scope=/authenticate&redirect_uri=${encodeURIComponent(
-    redirectUri
-  )}`;
+  const updatedConfig = getEffectiveOrcidConfig(req);
+  const authUrl = buildOrcidAuthorizationRequest(req, res, updatedConfig, { mode: 'popup' });
 
   res.json({
     success: true,
@@ -4721,11 +4980,7 @@ app.get(
 
     // If already configured with credentials, redirect directly to official ORCID OAuth authorization server
     if (config.isConfigured) {
-      const authUrl = `https://${config.domain}/oauth/authorize?client_id=${encodeURIComponent(
-        config.clientId
-      )}&response_type=code&scope=/authenticate&redirect_uri=${encodeURIComponent(
-        config.redirectUri
-      )}`;
+      const authUrl = buildOrcidAuthorizationRequest(req, res, config, { mode: 'popup' });
       res.redirect(authUrl);
       return;
     }
@@ -4922,20 +5177,34 @@ app.get(
         <span>Required Redirect URI for ORCID</span>
         <button id="copyBtn" class="copy-btn" type="button">Copy</button>
       </div>
-      <div id="redirectUriText" class="uri-code">${config.redirectUri}</div>
+      <div id="redirectUriText" class="uri-code">${escapeHtml(config.redirectUri)}</div>
     </div>
 
-    <form id="configForm">
+    ${
+      isLocalHostname(req)
+        ? `${
+            (process.env.ORCID_CLIENT_ID || scholarClaimsData.config?.orcidClientId) &&
+            config.configError
+              ? `<div class="status error" style="display:block; margin-bottom: 14px;"><strong>Configuration Issue:</strong> ${escapeHtml(config.configError)}</div>`
+              : `<div style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; border-radius:8px; padding:10px 12px; font-size:12px; line-height:1.45; margin-bottom:14px;"><strong>Site Owner Setup Only:</strong> Enter your ORCID Developer Tools <strong>OAuth Application Client ID</strong> (starts with <code>APP-...</code>), not your personal <code>0000-...</code> ORCID profile URL.</div>`
+          }<form id="configForm">`
+        : `<div class="status error" style="display:block; margin-bottom: 14px;">
+            <strong>Production Configuration Required:</strong> ${escapeHtml(
+              config.configError ||
+                'Configure ORCID_CLIENT_ID (starting with APP-...) and ORCID_CLIENT_SECRET in your Vercel Environment Variables, then redeploy.'
+            )}
+          </div><form id="configForm" style="display:none;">`
+    }
       <div class="form-group">
-        <label for="clientId">ORCID Client ID</label>
-        <input id="clientId" type="text" placeholder="APP-XXXXXXXXXXXXXXXX" required />
+        <label for="clientId">ORCID OAuth Client ID (starts with APP-)</label>
+        <input id="clientId" type="text" placeholder="APP-1234567890ABCDEF" pattern="^APP-[A-Za-z0-9]{12,32}$" required />
       </div>
       <div class="form-group">
         <label for="clientSecret">ORCID Client Secret</label>
         <input id="clientSecret" type="password" placeholder="••••••••-••••-••••-••••-••••••••••••" required />
       </div>
       <div class="form-group">
-        <label>ORCID Environment</label>
+        <label>ORCID Environment (must match where you created the APP-... client)</label>
         <div class="radio-group">
           <label>
             <input type="radio" name="env" value="production" checked /> Production (orcid.org)
@@ -4953,7 +5222,7 @@ app.get(
     </form>
 
     <div class="footer-help">
-      Don't have API credentials yet? Go to <a href="https://orcid.org/developer-tools" target="_blank" rel="noopener">orcid.org/developer-tools</a>, agree to the terms, add the Redirect URI above, and copy your Client ID &amp; Secret.
+      Site owners: get OAuth credentials at <a href="https://orcid.org/developer-tools" target="_blank" rel="noopener">orcid.org/developer-tools</a> (or <a href="https://sandbox.orcid.org/developer-tools" target="_blank" rel="noopener">sandbox.orcid.org/developer-tools</a>), add the Redirect URI above, and paste the generated <code>APP-...</code> Client ID &amp; Client Secret.
     </div>
   </div>
 
@@ -4976,6 +5245,17 @@ app.get(
       const clientId = document.getElementById('clientId').value.trim();
       const clientSecret = document.getElementById('clientSecret').value.trim();
       const env = document.querySelector('input[name="env"]:checked').value;
+
+      if (/orcid\.org/i.test(clientId) || /^\d{4}-\d{4}-\d{4}-[\dX]{4}$/i.test(clientId)) {
+        status.className = 'status error';
+        status.textContent = 'Do not enter your personal ORCID iD or profile URL here. Obtain an OAuth Application Client ID starting with "APP-" from ORCID Developer Tools.';
+        return;
+      }
+      if (!/^APP-[A-Za-z0-9]{12,32}$/.test(clientId)) {
+        status.className = 'status error';
+        status.textContent = 'ORCID Client ID must start with "APP-" followed by 12-32 alphanumeric characters (from ORCID Developer Tools).';
+        return;
+      }
 
       status.className = 'status loading';
       status.textContent = 'Saving configuration and redirecting to ORCID...';
@@ -5006,124 +5286,293 @@ app.get(
   }
 );
 
-// 2. ORCID OAuth Callback Handler
+function renderOrcidCallbackHtml(params: {
+  ok: boolean;
+  user?: AuthenticatedResearcherRecord;
+  isNewAccount?: boolean;
+  error?: string;
+}): string {
+  const safeMessage = params.ok
+    ? {
+        type: 'ORCID_AUTH_SUCCESS',
+        user: params.user,
+        orcidId: params.user?.orcidId || '',
+        name: params.user?.name || '',
+        isNewAccount: Boolean(params.isNewAccount),
+      }
+    : {
+        type: 'ORCID_AUTH_ERROR',
+        error: params.error || 'ORCID authentication failed.',
+      };
+  const fallbackRedirect = params.ok
+    ? '/?orcid_auth=success'
+    : `/?orcid_auth_error=${encodeURIComponent(params.error || 'ORCID authentication failed.')}`;
+
+  const heading = params.ok
+    ? 'ORCID Authentication Successful'
+    : 'ORCID Authentication Failed';
+  const subtext = params.ok
+    ? `Signed in as ${params.user?.name || params.user?.orcidId || 'Researcher'}. Completing sign-in...`
+    : params.error || 'Could not complete ORCID authentication.';
+  const headingColor = params.ok ? '#0f172a' : '#e11d48';
+  const badge = params.ok ? '✅' : '⚠️';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ORCID Authentication — ScholarLens</title>
+  </head>
+  <body style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 48px 24px; color: #334155; background: #f8fafc;">
+    <div style="max-width: 420px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);">
+      <div style="font-size: 32px; margin-bottom: 12px;">${badge}</div>
+      <h3 style="color: ${headingColor}; margin: 0 0 8px 0; font-size: 18px;">${escapeHtml(heading)}</h3>
+      <p style="color: #64748b; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0;">${escapeHtml(subtext)}</p>
+      <a href="${escapeHtml(fallbackRedirect)}" style="display: inline-block; background: #0f172a; color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 10px;">
+        Continue to ScholarLens
+      </a>
+    </div>
+    <script>
+      (function() {
+        var payload = ${serializeForInlineScript(safeMessage)};
+        var fallbackUrl = ${serializeForInlineScript(fallbackRedirect)};
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(payload, window.location.origin);
+            setTimeout(function() { window.close(); }, 180);
+            return;
+          }
+        } catch (e) {}
+        setTimeout(function() {
+          window.location.replace(fallbackUrl);
+        }, ${params.ok ? '200' : '2200'});
+      })();
+    </script>
+  </body>
+</html>`;
+}
+
+// 2. ORCID OAuth 2.0 / OIDC Callback Handler
 app.get(
   ['/auth/orcid/callback', '/auth/orcid/callback/'],
   async (req, res) => {
-    const code = String(req.query.code || '');
-    const error = String(req.query.error || '');
+    const config = getEffectiveOrcidConfig(req);
+    const code = String(req.query.code || '').trim();
+    const stateParam = String(req.query.state || '').trim();
+    const oauthError = String(req.query.error || '').trim();
+    const oauthErrorDesc = String(req.query.error_description || '').trim();
 
-    if (error || !code) {
-      res.send(`
-        <!DOCTYPE html>
-        <html>
-          <body style="font-family: system-ui, sans-serif; text-align: center; padding: 40px; color: #334155;">
-            <h3 style="color: #e11d48;">ORCID Authentication Cancelled</h3>
-            <p>${error || 'No authorization code returned from ORCID.'}</p>
-            <script>
-              if (window.opener) {
-                window.opener.postMessage({ type: 'ORCID_AUTH_ERROR', error: '${error || 'Authorization cancelled'}' }, '*');
-                window.close();
-              } else {
-                window.location.href = '/';
-              }
-            </script>
-          </body>
-        </html>
-      `);
+    const cookies = parseCookies(req.headers.cookie);
+    const csrfCookie = cookies[ORCID_STATE_COOKIE_NAME];
+    clearAuthCookie(res, ORCID_STATE_COOKIE_NAME, config.baseUrl);
+
+    if (oauthError || !code) {
+      const reason =
+        oauthError === 'access_denied'
+          ? 'ORCID sign-in was cancelled.'
+          : oauthErrorDesc || oauthError || 'No authorization code was returned by ORCID.';
+      res.status(400).send(renderOrcidCallbackHtml({ ok: false, error: reason }));
+      return;
+    }
+
+    const verifiedState = verifySignedOAuthState(stateParam, getAuthSecret(), {
+      expectedCsrf: csrfCookie,
+    });
+    if (!verifiedState) {
+      res.status(400).send(
+        renderOrcidCallbackHtml({
+          ok: false,
+          error: 'OAuth security verification failed (invalid or expired state). Please try Continue with ORCID again.',
+        })
+      );
+      return;
+    }
+
+    if (!config.isConfigured || config.environment !== verifiedState.env) {
+      res.status(500).send(
+        renderOrcidCallbackHtml({
+          ok: false,
+          error:
+            config.configError ||
+            'ORCID OAuth credentials are not configured on the server.',
+        })
+      );
       return;
     }
 
     try {
-      const config = getEffectiveOrcidConfig(req);
-      const redirectUri = config.redirectUri;
-      const tokenResp = await fetch(`https://${config.domain}/oauth/token`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          client_id: config.clientId,
-          client_secret: config.clientSecret,
-          grant_type: 'authorization_code',
-          code,
-          redirect_uri: redirectUri,
-        }),
+      // 1) Swap authorization code at ORCID /oauth/token with exact matching redirect_uri
+      const tokenData = await exchangeOrcidAuthorizationCode({
+        code,
+        clientId: config.clientId,
+        clientSecret: config.clientSecret,
+        redirectUri: verifiedState.redirectUri,
+        env: verifiedState.env,
       });
 
-      const tokenData = await tokenResp.json();
-      if (!tokenResp.ok || tokenData.error) {
-        throw new Error(
-          tokenData.error_description ||
-            tokenData.error ||
-            'ORCID token exchange failed'
-        );
+      // 2) Verify RS256 OIDC id_token against ORCID JWKS & validate /oauth/userinfo claims
+      const verifiedIdentity = await verifyAndResolveOrcidIdentity({
+        tokenData,
+        clientId: config.clientId,
+        env: verifiedState.env,
+        expectedNonce: verifiedState.nonce,
+      });
+
+      // 3) Upsert or sign in user in database, strictly enforcing 1 ORCID iD -> 1 account
+      const { user, isNewAccount } = await getOrcidStore().authenticateOrRegisterOrcidUser({
+        orcidId: verifiedIdentity.orcidId,
+        verifiedName: verifiedIdentity.name,
+        linkToUid: verifiedState.linkUid,
+      });
+
+      // 4) Issue cryptographically signed HttpOnly session cookie
+      setOrcidSessionCookie(res, config.baseUrl, user);
+
+      if (verifiedState.mode === 'redirect') {
+        res.redirect(302, '/?orcid_auth=success');
+        return;
       }
 
-      const orcidId = tokenData.orcid || '';
-      const orcidName = tokenData.name || '';
-
-      res.send(`
-        <!DOCTYPE html>
-        <html>
-          <body style="font-family: system-ui, sans-serif; text-align: center; padding: 40px; color: #334155;">
-            <div style="font-size: 32px; margin-bottom: 12px;">✅</div>
-            <h3 style="color: #0f172a; margin-bottom: 8px;">ORCID Authentication Successful</h3>
-            <p style="color: #64748b;">Connecting verified researcher credentials...</p>
-            <script>
-              if (window.opener) {
-                window.opener.postMessage({
-                  type: 'ORCID_AUTH_SUCCESS',
-                  orcidId: '${orcidId}',
-                  name: '${(orcidName || '').replace(/'/g, "\\'")}'
-                }, '*');
-                window.close();
-              } else {
-                window.location.href = '/';
-              }
-            </script>
-          </body>
-        </html>
-      `);
+      res.send(
+        renderOrcidCallbackHtml({
+          ok: true,
+          user,
+          isNewAccount,
+        })
+      );
     } catch (err: any) {
-      res.send(`
-        <!DOCTYPE html>
-        <html>
-          <body style="font-family: system-ui, sans-serif; text-align: center; padding: 40px; color: #334155;">
-            <h3 style="color: #e11d48;">Authentication Error</h3>
-            <p>${String(err?.message || 'Token exchange failed')}</p>
-            <script>
-              if (window.opener) {
-                window.opener.postMessage({ type: 'ORCID_AUTH_ERROR', error: 'Token exchange failed' }, '*');
-                window.close();
-              } else {
-                window.location.href = '/';
-              }
-            </script>
-          </body>
-        </html>
-      `);
+      const errorMsg =
+        err instanceof OrcidConflictError ||
+        err instanceof OrcidUnauthorizedError ||
+        err instanceof OrcidValidationError
+          ? err.message
+          : String(err?.message || 'ORCID token verification failed.');
+      const status =
+        err instanceof OrcidConflictError
+          ? 409
+          : err instanceof OrcidUnauthorizedError
+          ? 401
+          : 400;
+
+      if (verifiedState.mode === 'redirect') {
+        res.redirect(302, `/?orcid_auth_error=${encodeURIComponent(errorMsg)}`);
+        return;
+      }
+      res.status(status).send(renderOrcidCallbackHtml({ ok: false, error: errorMsg }));
     }
   }
 );
 
-// 3. One-time Profile Authenticity Verification & Account Creation
-app.post('/api/auth/orcid/verify-claim', async (req, res) => {
-  const { scholarInput, orcidId } = req.body || {};
-  const cleanOrcid = String(orcidId || '')
-    .trim()
-    .replace(/^https?:\/\/orcid\.org\//i, '')
-    .trim();
+// 3. Server Session Hydration, Sign-Out, Profile Update & Account Deletion
+app.get('/api/auth/session', async (req, res) => {
+  const user = await verifySessionUserFromRequest(req);
+  if (!user) {
+    res.json({ authenticated: false, user: null });
+    return;
+  }
+  res.json({ authenticated: true, user });
+});
 
-  if (!/^\d{4}-\d{4}-\d{4}-[\dX]{4}$/.test(cleanOrcid)) {
-    res.status(400).json({
-      error:
-        'Invalid ORCID format. Expected 16-character identifier (e.g. 0000-0002-1825-0097).',
+app.post('/api/auth/logout', (req, res) => {
+  const baseUrl = getPublicBaseUrl(req);
+  clearAuthCookie(res, ORCID_SESSION_COOKIE_NAME, baseUrl);
+  res.json({ success: true });
+});
+
+app.post('/api/auth/profile', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Authentication required. Please sign in first.' });
+    return;
+  }
+
+  const { name, photoURL, scholarUrl } = req.body || {};
+  let cleanScholarUrl = sessionUser.scholarUrl || '';
+  let cleanScholarUserId = sessionUser.scholarUserId || '';
+
+  if (scholarUrl !== undefined) {
+    const trimmedScholar = String(scholarUrl || '').trim();
+    if (!trimmedScholar) {
+      cleanScholarUrl = '';
+      cleanScholarUserId = '';
+    } else {
+      const parsed = parseGoogleScholarInput(trimmedScholar);
+      if (!parsed.valid || !parsed.userId) {
+        res.status(400).json({
+          error: parsed.error || 'Please enter a valid Google Scholar profile link or ID.',
+        });
+        return;
+      }
+      cleanScholarUserId = parsed.userId.trim();
+      cleanScholarUrl = `https://scholar.google.com/citations?user=${cleanScholarUserId}`;
+
+      const existingClaim = scholarClaimsData.claims[cleanScholarUserId];
+      if (existingClaim && existingClaim.claimedByUid !== sessionUser.uid) {
+        res.status(409).json({
+          error: 'This Google Scholar profile has already been verified and claimed by another researcher account.',
+        });
+        return;
+      }
+    }
+  }
+
+  const updated = await getOrcidStore().updateUserProfile(
+    sessionUser.uid,
+    {
+      ...(name !== undefined ? { name: String(name || '').trim() } : {}),
+      ...(photoURL !== undefined ? { photoURL: String(photoURL || '').trim() } : {}),
+      scholarUrl: cleanScholarUrl,
+      scholarUserId: cleanScholarUserId,
+    },
+    sessionUser
+  );
+
+  if (!updated) {
+    res.status(404).json({ error: 'Account not found.' });
+    return;
+  }
+
+  setOrcidSessionCookie(res, getPublicBaseUrl(req), updated);
+  res.json({ success: true, user: updated });
+});
+
+app.delete('/api/auth/account', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser) {
+    res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+
+  await getOrcidStore().deleteUserAccount(sessionUser.uid);
+
+  for (const [scholarId, claim] of Object.entries(scholarClaimsData.claims)) {
+    if (claim.claimedByUid === sessionUser.uid || (sessionUser.orcidId && claim.orcidId === sessionUser.orcidId)) {
+      delete scholarClaimsData.claims[scholarId];
+    }
+  }
+  if (sessionUser.orcidId) {
+    delete scholarClaimsData.users[sessionUser.orcidId];
+  }
+  persistScholarClaimsToDisk();
+
+  const baseUrl = getPublicBaseUrl(req);
+  clearAuthCookie(res, ORCID_SESSION_COOKIE_NAME, baseUrl);
+  res.json({ success: true });
+});
+
+// 4. Optional Authenticated Scholar Profile Verification Badge Claim
+app.post('/api/auth/orcid/verify-claim', async (req, res) => {
+  const sessionUser = await verifySessionUserFromRequest(req);
+  if (!sessionUser || !sessionUser.orcidId) {
+    res.status(401).json({
+      error: 'Please complete official ORCID OAuth sign-in before claiming a Scholar profile.',
     });
     return;
   }
 
+  const cleanOrcid = sessionUser.orcidId;
+  const { scholarInput } = req.body || {};
   const parsedScholar = parseGoogleScholarInput(String(scholarInput || ''));
   if (!parsedScholar.valid || !parsedScholar.userId) {
     res.status(400).json({
@@ -5138,140 +5587,73 @@ app.post('/api/auth/orcid/verify-claim', async (req, res) => {
 
   // 1-to-1 Profile Locking Check
   const existingClaim = scholarClaimsData.claims[scholarUserId];
-  if (existingClaim) {
-    if (existingClaim.orcidId === cleanOrcid) {
-      const existingUser = scholarClaimsData.users[cleanOrcid];
-      res.json({
-        success: true,
-        verified: true,
-        alreadyClaimedByYou: true,
-        message: 'You have already verified and claimed this Google Scholar profile.',
-        user: existingUser,
-      });
-      return;
-    }
+  if (existingClaim && existingClaim.orcidId !== cleanOrcid) {
     res.status(409).json({
       error: `This Google Scholar profile has already been claimed and verified by another authentic researcher (ORCID: ${existingClaim.orcidId.slice(
         0,
         4
-      )}...${existingClaim.orcidId.slice(-4)}). Impersonation of other researchers is strictly prohibited.`,
+      )}...${existingClaim.orcidId.slice(-4)}).`,
     });
     return;
   }
 
-  // Fetch live Google Scholar profile
   const scholarProfile = await getOrBuildProfileForVerification(
     scholarUserId,
     parsedScholar.queryName
   );
   if (!scholarProfile) {
     res.status(404).json({
-      error: `Could not retrieve Google Scholar profile for ID '${scholarUserId}'. Please check the profile URL.`,
+      error: `Could not retrieve Google Scholar profile for ID '${scholarUserId}'.`,
     });
     return;
   }
 
-  // Fetch live official ORCID record from the public ORCID v3.0 REST API
   const orcidRecord = await fetchOrcidPublicRecord(cleanOrcid);
   if (!orcidRecord) {
     res.status(404).json({
-      error: `ORCID iD '${cleanOrcid}' was not found in the official ORCID registry (https://orcid.org/${cleanOrcid}). Please verify your identifier.`,
+      error: `ORCID iD '${cleanOrcid}' was not found in the official ORCID registry.`,
     });
     return;
   }
 
-  // Run rigorous authenticity verification
-  const authCheck = verifyAuthenticityBetweenOrcidAndScholar(
-    orcidRecord,
-    scholarProfile
-  );
+  const authCheck = verifyAuthenticityBetweenOrcidAndScholar(orcidRecord, scholarProfile);
   if (!authCheck.verified) {
     res.status(400).json({
-      error: `Authenticity verification failed: ${authCheck.reason} To protect researcher credibility, accounts can only be created by the verified owner.`,
+      error: `Authenticity verification failed: ${authCheck.reason}`,
     });
     return;
   }
 
-  // Authenticity verified: create account & lock profile
-  const uid = `orcid_${cleanOrcid.replace(/[^a-zA-Z0-9]/g, '')}`;
-  const userObj: StoredOrcidUserRecord = {
-    uid,
-    orcidId: cleanOrcid,
+  const scholarUrl = `https://scholar.google.com/citations?user=${scholarUserId}`;
+  const updatedUser = await getOrcidStore().updateUserProfile(sessionUser.uid, {
     scholarUserId,
-    scholarUrl: `https://scholar.google.com/citations?user=${scholarUserId}`,
-    displayName:
-      scholarProfile.name ||
-      authCheck.matchedDetails.matchedName ||
-      'Verified Researcher',
-    photoURL: scholarProfile.avatarUrl || '',
-    verified: true,
-    provider: 'orcid',
-    createdAt: new Date().toISOString(),
-  };
+    scholarUrl,
+    photoURL: sessionUser.photoURL || scholarProfile.avatarUrl || '',
+  });
 
   scholarClaimsData.claims[scholarUserId] = {
     scholarUserId,
     orcidId: cleanOrcid,
-    claimedByUid: uid,
-    researcherName: userObj.displayName,
-    scholarUrl: userObj.scholarUrl,
-    createdAt: userObj.createdAt,
+    claimedByUid: sessionUser.uid,
+    researcherName: updatedUser?.name || scholarProfile.name || cleanOrcid,
+    scholarUrl,
+    createdAt: new Date().toISOString(),
   };
-
-  scholarClaimsData.users[cleanOrcid] = userObj;
   persistScholarClaimsToDisk();
 
   res.json({
     success: true,
     verified: true,
     message: authCheck.reason,
-    user: userObj,
+    user: updatedUser,
     profile: scholarProfile,
   });
 });
 
-// 4. Returning User Login via ORCID (No further verification required)
-app.post('/api/auth/orcid/login', async (req, res) => {
-  const { orcidId } = req.body || {};
-  const cleanOrcid = String(orcidId || '')
-    .trim()
-    .replace(/^https?:\/\/orcid\.org\//i, '')
-    .trim();
-
-  if (!/^\d{4}-\d{4}-\d{4}-[\dX]{4}$/.test(cleanOrcid)) {
-    res.status(400).json({
-      error:
-        'Invalid ORCID format. Expected 16-character identifier (e.g. 0000-0002-1825-0097).',
-    });
-    return;
-  }
-
-  const existingUser = scholarClaimsData.users[cleanOrcid];
-  if (existingUser) {
-    // Verified user returning: log in immediately
-    res.json({
-      success: true,
-      found: true,
-      user: existingUser,
-    });
-    return;
-  }
-
-  // Check if valid ORCID exists on registry
-  const orcidRecord = await fetchOrcidPublicRecord(cleanOrcid);
-  if (orcidRecord) {
-    res.json({
-      success: false,
-      found: false,
-      orcidName: orcidRecord.names[0] || '',
-      message:
-        'No ScholarLens account is linked to this ORCID iD yet. Please enter your Google Scholar profile link above to complete your one-time verification.',
-    });
-    return;
-  }
-
-  res.status(404).json({
-    error: `ORCID iD '${cleanOrcid}' was not found in the official ORCID registry.`,
+// Legacy unauthenticated ORCID spoof endpoint intentionally disabled
+app.post('/api/auth/orcid/login', (_req, res) => {
+  res.status(410).json({
+    error: 'Direct unauthenticated ORCID login is disabled. Use official OAuth 2.0 flow via /api/auth/orcid/url.',
   });
 });
 

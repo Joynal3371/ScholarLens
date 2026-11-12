@@ -98,11 +98,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   const handleAttemptClose = () => {
-    const savedValid = isScholarUrlValid(user.scholarUrl || '');
-    const currentValid = isScholarUrlValid(scholarUrl);
-    if (!savedValid && !currentValid) {
-      setError('Google Scholar profile link is mandatory.');
-      return;
+    if (user.provider !== 'orcid') {
+      const savedValid = isScholarUrlValid(user.scholarUrl || '');
+      const currentValid = isScholarUrlValid(scholarUrl);
+      if (!savedValid && !currentValid) {
+        setError('Google Scholar profile link is mandatory.');
+        return;
+      }
     }
     onClose();
   };
@@ -132,35 +134,67 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setError('Name is required.');
       return;
     }
+
     const cleanScholar = scholarUrl.trim();
-    const parsed = parseGoogleScholarInput(cleanScholar);
-    if (!cleanScholar || !parsed.valid || !parsed.userId) {
+    let normalizedScholarUrl = '';
+    let parsedScholarId = '';
+
+    if (cleanScholar) {
+      const parsed = parseGoogleScholarInput(cleanScholar);
+      if (!parsed.valid || !parsed.userId) {
+        setError('Please enter a valid Google Scholar profile link.');
+        return;
+      }
+      parsedScholarId = parsed.userId;
+      normalizedScholarUrl = `https://scholar.google.com/citations?user=${encodeURIComponent(
+        parsed.userId
+      )}&hl=en`;
+    } else if (user.provider !== 'orcid') {
       setError('Google Scholar profile link is mandatory.');
       return;
     }
 
-    const normalizedScholarUrl = `https://scholar.google.com/citations?user=${encodeURIComponent(
-      parsed.userId
-    )}&hl=en`;
-
     setIsSaving(true);
     setError(null);
     try {
-      await updateCustomUserProfile(
-        user.uid,
-        cleanName,
-        photoURL.trim(),
-        normalizedScholarUrl
-      );
-      onUpdateUser({
-        ...user,
-        name: cleanName,
-        photoURL: photoURL.trim(),
-        scholarUrl: normalizedScholarUrl,
-      });
+      if (user.provider === 'orcid') {
+        const resp = await fetch('/api/auth/profile', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: cleanName,
+            photoURL: photoURL.trim(),
+            scholarUrl: normalizedScholarUrl,
+          }),
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.success || !data.user) {
+          throw new Error(data.error || 'Could not save profile settings.');
+        }
+        onUpdateUser(data.user);
+      } else {
+        await updateCustomUserProfile(
+          user.uid,
+          cleanName,
+          photoURL.trim(),
+          normalizedScholarUrl
+        );
+        onUpdateUser({
+          ...user,
+          name: cleanName,
+          photoURL: photoURL.trim(),
+          scholarUrl: normalizedScholarUrl,
+          ...(parsedScholarId ? { scholarUserId: parsedScholarId } : {}),
+        });
+      }
       onClose();
-    } catch {
-      setError('Could not save profile settings. Please try again.');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not save profile settings. Please try again.'
+      );
     } finally {
       setIsSaving(false);
     }
@@ -170,11 +204,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setIsRemoving(true);
     setError(null);
     try {
-      await deleteCustomUserAccount(user.uid);
+      if (user.provider === 'orcid') {
+        const resp = await fetch('/api/auth/account', {
+          method: 'DELETE',
+          credentials: 'same-origin',
+        });
+        if (!resp.ok && resp.status !== 401) {
+          throw new Error('Could not remove ORCID account from database.');
+        }
+      } else {
+        await deleteCustomUserAccount(user.uid);
+      }
       onRemoveAccount();
       onClose();
-    } catch {
-      setError('Could not remove account. Please try again.');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not remove account. Please try again.'
+      );
     } finally {
       setIsRemoving(false);
     }
@@ -277,12 +325,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               htmlFor="profile-scholar-url"
               className="block text-xs font-medium text-slate-700 mb-1"
             >
-              Google Scholar Link <span className="text-red-600">*</span>
+              Google Scholar Link{' '}
+              {user.provider === 'orcid' ? (
+                <span className="text-slate-400 font-normal">(optional)</span>
+              ) : (
+                <span className="text-red-600">*</span>
+              )}
             </label>
             <input
               id="profile-scholar-url"
               type="url"
-              required
+              required={user.provider !== 'orcid'}
               value={scholarUrl}
               onChange={(e) => {
                 setScholarUrl(e.target.value);
@@ -304,7 +357,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <span>ORCID Verified Identity</span>
                 </div>
                 <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                  1-to-1 Locked
+                  Unique Account
                 </span>
               </div>
               <div className="text-[11px] text-slate-600 flex flex-wrap items-center gap-x-2">
@@ -320,7 +373,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </a>
               </div>
               <p className="text-[11px] text-emerald-800/80">
-                This Google Scholar profile is verified and permanently bound to your ORCID account.
+                {user.scholarUrl
+                  ? 'Authenticated via official ORCID OAuth 2.0 and linked to your Google Scholar profile.'
+                  : 'Authenticated via official ORCID OAuth 2.0. Link your Google Scholar URL above anytime to auto-load your dashboard.'}
               </p>
             </div>
           )}

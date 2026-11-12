@@ -30,6 +30,7 @@ interface AuthGateModalProps {
   isOpen: boolean;
   pendingActionLabel: string | null;
   defaultScholarUrl?: string;
+  externalError?: string | null;
   onClose: () => void;
   onAuthenticated: (user: AuthenticatedResearcher) => void;
 }
@@ -37,20 +38,15 @@ interface AuthGateModalProps {
 export const AuthGateModal: React.FC<AuthGateModalProps> = ({
   isOpen,
   pendingActionLabel,
-  defaultScholarUrl,
+  externalError,
   onClose,
   onAuthenticated,
 }) => {
   // Method selection: 'orcid' (default primary) or 'email'
   const [authMethod, setAuthMethod] = useState<'orcid' | 'email'>('orcid');
 
-  // Scholar Profile Link required before Continue with ORCID
-  const [scholarUrlInput, setScholarUrlInput] = useState('');
-  const scholarUrlRef = useRef(scholarUrlInput);
-
   // Loading states
   const [isOrcidOAuthLoading, setIsOrcidOAuthLoading] = useState(false);
-  const [isVerifyingClaim, setIsVerifyingClaim] = useState(false);
 
   // Email OTP state
   const [email, setEmail] = useState('');
@@ -66,11 +62,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const codeInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Keep scholarUrlRef in sync
-  useEffect(() => {
-    scholarUrlRef.current = scholarUrlInput;
-  }, [scholarUrlInput]);
+  const authCompletedRef = useRef(false);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -81,20 +73,17 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  // Reset or pre-fill state when modal opens
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setError(null);
+      authCompletedRef.current = false;
+      setError(externalError || null);
       setSuccessMessage(null);
       setIsGoogleLoading(false);
       setIsOrcidOAuthLoading(false);
-      setIsVerifyingClaim(false);
       setAuthMethod('orcid');
-      if (defaultScholarUrl && !scholarUrlInput) {
-        setScholarUrlInput(defaultScholarUrl);
-      }
     }
-  }, [isOpen, defaultScholarUrl]);
+  }, [isOpen, externalError]);
 
   // Focus code input when entering OTP step
   useEffect(() => {
@@ -124,65 +113,46 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
       const data = event.data;
       if (!data) return;
 
-      // 1. Handle official ORCID Authentication Success from Popup
+      // 1. Handle official ORCID OAuth Authentication Success from Popup
       if (data.type === 'ORCID_AUTH_SUCCESS') {
-        const returnedOrcid = String(data.orcidId || '').trim();
-        setIsOrcidOAuthLoading(false);
-
-        if (!returnedOrcid) {
-          setError('Could not retrieve verified ORCID identity.');
+        if (event.origin !== window.location.origin) {
           return;
         }
-
+        setIsOrcidOAuthLoading(false);
         setError(null);
 
-        // Check if this ORCID has already claimed a profile in ScholarLens
         try {
-          const resp = await fetch('/api/auth/orcid/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orcidId: returnedOrcid }),
-          });
-          const loginResult = await resp.json();
+          let authenticatedUser: AuthenticatedResearcher | null =
+            data.user && typeof data.user === 'object' && data.user.uid
+              ? (data.user as AuthenticatedResearcher)
+              : null;
 
-          if (loginResult.found && loginResult.user) {
-            // Returning verified researcher: Instant Sign-In!
-            onAuthenticated(loginResult.user);
+          if (!authenticatedUser) {
+            const sessionResp = await fetch('/api/auth/session', {
+              credentials: 'same-origin',
+            });
+            const sessionData = await sessionResp.json();
+            if (sessionResp.ok && sessionData.authenticated && sessionData.user) {
+              authenticatedUser = sessionData.user as AuthenticatedResearcher;
+            }
+          }
+
+          if (!authenticatedUser) {
+            setError('Could not retrieve verified ORCID session.');
             return;
           }
 
-          // First-time researcher: verify and link immediately with the Scholar link provided above the button
-          const cleanScholar = scholarUrlRef.current.trim();
-          if (!cleanScholar) {
-            setError('Please enter your Google Scholar profile link above before continuing with ORCID.');
-            return;
+          if (!authCompletedRef.current) {
+            authCompletedRef.current = true;
+            onAuthenticated(authenticatedUser);
           }
-
-          setIsVerifyingClaim(true);
-          const verifyResp = await fetch('/api/auth/orcid/verify-claim', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              orcidId: returnedOrcid,
-              scholarInput: cleanScholar,
-            }),
-          });
-          const verifyData = await verifyResp.json();
-
-          if (!verifyResp.ok || !verifyData.success || !verifyData.user) {
-            throw new Error(
-              verifyData.error || 'Authenticity verification failed between ORCID and Google Scholar.'
-            );
-          }
-
-          // Verified and locked in 1 step with zero secondary windows!
-          onAuthenticated(verifyData.user);
         } catch (err: unknown) {
-          setError(err instanceof Error ? err.message : 'Authentication verification failed.');
-        } finally {
-          setIsVerifyingClaim(false);
+          setError(err instanceof Error ? err.message : 'Could not complete ORCID sign-in.');
         }
       } else if (data.type === 'ORCID_AUTH_ERROR') {
+        if (event.origin !== window.location.origin) {
+          return;
+        }
         setIsOrcidOAuthLoading(false);
         setError(data.error || 'ORCID authentication was cancelled.');
       }
@@ -237,30 +207,34 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Open the official ORCID popup after validating the Google Scholar link
-  const handleContinueWithOrcid = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
-    const cleanScholar = scholarUrlInput.trim();
-    if (!cleanScholar) {
-      setError('Please enter your Google Scholar profile link above before continuing with ORCID.');
-      return;
-    }
-
+  // Launch official ORCID OAuth 2.0 flow immediately (like Continue with Google)
+  const handleContinueWithOrcid = async () => {
+    authCompletedRef.current = false;
     setError(null);
     setSuccessMessage(null);
     setIsOrcidOAuthLoading(true);
 
     try {
-      const resp = await fetch('/api/auth/orcid/url');
+      const resp = await fetch('/api/auth/orcid/url?mode=popup', {
+        credentials: 'same-origin',
+      });
       const data = await resp.json();
+      const isLocalHost =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
+      if (!data.configured && !isLocalHost) {
+        throw new Error(
+          data.configError ||
+            'ORCID sign-in is not configured yet on the server. Set ORCID_CLIENT_ID (starting with APP-...) and ORCID_CLIENT_SECRET in your deployment environment variables.'
+        );
+      }
       const popupUrl = data.url;
 
       if (!popupUrl) {
         throw new Error('Could not retrieve ORCID authorization URL.');
       }
 
-      const width = 600;
+      const width = 560;
       const height = 700;
       const left = window.screenX + (window.outerWidth - width) / 2;
       const top = window.screenY + (window.outerHeight - height) / 2;
@@ -271,16 +245,42 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
       );
 
       if (!popup || popup.closed) {
+        if (data.configured) {
+          // Seamless same-window OAuth redirect fallback when popups are blocked
+          window.location.assign('/auth/orcid/authorize?mode=redirect');
+          return;
+        }
         setIsOrcidOAuthLoading(false);
-        setError('Popup was blocked by your browser. Please allow popups for this site to sign in with ORCID.');
-      } else {
-        const checkClosed = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkClosed);
-            setIsOrcidOAuthLoading(false);
-          }
-        }, 1000);
+        setError('Popup was blocked by your browser. Please allow popups for this site to configure ORCID.');
+        return;
       }
+
+      const checkClosed = setInterval(async () => {
+        if (!popup.closed) return;
+        clearInterval(checkClosed);
+
+        // Give window.opener.postMessage a moment to settle, then check server session cookie as fallback
+        await new Promise((r) => setTimeout(r, 250));
+        if (authCompletedRef.current) {
+          setIsOrcidOAuthLoading(false);
+          return;
+        }
+
+        try {
+          const sessionResp = await fetch('/api/auth/session', {
+            credentials: 'same-origin',
+          });
+          const sessionData = await sessionResp.json();
+          if (sessionResp.ok && sessionData.authenticated && sessionData.user && !authCompletedRef.current) {
+            authCompletedRef.current = true;
+            onAuthenticated(sessionData.user as AuthenticatedResearcher);
+          }
+        } catch {
+          // Ignore network probe error on manual popup close
+        } finally {
+          setIsOrcidOAuthLoading(false);
+        }
+      }, 450);
     } catch (err: unknown) {
       setIsOrcidOAuthLoading(false);
       setError(err instanceof Error ? err.message : 'Could not connect to ORCID service.');
@@ -387,7 +387,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
     }
   };
 
-  const isLoading = isOrcidOAuthLoading || isVerifyingClaim;
+  const isLoading = isOrcidOAuthLoading;
 
   return (
     <div
@@ -406,7 +406,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
             <p className="text-xs text-slate-500 mt-0.5">
               {pendingActionLabel
                 ? `Sign in to ${pendingActionLabel}`
-                : 'Sign in with your official academic ORCID account'}
+                : 'Sign in or create an account with your ORCID iD'}
             </p>
           </div>
           <button
@@ -419,35 +419,13 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
           </button>
         </div>
 
-        {/* ORCID SIGN IN WITH SCHOLAR LINK INPUT BOX ABOVE THE BUTTON */}
+        {/* ORCID OAUTH SIGN IN / REGISTER */}
         {authMethod === 'orcid' && (
-          <form onSubmit={handleContinueWithOrcid} className="space-y-3.5 pt-1">
-            {/* 1. Scholar Profile Link Input Box (Directly above the button) */}
-            <div>
-              <label htmlFor="scholar-link-input" className="block text-xs font-semibold text-slate-700 mb-1">
-                Google Scholar Profile Link
-              </label>
-              <input
-                id="scholar-link-input"
-                type="text"
-                required
-                value={scholarUrlInput}
-                onChange={(e) => {
-                  setScholarUrlInput(e.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder="https://scholar.google.com/citations?user=..."
-                className="w-full px-3 py-2 text-xs font-mono bg-white border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-600 focus:border-emerald-600 transition-colors"
-              />
-              <span className="text-[11px] text-slate-500 mt-1 block">
-                Required to verify profile ownership with ORCID.
-              </span>
-            </div>
-
-            {/* 2. Official Continue with ORCID Button */}
+          <div className="space-y-3 pt-1">
             <button
-              type="submit"
-              disabled={isLoading}
+              type="button"
+              onClick={handleContinueWithOrcid}
+              disabled={isLoading || isGoogleLoading}
               data-testid="continue-with-orcid-btn"
               className="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-gradient-to-b from-[#fdfdfd] to-[#eef0f2] hover:from-[#ffffff] hover:to-[#e2e6ea] active:to-[#d8dde3] border border-[#cbd5e1] rounded-[5px] shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-all cursor-pointer disabled:opacity-50"
             >
@@ -455,7 +433,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
                 <>
                   <RotateCcw className="w-4 h-4 animate-spin text-[#0047bb]" />
                   <span className="text-sm font-bold text-[#0047bb]">
-                    {isVerifyingClaim ? 'Verifying Profile...' : 'Connecting to ORCID...'}
+                    Connecting to ORCID...
                   </span>
                 </>
               ) : (
@@ -469,7 +447,29 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
                 </>
               )}
             </button>
-          </form>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading || isGoogleLoading}
+              data-testid="continue-with-google-btn"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-[5px] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all cursor-pointer disabled:opacity-50"
+            >
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              <span className="text-sm font-medium text-slate-700">
+                {isGoogleLoading ? 'Connecting to Google...' : 'Continue with Google'}
+              </span>
+            </button>
+
+            <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+              Registers or signs in automatically with your verified ORCID iD. You can link your Google Scholar profile anytime in settings.
+            </p>
+          </div>
         )}
 
         {/* EMAIL CODE FORM (SECONDARY) */}
@@ -592,31 +592,21 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
           </div>
         )}
 
-        {/* Minimal Divider & Alternative Options */}
+        {/* Minimal Divider & Email Option */}
         <div className="pt-2 border-t border-slate-100">
-          <div className="flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center justify-center text-xs text-slate-500">
             {authMethod === 'orcid' ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMethod('email');
-                    setError(null);
-                    setSuccessMessage(null);
-                  }}
-                  className="hover:text-slate-800 hover:underline cursor-pointer"
-                >
-                  Sign in with Email
-                </button>
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={isGoogleLoading}
-                  className="hover:text-slate-800 hover:underline inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <span>Google</span>
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMethod('email');
+                  setError(null);
+                  setSuccessMessage(null);
+                }}
+                className="hover:text-slate-800 hover:underline cursor-pointer"
+              >
+                Use Email verification code instead
+              </button>
             ) : (
               <button
                 type="button"
@@ -627,7 +617,7 @@ export const AuthGateModal: React.FC<AuthGateModalProps> = ({
                 }}
                 className="hover:text-slate-800 hover:underline cursor-pointer"
               >
-                ← Back to ORCID Sign In
+                ← Back to ORCID &amp; Google Sign In
               </button>
             )}
           </div>

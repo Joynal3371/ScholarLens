@@ -1,5 +1,73 @@
 rules_version = '2';
 
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures:
+//
+// Collection: orcidAccounts
+// Document ID: canonical ORCID iD (^\d{4}-\d{4}-\d{4}-[\dX]{4}$)
+// Fields:
+//   - orcidId: string (required, immutable, matches document ID)
+//   - uid: string (required, immutable, 1..128 chars, ^[a-zA-Z0-9_\-]+$)
+//   - name: string (optional, 0..160 chars)
+//   - createdAt: timestamp or ISO-8601 string (required, immutable)
+//   - updatedAt: timestamp or ISO-8601 string (required)
+//
+// Collection: users
+// Document ID: user UID (1..128 chars, ^[a-zA-Z0-9_\-]+$)
+// Fields:
+//   - uid: string (required, immutable, matches document ID)
+//   - displayName: string (required for client writes; optional on server if name is set, 1..160 chars)
+//   - name: string (optional, 1..160 chars)
+//   - email: string (optional, 0..320 chars)
+//   - emailOrId: string (optional, 0..320 chars)
+//   - photoURL: string (optional, 0..150000 chars)
+//   - scholarUrl: string (optional, 0..500 chars)
+//   - scholarUserId: string (optional, empty or 1..64 chars ^[a-zA-Z0-9_\-]+$)
+//   - orcidId: string (optional, empty or canonical ORCID iD; immutable once bound; server-only write)
+//   - verified: bool (optional; server-only write)
+//   - provider: string (required, immutable for clients, 'google' | 'orcid' | 'email')
+//   - createdAt: timestamp or ISO-8601 string (required, immutable for clients)
+//   - updatedAt: timestamp or ISO-8601 string (required)
+//   - lastLoginAt: timestamp or ISO-8601 string (optional)
+//
+// Collection: appConfig
+// Document ID: config key
+// Access: strictly restricted to backend bridge worker (denies all client SDK access)
+//
+// Collection: exports
+// Document ID: export ID (1..128 chars, ^[a-zA-Z0-9_\-]+$)
+// Fields:
+//   - ownerId: string (required, matches request.auth.uid, ^[a-zA-Z0-9_\-]+$)
+//   - scholarName: string (required, 1..160 chars)
+//   - exportType: string (required, 'pdf' | 'png')
+//   - targetName: string (required, 1..160 chars)
+//   - createdAt: timestamp (required, equals request.time on create)
+//
+// Collection: scholarClaims
+// Document ID: Google Scholar user ID (1..64 chars, ^[a-zA-Z0-9_\-]+$)
+// Fields:
+//   - scholarUserId: string (required, immutable, matches document ID)
+//   - orcidId: string (required, 16..40 chars)
+//   - claimedByUid: string (required, immutable for clients, 1..128 chars, ^[a-zA-Z0-9_\-]+$)
+//   - researcherName: string (required, 1..160 chars)
+//   - scholarUrl: string (optional, 0..500 chars)
+//   - createdAt: timestamp or ISO-8601 string (required, immutable for clients)
+//   - updatedAt: timestamp or ISO-8601 string (optional)
+//
+// Collection: scholarBridge
+// Document ID: bridge job ID (1..128 chars, ^[a-zA-Z0-9_\-]+$)
+// Fields:
+//   - userId: string (required, 1..128 chars)
+//   - queryName: string (optional, 0..160 chars)
+//   - status: string (required, 'pending' | 'ready' | 'error')
+//   - payloadJson: string (required, 0..900000 chars)
+//   - updatedAtMs: int (required, >= 0)
+//
+// ===============================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
     // Global default deny
@@ -7,16 +75,50 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isAuthenticated() {
+      return isSignedIn();
     }
 
     function isVerifiedUser() {
       return isSignedIn() && request.auth.token.email_verified == true;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Trusted backend worker account used by Express / Vercel serverless API
+    function isBridgeWorker() {
+      return isSignedIn() && request.auth.uid == 'WtRvyLbLwPgzKj6ZIAGbxHoM0bJ2';
+    }
+
     function isValidId(id) {
       return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidOrcidId(orcidId) {
+      return orcidId is string
+        && orcidId.size() == 19
+        && orcidId.matches('^\\d{4}-\\d{4}-\\d{4}-[\\dX]{4}$');
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string
+        && dateStr.size() >= 19
+        && dateStr.size() <= 64
+        && dateStr.matches('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$');
+    }
+
+    function isValidTimestampOrIsoDate(val) {
+      return val is timestamp || isValidDateString(val);
     }
 
     function incoming() {
@@ -27,24 +129,81 @@ service cloud.firestore {
       return resource.data;
     }
 
-    function isValidUserProfile(data) {
-      return data.keys().hasAll(['uid', 'displayName', 'provider', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['uid', 'displayName', 'provider', 'orcidId', 'photoURL', 'scholarUrl', 'createdAt', 'updatedAt'])
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in BOTH create and update)
+    // ===============================================================
+
+    function isValidOrcidAccount(data, orcidId) {
+      return data.keys().hasAll(['orcidId', 'uid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['orcidId', 'uid', 'name', 'createdAt', 'updatedAt'])
+        && isValidOrcidId(orcidId)
+        && data.orcidId is string
+        && data.orcidId == orcidId
         && data.uid is string
         && data.uid.size() >= 1
         && data.uid.size() <= 128
         && data.uid.matches('^[a-zA-Z0-9_\\-]+$')
-        && data.uid == request.auth.uid
-        && data.displayName is string
-        && data.displayName.size() >= 1
-        && data.displayName.size() <= 120
+        && (!('name' in data) || (data.name is string && data.name.size() <= 160))
+        && isValidTimestampOrIsoDate(data.createdAt)
+        && isValidTimestampOrIsoDate(data.updatedAt);
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'provider', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'uid',
+          'name',
+          'displayName',
+          'email',
+          'emailOrId',
+          'photoURL',
+          'scholarUrl',
+          'scholarUserId',
+          'orcidId',
+          'verified',
+          'provider',
+          'createdAt',
+          'updatedAt',
+          'lastLoginAt'
+        ])
+        && ('displayName' in data || 'name' in data)
+        && data.uid is string
+        && data.uid == userId
+        && isValidId(data.uid)
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 160))
+        && (!('name' in data) || (data.name is string && data.name.size() >= 1 && data.name.size() <= 160))
+        && (!('email' in data) || (data.email is string && data.email.size() <= 320))
+        && (!('emailOrId' in data) || (data.emailOrId is string && data.emailOrId.size() <= 320))
         && data.provider is string
-        && (data.provider == 'google' || data.provider == 'orcid')
-        && (!('orcidId' in data) || (data.orcidId is string && data.orcidId.size() <= 40))
+        && data.provider in ['google', 'orcid', 'email']
+        && (!('orcidId' in data) || (data.orcidId is string && data.orcidId.size() <= 40 && (data.orcidId == '' || isValidOrcidId(data.orcidId))))
+        && (!('verified' in data) || data.verified is bool)
         && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 150000))
         && (!('scholarUrl' in data) || (data.scholarUrl is string && data.scholarUrl.size() <= 500))
-        && data.createdAt is timestamp
-        && data.updatedAt is timestamp;
+        && (!('scholarUserId' in data) || (data.scholarUserId is string && data.scholarUserId.size() <= 64 && (data.scholarUserId == '' || data.scholarUserId.matches('^[a-zA-Z0-9_\\-]+$'))))
+        && isValidTimestampOrIsoDate(data.createdAt)
+        && isValidTimestampOrIsoDate(data.updatedAt)
+        && (!('lastLoginAt' in data) || isValidTimestampOrIsoDate(data.lastLoginAt));
     }
 
     function isValidExportRecord(data) {
@@ -59,17 +218,18 @@ service cloud.firestore {
         && data.scholarName.size() >= 1
         && data.scholarName.size() <= 160
         && data.exportType is string
-        && (data.exportType == 'pdf' || data.exportType == 'png')
+        && data.exportType in ['pdf', 'png']
         && data.targetName is string
         && data.targetName.size() >= 1
         && data.targetName.size() <= 160
         && data.createdAt is timestamp;
     }
 
-    function isValidScholarClaim(data) {
+    function isValidScholarClaim(data, scholarUserId) {
       return data.keys().hasAll(['scholarUserId', 'orcidId', 'claimedByUid', 'researcherName', 'createdAt'])
-        && data.keys().hasOnly(['scholarUserId', 'orcidId', 'claimedByUid', 'researcherName', 'createdAt'])
+        && data.keys().hasOnly(['scholarUserId', 'orcidId', 'claimedByUid', 'researcherName', 'scholarUrl', 'createdAt', 'updatedAt'])
         && data.scholarUserId is string
+        && data.scholarUserId == scholarUserId
         && data.scholarUserId.size() >= 1
         && data.scholarUserId.size() <= 64
         && data.scholarUserId.matches('^[a-zA-Z0-9_\\-]+$')
@@ -79,32 +239,98 @@ service cloud.firestore {
         && data.claimedByUid is string
         && data.claimedByUid.size() >= 1
         && data.claimedByUid.size() <= 128
-        && data.claimedByUid == request.auth.uid
+        && data.claimedByUid.matches('^[a-zA-Z0-9_\\-]+$')
         && data.researcherName is string
         && data.researcherName.size() >= 1
         && data.researcherName.size() <= 160
-        && data.createdAt is timestamp;
+        && (!('scholarUrl' in data) || (data.scholarUrl is string && data.scholarUrl.size() <= 500))
+        && isValidTimestampOrIsoDate(data.createdAt)
+        && (!('updatedAt' in data) || isValidTimestampOrIsoDate(data.updatedAt));
     }
 
-    match /users/{userId} {
-      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
-      allow create: if isVerifiedUser()
-        && isValidId(userId)
-        && request.auth.uid == userId
-        && isValidUserProfile(incoming())
-        && incoming().createdAt == request.time
-        && incoming().updatedAt == request.time;
-      allow update: if isVerifiedUser()
-        && isValidId(userId)
-        && request.auth.uid == userId
-        && isValidUserProfile(incoming())
+    function isValidScholarBridgeDoc(data) {
+      return data.keys().hasAll(['userId', 'status', 'payloadJson', 'updatedAtMs'])
+        && data.keys().hasOnly(['userId', 'queryName', 'status', 'payloadJson', 'updatedAtMs'])
+        && data.userId is string
+        && data.userId.size() >= 1
+        && data.userId.size() <= 128
+        && data.status is string
+        && data.status in ['pending', 'ready', 'error']
+        && (!('queryName' in data) || (data.queryName is string && data.queryName.size() <= 160))
+        && data.payloadJson is string
+        && data.payloadJson.size() <= 900000
+        && data.updatedAtMs is int
+        && data.updatedAtMs >= 0;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Strict 1-to-1 unique ORCID-to-account binding index
+    match /orcidAccounts/{orcidId} {
+      allow read: if isBridgeWorker() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isBridgeWorker()
+        && isValidOrcidId(orcidId)
+        && isValidOrcidAccount(incoming(), orcidId);
+      allow update: if isBridgeWorker()
+        && isValidOrcidId(orcidId)
+        && isValidOrcidAccount(incoming(), orcidId)
+        && incoming().orcidId == existing().orcidId
         && incoming().uid == existing().uid
-        && incoming().createdAt == existing().createdAt
-        && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'orcidId', 'photoURL', 'scholarUrl', 'updatedAt']);
-      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isBridgeWorker() && isValidOrcidId(orcidId);
     }
 
+    // User profiles (PII-protected: owner-only get for clients, full backend management for bridge worker)
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isBridgeWorker() || isOwner(userId));
+      allow list: if isBridgeWorker();
+      allow create: if isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && (
+          isBridgeWorker()
+          || (
+            isVerifiedUser()
+            && isOwner(userId)
+            && incoming().provider == 'google'
+            && 'displayName' in incoming()
+            && !('orcidId' in incoming())
+            && !('verified' in incoming())
+            && incoming().createdAt == request.time
+            && incoming().updatedAt == request.time
+          )
+        );
+      allow update: if isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && (
+          (
+            isBridgeWorker()
+            && (
+              !('orcidId' in existing())
+              || existing().orcidId == ''
+              || (('orcidId' in incoming()) && incoming().orcidId == existing().orcidId)
+            )
+          )
+          || (
+            isVerifiedUser()
+            && isOwner(userId)
+            && incoming().provider == existing().provider
+            && incoming().createdAt == existing().createdAt
+            && incoming().updatedAt == request.time
+            && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'scholarUrl', 'updatedAt'])
+          )
+        );
+      allow delete: if isValidId(userId) && (isBridgeWorker() || isOwner(userId));
+    }
+
+    // Backend-only application configuration & OAuth secrets (denies all client SDK access)
+    match /appConfig/{configId} {
+      allow read, write: if isBridgeWorker();
+    }
+
+    // Export audit logs owned by authenticated users
     match /exports/{exportId} {
       allow get: if isSignedIn() && isValidId(exportId) && existing().ownerId == request.auth.uid;
       allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
@@ -115,45 +341,38 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // 1-to-1 Google Scholar profile ownership claims
     match /scholarClaims/{scholarUserId} {
       allow get: if true;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn()
-        && isValidId(scholarUserId)
+      allow list: if isBridgeWorker() || isSignedIn();
+      allow create: if isValidId(scholarUserId)
         && !exists(/databases/$(database)/documents/scholarClaims/$(scholarUserId))
-        && incoming().scholarUserId == scholarUserId
-        && incoming().claimedByUid == request.auth.uid
-        && isValidScholarClaim(incoming())
-        && incoming().createdAt == request.time;
-      allow update: if isSignedIn()
-        && isValidId(scholarUserId)
-        && existing().claimedByUid == request.auth.uid
-        && incoming().claimedByUid == existing().claimedByUid
+        && isValidScholarClaim(incoming(), scholarUserId)
+        && (
+          isBridgeWorker()
+          || (
+            isSignedIn()
+            && incoming().claimedByUid == request.auth.uid
+            && incoming().createdAt == request.time
+          )
+        );
+      allow update: if isValidId(scholarUserId)
+        && isValidScholarClaim(incoming(), scholarUserId)
         && incoming().scholarUserId == existing().scholarUserId
-        && isValidScholarClaim(incoming())
-        && incoming().createdAt == existing().createdAt;
-      allow delete: if isSignedIn()
-        && isValidId(scholarUserId)
-        && existing().claimedByUid == request.auth.uid;
-    }
-    function isBridgeWorker() {
-      return isSignedIn() && request.auth.uid == 'WtRvyLbLwPgzKj6ZIAGbxHoM0bJ2';
-    }
-
-    function isValidScholarBridgeDoc(data) {
-      return data.keys().hasAll(['userId', 'status', 'payloadJson', 'updatedAtMs'])
-        && data.keys().hasOnly(['userId', 'queryName', 'status', 'payloadJson', 'updatedAtMs'])
-        && data.userId is string
-        && data.userId.size() >= 1
-        && data.userId.size() <= 128
-        && data.status is string
-        && (data.status == 'pending' || data.status == 'ready' || data.status == 'error')
-        && (!('queryName' in data) || (data.queryName is string && data.queryName.size() <= 160))
-        && data.payloadJson is string
-        && data.payloadJson.size() <= 900000
-        && data.updatedAtMs is int;
+        && (
+          isBridgeWorker()
+          || (
+            isSignedIn()
+            && existing().claimedByUid == request.auth.uid
+            && incoming().claimedByUid == existing().claimedByUid
+            && incoming().createdAt == existing().createdAt
+          )
+        );
+      allow delete: if isValidId(scholarUserId)
+        && (isBridgeWorker() || (isSignedIn() && existing().claimedByUid == request.auth.uid));
     }
 
+    // Server-to-server Scholar scraping bridge queue
     match /scholarBridge/{scholarId} {
       allow get, list: if isBridgeWorker();
       allow create, update: if isBridgeWorker()

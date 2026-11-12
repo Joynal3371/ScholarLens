@@ -194,6 +194,7 @@ export default function App() {
     }
   );
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [authExternalError, setAuthExternalError] = useState<string | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const desktopSearchInputRef = useRef<HTMLInputElement>(null);
@@ -215,7 +216,22 @@ export default function App() {
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    const orcidAuthStatus = params.get('orcid_auth');
+    const orcidAuthError = params.get('orcid_auth_error');
+
+    if (orcidAuthStatus || orcidAuthError) {
+      params.delete('orcid_auth');
+      params.delete('orcid_auth_error');
+      window.history.replaceState({}, '', url.pathname + (params.toString() ? `?${params.toString()}` : '') + url.hash);
+    }
+
+    if (orcidAuthError) {
+      setAuthExternalError(orcidAuthError);
+      setIsAuthModalOpen(true);
+    }
+
     if (params.get('googleAuthBridge') === '1' && window.opener) {
       import('./firebase').then(async ({ signInWithGoogleAccount }) => {
         try {
@@ -237,6 +253,46 @@ export default function App() {
         }
       });
     }
+
+    // Hydrate / validate server-managed HttpOnly session cookie (supports ORCID OAuth & redirect fallback)
+    let cancelled = false;
+    void fetch('/api/auth/session', { credentials: 'same-origin' })
+      .then(async (resp) => {
+        if (!resp.ok) return null;
+        return (await resp.json()) as {
+          authenticated?: boolean;
+          user?: AuthenticatedResearcher | null;
+        };
+      })
+      .then((sessionData) => {
+        if (cancelled || !sessionData) return;
+        if (sessionData.authenticated && sessionData.user) {
+          if (orcidAuthStatus === 'success') {
+            handleAuthenticatedSuccess(sessionData.user);
+          } else {
+            saveSessionUser(sessionData.user);
+          }
+        } else if (sessionData.authenticated === false) {
+          setAuthUser((prev) => {
+            if (prev?.provider === 'orcid') {
+              try {
+                localStorage.removeItem(SESSION_STORAGE_KEY);
+              } catch {
+                // ignore
+              }
+              return null;
+            }
+            return prev;
+          });
+        }
+      })
+      .catch(() => {
+        // Offline / transient error: keep existing local session intact
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -511,19 +567,19 @@ export default function App() {
   const handleAuthenticatedSuccess = (user: AuthenticatedResearcher) => {
     saveSessionUser(user);
     setIsAuthModalOpen(false);
+    setAuthExternalError(null);
 
-    // If verified with ORCID or has a linked Scholar profile, load their profile directly
     const targetScholar = user.scholarUserId || user.scholarUrl;
     if (targetScholar) {
       const parsed = parseGoogleScholarInput(targetScholar);
       const queryId = parsed.valid && parsed.userId ? parsed.userId : targetScholar;
       void fetchProfileFromServer(queryId, user.name);
       setActivePage('overview');
-    } else {
+    } else if (user.provider !== 'orcid' && !pendingExport) {
       setIsProfileModalOpen(true);
     }
 
-    if (user.scholarUrl && pendingExport) {
+    if (pendingExport) {
       const task = pendingExport;
       setPendingExport(null);
       void executeExportTask(task);
@@ -534,10 +590,26 @@ export default function App() {
     if (authUser?.provider === 'google') {
       await firebaseSignOut(auth);
     }
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+    } catch {
+      // Ignore network errors when clearing session cookie
+    }
     saveSessionUser(null);
   };
 
   const handleRemoveAccount = () => {
+    try {
+      void fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+    } catch {
+      // Ignore
+    }
     saveSessionUser(null);
   };
 
@@ -1687,6 +1759,7 @@ export default function App() {
       {/* Gmail / ORCID Login Modal */}
       <AuthGateModal
         isOpen={isAuthModalOpen}
+        externalError={authExternalError}
         defaultScholarUrl={
           activeProfile?.scholarUrl ||
           (activeProfile?.scholarUserId
@@ -1702,6 +1775,7 @@ export default function App() {
         }
         onClose={() => {
           setIsAuthModalOpen(false);
+          setAuthExternalError(null);
           setPendingExport(null);
         }}
         onAuthenticated={handleAuthenticatedSuccess}
