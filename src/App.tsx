@@ -528,6 +528,11 @@ export default function App() {
     const controller = new AbortController();
     analyzeAbortRef.current = controller;
 
+    setGlobalSearchQuery('');
+    setScholarUrlInput('');
+    setHeaderMatchedResearchers([]);
+    setHeaderMatchedScholarProfiles([]);
+    setIsHeaderSearchFocused(false);
     setIsAnalyzing(true);
     setAnalyzingTarget({
       scholarUserId: userId,
@@ -922,6 +927,11 @@ export default function App() {
     const cleanName = authorName.trim();
     const cleanId = scholarUserId?.trim() || '';
     if (!cleanName && !cleanId) return;
+    setGlobalSearchQuery('');
+    setScholarUrlInput('');
+    setHeaderMatchedResearchers([]);
+    setHeaderMatchedScholarProfiles([]);
+    setIsHeaderSearchFocused(false);
     pushNavHistory();
     navigateToPage('overview', { skipHistory: true });
     if (cleanId) {
@@ -1142,9 +1152,12 @@ export default function App() {
               ) : null}
             </div>
 
-            {isHeaderSearchFocused &&
+            {!isAnalyzing &&
+              isHeaderSearchFocused &&
               globalSearchQuery.trim().length > 0 &&
-              activePage !== 'feed' && (
+              activePage !== 'feed' &&
+              (headerMatchedResearchers.length > 0 ||
+                headerMatchedScholarProfiles.length > 0) && (
                 <div
                   data-testid="header-researcher-search-dropdown"
                   className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-lg p-3 space-y-2.5 z-50 max-h-[70vh] overflow-y-auto"
@@ -1161,9 +1174,7 @@ export default function App() {
                     )}
                   </div>
 
-                  {headerMatchedResearchers.length > 0 ||
-                  headerMatchedScholarProfiles.length > 0 ? (
-                    <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-slate-100">
                       {headerMatchedResearchers.map((r) => (
                         <div
                           key={r.uid}
@@ -1289,35 +1300,6 @@ export default function App() {
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    !isSearchingHeader && (
-                      <p className="text-xs text-slate-500">
-                        No registered researchers matched &ldquo;
-                        {globalSearchQuery.trim()}&rdquo; yet.
-                      </p>
-                    )
-                  )}
-
-                  {parsedHeaderSearchQuery?.valid &&
-                    parsedHeaderSearchQuery.userId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsHeaderSearchFocused(false);
-                          handleOpenResearcherProfile(
-                            parsedHeaderSearchQuery.queryName || '',
-                            parsedHeaderSearchQuery.userId
-                          );
-                        }}
-                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-xs font-semibold text-blue-700 transition-colors cursor-pointer"
-                      >
-                        <span className="truncate">
-                          Look up Google Scholar profile for &ldquo;
-                          {globalSearchQuery.trim()}&rdquo;
-                        </span>
-                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                      </button>
-                    )}
 
                   <button
                     type="button"

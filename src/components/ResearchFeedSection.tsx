@@ -777,7 +777,9 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
         </div>
 
         {/* Researcher Search Matches */}
-        {searchQuery.trim().length > 0 && (
+        {searchQuery.trim().length > 0 &&
+          (matchedResearchers.length > 0 ||
+            matchedScholarProfiles.length > 0) && (
           <div
             data-testid="feed-researcher-search-results"
             className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs space-y-2.5"
@@ -792,14 +794,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
               )}
             </div>
 
-            {matchedResearchers.length === 0 &&
-            matchedScholarProfiles.length === 0 &&
-            !isSearchingResearchers ? (
-              <p className="text-xs text-slate-500">
-                No registered researchers matched &ldquo;{searchQuery.trim()}&rdquo; yet.
-              </p>
-            ) : (
-              <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100">
                 {matchedResearchers.map((r) => (
                   <div
                     key={r.uid}
@@ -924,25 +919,6 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                   </div>
                 ))}
               </div>
-            )}
-
-            {parsedFeedScholarQuery?.valid && parsedFeedScholarQuery.userId && (
-              <button
-                type="button"
-                onClick={() =>
-                  onOpenScholarProfile(
-                    parsedFeedScholarQuery.queryName || '',
-                    parsedFeedScholarQuery.userId
-                  )
-                }
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-xs font-semibold text-blue-700 transition-colors cursor-pointer"
-              >
-                <span className="truncate">
-                  Look up Google Scholar profile for &ldquo;{searchQuery.trim()}&rdquo;
-                </span>
-                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-              </button>
-            )}
           </div>
         )}
 

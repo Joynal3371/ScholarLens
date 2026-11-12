@@ -2443,7 +2443,7 @@ export async function buildLiveResearcherProfile(
     ? effectiveQueryName || fastStoreIdentity?.name
       ? await Promise.race([
           scrapeGoogleScholarFullProfile(effectiveUserId),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3800)),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 7200)),
         ])
       : await scrapeGoogleScholarFullProfile(effectiveUserId)
     : null;
@@ -2550,9 +2550,12 @@ export async function buildLiveResearcherProfile(
           primaryOpenAlexAuthor = top.author;
           bestOaCandidateScore = top.score;
           for (const sc of scoredCandidates) {
+            const strongSplitMatch =
+              affilTokens.length === 0 && sc.score >= Math.max(40, top.score - 20);
             if (
               openAlexAuthorIds.length === 0 ||
-              (sc.affilMatches > 0 && openAlexAuthorIds.length < 4)
+              ((sc.affilMatches > 0 || strongSplitMatch) &&
+                openAlexAuthorIds.length < 4)
             ) {
               if (!openAlexAuthorIds.includes(sc.id)) {
                 openAlexAuthorIds.push(sc.id);
@@ -5269,22 +5272,34 @@ async function resolveWikipediaPortraitUrl(
       .split(/\s+/)
       .filter((t) => t.length >= 4 && !/^(university|institute|college|school)$/i.test(t));
 
-    for (const hit of hits) {
-      const title = String(hit?.title || '').trim();
-      if (!title || !isStrictSameResearcherForAvatar(cleanName, title)) continue;
-      const summaryRes = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-          title.replace(/\s+/g, '_')
-        )}`,
-        {
-          headers: {
-            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
-          },
-          signal: AbortSignal.timeout(2400),
+    const matchingTitles = hits
+      .map((hit) => String(hit?.title || '').trim())
+      .filter((title) => title && isStrictSameResearcherForAvatar(cleanName, title));
+
+    const summaries = await Promise.all(
+      matchingTitles.map(async (title) => {
+        try {
+          const summaryRes = await fetch(
+            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+              title.replace(/\s+/g, '_')
+            )}`,
+            {
+              headers: {
+                'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+              },
+              signal: AbortSignal.timeout(2000),
+            }
+          );
+          if (!summaryRes.ok) return null;
+          return (await summaryRes.json()) as any;
+        } catch {
+          return null;
         }
-      );
-      if (!summaryRes.ok) continue;
-      const summary = (await summaryRes.json()) as any;
+      })
+    );
+
+    for (const summary of summaries) {
+      if (!summary) continue;
       const bioText = `${summary?.description || ''} ${summary?.extract || ''}`.toLowerCase();
       const isAcademicBio =
         /\b(?:professor|researcher|scientist|computer\s+scientist|physicist|biologist|chemist|mathematician|physician|engineer|scholar|academic|fellow|university|faculty|dean|director)\b/i.test(
@@ -5370,133 +5385,165 @@ async function resolveCoAuthorPhotoBuffer(params: {
     return img;
   };
 
-  const job = (async () => {
-    try {
-      // 1. Wikidata by exact ORCID P496 or verified name
-      const wikiMeta = await resolveVerifiedWikidataAvatarOrId(
-        cleanName,
-        cleanOrcid
-      );
-      if (
-        wikiMeta?.scholarId &&
-        wikiMeta.scholarId !== params.skipScholarId
-      ) {
-        const gsImg = await fetchScholarAvatarWithQueue(wikiMeta.scholarId);
-        if (gsImg) {
-          return storeResolved({ ...gsImg, resolvedScholarId: wikiMeta.scholarId });
-        }
-      }
-      if (wikiMeta?.commonsUrl) {
-        const commonsImg = await fetchStaticImageBuffer(
-          wikiMeta.commonsUrl,
-          false,
-          3500
+  const resolveInternal = async () => {
+    const deadlineAt = Date.now() + 7200;
+
+    // 1. Parallel fast API lookup: Wikidata (P496/P1960/P18), strict Wikipedia portrait, and ORCID institutional portrait
+    const [wikiRes, wikipediaRes, orcidRes] = await Promise.all([
+      (async () => {
+        const wikiMeta = await resolveVerifiedWikidataAvatarOrId(
+          cleanName,
+          cleanOrcid
         );
-        if (
-          commonsImg &&
-          commonsImg.status === 200 &&
-          !commonsImg.contentType.includes('svg') &&
-          commonsImg.buffer.length > 800
-        ) {
+        if (wikiMeta?.scholarId && wikiMeta.scholarId !== params.skipScholarId) {
+          const gsImg = await fetchScholarAvatarWithQueue(wikiMeta.scholarId);
+          if (gsImg) {
+            return storeResolved({ ...gsImg, resolvedScholarId: wikiMeta.scholarId });
+          }
+        }
+        if (wikiMeta?.commonsUrl) {
+          const commonsImg = await fetchStaticImageBuffer(
+            wikiMeta.commonsUrl,
+            false,
+            2600
+          );
+          if (
+            commonsImg &&
+            commonsImg.status === 200 &&
+            !commonsImg.contentType.includes('svg') &&
+            commonsImg.buffer.length > 800
+          ) {
+            return storeResolved({
+              contentType: commonsImg.contentType,
+              buffer: commonsImg.buffer,
+            });
+          }
+        }
+        return null;
+      })(),
+      cleanName
+        ? (async () => {
+            const wikiImgUrl = await resolveWikipediaPortraitUrl(cleanName, uni);
+            if (!wikiImgUrl) return null;
+            const wikiImg = await fetchStaticImageBuffer(wikiImgUrl, false, 2600);
+            if (
+              wikiImg &&
+              wikiImg.status === 200 &&
+              !wikiImg.contentType.includes('svg') &&
+              wikiImg.buffer.length > 800
+            ) {
+              return storeResolved({
+                contentType: wikiImg.contentType,
+                buffer: wikiImg.buffer,
+              });
+            }
+            return null;
+          })()
+        : Promise.resolve(null),
+      cleanOrcid
+        ? resolveOrcidInstitutionalPortrait(cleanOrcid).then((img) =>
+            img ? storeResolved(img) : null
+          )
+        : Promise.resolve(null),
+    ]);
+
+    if (wikiRes) return wikiRes;
+    if (wikipediaRes) return wikipediaRes;
+    if (orcidRes) return orcidRes;
+
+    // 2. Queued DuckDuckGo candidate Google Scholar IDs (max 1 query, test up to 2 candidates in parallel)
+    if (cleanName && Date.now() < deadlineAt - 1200) {
+      const queries = buildYahooScholarSearchQueries(cleanName, uni).slice(0, 1);
+      const html = queries[0]
+        ? await fetchDuckDuckGoHtmlWithQueue(queries[0], 3000)
+        : null;
+      const candidateIds = html
+        ? extractCandidateScholarIdsFromSearchHtml(
+            html,
+            stripAcademicHonorifics(cleanName),
+            uni,
+            isStrictSameResearcherForAvatar
+          ).filter((id) => isValidScholarId(id) && id !== params.skipScholarId)
+        : [];
+      if (candidateIds.length > 0) {
+        const gsImgs = await Promise.all(
+          candidateIds.slice(0, 2).map(async (candId) => {
+            const img = await fetchScholarAvatarWithQueue(candId);
+            return img ? { ...img, candId } : null;
+          })
+        );
+        const hit = gsImgs.find(Boolean);
+        if (hit) {
+          registerScholarColleague(cleanName, hit.candId, true);
           return storeResolved({
-            contentType: commonsImg.contentType,
-            buffer: commonsImg.buffer,
+            contentType: hit.contentType,
+            buffer: hit.buffer,
+            resolvedScholarId: hit.candId,
           });
         }
       }
+    }
 
-      // 2. Strict Wikipedia academic portrait lookup
-      if (cleanName) {
-        const wikiImgUrl = await resolveWikipediaPortraitUrl(cleanName, uni);
-        if (wikiImgUrl) {
-          const wikiImg = await fetchStaticImageBuffer(wikiImgUrl, false, 3500);
-          if (
-            wikiImg &&
-            wikiImg.status === 200 &&
-            !wikiImg.contentType.includes('svg') &&
-            wikiImg.buffer.length > 800
-          ) {
-            return storeResolved({
-              contentType: wikiImg.contentType,
-              buffer: wikiImg.buffer,
-            });
-          }
-        }
-      }
-
-      // 3. Institutional profile portrait via ORCID researcher-urls (Pure, DTU Orbit, faculty pages)
-      if (cleanOrcid) {
-        const orcidImg = await resolveOrcidInstitutionalPortrait(cleanOrcid);
-        if (orcidImg) {
-          return storeResolved(orcidImg);
-        }
-      }
-
-      // 4. Queued DuckDuckGo candidate Google Scholar IDs (testing up to 2 matched profiles)
-      if (cleanName) {
-        const candidateIds = await findCandidateScholarIdsViaDdg(cleanName, uni);
-        for (const candId of candidateIds.slice(0, 2)) {
-          if (candId === params.skipScholarId) continue;
-          const gsImg = await fetchScholarAvatarWithQueue(candId);
-          if (gsImg) {
-            registerScholarColleague(cleanName, candId, true);
-            return storeResolved({
-              ...gsImg,
-              resolvedScholarId: candId,
-            });
-          }
-        }
-
-        // 5. Fallback to queued DuckDuckGo search for university faculty profile portraits
-        const facultyQuery = uni
-          ? `"${stripAcademicHonorifics(cleanName)}" "${uni}"`
-          : `"${stripAcademicHonorifics(cleanName)}" professor OR faculty`;
-        const ddgHtml = await fetchDuckDuckGoHtmlWithQueue(facultyQuery, 4000);
-        if (ddgHtml) {
-          const urls = extractGeneralUrlsFromDdgHtml(ddgHtml)
-            .filter((u) =>
-              /\.(?:edu|ac\.[a-z]{2,3}|org)\b|\/(?:faculty|people|person|profile|staff|researchers|directory)\b/i.test(
-                u
-              )
+    // 3. Fallback to queued DuckDuckGo search for university faculty profile portraits
+    if (cleanName && Date.now() < deadlineAt - 1200) {
+      const facultyQuery = uni
+        ? `"${stripAcademicHonorifics(cleanName)}" "${uni}"`
+        : `"${stripAcademicHonorifics(cleanName)}" professor OR faculty`;
+      const ddgHtml = await fetchDuckDuckGoHtmlWithQueue(facultyQuery, 2800);
+      if (ddgHtml) {
+        const urls = extractGeneralUrlsFromDdgHtml(ddgHtml)
+          .filter((u) =>
+            /\.(?:edu|ac\.[a-z]{2,3}|org)\b|\/(?:faculty|people|person|profile|staff|researchers|directory)\b/i.test(
+              u
             )
-            .slice(0, 2);
-          for (const pageUrl of urls) {
-            try {
-              const pageRes = await fetch(pageUrl, {
-                headers: {
-                  'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36',
-                },
-                signal: AbortSignal.timeout(2600),
+          )
+          .slice(0, 2);
+        for (const pageUrl of urls) {
+          if (Date.now() >= deadlineAt) break;
+          try {
+            const pageRes = await fetch(pageUrl, {
+              headers: {
+                'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36',
+              },
+              signal: AbortSignal.timeout(2000),
+            });
+            if (!pageRes.ok) continue;
+            const ct = String(pageRes.headers.get('content-type') || '');
+            if (!ct.includes('html')) continue;
+            const html = await pageRes.text();
+            const portraitUrl = extractPortraitUrlFromHtml(html, pageUrl);
+            if (!portraitUrl) continue;
+            const img = await fetchStaticImageBuffer(portraitUrl, false, 2200);
+            if (
+              img &&
+              img.status === 200 &&
+              img.contentType.startsWith('image/') &&
+              !img.contentType.includes('svg') &&
+              img.buffer.length > 1200
+            ) {
+              return storeResolved({
+                contentType: img.contentType,
+                buffer: img.buffer,
               });
-              if (!pageRes.ok) continue;
-              const ct = String(pageRes.headers.get('content-type') || '');
-              if (!ct.includes('html')) continue;
-              const html = await pageRes.text();
-              const portraitUrl = extractPortraitUrlFromHtml(html, pageUrl);
-              if (!portraitUrl) continue;
-              const img = await fetchStaticImageBuffer(portraitUrl, false, 3000);
-              if (
-                img &&
-                img.status === 200 &&
-                img.contentType.startsWith('image/') &&
-                !img.contentType.includes('svg') &&
-                img.buffer.length > 1200
-              ) {
-                return storeResolved({
-                  contentType: img.contentType,
-                  buffer: img.buffer,
-                });
-              }
-            } catch {
-              // Ignore individual faculty page fetch error
             }
+          } catch {
+            // Ignore individual faculty page fetch error
           }
         }
       }
+    }
 
-      negativeCoAuthorPhotoCache.set(inflightKey, Date.now());
-      return null;
+    negativeCoAuthorPhotoCache.set(inflightKey, Date.now());
+    return null;
+  };
+
+  const job = (async () => {
+    try {
+      return await Promise.race([
+        resolveInternal(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 7500)),
+      ]);
     } finally {
       coAuthorResolvedPhotoInflight.delete(inflightKey);
     }
