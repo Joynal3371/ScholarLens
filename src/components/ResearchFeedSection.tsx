@@ -20,8 +20,6 @@ import {
   Clock,
   Share2,
   Loader2,
-  Sparkles,
-  FileText,
 } from 'lucide-react';
 import { AuthenticatedResearcher } from './AuthGateModal';
 import { ScholarProfileAvatar } from './ScholarProfileAvatar';
@@ -30,6 +28,7 @@ import {
   Publication,
   ResearcherProfile,
   getPublicationUrl,
+  parseGoogleScholarInput,
 } from '../utils/scholarAnalytics';
 
 interface MentionedWork {
@@ -88,6 +87,8 @@ interface FeedPostItem {
   likesCount: number;
   likedByMe: boolean;
   comments: FeedComment[];
+  suggestionReason?: 'connected' | 'coauthor' | 'coauthor_coauthor' | 'community';
+  suggestionLabel?: string;
 }
 
 interface FeedWorkItem {
@@ -95,6 +96,8 @@ interface FeedWorkItem {
   kind: 'work';
   createdAt: string;
   author: FeedAuthorMeta;
+  suggestionReason?: 'connected' | 'coauthor' | 'coauthor_coauthor' | 'community';
+  suggestionLabel?: string;
   work: {
     id: string;
     title: string;
@@ -118,8 +121,6 @@ interface ResearchFeedSectionProps {
   onRequireSignIn: () => void;
   onOpenMessage: (researcher: SiteResearcher) => void;
   onOpenScholarProfile: (name: string, scholarUserId?: string) => void;
-  onOpenConnections: () => void;
-  onOpenMyProfile: () => void;
   onSummaryChanged?: () => void;
 }
 
@@ -214,8 +215,6 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
   onRequireSignIn,
   onOpenMessage,
   onOpenScholarProfile,
-  onOpenConnections,
-  onOpenMyProfile,
   onSummaryChanged,
 }) => {
   const [filterMode, setFilterMode] = useState<FeedFilter>('all');
@@ -226,6 +225,19 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [feedError, setFeedError] = useState<string | null>(null);
   const [suggestedResearchers, setSuggestedResearchers] = useState<SiteResearcher[]>([]);
+  const [matchedResearchers, setMatchedResearchers] = useState<SiteResearcher[]>([]);
+  const [matchedScholarProfiles, setMatchedScholarProfiles] = useState<
+    Array<{
+      scholarUserId: string;
+      name: string;
+      affiliation: string;
+      country: string;
+      totalCitations: number;
+      hIndex: number;
+      publicationCount: number;
+    }>
+  >([]);
+  const [isSearchingResearchers, setIsSearchingResearchers] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Composer State
@@ -240,10 +252,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
   const [showCoAuthorPicker, setShowCoAuthorPicker] = useState(false);
   const [coAuthorInput, setCoAuthorInput] = useState('');
   const [images, setImages] = useState<string[]>([]);
-  const [imageUrlInput, setImageUrlInput] = useState('');
-  const [showImagePanel, setShowImagePanel] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
-  const [showVideoPanel, setShowVideoPanel] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
 
@@ -273,10 +282,13 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
       }
       setFeedError(null);
       try {
+        const viewerSid =
+          authUser?.scholarUserId || activeProfile?.scholarUserId || '';
         const params = new URLSearchParams({
           filter: filterMode,
           offset: String(offsetVal),
           limit: '15',
+          ...(viewerSid ? { scholarId: viewerSid } : {}),
           ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
         });
         const resp = await fetch(`/api/social/feed?${params.toString()}`, {
@@ -294,7 +306,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
         setIsLoadingMore(false);
       }
     },
-    [filterMode, searchQuery]
+    [filterMode, searchQuery, authUser?.scholarUserId, activeProfile?.scholarUserId]
   );
 
   const loadSuggestedResearchers = useCallback(async () => {
@@ -320,7 +332,56 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
     void loadSuggestedResearchers();
   }, [loadSuggestedResearchers, authUser?.uid]);
 
-  // Infinite scroll sentinel like Facebook
+  // Find researchers matching the feed search query (site users + analyzed Scholar profiles)
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) {
+      setMatchedResearchers([]);
+      setMatchedScholarProfiles([]);
+      setIsSearchingResearchers(false);
+      return;
+    }
+
+    const qLower = q.toLowerCase();
+    const localHits = suggestedResearchers.filter(
+      (r) =>
+        r.name.toLowerCase().includes(qLower) ||
+        (r.affiliation || '').toLowerCase().includes(qLower) ||
+        (r.country || '').toLowerCase().includes(qLower) ||
+        (r.orcidId || '').toLowerCase().includes(qLower) ||
+        (r.scholarUserId || '').toLowerCase().includes(qLower)
+    );
+    setMatchedResearchers(localHits);
+
+    let cancelled = false;
+    setIsSearchingResearchers(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const resp = await fetch(
+          `/api/social/researchers?q=${encodeURIComponent(q)}`,
+          { credentials: 'include' }
+        );
+        if (!resp.ok || cancelled) return;
+        const data = await resp.json();
+        if (cancelled) return;
+        setMatchedResearchers(Array.isArray(data.researchers) ? data.researchers : []);
+        setMatchedScholarProfiles(
+          Array.isArray(data.scholarProfiles) ? data.scholarProfiles : []
+        );
+      } catch {
+        // Keep local hits on transient errors
+      } finally {
+        if (!cancelled) setIsSearchingResearchers(false);
+      }
+    }, 200);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [searchQuery, suggestedResearchers]);
+
+  // Continuous infinite scroll (IntersectionObserver + window scroll fallback)
   useEffect(() => {
     if (!hasMore || isLoading || isLoadingMore) return;
     const node = loadMoreSentinelRef.current;
@@ -331,10 +392,24 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
           void fetchFeed(items.length, true);
         }
       },
-      { rootMargin: '280px' }
+      { rootMargin: '450px' }
     );
     observer.observe(node);
-    return () => observer.disconnect();
+
+    const handleScrollNearBottom = () => {
+      const remaining =
+        document.documentElement.scrollHeight -
+        (window.scrollY + window.innerHeight);
+      if (remaining < 420) {
+        void fetchFeed(items.length, true);
+      }
+    };
+    window.addEventListener('scroll', handleScrollNearBottom, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', handleScrollNearBottom);
+    };
   }, [hasMore, isLoading, isLoadingMore, items.length, fetchFeed]);
 
   // Load user's own Scholar publications when opening work/coauthor picker
@@ -376,6 +451,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
     const files = Array.from(e.target.files || []);
     e.target.value = '';
     if (files.length === 0) return;
+    setIsComposerExpanded(true);
     setComposerError(null);
     for (const f of files.slice(0, Math.max(0, 3 - images.length))) {
       try {
@@ -391,10 +467,11 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
+    setIsComposerExpanded(true);
     setComposerError(null);
     if (file.size > 520 * 1024) {
       setComposerError(
-        'Direct video upload supports clips up to 500 KB. For longer videos, paste a YouTube or MP4 video URL below.'
+        'Direct video upload supports clips up to 500 KB.'
       );
       return;
     }
@@ -450,8 +527,6 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
       setVideoUrl('');
       setShowWorkPicker(false);
       setShowCoAuthorPicker(false);
-      setShowImagePanel(false);
-      setShowVideoPanel(false);
       setIsComposerExpanded(false);
       await fetchFeed(0, false);
     } catch (err: any) {
@@ -645,98 +720,16 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
       .slice(0, 12);
   }, [myPublications, workSearchQuery]);
 
+  const parsedFeedScholarQuery = React.useMemo(
+    () => (searchQuery.trim() ? parseGoogleScholarInput(searchQuery) : null),
+    [searchQuery]
+  );
+
   return (
-    <div className="max-w-[1220px] mx-auto w-full grid grid-cols-1 lg:grid-cols-[240px_minmax(0,660px)] xl:grid-cols-[240px_minmax(0,660px)_270px] gap-5 items-start justify-center">
-      {/* Left Rail: Researcher Shortcut & Feed Filters */}
-      <aside className="hidden lg:block sticky top-20 space-y-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
-          {authUser ? (
-            <>
-              <div className="flex items-center gap-3">
-                <ScholarProfileAvatar
-                  name={authUser.name}
-                  scholarUserId={authUser.scholarUserId || ''}
-                  orcid={authUser.orcidId}
-                  avatarUrl={authUser.photoURL}
-                  compact
-                  className="w-11 h-11 shrink-0"
-                />
-                <div className="min-w-0">
-                  <div className="text-sm font-bold text-slate-900 truncate">
-                    {authUser.name}
-                  </div>
-                  {authUser.orcidId && (
-                    <div className="text-[10px] font-mono text-emerald-700 font-semibold truncate">
-                      {authUser.orcidId}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={onOpenMyProfile}
-                className="w-full py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-colors cursor-pointer"
-              >
-                View My Scholar Profile
-              </button>
-            </>
-          ) : (
-            <div className="space-y-2.5 text-center">
-              <p className="text-xs font-semibold text-slate-800">
-                Join the ScholarLens Community
-              </p>
-              <p className="text-[11px] text-slate-500">
-                Sign in with ORCID to publish research posts, connect with peers, and message researchers.
-              </p>
-              <button
-                type="button"
-                onClick={onRequireSignIn}
-                className="w-full py-1.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer"
-              >
-                Sign In with ORCID
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs space-y-2">
-          <div className="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Feed Filters
-          </div>
-          {(
-            [
-              { id: 'all', label: 'All Research Feed', icon: Rss },
-              { id: 'posts', label: 'Researcher Posts', icon: FileText },
-              { id: 'works', label: 'Published Works', icon: BookOpen },
-              ...(authUser
-                ? [{ id: 'connections', label: 'My Connections', icon: Users }]
-                : []),
-            ] as { id: FeedFilter; label: string; icon: React.ComponentType<{ className?: string }> }[]
-          ).map((f) => {
-            const Icon = f.icon;
-            const active = filterMode === f.id;
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFilterMode(f.id)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                  active
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5 shrink-0" />
-                <span>{f.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </aside>
-
+    <div className="max-w-[680px] mx-auto w-full">
       {/* Center Column: Facebook-Style Scrollable Newsfeed */}
       <div className="w-full space-y-4">
-        {/* Search & Mobile Filters */}
+        {/* Search & Filters */}
         <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs space-y-2.5">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -744,12 +737,22 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search newsfeed by paper, researcher, journal, or co-author..."
-              aria-label="Search research newsfeed"
-              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-500"
+              placeholder="Search researcher, paper, journal, or Scholar ID / URL..."
+              aria-label="Search researchers and newsfeed"
+              className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-500"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
-          <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto pb-0.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
             {(['all', 'posts', 'works', ...(authUser ? ['connections'] : [])] as FeedFilter[]).map(
               (f) => (
                 <button
@@ -775,8 +778,195 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
           </div>
         </div>
 
+        {/* Researcher Search Matches */}
+        {searchQuery.trim().length > 0 && (
+          <div
+            data-testid="feed-researcher-search-results"
+            className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs space-y-2.5"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-blue-600" />
+                <span>Researchers</span>
+              </span>
+              {isSearchingResearchers && (
+                <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin" />
+              )}
+            </div>
+
+            {matchedResearchers.length === 0 &&
+            matchedScholarProfiles.length === 0 &&
+            !isSearchingResearchers ? (
+              <p className="text-xs text-slate-500">
+                No registered researchers matched &ldquo;{searchQuery.trim()}&rdquo; yet.
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {matchedResearchers.map((r) => (
+                  <div
+                    key={r.uid}
+                    className="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <ScholarProfileAvatar
+                        name={r.name}
+                        scholarUserId={r.scholarUserId || ''}
+                        orcid={r.orcidId}
+                        university={r.affiliation}
+                        avatarUrl={r.photoURL}
+                        compact
+                        className="w-9 h-9 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onOpenScholarProfile(r.name, r.scholarUserId)
+                          }
+                          className="text-xs font-bold text-slate-900 hover:text-blue-600 hover:underline truncate inline-flex items-center gap-1 cursor-pointer max-w-full"
+                        >
+                          <span className="truncate">{r.name}</span>
+                          {r.orcidId && (
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          )}
+                        </button>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {[
+                            r.affiliation || 'Verified Researcher',
+                            r.country,
+                            r.publicationCount
+                              ? `${r.publicationCount} papers`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenScholarProfile(r.name, r.scholarUserId)
+                        }
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold cursor-pointer"
+                      >
+                        Profile
+                      </button>
+                      {!r.isSelf && r.connectionStatus !== 'connected' && (
+                        <button
+                          type="button"
+                          disabled={r.connectionStatus === 'pending_sent'}
+                          onClick={() => handleQuickConnect(r.uid)}
+                          className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold disabled:opacity-60 cursor-pointer"
+                        >
+                          {r.connectionStatus === 'pending_sent'
+                            ? 'Pending'
+                            : 'Connect'}
+                        </button>
+                      )}
+                      {!r.isSelf && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenMessage(r)}
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[11px] font-semibold cursor-pointer"
+                        >
+                          Message
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {matchedScholarProfiles.map((p) => (
+                  <div
+                    key={p.scholarUserId}
+                    className="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <ScholarProfileAvatar
+                        name={p.name}
+                        scholarUserId={p.scholarUserId}
+                        university={p.affiliation}
+                        compact
+                        className="w-9 h-9 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onOpenScholarProfile(p.name, p.scholarUserId)
+                          }
+                          className="text-xs font-bold text-slate-900 hover:text-blue-600 hover:underline truncate block cursor-pointer max-w-full"
+                        >
+                          {p.name}
+                        </button>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {[
+                            p.affiliation || 'Google Scholar Researcher',
+                            p.country,
+                            p.totalCitations
+                              ? `${p.totalCitations.toLocaleString()} citations`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onOpenScholarProfile(p.name, p.scholarUserId)
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold cursor-pointer shrink-0"
+                    >
+                      View Profile
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {parsedFeedScholarQuery?.valid && parsedFeedScholarQuery.userId && (
+              <button
+                type="button"
+                onClick={() =>
+                  onOpenScholarProfile(
+                    parsedFeedScholarQuery.queryName ||
+                      parsedFeedScholarQuery.userId ||
+                      searchQuery.trim(),
+                    parsedFeedScholarQuery.userId
+                  )
+                }
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-xs font-semibold text-blue-700 transition-colors cursor-pointer"
+              >
+                <span className="truncate">
+                  Look up Google Scholar profile for &ldquo;{searchQuery.trim()}&rdquo;
+                </span>
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Create Post Composer (Facebook / LinkedIn style) */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
+          <input
+            ref={imageFileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageFileSelect}
+            className="hidden"
+          />
+          <input
+            ref={videoFileInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/ogg,video/*"
+            onChange={handleVideoFileSelect}
+            className="hidden"
+          />
           <div className="flex items-center gap-3">
             <ScholarProfileAvatar
               name={authUser?.name || 'Guest Researcher'}
@@ -822,8 +1012,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                 type="button"
                 onClick={() => {
                   if (!authUser) return onRequireSignIn();
-                  setIsComposerExpanded(true);
-                  setShowImagePanel(true);
+                  imageFileInputRef.current?.click();
                 }}
                 className="py-1.5 px-2 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-600 inline-flex items-center justify-center gap-1.5 cursor-pointer"
               >
@@ -834,8 +1023,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                 type="button"
                 onClick={() => {
                   if (!authUser) return onRequireSignIn();
-                  setIsComposerExpanded(true);
-                  setShowVideoPanel(true);
+                  videoFileInputRef.current?.click();
                 }}
                 className="py-1.5 px-2 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-600 inline-flex items-center justify-center gap-1.5 cursor-pointer"
               >
@@ -1104,98 +1292,6 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                 </div>
               )}
 
-              {showImagePanel && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-700">
-                      Add Images (up to 3)
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowImagePanel(false)}
-                      className="text-slate-400 hover:text-slate-600 cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      ref={imageFileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageFileSelect}
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => imageFileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 cursor-pointer"
-                    >
-                      Upload Image File
-                    </button>
-                    <input
-                      type="url"
-                      value={imageUrlInput}
-                      onChange={(e) => setImageUrlInput(e.target.value)}
-                      placeholder="or paste https:// image URL..."
-                      className="flex-1 min-w-[160px] px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      disabled={!imageUrlInput.trim() || images.length >= 3}
-                      onClick={() => {
-                        setImages((prev) => [...prev, imageUrlInput.trim()]);
-                        setImageUrlInput('');
-                      }}
-                      className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold disabled:opacity-40 cursor-pointer"
-                    >
-                      Attach
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {showVideoPanel && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-700">
-                      Add Video (MP4/WebM Clip or YouTube/Vimeo Link)
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowVideoPanel(false)}
-                      className="text-slate-400 hover:text-slate-600 cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      ref={videoFileInputRef}
-                      type="file"
-                      accept="video/mp4,video/webm,video/ogg"
-                      onChange={handleVideoFileSelect}
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => videoFileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 cursor-pointer"
-                    >
-                      Upload Short Video
-                    </button>
-                    <input
-                      type="url"
-                      value={videoUrl.startsWith('data:') ? '' : videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder="or paste YouTube / Vimeo / MP4 URL..."
-                      className="flex-1 min-w-[180px] px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg"
-                    />
-                  </div>
-                </div>
-              )}
-
               {composerError && (
                 <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                   {composerError}
@@ -1215,7 +1311,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowImagePanel((v) => !v)}
+                    onClick={() => imageFileInputRef.current?.click()}
                     className="px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 text-xs font-semibold text-emerald-700 inline-flex items-center gap-1 cursor-pointer"
                   >
                     <ImageIcon className="w-3.5 h-3.5" />
@@ -1223,7 +1319,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowVideoPanel((v) => !v)}
+                    onClick={() => videoFileInputRef.current?.click()}
                     className="px-2.5 py-1.5 rounded-lg hover:bg-rose-50 text-xs font-semibold text-rose-600 inline-flex items-center gap-1 cursor-pointer"
                   >
                     <Video className="w-3.5 h-3.5" />
@@ -1335,6 +1431,21 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                             {author.verified && (
                               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                             )}
+                            {item.suggestionReason &&
+                              item.suggestionReason !== 'community' &&
+                              item.suggestionLabel && (
+                                <span
+                                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${
+                                    item.suggestionReason === 'connected'
+                                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                                      : item.suggestionReason === 'coauthor'
+                                      ? 'bg-blue-50 text-blue-700 border border-blue-200/80'
+                                      : 'bg-indigo-50 text-indigo-700 border border-indigo-200/80'
+                                  }`}
+                                >
+                                  {item.suggestionLabel}
+                                </span>
+                              )}
                             {item.taggedCoAuthors.length > 0 && (
                               <span className="text-xs text-slate-500">
                                 with{' '}
@@ -1667,6 +1778,21 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                           {author.verified && (
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           )}
+                          {item.suggestionReason &&
+                            item.suggestionReason !== 'community' &&
+                            item.suggestionLabel && (
+                              <span
+                                className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold shrink-0 ${
+                                  item.suggestionReason === 'connected'
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                                    : item.suggestionReason === 'coauthor'
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200/80'
+                                    : 'bg-indigo-50 text-indigo-700 border border-indigo-200/80'
+                                }`}
+                              >
+                                {item.suggestionLabel}
+                              </span>
+                            )}
                         </div>
                         <p className="text-[11px] text-slate-500 truncate">
                           {[
@@ -1805,7 +1931,7 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
               {isLoadingMore ? (
                 <div className="inline-flex items-center gap-2 text-xs text-slate-500">
                   <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                  <span>Loading older works...</span>
+                  <span>Loading more research updates...</span>
                 </div>
               ) : hasMore ? (
                 <button
@@ -1813,101 +1939,17 @@ export const ResearchFeedSection: React.FC<ResearchFeedSectionProps> = ({
                   onClick={() => fetchFeed(items.length, true)}
                   className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs cursor-pointer"
                 >
-                  Load More Research Works
+                  Load More Research Updates
                 </button>
               ) : (
                 <p className="text-[11px] text-slate-400">
-                  You have reached the end of the research feed.
+                  No more matching results for this search.
                 </p>
               )}
             </div>
           </div>
         )}
       </div>
-
-      {/* Right Rail: Researchers Using ScholarLens */}
-      <aside className="hidden xl:block sticky top-20 space-y-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              <span>Site Researchers</span>
-            </h3>
-            <button
-              type="button"
-              onClick={onOpenConnections}
-              className="text-[11px] font-semibold text-blue-600 hover:underline cursor-pointer"
-            >
-              See all
-            </button>
-          </div>
-
-          {suggestedResearchers.length === 0 ? (
-            <p className="text-xs text-slate-400">
-              Researchers using ScholarLens will appear here.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {suggestedResearchers.slice(0, 6).map((r) => (
-                <div
-                  key={r.uid}
-                  className="flex items-center justify-between gap-2"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <ScholarProfileAvatar
-                      name={r.name}
-                      scholarUserId={r.scholarUserId || ''}
-                      orcid={r.orcidId}
-                      university={r.affiliation}
-                      avatarUrl={r.photoURL}
-                      compact
-                      className="w-8 h-8 shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onOpenScholarProfile(r.name, r.scholarUserId)
-                        }
-                        className="text-xs font-semibold text-slate-900 hover:text-blue-600 truncate block cursor-pointer"
-                      >
-                        {r.name}
-                      </button>
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {r.affiliation || 'Verified Researcher'}
-                      </p>
-                    </div>
-                  </div>
-                  {r.connectionStatus === 'connected' ? (
-                    <button
-                      type="button"
-                      onClick={() => onOpenMessage(r)}
-                      title="Message"
-                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 cursor-pointer shrink-0"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={r.connectionStatus === 'pending_sent'}
-                      onClick={() => handleQuickConnect(r.uid)}
-                      title="Connect"
-                      className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 cursor-pointer disabled:opacity-50 shrink-0"
-                    >
-                      {r.connectionStatus === 'pending_sent' ? (
-                        <Check className="w-3.5 h-3.5" />
-                      ) : (
-                        <UserPlus className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </aside>
 
       {/* Scroll Back To Top Pill */}
       {showBackToTop && (

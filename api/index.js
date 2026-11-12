@@ -1634,6 +1634,247 @@ var SocialNetworkStore = class {
   }
 };
 
+// src/server/feedRanking.ts
+function normalizeResearcherKey(name) {
+  return String(name || "").toLowerCase().replace(/\./g, " ").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+function areSimilarResearcherNames(a, b) {
+  const normA = normalizeResearcherKey(a);
+  const normB = normalizeResearcherKey(b);
+  if (!normA || !normB) return false;
+  if (normA === normB) return true;
+  const partsA = normA.split(" ");
+  const partsB = normB.split(" ");
+  const lastA = partsA[partsA.length - 1];
+  const lastB = partsB[partsB.length - 1];
+  if (lastA !== lastB) return false;
+  const firstA = partsA[0] || "";
+  const firstB = partsB[0] || "";
+  if (!firstA || !firstB) return false;
+  return firstA === firstB || firstA.length === 1 && firstB.startsWith(firstA) || firstB.length === 1 && firstA.startsWith(firstB);
+}
+function matchesNameSet(name, set) {
+  const clean = normalizeResearcherKey(name);
+  if (!clean) return false;
+  if (set.has(clean)) return true;
+  for (const candidate of set) {
+    if (areSimilarResearcherNames(clean, candidate)) return true;
+  }
+  return false;
+}
+function buildFeedNetworkSets(params) {
+  const viewerUid = String(params.viewerUid || "").trim();
+  const viewerNames = /* @__PURE__ */ new Set();
+  if (params.viewerName) viewerNames.add(normalizeResearcherKey(params.viewerName));
+  const viewerScholarIds = /* @__PURE__ */ new Set();
+  if (params.viewerScholarUserId) {
+    viewerScholarIds.add(String(params.viewerScholarUserId).trim().toLowerCase());
+  }
+  const connectedUids = /* @__PURE__ */ new Set();
+  if (viewerUid) connectedUids.add(viewerUid);
+  for (const uid of params.acceptedUids || []) {
+    if (uid) connectedUids.add(String(uid).trim());
+  }
+  const connectedScholarIds = /* @__PURE__ */ new Set();
+  const connectedNames = /* @__PURE__ */ new Set();
+  for (const user of params.registeredUsers || []) {
+    if (connectedUids.has(user.uid)) {
+      if (user.scholarUserId) {
+        connectedScholarIds.add(user.scholarUserId.trim().toLowerCase());
+      }
+      if (user.name) {
+        connectedNames.add(normalizeResearcherKey(user.name));
+      }
+    }
+  }
+  const isViewer = (name, sid) => {
+    const cleanSid = String(sid || "").trim().toLowerCase();
+    if (cleanSid && viewerScholarIds.has(cleanSid)) return true;
+    return matchesNameSet(name, viewerNames);
+  };
+  const coAuthorScholarIds = /* @__PURE__ */ new Set();
+  const coAuthorNames = /* @__PURE__ */ new Set();
+  const registerCoAuthor = (name, sid) => {
+    const cleanSid = String(sid || "").trim().toLowerCase();
+    const cleanName = normalizeResearcherKey(name);
+    if (isViewer(name, sid)) return;
+    if (cleanSid && !connectedScholarIds.has(cleanSid)) {
+      coAuthorScholarIds.add(cleanSid);
+    }
+    if (cleanName && !matchesNameSet(cleanName, connectedNames)) {
+      coAuthorNames.add(cleanName);
+    }
+  };
+  for (const digest of Object.values(params.digests || {})) {
+    const digestSid = String(digest.scholarUserId || "").trim().toLowerCase();
+    const viewerDigest = digestSid && viewerScholarIds.has(digestSid) || matchesNameSet(digest.name, viewerNames);
+    if (viewerDigest) {
+      for (const ca of digest.coAuthors || []) {
+        registerCoAuthor(ca.name, ca.scholarUserId);
+      }
+      for (const work of digest.works || []) {
+        for (const name of work.coAuthorNames || []) {
+          registerCoAuthor(name);
+        }
+      }
+      continue;
+    }
+    let viewerAppearsOnDigest = false;
+    for (const ca of digest.coAuthors || []) {
+      if (isViewer(ca.name, ca.scholarUserId)) {
+        viewerAppearsOnDigest = true;
+        break;
+      }
+    }
+    if (!viewerAppearsOnDigest) {
+      for (const work of digest.works || []) {
+        if ((work.coAuthorNames || []).some((n) => isViewer(n))) {
+          viewerAppearsOnDigest = true;
+          break;
+        }
+      }
+    }
+    if (viewerAppearsOnDigest) {
+      registerCoAuthor(digest.name, digest.scholarUserId);
+    }
+  }
+  const secondDegreeScholarIds = /* @__PURE__ */ new Set();
+  const secondDegreeNames = /* @__PURE__ */ new Set();
+  const registerSecondDegree = (name, sid) => {
+    const cleanSid = String(sid || "").trim().toLowerCase();
+    const cleanName = normalizeResearcherKey(name);
+    if (isViewer(name, sid)) return;
+    if (cleanSid && connectedScholarIds.has(cleanSid)) return;
+    if (cleanSid && coAuthorScholarIds.has(cleanSid)) return;
+    if (cleanName && matchesNameSet(cleanName, connectedNames)) return;
+    if (cleanName && matchesNameSet(cleanName, coAuthorNames)) return;
+    if (cleanSid) secondDegreeScholarIds.add(cleanSid);
+    if (cleanName) secondDegreeNames.add(cleanName);
+  };
+  for (const digest of Object.values(params.digests || {})) {
+    const digestSid = String(digest.scholarUserId || "").trim().toLowerCase();
+    const isDirectCoAuthorDigest = digestSid && coAuthorScholarIds.has(digestSid) || matchesNameSet(digest.name, coAuthorNames);
+    if (isDirectCoAuthorDigest) {
+      for (const ca of digest.coAuthors || []) {
+        registerSecondDegree(ca.name, ca.scholarUserId);
+      }
+      for (const work of digest.works || []) {
+        for (const name of work.coAuthorNames || []) {
+          registerSecondDegree(name);
+        }
+      }
+      continue;
+    }
+    let directCoAuthorOnDigest = false;
+    for (const work of digest.works || []) {
+      const workHasDirectCoAuthor = (work.coAuthorNames || []).some(
+        (n) => matchesNameSet(n, coAuthorNames)
+      );
+      if (workHasDirectCoAuthor) {
+        directCoAuthorOnDigest = true;
+        for (const sibling of work.coAuthorNames || []) {
+          registerSecondDegree(sibling);
+        }
+      }
+    }
+    if (directCoAuthorOnDigest) {
+      registerSecondDegree(digest.name, digest.scholarUserId);
+    }
+  }
+  return {
+    viewerUid,
+    viewerNames,
+    viewerScholarIds,
+    connectedUids,
+    connectedScholarIds,
+    connectedNames,
+    coAuthorScholarIds,
+    coAuthorNames,
+    secondDegreeScholarIds,
+    secondDegreeNames
+  };
+}
+function classifyFeedItemPriority(item, network) {
+  const authorUid = String(item.author?.uid || "").trim();
+  const authorSid = String(item.author?.scholarUserId || "").trim().toLowerCase();
+  const authorName = item.author?.name;
+  if (authorUid && network.connectedUids.has(authorUid) || authorSid && network.connectedScholarIds.has(authorSid) || matchesNameSet(authorName, network.connectedNames)) {
+    const isSelf = authorUid && authorUid === network.viewerUid;
+    return {
+      tier: 1,
+      reason: "connected",
+      label: isSelf ? "Your Update" : "Connected"
+    };
+  }
+  const taggedList = (item.taggedCoAuthors || []).map((t) => t.name || "");
+  const workCoAuthors = item.work?.coAuthorNames || [];
+  if (authorSid && network.coAuthorScholarIds.has(authorSid) || matchesNameSet(authorName, network.coAuthorNames) || taggedList.some((n) => matchesNameSet(n, network.coAuthorNames)) || workCoAuthors.some((n) => matchesNameSet(n, network.coAuthorNames))) {
+    return {
+      tier: 2,
+      reason: "coauthor",
+      label: "Co-Author"
+    };
+  }
+  if (authorSid && network.secondDegreeScholarIds.has(authorSid) || matchesNameSet(authorName, network.secondDegreeNames) || taggedList.some((n) => matchesNameSet(n, network.secondDegreeNames)) || workCoAuthors.some((n) => matchesNameSet(n, network.secondDegreeNames))) {
+    return {
+      tier: 3,
+      reason: "coauthor_coauthor",
+      label: "Co-Author Network"
+    };
+  }
+  return {
+    tier: 4,
+    reason: "community",
+    label: "Community"
+  };
+}
+function sortAndRankFeedItems(items, network) {
+  const annotated = items.map((item) => {
+    const classification = classifyFeedItemPriority(item, network);
+    return {
+      ...item,
+      networkTier: classification.tier,
+      suggestionReason: classification.reason,
+      suggestionLabel: classification.label
+    };
+  });
+  annotated.sort((a, b) => {
+    const tierDiff = (a.networkTier || 4) - (b.networkTier || 4);
+    if (tierDiff !== 0) return tierDiff;
+    if (a.kind !== b.kind && Math.abs(b.sortScore - a.sortScore) < 30 * 86400 * 1e3) {
+      return a.kind === "post" ? -1 : 1;
+    }
+    return b.sortScore - a.sortScore;
+  });
+  return annotated;
+}
+function sliceEndlessFeed(rankedItems, offset, limit, allowInfiniteRepeat) {
+  const total = rankedItems.length;
+  if (total === 0) {
+    return { items: [], hasMore: false };
+  }
+  if (!allowInfiniteRepeat) {
+    const paged = rankedItems.slice(offset, offset + limit);
+    return {
+      items: paged,
+      hasMore: offset + paged.length < total
+    };
+  }
+  const out = [];
+  for (let i = 0; i < limit; i++) {
+    const absIndex = offset + i;
+    const cycle = Math.floor(absIndex / total);
+    const baseItem = rankedItems[absIndex % total];
+    out.push(
+      cycle === 0 ? baseItem : {
+        ...baseItem,
+        feedId: `${baseItem.feedId}__c${cycle}_${absIndex}`
+      }
+    );
+  }
+  return { items: out, hasMore: true };
+}
+
 // src/server/openAlexDisambiguation.ts
 var AFFIL_STOPWORDS = /* @__PURE__ */ new Set([
   "dept",
@@ -98840,7 +99081,7 @@ function getSocialStore() {
 function buildWorksDigestFromProfile(profile) {
   const cleanId = String(profile.scholarUserId || "").trim();
   if (!cleanId || !Array.isArray(profile.publications)) return null;
-  const works = [...profile.publications].sort((a, b) => (b.year || 0) - (a.year || 0) || (b.citations || 0) - (a.citations || 0)).slice(0, 12).map((p) => ({
+  const works = [...profile.publications].sort((a, b) => (b.year || 0) - (a.year || 0) || (b.citations || 0) - (a.citations || 0)).slice(0, 60).map((p) => ({
     id: p.id,
     title: p.title,
     venue: p.venue,
@@ -98850,8 +99091,28 @@ function buildWorksDigestFromProfile(profile) {
     type: p.type,
     ...p.doi ? { doi: p.doi } : {},
     ...p.url ? { url: p.url } : {},
-    coAuthorNames: (p.coAuthors || []).map((c) => c.name).filter((n) => Boolean(n && !isSameResearcherName(n, profile.name))).slice(0, 6)
+    coAuthorNames: (p.coAuthors || []).map((c) => c.name).filter((n) => Boolean(n && !isSameResearcherName(n, profile.name))).slice(0, 8)
   }));
+  const coAuthorMap = /* @__PURE__ */ new Map();
+  for (const pub of profile.publications) {
+    for (const ca of pub.coAuthors || []) {
+      const cleanName = String(ca.name || "").trim();
+      if (!cleanName || isSameResearcherName(cleanName, profile.name)) continue;
+      const key = normalizeResearcherKey(cleanName);
+      if (!key) continue;
+      const existing = coAuthorMap.get(key);
+      if (!existing) {
+        coAuthorMap.set(key, {
+          name: cleanName,
+          ...ca.scholarUserId ? { scholarUserId: ca.scholarUserId } : {},
+          ...ca.universityName ? { universityName: ca.universityName } : {},
+          ...ca.country ? { country: ca.country } : {}
+        });
+      } else if (!existing.scholarUserId && ca.scholarUserId) {
+        existing.scholarUserId = ca.scholarUserId;
+      }
+    }
+  }
   return {
     scholarUserId: cleanId,
     name: profile.name,
@@ -98863,6 +99124,7 @@ function buildWorksDigestFromProfile(profile) {
     hIndex: profile.officialMetrics?.hIndex || 0,
     publicationCount: profile.publications.length,
     updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    coAuthors: Array.from(coAuthorMap.values()).slice(0, 60),
     works
   };
 }
@@ -100125,15 +100387,87 @@ app.get("/api/social/researchers", async (req, res) => {
     }
     const items = enriched.filter((r) => {
       if (!q) return true;
-      return r.name.toLowerCase().includes(q) || (r.affiliation || "").toLowerCase().includes(q) || (r.country || "").toLowerCase().includes(q) || (r.orcidId || "").toLowerCase().includes(q);
+      return r.name.toLowerCase().includes(q) || (r.affiliation || "").toLowerCase().includes(q) || (r.country || "").toLowerCase().includes(q) || (r.orcidId || "").toLowerCase().includes(q) || (r.scholarUserId || "").toLowerCase().includes(q);
     }).map((r) => ({
       ...r,
       isSelf: Boolean(sessionUser && r.uid === sessionUser.uid),
       connectionStatus: statusByUid[r.uid] || "none"
     }));
+    const seenScholarIds = new Set(
+      items.map((r) => String(r.scholarUserId || "").trim().toLowerCase()).filter(Boolean)
+    );
+    const scholarProfiles = [];
+    if (q) {
+      for (const digest of Object.values(digests || {})) {
+        const sid = String(digest?.scholarUserId || "").trim();
+        const sidLower = sid.toLowerCase();
+        if (!sid || seenScholarIds.has(sidLower)) continue;
+        const name = String(digest?.name || "").trim();
+        const affiliation = String(digest?.affiliation || "").trim();
+        const country = String(digest?.country || "").trim();
+        const orcid = String(digest?.orcid || "").trim();
+        if (name.toLowerCase().includes(q) || affiliation.toLowerCase().includes(q) || country.toLowerCase().includes(q) || orcid.toLowerCase().includes(q) || sidLower.includes(q)) {
+          seenScholarIds.add(sidLower);
+          scholarProfiles.push({
+            scholarUserId: sid,
+            name,
+            affiliation,
+            country,
+            totalCitations: Number(digest?.totalCitations || 0),
+            hIndex: Number(digest?.hIndex || 0),
+            publicationCount: Number(digest?.publicationCount || 0)
+          });
+        }
+      }
+      for (const entry of profileCache.values()) {
+        const prof = entry?.data?.profile;
+        if (!prof) continue;
+        const sid = String(prof.scholarUserId || "").trim();
+        const sidLower = sid.toLowerCase();
+        if (sid && !seenScholarIds.has(sidLower)) {
+          const aff = String(prof.homeUniversity || prof.affiliation || "").trim();
+          const cty = String(prof.homeCountry || "").trim();
+          if (prof.name.toLowerCase().includes(q) || aff.toLowerCase().includes(q) || cty.toLowerCase().includes(q) || sidLower.includes(q)) {
+            seenScholarIds.add(sidLower);
+            scholarProfiles.push({
+              scholarUserId: sid,
+              name: prof.name,
+              affiliation: aff,
+              country: cty,
+              totalCitations: Number(prof.officialMetrics?.totalCitations || 0),
+              hIndex: Number(prof.officialMetrics?.hIndex || 0),
+              publicationCount: Array.isArray(prof.publications) ? prof.publications.length : 0
+            });
+          }
+        }
+        for (const pub of prof.publications || []) {
+          for (const ca of pub.coAuthors || []) {
+            const coSid = String(ca.scholarUserId || "").trim();
+            const coSidLower = coSid.toLowerCase();
+            if (!coSid || seenScholarIds.has(coSidLower)) continue;
+            const coAff = String(ca.universityName || "").trim();
+            const coCty = String(ca.country || "").trim();
+            if (ca.name.toLowerCase().includes(q) || coAff.toLowerCase().includes(q) || coSidLower.includes(q)) {
+              seenScholarIds.add(coSidLower);
+              scholarProfiles.push({
+                scholarUserId: coSid,
+                name: ca.name,
+                affiliation: coAff,
+                country: coCty,
+                totalCitations: 0,
+                hIndex: 0,
+                publicationCount: 1
+              });
+            }
+          }
+        }
+        if (scholarProfiles.length >= 10) break;
+      }
+    }
     res.json({
       currentUid: sessionUser?.uid || null,
-      researchers: items
+      researchers: items,
+      scholarProfiles: scholarProfiles.slice(0, 8)
     });
   } catch (err) {
     sendSocialError(res, err);
@@ -100296,16 +100630,103 @@ app.post("/api/social/messages", async (req, res) => {
     sendSocialError(res, err);
   }
 });
+var openAlexFeedAuthorCache = /* @__PURE__ */ new Map();
+async function fetchOpenAlexFeedWorksForAuthor(authorName, scholarUserId) {
+  const cleanName = String(authorName || "").trim();
+  if (!cleanName || cleanName.length < 3) return [];
+  const cacheKey = normalizeResearcherKey(cleanName);
+  const cached = openAlexFeedAuthorCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < 6 * 60 * 60 * 1e3) {
+    return cached.works;
+  }
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2800);
+    const resp = await fetch(
+      `https://api.openalex.org/works?search=${encodeURIComponent(
+        cleanName
+      )}&sort=publication_year:desc&per-page=15`,
+      {
+        headers: { Accept: "application/json", "User-Agent": "ScholarLens/1.0" },
+        signal: controller.signal
+      }
+    );
+    clearTimeout(timer);
+    if (!resp.ok) {
+      openAlexFeedAuthorCache.set(cacheKey, { timestamp: Date.now(), works: [] });
+      return [];
+    }
+    const json = await resp.json();
+    const results = Array.isArray(json?.results) ? json.results : [];
+    const matchedWorks = [];
+    for (const w of results) {
+      const title = String(w?.title || "").trim();
+      if (!title) continue;
+      const authorships = Array.isArray(w?.authorships) ? w.authorships : [];
+      const primaryAuth = authorships.find(
+        (a) => isSameResearcherName(String(a?.author?.display_name || ""), cleanName)
+      );
+      if (!primaryAuth) continue;
+      const year = Number(w?.publication_year || 0);
+      const citations = Number(w?.cited_by_count || 0);
+      const venue = String(w?.primary_location?.source?.display_name || "").trim() || "Peer-Reviewed Research";
+      const doiRaw = String(w?.doi || "").replace(/^https?:\/\/doi\.org\//i, "").trim();
+      const workUrl = String(w?.primary_location?.landing_page_url || "").trim() || (doiRaw ? `https://doi.org/${doiRaw}` : String(w?.id || "").trim());
+      const aff = String(primaryAuth?.institutions?.[0]?.display_name || "").trim() || "Academic Researcher";
+      const countryCode = String(
+        primaryAuth?.institutions?.[0]?.country_code || ""
+      ).trim();
+      const coAuthorNames = authorships.map((a) => String(a?.author?.display_name || "").trim()).filter((n) => Boolean(n && !isSameResearcherName(n, cleanName))).slice(0, 8);
+      const oaId = String(w?.id || "").split("/").pop() || `${Date.now()}_${matchedWorks.length}`;
+      matchedWorks.push({
+        feedId: `feed_oa_${cacheKey.replace(/\s+/g, "_")}_${oaId}`,
+        kind: "work",
+        createdAt: `${Math.max(2e3, year || (/* @__PURE__ */ new Date()).getFullYear())}-01-15T00:00:00.000Z`,
+        sortScore: new Date(Math.max(1995, Math.min(2027, year || 2024)), 0, 15).getTime() + Math.min(citations, 500) * 1e5,
+        author: {
+          uid: "",
+          name: cleanName,
+          photoURL: scholarUserId ? `/api/scholar/avatar?userId=${encodeURIComponent(scholarUserId)}` : "",
+          scholarUserId: scholarUserId || "",
+          affiliation: aff,
+          country: countryCode,
+          verified: false,
+          connectionStatus: "none",
+          isSelf: false
+        },
+        work: {
+          id: `oa_${oaId}`,
+          title,
+          venue,
+          year: year || (/* @__PURE__ */ new Date()).getFullYear(),
+          citations,
+          type: w?.type === "proceedings-article" ? "Conference" : "Journal",
+          ...doiRaw ? { doi: doiRaw } : {},
+          ...workUrl ? { url: workUrl } : {},
+          coAuthorNames
+        }
+      });
+    }
+    openAlexFeedAuthorCache.set(cacheKey, {
+      timestamp: Date.now(),
+      works: matchedWorks
+    });
+    return matchedWorks;
+  } catch {
+    return [];
+  }
+}
 app.get("/api/social/feed", async (req, res) => {
   try {
     const filterMode = String(req.query.filter || "all").toLowerCase();
     const queryText = String(req.query.q || "").trim().toLowerCase();
+    const activeScholarParam = String(req.query.scholarId || "").trim();
     const offset = Math.max(0, Number(req.query.offset) || 0);
     const limit = Math.min(40, Math.max(1, Number(req.query.limit) || 15));
     const store = getSocialStore();
     const [sessionUser, posts, registered, storedDigests] = await Promise.all([
       verifySessionUserFromRequest(req),
-      store.listPosts(60),
+      store.listPosts(100),
       store.listRegisteredResearchers(),
       store.listResearcherWorksDigests()
     ]);
@@ -100313,16 +100734,57 @@ app.get("/api/social/feed", async (req, res) => {
     for (const [, entry] of profileCache.entries()) {
       const prof = entry?.data?.profile;
       const sid = String(prof?.scholarUserId || "").trim();
-      if (prof && sid && !digests[sid]) {
+      if (prof && sid) {
         const d = buildWorksDigestFromProfile(prof);
         if (d) digests[sid] = d;
       }
     }
-    const missingRegIds = registered.map((r) => String(r.scholarUserId || "").trim()).filter((sid) => sid && !digests[sid]).slice(0, 2);
-    if (missingRegIds.length > 0) {
+    let acceptedSet = /* @__PURE__ */ new Set();
+    let statusByUid = {};
+    if (sessionUser) {
+      const conn = await store.getConnectionsOverview(sessionUser.uid);
+      acceptedSet = new Set(conn.acceptedUids);
+      statusByUid = conn.statusByUid;
+    }
+    const viewerScholarId = String(sessionUser?.scholarUserId || activeScholarParam || "").trim();
+    const viewerName = String(
+      sessionUser?.name || (viewerScholarId ? digests[viewerScholarId]?.name : "") || ""
+    ).trim();
+    const sidsToHydrate = [];
+    if (viewerScholarId && !digests[viewerScholarId]) {
+      sidsToHydrate.push(viewerScholarId);
+    }
+    for (const r of registered) {
+      const sid = String(r.scholarUserId || "").trim();
+      if (sid && !digests[sid] && !sidsToHydrate.includes(sid)) {
+        sidsToHydrate.push(sid);
+      }
+    }
+    const initialNetwork = buildFeedNetworkSets({
+      viewerUid: sessionUser?.uid,
+      viewerName,
+      viewerScholarUserId: viewerScholarId,
+      acceptedUids: acceptedSet,
+      registeredUsers: registered,
+      digests
+    });
+    for (const coSid of initialNetwork.coAuthorScholarIds) {
+      if (!digests[coSid] && !sidsToHydrate.includes(coSid)) {
+        sidsToHydrate.push(coSid);
+      }
+    }
+    if (offset > 0) {
+      for (const secSid of initialNetwork.secondDegreeScholarIds) {
+        if (!digests[secSid] && !sidsToHydrate.includes(secSid)) {
+          sidsToHydrate.push(secSid);
+        }
+      }
+    }
+    const hydrateBatch = sidsToHydrate.slice(0, offset > 0 ? 3 : 2);
+    if (hydrateBatch.length > 0 && !queryText) {
       await Promise.race([
         Promise.allSettled(
-          missingRegIds.map(async (sid) => {
+          hydrateBatch.map(async (sid) => {
             const built = await buildLiveResearcherProfile(sid, "");
             if (built?.profile) {
               profileCache.set(`${sid.toLowerCase()}::`, {
@@ -100338,21 +100800,22 @@ app.get("/api/social/feed", async (req, res) => {
             }
           })
         ),
-        new Promise((resolve) => setTimeout(resolve, 4200))
+        new Promise((resolve) => setTimeout(resolve, 3600))
       ]);
     }
+    const networkSets = buildFeedNetworkSets({
+      viewerUid: sessionUser?.uid,
+      viewerName,
+      viewerScholarUserId: viewerScholarId,
+      acceptedUids: acceptedSet,
+      registeredUsers: registered,
+      digests
+    });
     const enrichedUsers = enrichResearchersWithDigests(registered, digests);
     const userByUid = new Map(enrichedUsers.map((u) => [u.uid, u]));
     const userByScholarId = /* @__PURE__ */ new Map();
     for (const u of enrichedUsers) {
       if (u.scholarUserId) userByScholarId.set(u.scholarUserId.trim(), u);
-    }
-    let acceptedSet = /* @__PURE__ */ new Set();
-    let statusByUid = {};
-    if (sessionUser) {
-      const conn = await store.getConnectionsOverview(sessionUser.uid);
-      acceptedSet = new Set(conn.acceptedUids);
-      statusByUid = conn.statusByUid;
     }
     const postFeedItems = posts.map((post) => {
       const author = userByUid.get(post.authorUid) || {
@@ -100390,20 +100853,38 @@ app.get("/api/social/feed", async (req, res) => {
     });
     const seenWorkKeys = /* @__PURE__ */ new Set();
     const workFeedItems = [];
+    const appendWorkItem = (item) => {
+      const tKey = String(item?.work?.title || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 56);
+      const aKey = normalizeResearcherKey(item?.author?.name);
+      const wKey = `${tKey}::${item?.author?.scholarUserId || aKey}`;
+      if (!tKey || seenWorkKeys.has(wKey)) return;
+      seenWorkKeys.add(wKey);
+      workFeedItems.push(item);
+    };
     for (const digest of Object.values(digests)) {
       const regUser = userByScholarId.get(digest.scholarUserId);
       const authorUid = regUser?.uid || "";
       const authorPhoto = regUser?.photoURL || digest.avatarUrl || `/api/scholar/avatar?userId=${encodeURIComponent(digest.scholarUserId)}`;
-      for (const work of digest.works || []) {
-        const wKey = `${work.title.toLowerCase().slice(0, 60)}::${digest.scholarUserId}`;
-        if (seenWorkKeys.has(wKey)) continue;
-        seenWorkKeys.add(wKey);
+      const cachedFullPubs = profileCache.get(`${String(digest.scholarUserId || "").toLowerCase()}::`)?.data?.profile?.publications;
+      const sourceWorks = Array.isArray(cachedFullPubs) ? cachedFullPubs.map((p) => ({
+        id: p.id,
+        title: p.title,
+        venue: p.venue,
+        year: p.year,
+        citations: p.citations || 0,
+        quartile: p.quartile,
+        type: p.type,
+        doi: p.doi,
+        url: p.url,
+        coAuthorNames: (p.coAuthors || []).map((c) => c.name).filter((n) => Boolean(n && !isSameResearcherName(n, digest.name))).slice(0, 8)
+      })) : digest.works || [];
+      for (const work of sourceWorks) {
         const syntheticTs = new Date(
           Math.max(1995, Math.min(2027, work.year || 2024)),
           0,
           15
         ).getTime() + Math.min(work.citations || 0, 500) * 1e5;
-        workFeedItems.push({
+        appendWorkItem({
           feedId: `feed_work_${digest.scholarUserId}_${work.id}`,
           kind: "work",
           createdAt: `${work.year || (/* @__PURE__ */ new Date()).getFullYear()}-01-15T00:00:00.000Z`,
@@ -100424,11 +100905,47 @@ app.get("/api/social/feed", async (req, res) => {
         });
       }
     }
-    workFeedItems.sort((a, b) => {
-      const yearDiff = (b.work.year || 0) - (a.work.year || 0);
-      if (yearDiff !== 0) return yearDiff;
-      return (b.work.citations || 0) - (a.work.citations || 0);
-    });
+    if (!queryText && filterMode !== "posts") {
+      const candidateAuthors = [];
+      const seenCandidateNames = /* @__PURE__ */ new Set();
+      const pushCandidate = (name, sid) => {
+        const norm = normalizeResearcherKey(name);
+        if (!norm || seenCandidateNames.has(norm)) return;
+        seenCandidateNames.add(norm);
+        candidateAuthors.push({ name, sid });
+      };
+      for (const digest of Object.values(digests)) {
+        for (const ca of digest.coAuthors || []) {
+          const norm = normalizeResearcherKey(ca.name);
+          if (networkSets.coAuthorNames.has(norm)) {
+            pushCandidate(ca.name, ca.scholarUserId);
+          }
+        }
+      }
+      for (const coName of networkSets.coAuthorNames) {
+        pushCandidate(coName);
+      }
+      for (const secName of networkSets.secondDegreeNames) {
+        pushCandidate(secName);
+      }
+      const oaBatchStart = Math.max(0, Math.floor(offset / 20) * 2);
+      const oaSlice = candidateAuthors.slice(oaBatchStart, oaBatchStart + 3);
+      if (oaSlice.length > 0 && (offset > 0 || workFeedItems.length < 30)) {
+        const oaResults = await Promise.race([
+          Promise.allSettled(
+            oaSlice.map((c) => fetchOpenAlexFeedWorksForAuthor(c.name, c.sid))
+          ),
+          new Promise((resolve) => setTimeout(() => resolve([]), 2400))
+        ]);
+        for (const resItem of oaResults) {
+          if (resItem && typeof resItem === "object" && resItem.status === "fulfilled") {
+            for (const w of resItem.value || []) {
+              appendWorkItem(w);
+            }
+          }
+        }
+      }
+    }
     let combined;
     if (filterMode === "posts") {
       combined = postFeedItems;
@@ -100446,6 +100963,7 @@ app.get("/api/social/feed", async (req, res) => {
     } else {
       combined = [...postFeedItems, ...workFeedItems];
     }
+    combined = sortAndRankFeedItems(combined, networkSets);
     if (queryText) {
       combined = combined.filter((item) => {
         const hay = [
@@ -100463,11 +100981,17 @@ app.get("/api/social/feed", async (req, res) => {
       });
     }
     const totalCount = combined.length;
-    const paged = combined.slice(offset, offset + limit);
+    const allowEndless = !queryText && totalCount > 0;
+    const { items: paged, hasMore } = sliceEndlessFeed(
+      combined,
+      offset,
+      limit,
+      allowEndless
+    );
     res.json({
       items: paged,
       totalCount,
-      hasMore: offset + paged.length < totalCount,
+      hasMore,
       researchersCount: enrichedUsers.length
     });
   } catch (err) {

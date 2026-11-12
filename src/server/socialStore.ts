@@ -103,6 +103,13 @@ export interface DigestWorkItem {
   coAuthorNames: string[];
 }
 
+export interface DigestCoAuthorSummary {
+  name: string;
+  scholarUserId?: string;
+  universityName?: string;
+  country?: string;
+}
+
 export interface ResearcherWorksDigest {
   scholarUserId: string;
   name: string;
@@ -114,6 +121,7 @@ export interface ResearcherWorksDigest {
   hIndex: number;
   publicationCount: number;
   updatedAt: string;
+  coAuthors?: DigestCoAuthorSummary[];
   works: DigestWorkItem[];
 }
 

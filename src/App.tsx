@@ -9,6 +9,7 @@ import {
   Globe2,
   BookOpen,
   Users,
+  ArrowLeft,
   ArrowRight,
   ExternalLink,
   User,
@@ -181,6 +182,9 @@ export default function App() {
   const [activeProfile, setActiveProfile] = useState<ResearcherProfile | null>(
     null
   );
+  const [navHistory, setNavHistory] = useState<
+    Array<{ page: AppPage; profile: ResearcherProfile | null }>
+  >([]);
   const [scholarUrlInput, setScholarUrlInput] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [urlError, setUrlError] = useState<string | null>(null);
@@ -216,7 +220,6 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authExternalError, setAuthExternalError] = useState<string | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const desktopSearchInputRef = useRef<HTMLInputElement>(null);
   const [pendingExport, setPendingExport] = useState<PendingExportTask | null>(
     null
@@ -680,9 +683,31 @@ export default function App() {
     saveSessionUser(null);
   };
 
+  const pushNavHistory = () => {
+    setNavHistory((prev) => [
+      ...prev.slice(-24),
+      { page: activePage, profile: activeProfile },
+    ]);
+  };
+
+  const handleGoBack = () => {
+    if (navHistory.length === 0) {
+      if (window.history.length > 1) {
+        window.history.back();
+      }
+      return;
+    }
+    const prevEntry = navHistory[navHistory.length - 1];
+    setNavHistory((prev) => prev.slice(0, -1));
+    if (prevEntry.profile !== activeProfile) {
+      setActiveProfile(prevEntry.profile);
+    }
+    setUrlError(null);
+    navigateToPage(prevEntry.page, { skipHistory: true });
+  };
+
   const handleAnalyzeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsMobileSearchOpen(false);
     const parsed = parseGoogleScholarInput(scholarUrlInput);
     if (!parsed.valid || !parsed.userId) {
       setUrlError(
@@ -690,10 +715,19 @@ export default function App() {
       );
       return;
     }
+    if (activeProfile && activeProfile.scholarUserId !== parsed.userId) {
+      pushNavHistory();
+    }
     await fetchProfileFromServer(parsed.userId, parsed.queryName);
   };
 
-  const navigateToPage = (page: AppPage) => {
+  const navigateToPage = (
+    page: AppPage,
+    options?: { skipHistory?: boolean }
+  ) => {
+    if (!options?.skipHistory && page !== activePage) {
+      pushNavHistory();
+    }
     setActivePage(page);
     try {
       const url = new URL(window.location.href);
@@ -773,7 +807,8 @@ export default function App() {
     const cleanName = authorName.trim();
     if (!cleanName) return;
     const cleanId = scholarUserId?.trim() || '';
-    navigateToPage('overview');
+    pushNavHistory();
+    navigateToPage('overview', { skipHistory: true });
     if (cleanId) {
       void fetchProfileFromServer(cleanId, cleanName);
       return;
@@ -798,6 +833,12 @@ export default function App() {
         .slice(0, 2)
     : '';
 
+  const isProfileAnalyticsView = ![
+    'feed',
+    'connections',
+    'messages',
+  ].includes(activePage);
+
   return (
     <div
       className={`min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-24 ${
@@ -809,8 +850,20 @@ export default function App() {
       {/* Top Bar: Brand Logo, Centered Desktop Navigation Tabs, and Right Actions */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-6 py-2.5 shrink-0">
         <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-4">
-          {/* Left: Brand Logo & Wordmark */}
+          {/* Left: Back Button (when navigating from a previous view) + Brand Logo */}
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink-0">
+            {navHistory.length > 0 && (
+              <button
+                type="button"
+                onClick={handleGoBack}
+                data-testid="header-back-button"
+                aria-label="Go back to previous page"
+                title="Back to previous page"
+                className="p-2 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => navigateToPage('overview')}
@@ -850,161 +903,19 @@ export default function App() {
                 Scholar<span className="text-blue-600">Lens</span>
               </span>
             </button>
-
-            {/* Mobile Search Button */}
-            <button
-              type="button"
-              onClick={() => setIsMobileSearchOpen((prev) => !prev)}
-              aria-label="Toggle Search Scholar Profile"
-              className={`lg:hidden p-1.5 rounded-lg transition-colors cursor-pointer ${
-                isMobileSearchOpen
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-100'
-              }`}
-            >
-              <Search className="w-4 h-4" />
-            </button>
           </div>
 
-          {/* Center: Desktop Horizontal Navigation Bar */}
-          <nav
-            aria-label="Analytics Pages"
-            className="hidden lg:flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl"
-          >
-            {/* Small Navigation Search Bar: hidden on the initial interface where the large search bar is displayed */}
-            {(activeProfile || activePage !== 'overview') && (
-              <form
-                onSubmit={handleAnalyzeSubmit}
-                noValidate
-                className="relative flex items-center shrink-0 mr-1"
-              >
-                {isAnalyzing && (
-                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
-                    <span className="text-xs text-slate-400 font-sans tracking-tight">
-                      analyzing
-                    </span>
-                    <SearchLoadingDots size="xs" color="bg-slate-400" />
-                  </div>
-                )}
-                <input
-                  ref={desktopSearchInputRef}
-                  type="text"
-                  disabled={isAnalyzing}
-                  value={isAnalyzing ? '' : scholarUrlInput}
-                  onChange={(e) => {
-                    setScholarUrlInput(e.target.value);
-                    if (urlError) setUrlError(null);
-                  }}
-                  placeholder={isAnalyzing ? '' : 'Search Scholar ID / URL...'}
-                  aria-label="Search Google Scholar profile URL or User ID"
-                  className={`w-36 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all disabled:bg-slate-50 ${
-                    isAnalyzing ? 'text-transparent' : ''
-                  }`}
-                />
-                <button
-                  type="submit"
-                  disabled={isAnalyzing}
-                  aria-label="Search Scholar Profile"
-                  title="Search Scholar Profile"
-                  className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-40"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            )}
-            {PAGE_METADATA.map((item) => {
-              const Icon = item.icon;
-              const isActive = activePage === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => navigateToPage(item.id)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
-                    isActive
-                      ? 'bg-blue-600 text-white font-semibold shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{item.shortLabel}</span>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              disabled={!activeProfile}
-              onClick={handleRequestPdfReport}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-            >
-              {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
-                <FileDown className="w-3.5 h-3.5 shrink-0" />
-              ) : (
-                <Lock className="w-3.5 h-3.5 shrink-0" />
-              )}
-              <span>PDF Report</span>
-            </button>
-          </nav>
-
-          {/* Right: Corner Actions & User Profile Icon */}
+          {/* Right: Corner User Account Badge / Sign In */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {authUser ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const targetScholar =
-                      authUser.scholarUserId || authUser.scholarUrl;
-                    if (targetScholar) {
-                      const parsed = parseGoogleScholarInput(targetScholar);
-                      const queryId =
-                        parsed.valid && parsed.userId
-                          ? parsed.userId
-                          : targetScholar;
-                      if (
-                        !activeProfile ||
-                        activeProfile.scholarUserId !== queryId
-                      ) {
-                        void fetchProfileFromServer(queryId, authUser.name);
-                      }
-                    }
-                    navigateToPage('overview');
-                  }}
-                  data-testid="header-view-profile-button"
-                  aria-label="View My Profile in ScholarLens"
-                  title="View My Profile in ScholarLens"
-                  className="p-2 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer"
-                >
-                  <User className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigateToPage('messages')}
-                  data-testid="header-messages-button"
-                  aria-label="Open Researcher Messages"
-                  title="Messages"
-                  className={`relative p-2 rounded-full border transition-colors cursor-pointer ${
-                    activePage === 'messages'
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border-slate-200'
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  {socialSummary.unreadMessagesCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
-                      {socialSummary.unreadMessagesCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsProfileModalOpen(true)}
-                  data-testid="corner-profile-button"
-                  aria-label="Open profile settings"
-                  title="Profile Settings"
-                  className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
-                >
+              <button
+                type="button"
+                onClick={() => setIsProfileModalOpen(true)}
+                data-testid="corner-profile-button"
+                aria-label="Open profile settings"
+                title="Profile Settings"
+                className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
+              >
                 <div className="relative w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
                   {authUser.photoURL && authUser.photoURL.trim() ? (
                     <img
@@ -1039,7 +950,6 @@ export default function App() {
                   )}
                 </div>
               </button>
-              </>
             ) : (
               <button
                 type="button"
@@ -1056,88 +966,6 @@ export default function App() {
             )}
           </div>
         </div>
-
-        {/* Mobile Inline Search Bar (integrated in header, no popup modal window) */}
-        {isMobileSearchOpen && (
-          <div className="lg:hidden max-w-[1360px] mx-auto mt-2.5 pt-2.5 border-t border-slate-200/80 animate-in fade-in duration-150">
-            <form
-              onSubmit={handleAnalyzeSubmit}
-              noValidate
-              className="relative flex items-center"
-            >
-              {isAnalyzing && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
-                  <span className="text-xs text-slate-400 font-sans tracking-tight">
-                    analyzing
-                  </span>
-                  <SearchLoadingDots size="xs" color="bg-slate-400" />
-                </div>
-              )}
-              <input
-                type="text"
-                autoFocus
-                disabled={isAnalyzing}
-                value={isAnalyzing ? '' : scholarUrlInput}
-                onChange={(e) => {
-                  setScholarUrlInput(e.target.value);
-                  if (urlError) setUrlError(null);
-                }}
-                placeholder={isAnalyzing ? '' : 'Paste Scholar profile URL or User ID...'}
-                aria-label="Search Google Scholar profile URL or User ID"
-                className={`w-full pl-3 pr-8 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100 ${
-                  isAnalyzing ? 'text-transparent' : ''
-                }`}
-              />
-              <button
-                type="submit"
-                disabled={isAnalyzing}
-                aria-label="Search Scholar Profile"
-                className="absolute right-2.5 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-40"
-              >
-                <Search className="w-3.5 h-3.5" />
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Mobile Analytics Navigation Strip */}
-        <nav
-          aria-label="Mobile Analytics Pages"
-          className="lg:hidden max-w-[1360px] mx-auto mt-2 pt-2 border-t border-slate-100 flex items-center gap-1 overflow-x-auto pb-0.5"
-        >
-          {PAGE_METADATA.map((item) => {
-            const Icon = item.icon;
-            const isActive = activePage === item.id;
-            return (
-              <button
-                key={`mobile-top-${item.id}`}
-                type="button"
-                onClick={() => navigateToPage(item.id)}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap cursor-pointer shrink-0 ${
-                  isActive
-                    ? 'bg-blue-600 text-white font-semibold'
-                    : 'bg-slate-100 text-slate-600'
-                }`}
-              >
-                <Icon className="w-3 h-3 shrink-0" />
-                <span>{item.shortLabel}</span>
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            disabled={!activeProfile}
-            onClick={handleRequestPdfReport}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-600 whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-45"
-          >
-            {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
-              <FileDown className="w-3 h-3 shrink-0" />
-            ) : (
-              <Lock className="w-3 h-3 shrink-0" />
-            )}
-            <span>PDF</span>
-          </button>
-        </nav>
       </header>
 
       {/* Main Centered Multi-Page Workspace */}
@@ -1151,12 +979,110 @@ export default function App() {
         <main
           className={`w-full ${
             activePage === 'map' || activePage === 'directories'
-              ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col'
+              ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col gap-4'
               : 'space-y-5'
           }`}
         >
-          {/* Author Header & Toggleable Search Bar: Shown ONLY on Overview page */}
-          {activePage === 'overview' && (
+          {/* Profile Analytics Navigator Panel: Shown inside Profile view so users can analyze & generate PDF reports */}
+          {activeProfile && isProfileAnalyticsView && (
+            <div className="shrink-0 space-y-2">
+              <div className="w-full overflow-x-auto pb-0.5 flex justify-start lg:justify-center">
+                <nav
+                  data-testid="profile-navigator-panel"
+                  aria-label="Profile Analytics Navigation"
+                  className="inline-flex items-center gap-1 bg-slate-100/90 border border-slate-200/80 p-1 rounded-xl shadow-2xs shrink-0"
+                >
+                  <form
+                    onSubmit={handleAnalyzeSubmit}
+                    noValidate
+                    className="relative flex items-center shrink-0 mr-1"
+                  >
+                    {isAnalyzing && (
+                      <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none select-none z-10">
+                        <span className="text-xs text-slate-400 font-sans tracking-tight">
+                          analyzing
+                        </span>
+                        <SearchLoadingDots size="xs" color="bg-slate-400" />
+                      </div>
+                    )}
+                    <input
+                      ref={desktopSearchInputRef}
+                      type="text"
+                      disabled={isAnalyzing}
+                      value={isAnalyzing ? '' : scholarUrlInput}
+                      onChange={(e) => {
+                        setScholarUrlInput(e.target.value);
+                        if (urlError) setUrlError(null);
+                      }}
+                      placeholder={isAnalyzing ? '' : 'Search Scholar ID / URL...'}
+                      aria-label="Search Google Scholar profile URL or User ID"
+                      className={`w-40 sm:w-44 xl:w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200/90 hover:border-slate-300 focus:border-blue-500 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500/20 shadow-2xs transition-all disabled:bg-slate-50 ${
+                        isAnalyzing ? 'text-transparent' : ''
+                      }`}
+                    />
+                    <button
+                      type="submit"
+                      disabled={isAnalyzing}
+                      aria-label="Search Scholar Profile"
+                      title="Search Scholar Profile"
+                      className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer disabled:opacity-40"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                    </button>
+                  </form>
+
+                  {PAGE_METADATA.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activePage === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => navigateToPage(item.id)}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+                          isActive
+                            ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{item.shortLabel}</span>
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    type="button"
+                    disabled={!activeProfile}
+                    onClick={handleRequestPdfReport}
+                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all whitespace-nowrap cursor-pointer disabled:opacity-45 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                  >
+                    {authUser || !REQUIRE_AUTH_FOR_EXPORT ? (
+                      <FileDown className="w-3.5 h-3.5 shrink-0" />
+                    ) : (
+                      <Lock className="w-3.5 h-3.5 shrink-0" />
+                    )}
+                    <span>PDF Report</span>
+                  </button>
+                </nav>
+              </div>
+
+              {urlError && (
+                <div
+                  role="alert"
+                  className="max-w-2xl mx-auto flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{urlError}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Author Header & Toggleable Search Bar */}
+          {((activeProfile && activePage === 'overview') ||
+            (!activeProfile && isProfileAnalyticsView && !isAnalyzing)) && (
             <section
               aria-label="Google Scholar Profile Header"
               className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 md:p-7 space-y-4 shadow-xs"
@@ -1215,17 +1141,6 @@ export default function App() {
                   </div>
                 </div>
               ) : null}
-
-              {/* URL error message for active profile view */}
-              {activeProfile && urlError && (
-                <div
-                  role="alert"
-                  className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2"
-                >
-                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-                  <span>{urlError}</span>
-                </div>
-              )}
 
               {/* Initial View Search Bar (when no active profile is loaded yet) */}
               {!activeProfile && (
@@ -1886,27 +1801,6 @@ export default function App() {
                 navigateToPage('messages');
               }}
               onOpenScholarProfile={handleOpenResearcherProfile}
-              onOpenConnections={() => navigateToPage('connections')}
-              onOpenMyProfile={() => {
-                if (!authUser) {
-                  setIsAuthModalOpen(true);
-                  return;
-                }
-                const targetScholar =
-                  authUser.scholarUserId || authUser.scholarUrl;
-                if (targetScholar) {
-                  const parsed = parseGoogleScholarInput(targetScholar);
-                  const queryId =
-                    parsed.valid && parsed.userId ? parsed.userId : targetScholar;
-                  if (
-                    !activeProfile ||
-                    activeProfile.scholarUserId !== queryId
-                  ) {
-                    void fetchProfileFromServer(queryId, authUser.name);
-                  }
-                }
-                navigateToPage('overview');
-              }}
               onSummaryChanged={refreshSocialSummary}
             />
           )}
@@ -2028,18 +1922,25 @@ export default function App() {
               }
               const targetScholar =
                 authUser.scholarUserId || authUser.scholarUrl;
-              if (targetScholar) {
-                const parsed = parseGoogleScholarInput(targetScholar);
-                const queryId =
-                  parsed.valid && parsed.userId ? parsed.userId : targetScholar;
-                if (
-                  !activeProfile ||
-                  activeProfile.scholarUserId !== queryId
-                ) {
-                  void fetchProfileFromServer(queryId, authUser.name);
+              const parsed = targetScholar
+                ? parseGoogleScholarInput(targetScholar)
+                : null;
+              const queryId =
+                parsed?.valid && parsed.userId ? parsed.userId : targetScholar;
+              if (
+                queryId &&
+                (!activeProfile || activeProfile.scholarUserId !== queryId)
+              ) {
+                if (activePage === 'overview' && activeProfile) {
+                  pushNavHistory();
+                  navigateToPage('overview', { skipHistory: true });
+                } else {
+                  navigateToPage('overview');
                 }
+                void fetchProfileFromServer(queryId, authUser.name);
+              } else {
+                navigateToPage('overview');
               }
-              navigateToPage('overview');
             }}
             data-testid="bottom-nav-profile"
             aria-current={
