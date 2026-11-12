@@ -174,7 +174,20 @@ export default function App() {
     () => {
       try {
         const raw = localStorage.getItem(SESSION_STORAGE_KEY);
-        return raw ? (JSON.parse(raw) as AuthenticatedResearcher) : null;
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as Partial<AuthenticatedResearcher>;
+        if (!parsed || typeof parsed !== 'object') return null;
+        return {
+          uid: parsed.uid || 'anonymous',
+          name: parsed.name || 'Researcher',
+          emailOrId: parsed.emailOrId || '',
+          photoURL: parsed.photoURL || '',
+          scholarUrl: parsed.scholarUrl || '',
+          scholarUserId: parsed.scholarUserId || '',
+          orcidId: parsed.orcidId || '',
+          verified: Boolean(parsed.verified),
+          provider: parsed.provider || 'email',
+        };
       } catch {
         return null;
       }
@@ -636,9 +649,11 @@ export default function App() {
   };
 
   const userInitials = authUser
-    ? authUser.name
+    ? String(authUser.name || 'Researcher')
+        .trim()
         .split(/\s+/)
-        .map((w) => w[0])
+        .filter(Boolean)
+        .map((w) => w[0] || '')
         .join('')
         .toUpperCase()
         .slice(0, 2)

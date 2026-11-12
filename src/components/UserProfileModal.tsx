@@ -180,9 +180,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     }
   };
 
-  const initials = (displayName || user.name || 'R')
+  const initials = String(displayName || user?.name || 'R')
+    .trim()
     .split(/\s+/)
-    .map((w) => w[0])
+    .filter(Boolean)
+    .map((w) => w[0] || '')
     .join('')
     .toUpperCase()
     .slice(0, 2);
