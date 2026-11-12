@@ -3759,22 +3759,30 @@ const COMMON_RESEARCHER_NAMES = new Set([
   'kim', 'lee', 'park', 'choi', 'jung', 'kang', 'cho', 'yoon', 'jang', 'lim',
 ]);
 
+const strictNameTokensCache = new Map<string, string[]>();
+
 function parseStrictNameTokens(rawName: string): string[] {
-  let s = String(rawName || '')
+  const input = String(rawName || '');
+  const cached = strictNameTokensCache.get(input);
+  if (cached) return cached;
+
+  let s = input
     .replace(/\([^)]*\)/g, ' ')
-    .replace(/\borcid[:\s/.\w-]*[\d-Xx]+\b/gi, ' ')
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\borcid(?:\.org)?[:\s/.\w-]*[\d-Xx]+\b/gi, ' ')
     .replace(/;.*$/g, ' ')
     .replace(
-      /,\s*(?:phd|ph\.d\.|smieee|mieee|fieee|dr\.?|prof\.?|eng\.?|ir\.?|ts\.?|ceng|cmgr|fiet|pe|pdf|mrsc|isi|wos|highly|cited|researcher)\b.*/gi,
+      /,\s*(?:phd|ph\.d\.|smieee|mieee|fieee|freng|fiet|ceng|cmgr|pe|pdf|mrsc|dr\.?|prof\.?|eng\.?|ir\.?|ts\.?|isi|wos|clarivate|world|top|highly|cited|researcher)\b.*/gi,
       ' '
     )
     .replace(
-      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|eng|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee|ceng|fiet|pdf|mrsc)\b\.?/gi,
+      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|eng|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee|freng|fiet|ceng|cmgr|pdf|mrsc)\b\.?/gi,
       ' '
-    );
+    )
+    .replace(/\s+[A-Z](?:\s+[A-Z]){1,2}$/, '');
   s = s.replace(/\b([A-Z])([A-Z])\s+(?=[A-Z][a-z])/g, '$1 $2 ');
   s = s.replace(/\b([A-Z])([A-Z])([A-Z])\s+(?=[A-Z][a-z])/g, '$1 $2 $3 ');
-  return s
+  const tokens = s
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
@@ -3785,7 +3793,12 @@ function parseStrictNameTokens(rawName: string): string[] {
       t === 'md' || t === 'muhammad' || t === 'mohammed' || t === 'mohamed'
         ? 'mohammad'
         : t
+    )
+    .filter(
+      (t) => !['al', 'ul', 'ur', 'bin', 'binti', 'de', 'da', 'do', 'dos'].includes(t)
     );
+  strictNameTokensCache.set(input, tokens);
+  return tokens;
 }
 
 /**
@@ -3794,19 +3807,35 @@ function parseStrictNameTokens(rawName: string): string[] {
  * with different middle/given names are never conflated.
  */
 function isStrictSameResearcherForAvatar(nameA: string, nameB: string): boolean {
-  const rawA = parseStrictNameTokens(nameA);
-  const rawB = parseStrictNameTokens(nameB);
-  if (rawA.length === 0 || rawB.length === 0) return false;
-
-  const cleanA = rawA.filter(
-    (t) => !['al', 'ul', 'ur', 'bin', 'binti', 'de', 'da', 'do', 'dos'].includes(t)
-  );
-  const cleanB = rawB.filter(
-    (t) => !['al', 'ul', 'ur', 'bin', 'binti', 'de', 'da', 'do', 'dos'].includes(t)
-  );
+  const cleanA = parseStrictNameTokens(nameA);
+  const cleanB = parseStrictNameTokens(nameB);
   if (cleanA.length === 0 || cleanB.length === 0) return false;
 
   if (cleanA.join(' ') === cleanB.join(' ')) return true;
+
+  // German umlaut & hyphenated East Asian given name normalization (e.g. "Joerg" <-> "Jorg", "Ui-Min Choi" <-> "Uimin Choi")
+  const umlautNorm = (arr: string[]) =>
+    arr.map((w) => w.replace(/oe/g, 'o').replace(/ae/g, 'a').replace(/ue/g, 'u'));
+  if (umlautNorm(cleanA).join(' ') === umlautNorm(cleanB).join(' ')) return true;
+
+  if (
+    cleanA.length === 3 &&
+    cleanB.length === 2 &&
+    cleanA[2] === cleanB[1] &&
+    cleanA[0] + cleanA[1] === cleanB[0] &&
+    cleanB[0].length >= 4
+  ) {
+    return true;
+  }
+  if (
+    cleanB.length === 3 &&
+    cleanA.length === 2 &&
+    cleanB[2] === cleanA[1] &&
+    cleanB[0] + cleanB[1] === cleanA[0] &&
+    cleanA[0].length >= 4
+  ) {
+    return true;
+  }
 
   const noMdA =
     cleanA[0] === 'mohammad' && cleanA.length >= 3 ? cleanA.slice(1) : cleanA;
@@ -3816,6 +3845,19 @@ function isStrictSameResearcherForAvatar(nameA: string, nameB: string): boolean 
     noMdA.join(' ') === noMdB.join(' ') &&
     noMdA.length >= 2 &&
     noMdA.every((w) => w.length >= 3)
+  ) {
+    return true;
+  }
+
+  // Reversed [Surname, GivenName] order when all non-initial words match and include at least one distinctive name
+  const nonInitA = cleanA.filter((w) => w.length >= 2);
+  const nonInitB = cleanB.filter((w) => w.length >= 2);
+  if (
+    nonInitA.length === 2 &&
+    nonInitB.length === 2 &&
+    nonInitA[0] === nonInitB[1] &&
+    nonInitA[1] === nonInitB[0] &&
+    nonInitA.some((w) => !COMMON_RESEARCHER_NAMES.has(w) && w.length >= 5)
   ) {
     return true;
   }
@@ -3853,7 +3895,7 @@ function isStrictSameResearcherForAvatar(nameA: string, nameB: string): boolean 
       if (allMatch) {
         if (exactFullWords >= 2) return true;
         if (
-          arrA.length >= 3 &&
+          arrA.length >= 2 &&
           exactDistinctiveFullWords >= 1 &&
           lastA.length >= 6 &&
           !COMMON_RESEARCHER_NAMES.has(lastA)
@@ -3864,25 +3906,43 @@ function isStrictSameResearcherForAvatar(nameA: string, nameB: string): boolean 
     }
   }
 
+  // Handle dropped single-letter middle initials (e.g. "Arthur C. R. Gleason" <-> "Arthur Gleason", "Ian B. Benitez" <-> "Ian Benitez")
+  const stripMiddleInitials = (arr: string[]) =>
+    arr.length >= 3
+      ? [arr[0], ...arr.slice(1, -1).filter((w) => w.length >= 2), arr[arr.length - 1]]
+      : arr;
+  const noMidInitA = stripMiddleInitials(noMdA);
+  const noMidInitB = stripMiddleInitials(noMdB);
+  if (
+    noMidInitA.length >= 2 &&
+    noMidInitA.join(' ') === noMidInitB.join(' ') &&
+    noMidInitA.every((w) => w.length >= 3) &&
+    noMidInitA.some((w) => !COMMON_RESEARCHER_NAMES.has(w))
+  ) {
+    return true;
+  }
+
+  // Handle omitted middle name when first name and surname match and at least one is distinctive
   const [shorter, longer] =
     noMdA.length <= noMdB.length ? [noMdA, noMdB] : [noMdB, noMdA];
   if (
     shorter.length === 2 &&
-    longer.length === 3 &&
+    longer.length >= 3 &&
+    longer.length <= 4 &&
     shorter.every((w) => w.length >= 3)
   ) {
     const firstSame = shorter[0] === longer[0];
-    const secondMatchesSecondOrThird =
-      shorter[1] === longer[1] || shorter[1] === longer[2];
+    const lastSame = shorter[1] === longer[longer.length - 1];
+    const secondMatchesMiddle = shorter[1] === longer[1];
     const hasDistinctiveGiven =
       !COMMON_RESEARCHER_NAMES.has(shorter[0]) && shorter[0].length >= 4;
     const hasDistinctiveSecond =
       !COMMON_RESEARCHER_NAMES.has(shorter[1]) && shorter[1].length >= 5;
     if (
       firstSame &&
-      secondMatchesSecondOrThird &&
-      hasDistinctiveGiven &&
-      hasDistinctiveSecond
+      (lastSame || secondMatchesMiddle) &&
+      (hasDistinctiveGiven || hasDistinctiveSecond) &&
+      !(COMMON_RESEARCHER_NAMES.has(shorter[0]) && COMMON_RESEARCHER_NAMES.has(shorter[1]))
     ) {
       return true;
     }
@@ -3890,6 +3950,8 @@ function isStrictSameResearcherForAvatar(nameA: string, nameB: string): boolean 
 
   return false;
 }
+
+const negativeColleagueLookupCache = new Set<string>();
 
 function lookupColleagueAvatarMeta(name: string): {
   userId?: string;
@@ -3901,6 +3963,9 @@ function lookupColleagueAvatarMeta(name: string): {
   if (direct?.u) {
     return { userId: direct.u };
   }
+  if (negativeColleagueLookupCache.has(lower)) {
+    return null;
+  }
 
   for (const col of scholarColleagueList) {
     if (isStrictSameResearcherForAvatar(clean, col.n)) {
@@ -3909,14 +3974,15 @@ function lookupColleagueAvatarMeta(name: string): {
     }
   }
 
+  negativeColleagueLookupCache.add(lower);
   return null;
 }
 
 async function fetchStaticImageBuffer(
   url: string,
   manualRedirect: boolean = false,
-  timeoutMs: number = 3000
-): Promise<{ contentType: string; buffer: Buffer } | null> {
+  timeoutMs: number = 4000
+): Promise<{ contentType: string; buffer: Buffer; status?: number; location?: string } | null> {
   try {
     const resp = await fetch(url, {
       ...(manualRedirect ? { redirect: 'manual' as const } : {}),
@@ -3928,16 +3994,215 @@ async function fetchStaticImageBuffer(
       signal: AbortSignal.timeout(timeoutMs),
     });
     const ct = String(resp.headers.get('content-type') || '').split(';')[0].trim();
+    const loc = String(resp.headers.get('location') || '');
     if (resp.status === 200 && ct.startsWith('image/')) {
       const buf = Buffer.from(await resp.arrayBuffer());
       if (buf.length > 200) {
-        return { contentType: ct, buffer: buf };
+        return { contentType: ct, buffer: buf, status: 200 };
+      }
+    }
+    return { contentType: ct, buffer: Buffer.alloc(0), status: resp.status, location: loc };
+  } catch {
+    return null;
+  }
+}
+
+// Controlled concurrency queue (max 3 concurrent outbound requests + 60ms spacing) & in-flight deduplication
+// Prevents Google Scholar CDN (scholar.googleusercontent.com) from rate-limiting bursts when 50+ co-author avatars load at once
+const MAX_CONCURRENT_SCHOLAR_AVATAR_FETCHES = 3;
+let activeScholarAvatarFetches = 0;
+const scholarAvatarQueue: Array<() => void> = [];
+const inflightAvatarPromises = new Map<
+  string,
+  Promise<{ contentType: string; buffer: Buffer } | null>
+>();
+const negativeScholarPhotoCache = new Map<string, number>();
+
+function acquireScholarAvatarSlot(): Promise<void> {
+  if (activeScholarAvatarFetches < MAX_CONCURRENT_SCHOLAR_AVATAR_FETCHES) {
+    activeScholarAvatarFetches++;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    scholarAvatarQueue.push(() => {
+      activeScholarAvatarFetches++;
+      resolve();
+    });
+  });
+}
+
+function releaseScholarAvatarSlot(): void {
+  setTimeout(() => {
+    activeScholarAvatarFetches = Math.max(0, activeScholarAvatarFetches - 1);
+    const next = scholarAvatarQueue.shift();
+    if (next) next();
+  }, 60);
+}
+
+async function fetchScholarAvatarWithQueue(
+  scholarUserId: string
+): Promise<{ contentType: string; buffer: Buffer } | null> {
+  const cleanId = scholarUserId.trim();
+  if (!cleanId) return null;
+
+  const cached = avatarBufferCache.get(cleanId);
+  if (cached && Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) {
+    return { contentType: cached.contentType, buffer: cached.buffer };
+  }
+
+  const negTs = negativeScholarPhotoCache.get(cleanId);
+  if (negTs && Date.now() - negTs < 6 * 60 * 60 * 1000) {
+    return null;
+  }
+
+  const existingInflight = inflightAvatarPromises.get(cleanId);
+  if (existingInflight) {
+    return existingInflight;
+  }
+
+  const taskPromise = (async () => {
+    await acquireScholarAvatarSlot();
+    try {
+      const gsCdnUrl = `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
+        cleanId
+      )}`;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const res = await fetchStaticImageBuffer(gsCdnUrl, true, 4200);
+        if (res && res.status === 200 && res.buffer.length > 200) {
+          avatarBufferCache.set(cleanId, {
+            contentType: res.contentType,
+            buffer: res.buffer,
+            timestamp: Date.now(),
+          });
+          return { contentType: res.contentType, buffer: res.buffer };
+        }
+        // If Google Scholar explicitly redirects to default silhouette avatar_scholar_*.png, user has no custom photo
+        if (res && res.status === 302 && res.location?.includes('avatar_scholar')) {
+          negativeScholarPhotoCache.set(cleanId, Date.now());
+          return null;
+        }
+        // Otherwise transient rate-limit or timeout — pause briefly and retry once
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 220));
+        }
+      }
+      return null;
+    } finally {
+      releaseScholarAvatarSlot();
+      inflightAvatarPromises.delete(cleanId);
+    }
+  })();
+
+  inflightAvatarPromises.set(cleanId, taskPromise);
+  return taskPromise;
+}
+
+const wikidataAvatarLookupCache = new Map<
+  string,
+  { scholarId?: string; commonsUrl?: string; checkedAt: number }
+>();
+
+async function resolveVerifiedWikidataAvatarOrId(
+  researcherName: string
+): Promise<{ scholarId?: string; commonsUrl?: string } | null> {
+  const clean = stripAcademicHonorifics(researcherName).trim();
+  if (!clean || clean.length < 4) return null;
+  const key = clean.toLowerCase();
+  const cached = wikidataAvatarLookupCache.get(key);
+  if (cached && Date.now() - cached.checkedAt < 24 * 60 * 60 * 1000) {
+    return cached;
+  }
+
+  try {
+    const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(
+      clean
+    )}&language=en&format=json&limit=3`;
+    const searchRes = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+      },
+      signal: AbortSignal.timeout(2500),
+    });
+    if (searchRes.ok) {
+      const searchData = (await searchRes.json()) as any;
+      for (const ent of searchData?.search || []) {
+        const qid = ent?.id;
+        const label = String(ent?.label || '');
+        if (!qid || !isStrictSameResearcherForAvatar(clean, label)) continue;
+
+        const claimsUrl = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${encodeURIComponent(
+          qid
+        )}&format=json`;
+        const claimsRes = await fetch(claimsUrl, {
+          headers: {
+            'User-Agent': 'ScholarLens/2.0 (mailto:research@scholarlens.org)',
+          },
+          signal: AbortSignal.timeout(2500),
+        });
+        if (!claimsRes.ok) continue;
+        const claimsData = (await claimsRes.json()) as any;
+        const p1960 =
+          claimsData?.claims?.P1960?.[0]?.mainsnak?.datavalue?.value;
+        const p18 =
+          claimsData?.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
+
+        const result: { scholarId?: string; commonsUrl?: string; checkedAt: number } = {
+          checkedAt: Date.now(),
+        };
+        if (typeof p1960 === 'string' && isValidScholarId(p1960)) {
+          result.scholarId = p1960.trim();
+          registerScholarColleague(clean, result.scholarId, true);
+        }
+        if (typeof p18 === 'string' && p18.trim().length > 0) {
+          result.commonsUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(
+            p18.trim()
+          )}?width=256`;
+        }
+        if (result.scholarId || result.commonsUrl) {
+          wikidataAvatarLookupCache.set(key, result);
+          return result;
+        }
       }
     }
   } catch {
-    // Ignore image fetch failure
+    // Ignore Wikidata lookup timeout
   }
+
+  const empty = { checkedAt: Date.now() };
+  wikidataAvatarLookupCache.set(key, empty);
   return null;
+}
+
+function enrichAndPrewarmProfileCoAuthors(publications: Publication[]): Publication[] {
+  const coAuthorCounts = new Map<string, number>();
+  const enriched = publications.map((pub) => ({
+    ...pub,
+    coAuthors: (pub.coAuthors || []).map((ca) => {
+      const meta = !ca.scholarUserId ? lookupColleagueAvatarMeta(ca.name) : null;
+      const resolvedId = ca.scholarUserId || meta?.userId;
+      if (resolvedId) {
+        coAuthorCounts.set(resolvedId, (coAuthorCounts.get(resolvedId) || 0) + 1);
+        return { ...ca, scholarUserId: resolvedId };
+      }
+      return ca;
+    }),
+  }));
+
+  // Background pre-warm top co-author avatars into avatarBufferCache via the polite concurrency queue
+  const sortedIds = [...coAuthorCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 80)
+    .map(([id]) => id);
+
+  setTimeout(async () => {
+    for (const id of sortedIds) {
+      if (!avatarBufferCache.has(id) && !negativeScholarPhotoCache.has(id)) {
+        await fetchScholarAvatarWithQueue(id);
+      }
+    }
+  }, 10);
+
+  return enriched;
 }
 
 // Proxies the researcher's or co-author's authentic Google Scholar profile photo (with CORS headers for PDF & Canvas export)
@@ -3945,7 +4210,6 @@ app.get('/api/scholar/avatar', async (req, res) => {
   const userId = String(req.query.userId || '').trim();
   const fallbackName = String(req.query.name || 'Scholar').trim();
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
 
   const nameKey = fallbackName.toLowerCase().trim();
 
@@ -3956,6 +4220,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
       cachedByUser &&
       Date.now() - cachedByUser.timestamp < 24 * 60 * 60 * 1000
     ) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
       res.setHeader('Content-Type', cachedByUser.contentType);
       res.send(cachedByUser.buffer);
       return;
@@ -3967,6 +4232,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
       cachedByName &&
       Date.now() - cachedByName.timestamp < 24 * 60 * 60 * 1000
     ) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
       res.setHeader('Content-Type', cachedByName.contentType);
       res.send(cachedByName.buffer);
       return;
@@ -3992,6 +4258,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
         const entry = { contentType: ct, buffer: buf, timestamp: Date.now() };
         avatarBufferCache.set(userId, entry);
         if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
         res.setHeader('Content-Type', ct);
         res.send(buf);
         return;
@@ -4016,6 +4283,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
           const entry = { contentType: ct, buffer: buf, timestamp: Date.now() };
           if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
           if (userId) avatarBufferCache.set(userId, entry);
+          res.setHeader('Cache-Control', 'public, max-age=86400');
           res.setHeader('Content-Type', ct);
           res.send(buf);
           return;
@@ -4024,30 +4292,59 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
 
-  // 3. Resolve verified Google Scholar userId from colleague graph or Wikidata P1960
+  // 3. Resolve verified Google Scholar userId from colleague graph
   const colleagueMeta = fallbackName
     ? lookupColleagueAvatarMeta(fallbackName)
     : null;
   let effectiveUserId = userId || colleagueMeta?.userId || '';
 
-  // 4. Fetch custom photo from Google Scholar's static CDN (redirect: 'manual' avoids 302 redirects to scholar.google.com)
+  // 4. Fetch custom photo from Google Scholar's static CDN via concurrency-controlled queue
   if (effectiveUserId) {
-    const gsCdnUrl = `https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=${encodeURIComponent(
-      effectiveUserId
-    )}`;
-    const gsImg = await fetchStaticImageBuffer(gsCdnUrl, true, 2800);
+    const gsImg = await fetchScholarAvatarWithQueue(effectiveUserId);
     if (gsImg) {
       const entry = { ...gsImg, timestamp: Date.now() };
-      avatarBufferCache.set(effectiveUserId, entry);
       if (userId) avatarBufferCache.set(userId, entry);
       if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
+      res.setHeader('Cache-Control', 'public, max-age=86400');
       res.setHeader('Content-Type', gsImg.contentType);
       res.send(gsImg.buffer);
       return;
     }
   }
 
-  // 5. Fallback academic monogram SVG avatar (authentic, deterministic, and never a wrong person's face)
+  // 4b. If not in local colleague directory (or no custom Scholar photo), check verified Wikidata P1960 (Scholar ID) or P18 (Wikimedia portrait)
+  if (fallbackName && fallbackName !== 'Scholar') {
+    const wikiMeta = await resolveVerifiedWikidataAvatarOrId(fallbackName);
+    if (wikiMeta?.scholarId && wikiMeta.scholarId !== effectiveUserId) {
+      const gsImg = await fetchScholarAvatarWithQueue(wikiMeta.scholarId);
+      if (gsImg) {
+        const entry = { ...gsImg, timestamp: Date.now() };
+        if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Content-Type', gsImg.contentType);
+        res.send(gsImg.buffer);
+        return;
+      }
+    }
+    if (wikiMeta?.commonsUrl) {
+      const commonsImg = await fetchStaticImageBuffer(wikiMeta.commonsUrl, false, 4000);
+      if (commonsImg && commonsImg.status === 200 && commonsImg.buffer.length > 200) {
+        const entry = {
+          contentType: commonsImg.contentType,
+          buffer: commonsImg.buffer,
+          timestamp: Date.now(),
+        };
+        if (nameKey) avatarBufferCache.set(`name::${nameKey}`, entry);
+        if (effectiveUserId) avatarBufferCache.set(effectiveUserId, entry);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Content-Type', commonsImg.contentType);
+        res.send(commonsImg.buffer);
+        return;
+      }
+    }
+  }
+
+  // 5. Fallback academic monogram SVG avatar (never cached long-term in browser so transient network issues self-heal)
   const initials =
     stripAcademicHonorifics(fallbackName)
       .split(/\s+/)
@@ -4080,6 +4377,7 @@ app.get('/api/scholar/avatar', async (req, res) => {
     <rect width="128" height="128" rx="64" fill="url(#g)"/>
     <text x="64" y="78" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="700" letter-spacing="1">${initials}</text>
   </svg>`;
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   res.setHeader('Content-Type', 'image/svg+xml');
   res.send(svg);
 });
@@ -4419,8 +4717,8 @@ app.get('/api/scholar/analyze', async (req, res) => {
     }
 
     if (snapMatch) {
-      const normalizedPubs = normalizePublicationsVenueConsistency(
-        snapMatch.publications || []
+      const normalizedPubs = enrichAndPrewarmProfileCoAuthors(
+        normalizePublicationsVenueConsistency(snapMatch.publications || [])
       );
       const snapPayload = {
         profile: {
@@ -4456,6 +4754,10 @@ app.get('/api/scholar/analyze', async (req, res) => {
       });
       return;
     }
+
+    result.profile.publications = enrichAndPrewarmProfileCoAuthors(
+      result.profile.publications || []
+    );
 
     profileCache.set(cacheKey, {
       timestamp: Date.now(),

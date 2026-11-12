@@ -2137,7 +2137,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                         <img
                           src={
                             author.avatarUrl ||
-                            `/api/scholar/avatar?name=${encodeURIComponent(
+                            `/api/scholar/avatar?v=3&name=${encodeURIComponent(
                               author.name
                             )}&uni=${encodeURIComponent(
                               selectedUni.universityName
@@ -2154,7 +2154,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                           referrerPolicy="no-referrer"
                           onError={(e) => {
                             const target = e.currentTarget;
-                            const fallbackUrl = `/api/scholar/avatar?name=${encodeURIComponent(
+                            const fallbackUrl = `/api/scholar/avatar?v=3&name=${encodeURIComponent(
                               author.name
                             )}&uni=${encodeURIComponent(
                               selectedUni.universityName

@@ -1452,24 +1452,52 @@ export function aggregateUniversityCollaborations(
         continue;
       }
 
-      if (!entry.authorMap.has(ca.name)) {
-        entry.authorMap.set(ca.name, {
-          paperIds: new Set(),
-          citations: 0,
+      const cleanedCaName = stripAcademicHonorifics(ca.name) || ca.name;
+      let matchedKey: string | null = entry.authorMap.has(cleanedCaName)
+        ? cleanedCaName
+        : null;
+
+      if (!matchedKey) {
+        for (const [existingKey, existingVal] of entry.authorMap.entries()) {
+          if (
+            (ca.scholarUserId &&
+              existingVal.scholarUserId &&
+              ca.scholarUserId === existingVal.scholarUserId) ||
+            areCoAuthorEntriesSamePerson(existingKey, cleanedCaName)
+          ) {
+            matchedKey = existingKey;
+            break;
+          }
+        }
+      }
+
+      if (!matchedKey) {
+        entry.authorMap.set(cleanedCaName, {
+          paperIds: new Set([pub.id]),
+          citations: pub.citations,
           scholarUserId: ca.scholarUserId,
           avatarUrl: ca.avatarUrl,
         });
-      }
-      const authorEntry = entry.authorMap.get(ca.name)!;
-      if (!authorEntry.scholarUserId && ca.scholarUserId) {
-        authorEntry.scholarUserId = ca.scholarUserId;
-      }
-      if (!authorEntry.avatarUrl && ca.avatarUrl) {
-        authorEntry.avatarUrl = ca.avatarUrl;
-      }
-      if (!authorEntry.paperIds.has(pub.id)) {
-        authorEntry.paperIds.add(pub.id);
-        authorEntry.citations += pub.citations;
+      } else {
+        const authorEntry = entry.authorMap.get(matchedKey)!;
+        if (!authorEntry.scholarUserId && ca.scholarUserId) {
+          authorEntry.scholarUserId = ca.scholarUserId;
+        }
+        if (!authorEntry.avatarUrl && ca.avatarUrl) {
+          authorEntry.avatarUrl = ca.avatarUrl;
+        }
+        if (!authorEntry.paperIds.has(pub.id)) {
+          authorEntry.paperIds.add(pub.id);
+          authorEntry.citations += pub.citations;
+        }
+        const preferredName = preferCanonicalAuthorDisplayName(
+          matchedKey,
+          cleanedCaName
+        );
+        if (preferredName !== matchedKey && !entry.authorMap.has(preferredName)) {
+          entry.authorMap.delete(matchedKey);
+          entry.authorMap.set(preferredName, authorEntry);
+        }
       }
     }
 
@@ -1597,23 +1625,35 @@ export function aggregateUniversityCollaborations(
   return sorted;
 }
 
+const stripHonorificsCache = new Map<string, string>();
+
 /**
  * Strips common academic honorifics and titles for accurate researcher identity matching.
  */
 export function stripAcademicHonorifics(rawName: string): string {
-  return rawName
+  const input = String(rawName || '');
+  const cached = stripHonorificsCache.get(input);
+  if (cached !== undefined) return cached;
+
+  const cleaned = input
     .replace(/\([^)]*\)/g, ' ')
-    .replace(/\borcid[:\s/.\w-]*[\d-Xx]+\b/gi, ' ')
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\borcid(?:\.org)?[:\s/.\w-]*[\d-Xx]+\b/gi, ' ')
+    .replace(/;.*$/g, ' ')
     .replace(
-      /,\s*(?:phd|ph\.d\.|smieee|mieee|fieee|dr\.?|prof\.?|eng\.?|ir\.?|ts\.?|ceng|pe)\b.*/gi,
+      /,\s*(?:phd|ph\.d\.|smieee|mieee|fieee|freng|fiet|ceng|cmgr|pe|pdf|mrsc|dr\.?|prof\.?|eng\.?|ir\.?|ts\.?|clarivate|world|top|highly|cited)\b.*/gi,
       ' '
     )
     .replace(
-      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|eng|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee)\b\.?/gi,
+      /\b(?:prof(?:essor)?|assoc(?:iate)?\s+prof(?:essor)?|assist(?:ant)?\s+prof(?:essor)?|dr|engr|eng|ir|ts|mr|mrs|ms|md\s+dr|phd|ph\.d\.|msc|b\.sc|fi?eee|smieee|mieee|freng|fiet|ceng|cmgr|pdf|mrsc)\b\.?/gi,
       ' '
     )
+    .replace(/\s+[A-Z](?:\s+[A-Z]){1,2}$/, '')
     .replace(/\s+/g, ' ')
     .trim();
+
+  stripHonorificsCache.set(input, cleaned);
+  return cleaned;
 }
 
 const NAME_PREFIX_TOKENS = new Set([
@@ -1624,6 +1664,7 @@ const NAME_PREFIX_TOKENS = new Set([
   'mohamed',
   'al',
   'ul',
+  'ur',
   'bin',
   'binti',
   'abdul',
@@ -1637,6 +1678,119 @@ const NAME_PREFIX_TOKENS = new Set([
   'kazi',
   'shah',
 ]);
+
+const HIGH_FREQUENCY_SURNAMES = new Set([
+  'islam',
+  'rahman',
+  'hossain',
+  'hossen',
+  'hasan',
+  'hassan',
+  'ahmed',
+  'ahamed',
+  'ahmad',
+  'ali',
+  'khan',
+  'alam',
+  'haque',
+  'hoque',
+  'uddin',
+  'miah',
+  'mia',
+  'chowdhury',
+  'sarkar',
+  'sarker',
+  'karim',
+  'amin',
+  'kabir',
+  'mahmud',
+]);
+
+const tokenizeCoAuthorCache = new Map<string, string[]>();
+
+function tokenizeCoAuthorForDedupe(rawName: string): string[] {
+  const cached = tokenizeCoAuthorCache.get(rawName);
+  if (cached) return cached;
+  let s = stripAcademicHonorifics(rawName);
+  s = s.replace(/\b([A-Z])([A-Z])\s+(?=[A-Z][a-z])/g, '$1 $2 ');
+  s = s.replace(/\b([A-Z])([A-Z])([A-Z])\s+(?=[A-Z][a-z])/g, '$1 $2 $3 ');
+  const tokens = s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((t) =>
+      t === 'md' || t === 'muhammad' || t === 'mohammed' || t === 'mohamed'
+        ? 'mohammad'
+        : t
+    );
+  tokenizeCoAuthorCache.set(rawName, tokens);
+  return tokens;
+}
+
+function preferCanonicalAuthorDisplayName(nameA: string, nameB: string): string {
+  const cleanA = stripAcademicHonorifics(nameA) || nameA;
+  const cleanB = stripAcademicHonorifics(nameB) || nameB;
+  const tokensA = tokenizeCoAuthorForDedupe(cleanA);
+  const tokensB = tokenizeCoAuthorForDedupe(cleanB);
+  const fullWordsA = tokensA.filter((t) => t.length >= 2).length;
+  const fullWordsB = tokensB.filter((t) => t.length >= 2).length;
+  if (fullWordsB > fullWordsA) return cleanB;
+  if (fullWordsA > fullWordsB) return cleanA;
+  if (cleanB.includes('.') && !cleanA.includes('.')) return cleanB;
+  if (cleanA.includes('.') && !cleanB.includes('.')) return cleanA;
+  return cleanB.length > cleanA.length ? cleanB : cleanA;
+}
+
+function areCoAuthorEntriesSamePerson(nameA: string, nameB: string): boolean {
+  const rawA = tokenizeCoAuthorForDedupe(nameA);
+  const rawB = tokenizeCoAuthorForDedupe(nameB);
+  if (rawA.length === 0 || rawB.length === 0) return false;
+  if (rawA.join(' ') === rawB.join(' ')) return true;
+
+  const cleanA = rawA.filter(
+    (t) => !['al', 'ul', 'ur', 'bin', 'binti'].includes(t)
+  );
+  const cleanB = rawB.filter(
+    (t) => !['al', 'ul', 'ur', 'bin', 'binti'].includes(t)
+  );
+  if (cleanA.length === 0 || cleanB.length === 0) return false;
+  if (cleanA.join(' ') === cleanB.join(' ')) return true;
+
+  if (cleanA.length === cleanB.length && cleanA.length >= 2) {
+    const lastA = cleanA[cleanA.length - 1];
+    const lastB = cleanB[cleanB.length - 1];
+    if (lastA === lastB && lastA.length >= 4) {
+      let allMatch = true;
+      let nonPrefixFullMatch = 0;
+      for (let i = 0; i < cleanA.length - 1; i++) {
+        const a = cleanA[i];
+        const b = cleanB[i];
+        if (a === b) {
+          if (a.length >= 3 && !NAME_PREFIX_TOKENS.has(a)) {
+            nonPrefixFullMatch++;
+          }
+        } else if (
+          (a.length === 1 && b.length >= 2 && b[0] === a) ||
+          (b.length === 1 && a.length >= 2 && a[0] === b)
+        ) {
+          // Initial matches corresponding full name token at the same position
+        } else {
+          allMatch = false;
+          break;
+        }
+      }
+      if (allMatch) {
+        if (!HIGH_FREQUENCY_SURNAMES.has(lastA)) return true;
+        if (nonPrefixFullMatch >= 1) return true;
+      }
+    }
+  }
+
+  return false;
+}
 
 /**
  * Checks whether candidate name refers to the same researcher, tolerating transliterations,
@@ -1737,20 +1891,48 @@ export function aggregateCoAuthors(
       if (selfName && isSameResearcherName(ca.name, selfName)) {
         continue;
       }
-      if (!authorMap.has(ca.name)) {
-        authorMap.set(ca.name, { meta: { ...ca }, papers: new Map() });
+      const cleanedCaName = stripAcademicHonorifics(ca.name) || ca.name;
+      let matchedKey: string | null = authorMap.has(cleanedCaName)
+        ? cleanedCaName
+        : null;
+
+      if (!matchedKey) {
+        for (const [existingKey, existingVal] of authorMap.entries()) {
+          if (
+            (ca.scholarUserId &&
+              existingVal.meta.scholarUserId &&
+              ca.scholarUserId === existingVal.meta.scholarUserId) ||
+            areCoAuthorEntriesSamePerson(existingKey, cleanedCaName)
+          ) {
+            matchedKey = existingKey;
+            break;
+          }
+        }
+      }
+
+      if (!matchedKey) {
+        authorMap.set(cleanedCaName, {
+          meta: { ...ca, name: cleanedCaName },
+          papers: new Map([[pub.id, pub]]),
+        });
       } else {
-        const existing = authorMap.get(ca.name)!;
+        const existing = authorMap.get(matchedKey)!;
+        const preferredName = preferCanonicalAuthorDisplayName(
+          matchedKey,
+          cleanedCaName
+        );
         if (
           existing.meta.universityId === 'unlisted' &&
           ca.universityId !== 'unlisted'
         ) {
           existing.meta = {
             ...ca,
+            name: preferredName,
             scholarUserId: ca.scholarUserId || existing.meta.scholarUserId,
             avatarUrl: ca.avatarUrl || existing.meta.avatarUrl,
           };
         } else {
+          existing.meta.name = preferredName;
           if (!existing.meta.scholarUserId && ca.scholarUserId) {
             existing.meta.scholarUserId = ca.scholarUserId;
           }
@@ -1758,8 +1940,12 @@ export function aggregateCoAuthors(
             existing.meta.avatarUrl = ca.avatarUrl;
           }
         }
+        existing.papers.set(pub.id, pub);
+        if (preferredName !== matchedKey && !authorMap.has(preferredName)) {
+          authorMap.delete(matchedKey);
+          authorMap.set(preferredName, existing);
+        }
       }
-      authorMap.get(ca.name)!.papers.set(pub.id, pub);
     }
   }
 
