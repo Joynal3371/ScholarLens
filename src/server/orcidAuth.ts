@@ -1127,7 +1127,9 @@ export class OrcidAccountStore {
     let existingUid: string | null = null;
     if (remoteIndex && remoteIndex !== 'UNAVAILABLE' && typeof remoteIndex.uid === 'string') {
       existingUid = remoteIndex.uid;
-    } else if (remoteIndex === 'UNAVAILABLE' || remoteIndex === null) {
+    } else if (remoteIndex === null) {
+      this.mirror.deleteOrcidIndex(canonicalOrcid);
+    } else if (remoteIndex === 'UNAVAILABLE') {
       const mirrorIndex = this.mirror.getOrcidIndex(canonicalOrcid);
       if (mirrorIndex?.uid) {
         existingUid = mirrorIndex.uid;
@@ -1148,7 +1150,7 @@ export class OrcidAccountStore {
       const baseUser =
         remoteUser && remoteUser !== 'UNAVAILABLE'
           ? docFieldsToResearcher(existingUid, remoteUser)
-          : this.mirror.getUser(existingUid) || {
+          : (remoteUser === 'UNAVAILABLE' ? this.mirror.getUser(existingUid) : null) || {
               uid: existingUid,
               name: params.verifiedName || canonicalOrcid,
               emailOrId: canonicalOrcid,
@@ -1269,14 +1271,16 @@ export class OrcidAccountStore {
       );
     }
 
-    // Also update mirror fallback (and enforce in-process uniqueness even if Firestore was unreachable)
-    const mirrorExisting =
-      this.mirror.getOrcidIndex(canonicalOrcid)?.uid ||
-      this.mirror.findUidByOrcidInUsers(canonicalOrcid);
-    if (mirrorExisting && mirrorExisting !== targetUid) {
-      throw new OrcidConflictError(
-        `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
-      );
+    // Enforce in-process uniqueness fallback only when Firestore was unreachable
+    if (commitStatus === 'UNAVAILABLE') {
+      const mirrorExisting =
+        this.mirror.getOrcidIndex(canonicalOrcid)?.uid ||
+        this.mirror.findUidByOrcidInUsers(canonicalOrcid);
+      if (mirrorExisting && mirrorExisting !== targetUid) {
+        throw new OrcidConflictError(
+          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
+        );
+      }
     }
 
     this.mirror.setOrcidIndex(indexDoc);
@@ -1300,13 +1304,12 @@ export class OrcidAccountStore {
       this.mirror.setUser(record);
       return { status: 'FOUND', user: record };
     }
-    const mirrored = this.mirror.getUser(uid);
-    if (mirrored) {
-      return { status: 'FOUND', user: mirrored };
-    }
     if (remote === 'UNAVAILABLE') {
-      return { status: 'UNAVAILABLE' };
+      const mirrored = this.mirror.getUser(uid);
+      return mirrored ? { status: 'FOUND', user: mirrored } : { status: 'UNAVAILABLE' };
     }
+    // Authoritative 404 from Firestore: evict stale in-memory mirror rather than resurrecting deleted users
+    this.mirror.deleteUser(uid);
     return { status: 'NOT_FOUND' };
   }
 

@@ -717,7 +717,9 @@ var OrcidAccountStore = class {
     let existingUid = null;
     if (remoteIndex && remoteIndex !== "UNAVAILABLE" && typeof remoteIndex.uid === "string") {
       existingUid = remoteIndex.uid;
-    } else if (remoteIndex === "UNAVAILABLE" || remoteIndex === null) {
+    } else if (remoteIndex === null) {
+      this.mirror.deleteOrcidIndex(canonicalOrcid);
+    } else if (remoteIndex === "UNAVAILABLE") {
       const mirrorIndex = this.mirror.getOrcidIndex(canonicalOrcid);
       if (mirrorIndex?.uid) {
         existingUid = mirrorIndex.uid;
@@ -732,7 +734,7 @@ var OrcidAccountStore = class {
         );
       }
       const remoteUser = await this.getDoc("users", existingUid);
-      const baseUser = remoteUser && remoteUser !== "UNAVAILABLE" ? docFieldsToResearcher(existingUid, remoteUser) : this.mirror.getUser(existingUid) || {
+      const baseUser = remoteUser && remoteUser !== "UNAVAILABLE" ? docFieldsToResearcher(existingUid, remoteUser) : (remoteUser === "UNAVAILABLE" ? this.mirror.getUser(existingUid) : null) || {
         uid: existingUid,
         name: params.verifiedName || canonicalOrcid,
         emailOrId: canonicalOrcid,
@@ -823,11 +825,13 @@ var OrcidAccountStore = class {
         `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
       );
     }
-    const mirrorExisting = this.mirror.getOrcidIndex(canonicalOrcid)?.uid || this.mirror.findUidByOrcidInUsers(canonicalOrcid);
-    if (mirrorExisting && mirrorExisting !== targetUid) {
-      throw new OrcidConflictError(
-        `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
-      );
+    if (commitStatus === "UNAVAILABLE") {
+      const mirrorExisting = this.mirror.getOrcidIndex(canonicalOrcid)?.uid || this.mirror.findUidByOrcidInUsers(canonicalOrcid);
+      if (mirrorExisting && mirrorExisting !== targetUid) {
+        throw new OrcidConflictError(
+          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
+        );
+      }
     }
     this.mirror.setOrcidIndex(indexDoc);
     this.mirror.setUser(newUser);
@@ -842,13 +846,11 @@ var OrcidAccountStore = class {
       this.mirror.setUser(record);
       return { status: "FOUND", user: record };
     }
-    const mirrored = this.mirror.getUser(uid);
-    if (mirrored) {
-      return { status: "FOUND", user: mirrored };
-    }
     if (remote === "UNAVAILABLE") {
-      return { status: "UNAVAILABLE" };
+      const mirrored = this.mirror.getUser(uid);
+      return mirrored ? { status: "FOUND", user: mirrored } : { status: "UNAVAILABLE" };
     }
+    this.mirror.deleteUser(uid);
     return { status: "NOT_FOUND" };
   }
   async getUserByUid(uid) {

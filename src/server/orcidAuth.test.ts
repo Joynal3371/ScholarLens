@@ -503,3 +503,55 @@ test('OrcidAccountStore distinguishes UNAVAILABLE (403) from NOT_FOUND (404) and
     null
   );
 });
+
+test('OrcidAccountStore evicts stale in-memory mirror entries when Firestore authoritatively returns 404', async () => {
+  const docDb = new Map<string, Record<string, unknown>>();
+  const docBase = 'https://firestore.googleapis.com/v1/projects/p1/databases/d1/documents';
+
+  const mockFetch: typeof fetch = async (input, init) => {
+    const url = String(input);
+    const method = (init?.method || 'GET').toUpperCase();
+    if (url === `${docBase}:commit` && method === 'POST') {
+      const payload = JSON.parse(String(init?.body || '{}')) as {
+        writes: Array<{ update: { name: string; fields: Record<string, any> } }>;
+      };
+      for (const write of payload.writes) {
+        const key = write.update.name.replace(/^projects\/p1\/databases\/d1\/documents\//, '');
+        docDb.set(key, { fields: write.update.fields });
+      }
+      return new Response(JSON.stringify({ writeResults: [] }), { status: 200 });
+    }
+    const prefix = `${docBase}/`;
+    if (url.startsWith(prefix) && method === 'GET') {
+      const key = decodeURIComponent(url.slice(prefix.length));
+      const found = docDb.get(key);
+      return found
+        ? new Response(JSON.stringify(found), { status: 200 })
+        : new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
+    }
+    return new Response('Bad request', { status: 400 });
+  };
+
+  const store = new OrcidAccountStore({
+    firestoreDocBase: docBase,
+    getBridgeToken: async () => 'mock-bridge-jwt',
+    fetchImpl: mockFetch,
+  });
+
+  const created = await store.authenticateOrRegisterOrcidUser({
+    orcidId: '0009-0007-9332-9241',
+    verifiedName: 'Fresh User',
+  });
+  assert.equal(created.isNewAccount, true);
+  assert.equal((await store.getUserLookupResult(created.user.uid)).status, 'FOUND');
+
+  // Simulate external/admin database reset outside this instance's memory
+  docDb.clear();
+
+  assert.equal((await store.getUserLookupResult(created.user.uid)).status, 'NOT_FOUND');
+  const recreated = await store.authenticateOrRegisterOrcidUser({
+    orcidId: '0009-0007-9332-9241',
+    verifiedName: 'Fresh User',
+  });
+  assert.equal(recreated.isNewAccount, true);
+});
