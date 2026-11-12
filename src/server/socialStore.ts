@@ -346,20 +346,33 @@ export class SocialNetworkStore {
       const token = await this.getBridgeToken();
       if (token && this.firestoreDocBase) {
         const resp = await this.fetchImpl(
-          `${this.firestoreDocBase}/users?pageSize=120`,
+          `${this.firestoreDocBase}:runQuery`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              structuredQuery: {
+                from: [{ collectionId: 'users' }],
+                limit: 120,
+              },
+            }),
             signal: AbortSignal.timeout(4500),
           }
         );
         if (resp.ok) {
-          const data = (await resp.json()) as { documents?: Array<{ name?: string; fields?: Record<string, any> }> };
-          for (const docItem of data?.documents || []) {
+          const rows = (await resp.json()) as Array<{
+            document?: { name?: string; fields?: Record<string, any> };
+          }>;
+          for (const row of Array.isArray(rows) ? rows : []) {
+            const docItem = row?.document;
             const fields = docItem?.fields;
             if (!fields) continue;
             const docUid =
               parseFirestoreString(fields.uid) ||
-              String(docItem.name || '').split('/').pop() ||
+              String(docItem?.name || '').split('/').pop() ||
               '';
             if (!docUid) continue;
             const name =
@@ -385,7 +398,7 @@ export class SocialNetworkStore {
         }
       }
     } catch {
-      // Fallback to local mirror users if Firestore listing fails
+      // Fallback to local mirror users if Firestore query fails
     }
 
     return Array.from(byUid.values()).sort((a, b) => a.name.localeCompare(b.name));

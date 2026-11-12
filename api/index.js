@@ -1155,18 +1155,29 @@ var SocialNetworkStore = class {
       const token = await this.getBridgeToken();
       if (token && this.firestoreDocBase) {
         const resp = await this.fetchImpl(
-          `${this.firestoreDocBase}/users?pageSize=120`,
+          `${this.firestoreDocBase}:runQuery`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              structuredQuery: {
+                from: [{ collectionId: "users" }],
+                limit: 120
+              }
+            }),
             signal: AbortSignal.timeout(4500)
           }
         );
         if (resp.ok) {
-          const data = await resp.json();
-          for (const docItem of data?.documents || []) {
+          const rows = await resp.json();
+          for (const row of Array.isArray(rows) ? rows : []) {
+            const docItem = row?.document;
             const fields = docItem?.fields;
             if (!fields) continue;
-            const docUid = parseFirestoreString(fields.uid) || String(docItem.name || "").split("/").pop() || "";
+            const docUid = parseFirestoreString(fields.uid) || String(docItem?.name || "").split("/").pop() || "";
             if (!docUid) continue;
             const name = parseFirestoreString(fields.name) || parseFirestoreString(fields.displayName) || parseFirestoreString(fields.orcidId) || "Researcher";
             const photoURL = parseFirestoreString(fields.photoURL) || void 0;
