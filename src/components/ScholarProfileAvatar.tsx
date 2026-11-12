@@ -14,8 +14,14 @@ export const ScholarProfileAvatar: React.FC<ScholarProfileAvatarProps> = ({
   className = 'w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40',
 }) => {
   const getInitialSrc = (): string | null => {
-    if (avatarUrl && avatarUrl.trim() && avatarUrl.startsWith('data:image/')) {
-      return avatarUrl.trim();
+    const trimmedUrl = (avatarUrl || '').trim();
+    if (
+      trimmedUrl &&
+      (trimmedUrl.startsWith('data:image/') ||
+        trimmedUrl.startsWith('https://') ||
+        trimmedUrl.startsWith('http://'))
+    ) {
+      return trimmedUrl;
     }
     const cleanId = (scholarUserId || '').trim();
     const cleanName = (name || '').trim();

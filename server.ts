@@ -5692,11 +5692,22 @@ app.post('/api/auth/profile', async (req, res) => {
 
   if (scholarUrl !== undefined) {
     const trimmedScholar = String(scholarUrl || '').trim();
-    if (!trimmedScholar) {
+    if (sessionUser.provider === 'orcid' && sessionUser.scholarUserId) {
+      const parsedIncoming = trimmedScholar
+        ? parseStrictGoogleScholarProfileInput(trimmedScholar)
+        : null;
+      const incomingId = parsedIncoming?.valid ? parsedIncoming.userId?.trim() || '' : '';
+      if (!trimmedScholar || incomingId !== sessionUser.scholarUserId) {
+        res.status(403).json({
+          error: 'Google Scholar profile is locked to your verified ORCID sign-in and cannot be changed.',
+        });
+        return;
+      }
+    } else if (!trimmedScholar) {
       cleanScholarUrl = '';
       cleanScholarUserId = '';
     } else {
-      const parsed = parseGoogleScholarInput(trimmedScholar);
+      const parsed = parseStrictGoogleScholarProfileInput(trimmedScholar);
       if (!parsed.valid || !parsed.userId) {
         res.status(400).json({
           error: parsed.error || 'Please enter a valid Google Scholar profile link or ID.',
@@ -5706,7 +5717,10 @@ app.post('/api/auth/profile', async (req, res) => {
       cleanScholarUserId = parsed.userId.trim();
       cleanScholarUrl = `https://scholar.google.com/citations?user=${cleanScholarUserId}`;
 
-      const existingClaim = scholarClaimsData.claims[cleanScholarUserId];
+      const existingClaim =
+        (await getOrcidStore().getScholarClaim(cleanScholarUserId)) ||
+        scholarClaimsData.claims[cleanScholarUserId] ||
+        null;
       if (existingClaim && existingClaim.claimedByUid !== sessionUser.uid) {
         res.status(409).json({
           error: 'This Google Scholar profile has already been verified and claimed by another researcher account.',

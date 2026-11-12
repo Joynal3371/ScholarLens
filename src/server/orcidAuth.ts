@@ -1207,10 +1207,10 @@ export class OrcidAccountStore {
             ? baseUser.name
             : params.verifiedName || canonicalOrcid,
         emailOrId: baseUser.emailOrId || canonicalOrcid,
-        ...(cleanPhotoURL
-          ? { photoURL: cleanPhotoURL }
-          : baseUser.photoURL
+        ...(baseUser.photoURL
           ? { photoURL: baseUser.photoURL }
+          : cleanPhotoURL
+          ? { photoURL: cleanPhotoURL }
           : {}),
         ...(cleanScholarUrl
           ? { scholarUrl: cleanScholarUrl }

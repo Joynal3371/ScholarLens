@@ -1013,7 +1013,13 @@ export default function App() {
                     <ScholarProfileAvatar
                       scholarUserId={activeProfile.scholarUserId}
                       name={activeProfile.name}
-                      avatarUrl={activeProfile.avatarUrl}
+                      avatarUrl={
+                        authUser?.scholarUserId &&
+                        authUser.scholarUserId === activeProfile.scholarUserId &&
+                        authUser.photoURL?.trim()
+                          ? authUser.photoURL.trim()
+                          : activeProfile.avatarUrl
+                      }
                       className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40"
                     />
                     <div className="min-w-0 flex-1">

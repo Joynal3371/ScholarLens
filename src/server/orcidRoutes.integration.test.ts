@@ -395,7 +395,7 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     });
     assert.equal(spoofResp.status, 410);
 
-    // 7. Profile update requires valid session and saves linked Google Scholar profile
+    // 7. Profile update requires valid session, locks verified Google Scholar profile, and allows updating name
     const unauthProfileResp = await originalFetch(`${base}/api/auth/profile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -403,6 +403,19 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     });
     assert.equal(unauthProfileResp.status, 401);
 
+    const lockedScholarResp = await originalFetch(`${base}/api/auth/profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `scholarlens_session=${sessionCookieVal}`,
+      },
+      body: JSON.stringify({
+        scholarUrl: 'https://scholar.google.com/citations?user=JicYPdAAAAAJ&hl=en',
+      }),
+    });
+    assert.equal(lockedScholarResp.status, 403);
+
+    const customAvatarDataUri = 'data:image/jpeg;base64,/9j/custom-avatar-test';
     const updateProfileResp = await originalFetch(`${base}/api/auth/profile`, {
       method: 'POST',
       headers: {
@@ -411,17 +424,18 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
       },
       body: JSON.stringify({
         name: 'Prof. Carberry',
-        scholarUrl: 'https://scholar.google.com/citations?user=JicYPdAAAAAJ&hl=en',
+        photoURL: customAvatarDataUri,
       }),
     });
     assert.equal(updateProfileResp.status, 200);
     const updatedJson = (await updateProfileResp.json()) as {
       success: boolean;
-      user: { name: string; scholarUserId: string };
+      user: { name: string; scholarUserId: string; photoURL?: string };
     };
     assert.equal(updatedJson.success, true);
     assert.equal(updatedJson.user.name, 'Prof. Carberry');
-    assert.equal(updatedJson.user.scholarUserId, 'JicYPdAAAAAJ');
+    assert.equal(updatedJson.user.photoURL, customAvatarDataUri);
+    assert.equal(updatedJson.user.scholarUserId, 'MockUser0001');
 
     // 8. Redirect mode OAuth flow (/auth/orcid/authorize -> /auth/orcid/callback 302) logs back into same account
     const authRedirectResp = await originalFetch(
@@ -457,6 +471,7 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     }).then((r) => r.json());
     assert.equal(returningSession.user.uid, 'orcid_0000000218250097');
     assert.equal(returningSession.user.scholarUserId, 'MockUser0001');
+    assert.equal(returningSession.user.photoURL, customAvatarDataUri);
 
     // 9. Logout clears cookie, and Account Deletion removes DB records cleanly
     const logoutResp = await originalFetch(`${base}/api/auth/logout`, { method: 'POST' });

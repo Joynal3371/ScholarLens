@@ -7,9 +7,8 @@ import {
   Trash2,
   AlertCircle,
   User as UserIcon,
-  ShieldCheck,
   ExternalLink,
-  BadgeCheck,
+  Lock,
 } from 'lucide-react';
 import { AuthenticatedResearcher } from './AuthGateModal';
 import { updateCustomUserProfile, deleteCustomUserAccount } from '../firebase';
@@ -54,7 +53,11 @@ function resizeImageFileToDataUri(file: File): Promise<string> {
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.86));
+        let dataUri = canvas.toDataURL('image/jpeg', 0.86);
+        if (dataUri.length > 140000) {
+          dataUri = canvas.toDataURL('image/jpeg', 0.65);
+        }
+        resolve(dataUri);
       };
       img.src = String(reader.result);
     };
@@ -135,23 +138,26 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       return;
     }
 
+    const isScholarLocked = user.provider === 'orcid' || Boolean(user.scholarUserId);
     const cleanScholar = scholarUrl.trim();
-    let normalizedScholarUrl = '';
-    let parsedScholarId = '';
+    let normalizedScholarUrl = user.scholarUrl || '';
+    let parsedScholarId = user.scholarUserId || '';
 
-    if (cleanScholar) {
-      const parsed = parseGoogleScholarInput(cleanScholar);
-      if (!parsed.valid || !parsed.userId) {
-        setError('Please enter a valid Google Scholar profile link.');
+    if (!isScholarLocked) {
+      if (cleanScholar) {
+        const parsed = parseGoogleScholarInput(cleanScholar);
+        if (!parsed.valid || !parsed.userId) {
+          setError('Please enter a valid Google Scholar profile link.');
+          return;
+        }
+        parsedScholarId = parsed.userId;
+        normalizedScholarUrl = `https://scholar.google.com/citations?user=${encodeURIComponent(
+          parsed.userId
+        )}&hl=en`;
+      } else {
+        setError('Google Scholar profile link is mandatory.');
         return;
       }
-      parsedScholarId = parsed.userId;
-      normalizedScholarUrl = `https://scholar.google.com/citations?user=${encodeURIComponent(
-        parsed.userId
-      )}&hl=en`;
-    } else if (user.provider !== 'orcid') {
-      setError('Google Scholar profile link is mandatory.');
-      return;
     }
 
     setIsSaving(true);
@@ -165,7 +171,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           body: JSON.stringify({
             name: cleanName,
             photoURL: photoURL.trim(),
-            scholarUrl: normalizedScholarUrl,
           }),
         });
         const data = await resp.json();
@@ -269,7 +274,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
         <form onSubmit={handleSave} className="space-y-4" noValidate>
           {/* Clickable Profile Picture */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center gap-2">
             <input
               ref={fileInputRef}
               type="file"
@@ -298,6 +303,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <Camera className="w-5 h-5" />
               </div>
             </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              data-testid="change-photo-btn"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors cursor-pointer"
+            >
+              <Camera className="w-3 h-3" />
+              <span>Change Photo</span>
+            </button>
           </div>
 
           <div>
@@ -325,58 +339,56 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               htmlFor="profile-scholar-url"
               className="block text-xs font-medium text-slate-700 mb-1"
             >
-              Google Scholar Link{' '}
-              {user.provider === 'orcid' ? (
-                <span className="text-slate-400 font-normal">(optional)</span>
-              ) : (
-                <span className="text-red-600">*</span>
-              )}
+              Google Scholar Profile
             </label>
-            <input
-              id="profile-scholar-url"
-              type="url"
-              required={user.provider !== 'orcid'}
-              value={scholarUrl}
-              onChange={(e) => {
-                setScholarUrl(e.target.value);
-                if (error) setError(null);
-              }}
-              placeholder="https://scholar.google.com/citations?user=..."
-              className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600"
-            />
+            {user.provider === 'orcid' || Boolean(user.scholarUserId) ? (
+              <div
+                id="profile-scholar-url"
+                data-testid="locked-scholar-profile"
+                className="w-full px-3 py-2 text-xs font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between gap-2 select-all"
+              >
+                <span className="truncate">
+                  {scholarUrl ||
+                    (user.scholarUserId
+                      ? `https://scholar.google.com/citations?user=${user.scholarUserId}`
+                      : 'Verified via ORCID')}
+                </span>
+                <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+              </div>
+            ) : (
+              <input
+                id="profile-scholar-url"
+                type="url"
+                required
+                value={scholarUrl}
+                onChange={(e) => {
+                  setScholarUrl(e.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder="https://scholar.google.com/citations?user=..."
+                className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600"
+              />
+            )}
           </div>
 
-          {/* ORCID Verified Identity Banner */}
+          {/* ORCID Verified Identity */}
           {user.orcidId && (
-            <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg space-y-1.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-900">
-                  <span className="w-4 h-4 rounded-full bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[9px] shrink-0">
-                    iD
-                  </span>
-                  <span>ORCID Verified Identity</span>
-                </div>
-                <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                  Unique Account
+            <div className="px-3 py-2.5 bg-emerald-50/80 border border-emerald-200 rounded-lg flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-900">
+                <span className="w-4 h-4 rounded-full bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[9px] shrink-0">
+                  iD
                 </span>
+                <span>ORCID iD</span>
               </div>
-              <div className="text-[11px] text-slate-600 flex flex-wrap items-center gap-x-2">
-                <span>ORCID iD:</span>
-                <a
-                  href={`https://orcid.org/${user.orcidId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono font-medium text-emerald-800 hover:underline inline-flex items-center gap-1"
-                >
-                  <span>{user.orcidId}</span>
-                  <ExternalLink className="w-3 h-3 text-emerald-600" />
-                </a>
-              </div>
-              <p className="text-[11px] text-emerald-800/80">
-                {user.scholarUrl
-                  ? 'Authenticated via official ORCID OAuth 2.0 and linked to your Google Scholar profile.'
-                  : 'Authenticated via official ORCID OAuth 2.0. Link your Google Scholar URL above anytime to auto-load your dashboard.'}
-              </p>
+              <a
+                href={`https://orcid.org/${user.orcidId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono font-medium text-emerald-800 hover:underline inline-flex items-center gap-1"
+              >
+                <span>{user.orcidId}</span>
+                <ExternalLink className="w-3 h-3 text-emerald-600" />
+              </a>
             </div>
           )}
 
