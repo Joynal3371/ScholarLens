@@ -839,36 +839,18 @@ export default function App() {
                 </div>
               </button>
             ) : (
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPendingExport(null);
-                    setIsAuthModalOpen(true);
-                  }}
-                  data-testid="corner-orcid-login-button"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-300 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-2xs"
-                  title="Verify your Google Scholar profile and sign in with official ORCID"
-                >
-                  <span className="w-4 h-4 rounded-full bg-[#A6CE39] text-[#283800] font-black text-[9px] flex items-center justify-center shrink-0">
-                    iD
-                  </span>
-                  <span className="hidden sm:inline">Sign in with ORCID</span>
-                  <span className="sm:hidden">ORCID</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPendingExport(null);
-                    setIsAuthModalOpen(true);
-                  }}
-                  data-testid="corner-login-button"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Sign In</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingExport(null);
+                  setIsAuthModalOpen(true);
+                }}
+                data-testid="corner-login-button"
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </button>
             )}
           </div>
         </div>
