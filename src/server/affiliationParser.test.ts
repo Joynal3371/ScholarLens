@@ -64,3 +64,12 @@ test('inferCountryCodeFromAffiliationString prioritizes explicit OpenAlex countr
     'CN'
   );
 });
+
+test('extractInstitutionFromRawAffiliations filters street addresses while keeping country code', () => {
+  const streetInst = extractInstitutionFromRawAffiliations([
+    'Proletarsky prosp. 8, Moscow, Russia',
+  ]);
+  assert.ok(streetInst);
+  assert.equal(streetInst.institutionName, '');
+  assert.equal(streetInst.countryCode, 'RU');
+});

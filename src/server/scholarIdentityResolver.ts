@@ -48,7 +48,13 @@ export interface ResolvedScholarIdentity {
   name: string;
   affiliationHint?: string;
   countryCodeHint?: string;
+  orcid?: string;
   source: string;
+}
+
+export function extractEmbeddedOrcid(text: string): string | undefined {
+  const match = String(text || '').match(/\b(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/i);
+  return match ? match[1].toUpperCase() : undefined;
 }
 
 export interface ScholarStoreLookupParams {
@@ -210,9 +216,15 @@ function collectScholarStoreIdentityAndEvidence(
     year: number;
   }> = [];
 
+  let bestOrcid: string | undefined;
+
   const recordName = (name: string, source: string, priority: number) => {
     const clean = String(name || '').trim();
     if (!clean) return;
+    const embeddedOrcid = extractEmbeddedOrcid(clean);
+    if (embeddedOrcid && !bestOrcid) {
+      bestOrcid = embeddedOrcid;
+    }
     if (!bestName.value || priority > bestName.value.priority) {
       bestName.value = { name: clean, source, priority };
     }
@@ -261,7 +273,7 @@ function collectScholarStoreIdentityAndEvidence(
   for (const reg of params.registeredUsers || []) {
     if (String(reg?.scholarUserId || '').trim() === targetId && reg?.name) {
       recordName(reg.name, 'registered-user', 100);
-      recordAffilVote(reg.affiliation, undefined, 6);
+      recordAffilVote(reg.affiliation, undefined, 1000);
     }
   }
 
@@ -270,10 +282,12 @@ function collectScholarStoreIdentityAndEvidence(
     if (!prof) continue;
     if (String(prof.scholarUserId || '').trim() === targetId && prof.name) {
       recordName(prof.name, 'snapshot-profile', 90);
+      const snapOrcid = extractEmbeddedOrcid(String(prof.orcid || ''));
+      if (snapOrcid && !bestOrcid) bestOrcid = snapOrcid;
       recordAffilVote(
         prof.homeUniversity || prof.affiliation,
         undefined,
-        6
+        500
       );
       for (const pub of prof.publications || []) {
         const title = String(pub?.title || '').trim();
@@ -308,7 +322,9 @@ function collectScholarStoreIdentityAndEvidence(
   for (const digest of Object.values(params.digests || {})) {
     if (String(digest?.scholarUserId || '').trim() === targetId && digest?.name) {
       recordName(String(digest.name), 'works-digest', 80);
-      recordAffilVote(digest.affiliation, undefined, 5);
+      const digestOrcid = extractEmbeddedOrcid(String(digest.orcid || ''));
+      if (digestOrcid && !bestOrcid) bestOrcid = digestOrcid;
+      recordAffilVote(digest.affiliation, undefined, 300);
     }
     for (const ca of digest?.coAuthors || []) {
       if (String(ca?.scholarUserId || '').trim() === targetId && ca?.name) {
@@ -395,11 +411,14 @@ function collectScholarStoreIdentityAndEvidence(
     }
   }
 
+  const resolvedOrcid = bestOrcid || extractEmbeddedOrcid(bestName.value.name);
+
   return {
     identity: {
       name: bestName.value.name,
       ...(topAffil?.affil ? { affiliationHint: topAffil.affil } : {}),
       ...(topAffil?.countryCode ? { countryCodeHint: topAffil.countryCode } : {}),
+      ...(resolvedOrcid ? { orcid: resolvedOrcid } : {}),
       source: bestName.value.source,
     },
     knownWorkTitles,

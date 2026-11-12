@@ -198,13 +198,38 @@ export function isSameResearcherNameMatch(
       ? tokens.slice(1)
       : tokens;
 
-  const cVariants = [cGiven];
-  const cStripped = stripLeadingPrefix(cGiven);
-  if (cStripped !== cGiven) cVariants.push(cStripped);
+  const collapseSingleLetterRuns = (tokens: string[]): string[] => {
+    const out: string[] = [];
+    let i = 0;
+    while (i < tokens.length) {
+      if (tokens[i].length === 1) {
+        let j = i;
+        while (j < tokens.length && tokens[j].length === 1) j++;
+        if (j - i >= 2) {
+          out.push(tokens.slice(i, j).join(''));
+        } else {
+          out.push(tokens[i]);
+        }
+        i = j;
+      } else {
+        out.push(tokens[i]);
+        i++;
+      }
+    }
+    return out;
+  };
 
-  const tVariants = [tGiven];
-  const tStripped = stripLeadingPrefix(tGiven);
-  if (tStripped !== tGiven) tVariants.push(tStripped);
+  const buildVariants = (tokens: string[]): string[][] => {
+    const variants: string[][] = [tokens];
+    const stripped = stripLeadingPrefix(tokens);
+    if (stripped !== tokens) variants.push(stripped);
+    const collapsed = collapseSingleLetterRuns(tokens);
+    if (collapsed.length !== tokens.length) variants.push(collapsed);
+    return variants;
+  };
+
+  const cVariants = buildVariants(cGiven);
+  const tVariants = buildVariants(tGiven);
 
   for (const cv of cVariants) {
     for (const tv of tVariants) {
@@ -255,11 +280,30 @@ export function scoreOpenAlexAuthorCandidate(
     .filter((w, i, arr) => i === 0 || i === arr.length - 1 || w.length > 1)
     .join(' ');
 
+  const joinCompactInitials = (s: string) =>
+    s.replace(/\b(?:[a-z]\s+)+[a-z]\b/g, (m) => m.replace(/\s+/g, ''));
+
+  const normDispCompact = joinCompactInitials(normDispExact);
+  const normSearchCompact = joinCompactInitials(normSearchExact);
+
+  const normDispSorted = normDispNoMid
+    .split(' ')
+    .filter(Boolean)
+    .sort()
+    .join(' ');
+  const normSearchSorted = normSearchNoMid
+    .split(' ')
+    .filter(Boolean)
+    .sort()
+    .join(' ');
+
   let score = 0;
   if (normDispExact === normSearchExact) {
     score += 25;
-  } else if (normDispNoMid === normSearchNoMid) {
+  } else if (normDispCompact === normSearchCompact || normDispNoMid === normSearchNoMid) {
     score += 24;
+  } else if (normDispSorted && normDispSorted === normSearchSorted) {
+    score += 23;
   }
 
   const candidateInstitutions: Array<{ name: string; countryCode: string }> = [];

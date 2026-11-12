@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   extractCandidateScholarIdsFromSearchHtml,
+  extractEmbeddedOrcid,
+  extractGeneralUrlsFromDdgHtml,
   extractScholarIdentityFromDdgHtml,
   extractScholarIdentityFromYahooHtml,
   lookupScholarIdentityInStores,
@@ -175,4 +177,25 @@ test('lookupScholarIdentityInStores aggregates majority affiliation across store
     'Enhanced energy savings in indoor environments',
   ]);
   assert.deepEqual(evidence.knownCollaboratorNames, ['ASM Shihavuddin']);
+});
+
+test('extractEmbeddedOrcid and lookupScholarIdentityInStores extract ORCID hints from names and snapshots', () => {
+  assert.equal(
+    extractEmbeddedOrcid('Md Ashraful Amin (ORCID:0000-0003-2330-9775)'),
+    '0000-0003-2330-9775'
+  );
+  assert.equal(
+    extractEmbeddedOrcid('Researcher with X check digit 0000-0002-1825-009x'),
+    '0000-0002-1825-009X'
+  );
+  assert.equal(extractEmbeddedOrcid('Plain Researcher Name'), undefined);
+
+  const fromColleague = lookupScholarIdentityInStores({
+    scholarId: 'r2MvRboAAAAJ',
+    colleagueList: [
+      { u: 'r2MvRboAAAAJ', n: 'Md Ashraful Amin (ORCID:0000-0003-2330-9775)' },
+    ],
+  });
+  assert.ok(fromColleague);
+  assert.equal(fromColleague.orcid, '0000-0003-2330-9775');
 });

@@ -517,3 +517,16 @@ test('Express ORCID OAuth 2.0 routes handle full authorization, callback, sessio
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });
+
+test('cleanVenueName decodes HTML entities and collapses duplicate slashed titles', async () => {
+  process.env.SKIP_SERVER_LISTEN = '1';
+  const { cleanVenueName } = await import('../../server');
+  assert.equal(
+    cleanVenueName('IET Microwaves, Antennas &amp; Propagation'),
+    'IET Microwaves, Antennas & Propagation'
+  );
+  assert.equal(
+    cleanVenueName('Journal of &#39;Test&#39; &quot;AI&quot;'),
+    'Journal of \'Test\' "AI"'
+  );
+});

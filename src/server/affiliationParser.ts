@@ -297,6 +297,9 @@ const PURE_SUBUNIT_PREFIX_RE =
 const STRONG_INSTITUTION_KEYWORD_RE =
   /\b(?:university|universiti|universit[eéaàä]|universitat|universidad|universidade|polytechnic|polytechnique|institute|institut|college|academy|hospital|medical\s+center|medical\s+centre|national\s+laboratory|laboratories|research\s+center|research\s+centre|meta\s+ai|google|deepmind|openai|microsoft|ibm|nvidia|fair|cnrs|inria|csiro|cern|max\s+planck)\b/i;
 
+const STREET_OR_BUILDING_RE =
+  /(?:^\d+\s+[A-Za-z]|\b(?:prosp\.?|prospect|prospekt|ul\.?|ulitsa|street|st\.?|ave\.?|avenue|blvd\.?|boulevard|rd\.?|road|lane|ln\.?|drive|dr\.?|building|bldg\.?|apt\.?|suite|room|rm\.?)\s*#?\d+\b)/i;
+
 const PURE_GEO_OR_POSTAL_RE =
   /^(?:p\.?\s*o\.?\s*box\b.*|\d{4,6}(?:-\d{4})?|[a-z]{1,2}\d{1,2}\s*\d[a-z]{2}|[A-Z]{2}(?:\s+\d{5})?|usa|u\.s\.a\.|uk|u\.k\.|p\.?r\.?\s*china|china|germany|malaysia|libya|bangladesh|canada|australia|japan|india|france|italy|spain|singapore|south korea|brazil|netherlands|switzerland|sweden|norway|denmark|finland|belgium|austria|ireland|portugal|poland|greece|turkey|egypt|saudi arabia|pakistan|indonesia|thailand|vietnam|taiwan)$/i;
 
@@ -323,9 +326,14 @@ export function extractInstitutionFromRawAffiliations(
 
   const explicitCC = inferCountryCodeFromAffiliationString('', rawCountries);
 
+  let fallbackCountryCode = explicitCC;
+
   for (const line of cleanedLines) {
     const countryCode = inferCountryCodeFromAffiliationString(line, rawCountries);
-    const segments = line
+    if (countryCode && !fallbackCountryCode) {
+      fallbackCountryCode = countryCode;
+    }
+    const rawSegments = line
       .split(/\s*(?:,|;|\|)\s*/)
       .map((seg) =>
         seg
@@ -333,22 +341,30 @@ export function extractInstitutionFromRawAffiliations(
           .replace(/\b\d{4,6}\b$/g, '')
           .trim()
       )
-      .filter((seg) => seg.length >= 3 && !PURE_GEO_OR_POSTAL_RE.test(seg) && !/^\d+$/.test(seg));
+      .filter(
+        (seg) =>
+          seg.length >= 3 &&
+          !PURE_GEO_OR_POSTAL_RE.test(seg) &&
+          !COUNTRY_NAME_ALIASES.some(
+            ([pattern]) => seg.replace(pattern, '').replace(/[\s.,-]+/g, '') === ''
+          ) &&
+          !/^\d+$/.test(seg)
+      );
 
     // 1. Prefer segment with explicit university / institute / lab keyword that isn't solely "Department of ..."
     const primarySeg =
-      segments.find(
+      rawSegments.find(
         (seg) =>
           STRONG_INSTITUTION_KEYWORD_RE.test(seg) &&
           !PURE_SUBUNIT_PREFIX_RE.test(seg) &&
           !/^faculty\s+of\b/i.test(seg) &&
           !/^school\s+of\b/i.test(seg)
       ) ||
-      segments.find(
+      rawSegments.find(
         (seg) =>
           STRONG_INSTITUTION_KEYWORD_RE.test(seg) && !PURE_SUBUNIT_PREFIX_RE.test(seg)
       ) ||
-      segments.find((seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg));
+      rawSegments.find((seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg));
 
     if (primarySeg) {
       return {
@@ -357,8 +373,13 @@ export function extractInstitutionFromRawAffiliations(
       };
     }
 
-    // 2. Otherwise use the first clean non-department, non-geo organization segment
-    const orgSeg = segments.find((seg) => !PURE_SUBUNIT_PREFIX_RE.test(seg));
+    // 2. Otherwise use the first clean non-department, non-geo organization segment before any street address
+    const firstStreetIdx = rawSegments.findIndex((seg) => STREET_OR_BUILDING_RE.test(seg));
+    const preStreetSegments =
+      firstStreetIdx >= 0 ? rawSegments.slice(0, firstStreetIdx) : rawSegments;
+    const orgSeg = preStreetSegments.find(
+      (seg) => !PURE_SUBUNIT_PREFIX_RE.test(seg) && !STREET_OR_BUILDING_RE.test(seg)
+    );
     if (orgSeg && orgSeg.length >= 4) {
       return {
         institutionName: orgSeg,
@@ -367,10 +388,10 @@ export function extractInstitutionFromRawAffiliations(
     }
   }
 
-  if (explicitCC) {
+  if (fallbackCountryCode) {
     return {
       institutionName: '',
-      countryCode: explicitCC,
+      countryCode: fallbackCountryCode,
     };
   }
 

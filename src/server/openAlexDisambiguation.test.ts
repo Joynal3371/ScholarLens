@@ -339,6 +339,12 @@ test('isSameResearcherNameMatch rejects distinct given names sharing surname and
   assert.equal(isSameResearcherNameMatch('Li Fei-Fei', 'Fei-Fei Li'), true);
   assert.equal(isSameResearcherNameMatch('K. He', 'Kaiming He'), true);
 
+  // Compacted multi-initial runs paired with other tokens ("MM Naushad Ali" <-> "M M Naushad Ali", "ASM Shihavuddin" <-> "A S M Shihavuddin")
+  assert.equal(isSameResearcherNameMatch('MM Naushad Ali', 'M M Naushad Ali'), true);
+  assert.equal(isSameResearcherNameMatch('M. M. Naushad Ali', 'MM Naushad Ali'), true);
+  assert.equal(isSameResearcherNameMatch('ASM Shihavuddin', 'A S M Shihavuddin'), true);
+  assert.equal(isSameResearcherNameMatch('ASM Shihavuddin', 'Abu S. M. Shihavuddin'), true);
+
   // Critical false-merge prevention
   assert.equal(isSameResearcherNameMatch('Md. Ashraful Islam', 'Md. Imamul Islam'), false);
   assert.equal(isSameResearcherNameMatch('Ashraful Islam', 'Aminul Islam'), false);
@@ -346,4 +352,82 @@ test('isSameResearcherNameMatch rejects distinct given names sharing surname and
   assert.equal(isSameResearcherNameMatch('James Smith', 'John Smith'), false);
   assert.equal(isSameResearcherNameMatch('Y. Ng', 'Andrew Y. Ng'), false);
   assert.equal(isSameResearcherNameMatch('Md. Islam', 'Md. Ashraful Islam'), false);
+});
+
+test('scoreOpenAlexAuthorCandidate prefers high-impact reversed-order author over small exact-order split stub', () => {
+  const affilTokens = extractAffiliationKeywords('Universiti Malaysia Pahang Al-Sultan Abdullah');
+  const canonicalReversed = {
+    id: 'https://openalex.org/A5108044051',
+    display_name: 'Kumarasamy Sudhakar',
+    works_count: 266,
+    cited_by_count: 16835,
+    orcid: 'https://orcid.org/0000-0002-5849-5040',
+    last_known_institutions: [
+      { display_name: 'Universiti Malaysia Pahang Al-Sultan Abdullah', country_code: 'MY' },
+    ],
+  };
+  const splitStub = {
+    id: 'https://openalex.org/A5133164786',
+    display_name: 'Sudhakar Kumarasamy',
+    works_count: 21,
+    cited_by_count: 7,
+    last_known_institutions: [
+      { display_name: 'Universiti Malaysia Pahang Al-Sultan Abdullah', country_code: 'MY' },
+    ],
+  };
+
+  const reversedScore = scoreOpenAlexAuthorCandidate(
+    canonicalReversed,
+    'Sudhakar Kumarasamy',
+    affilTokens,
+    'MY',
+    isSameResearcherNameMatch
+  )!;
+  const stubScore = scoreOpenAlexAuthorCandidate(
+    splitStub,
+    'Sudhakar Kumarasamy',
+    affilTokens,
+    'MY',
+    isSameResearcherNameMatch
+  )!;
+
+  assert.ok(reversedScore);
+  assert.ok(stubScore);
+  assert.ok(reversedScore.score > stubScore.score);
+});
+
+test('scoreOpenAlexAuthorCandidate prefers higher-impact spaced-initial record over compact-initial stub', () => {
+  const compactStub = {
+    id: 'https://openalex.org/A5020689418',
+    display_name: 'MM Naushad Ali',
+    works_count: 1,
+    cited_by_count: 17,
+    orcid: null,
+  };
+  const spacedCanonical = {
+    id: 'https://openalex.org/A5108059396',
+    display_name: 'M M Naushad Ali',
+    works_count: 33,
+    cited_by_count: 261,
+    orcid: 'https://orcid.org/0000-0003-2428-5875',
+  };
+
+  const sStub = scoreOpenAlexAuthorCandidate(
+    compactStub,
+    'MM Naushad Ali',
+    [],
+    '',
+    isSameResearcherNameMatch
+  )!;
+  const sCanonical = scoreOpenAlexAuthorCandidate(
+    spacedCanonical,
+    'MM Naushad Ali',
+    [],
+    '',
+    isSameResearcherNameMatch
+  )!;
+
+  assert.ok(sStub);
+  assert.ok(sCanonical);
+  assert.ok(sCanonical.score > sStub.score);
 });
