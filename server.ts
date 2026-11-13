@@ -2093,6 +2093,11 @@ function classifyPublicationType(
     vLower.includes('congress') ||
     vLower.includes('colloquium') ||
     vLower.includes('oceans') ||
+    vLower === 'ike' ||
+    vLower.startsWith('ike ') ||
+    vLower === 'cisst' ||
+    vLower.startsWith('cisst ') ||
+    vLower.includes('power and energy systems') ||
     vLower.includes('cinti') ||
     vLower.includes('icacte') ||
     vLower.includes('caepia') ||
@@ -3063,6 +3068,13 @@ export async function buildLiveResearcherProfile(
       ? effectiveUserId
       : '');
   if (!targetName) return null;
+
+  const cleanScholarId =
+    scraped?.userId ||
+    (isValidScholarId(effectiveUserId) ? effectiveUserId : '') ||
+    (isValidScholarId(userIdInput) ? userIdInput : '') ||
+    userIdInput ||
+    slugifyInstitution(targetName).slice(0, 12);
 
   const orcidHint =
     extractEmbeddedOrcid(scraped?.name || '') ||
@@ -4411,11 +4423,18 @@ export async function buildLiveResearcherProfile(
             : []
         ).map((inst: any) => String(inst?.display_name || '').toLowerCase());
         const hintLowerForEmp = `${fallbackIdentity?.affiliationHint || ''} ${knownOaInstNames.join(' ')}`.toLowerCase();
+        const fallbackAffilLower = (fallbackIdentity?.affiliationHint || '').toLowerCase().trim();
         const scoreActiveOrcidEmp = (s: any): number => {
           const orgLower = String(s?.organization?.name || '').toLowerCase();
           const roleLower = String(s?.['role-title'] || '').toLowerCase();
           let score = 0;
           if (
+            fallbackAffilLower &&
+            orgLower &&
+            (orgLower.includes(fallbackAffilLower) || fallbackAffilLower.includes(orgLower))
+          ) {
+            score += 60;
+          } else if (
             hintLowerForEmp &&
             orgLower &&
             (hintLowerForEmp.includes(orgLower) ||
@@ -4427,13 +4446,13 @@ export async function buildLiveResearcherProfile(
             score += 30;
           }
           if (
-            /\b(?:visiting|adjunct|fellow|postdoc|honorary|affiliate|research\s+associate)\b/.test(
+            /\b(?:visiting|adjunct|honorary|affiliate)\b/.test(
               roleLower
             )
           ) {
             score -= 12;
           } else if (
-            /\b(?:professor|chair|chairman|chairperson|dean|director|lecturer|provost|rector|vice\s+chancellor)\b/.test(
+            /\b(?:professor|chair|chairman|chairperson|dean|director|lecturer|provost|rector|vice\s+chancellor|fellow)\b/.test(
               roleLower
             )
           ) {
@@ -4448,7 +4467,9 @@ export async function buildLiveResearcherProfile(
             (a, b) =>
               scoreActiveOrcidEmp(b) - scoreActiveOrcidEmp(a) ||
               Number(b?.['start-date']?.year?.value || 0) -
-                Number(a?.['start-date']?.year?.value || 0)
+                Number(a?.['start-date']?.year?.value || 0) ||
+              Number(b?.['start-date']?.month?.value || 0) -
+                Number(a?.['start-date']?.month?.value || 0)
           )[0];
         if (currentEmp?.organization?.name) {
           orcidCurrentEmployment = {
@@ -5614,6 +5635,43 @@ export async function buildLiveResearcherProfile(
     for (let idx = 0; idx < strictScholarOaWorks.length; idx++) {
       await appendOpenAlexWorkAsPublication(strictScholarOaWorks[idx], idx);
     }
+
+    // Seamlessly merge verified seminal works from verifiedSnapshot or storeDigest if not yet in finalPublications
+    const effectiveLookupId = cleanScholarId || userIdInput || effectiveUserId;
+    const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[effectiveLookupId];
+    const snapProf: ResearcherProfile | undefined = snapObj?.profile || (snapObj?.publications ? snapObj : undefined);
+    const storeDigest =
+      bundledMirrorDigests[effectiveLookupId] ||
+      (effectiveLookupId ? (bundledMirrorDigests as any)[`scholar-${effectiveLookupId}`] : undefined);
+
+    const candidateStoreWorks = snapProf?.publications || storeDigest?.works || [];
+    for (let sIdx = 0; sIdx < candidateStoreWorks.length; sIdx++) {
+      const sw: any = candidateStoreWorks[sIdx];
+      const sTitle = String(sw.title || '').trim();
+      const sKey = normalizeTitleDedup(sTitle);
+      if (sKey && !publishedTitleKeys.has(sKey)) {
+        publishedTitleKeys.add(sKey);
+        const sVenue = cleanVenueName(sw.venue || 'Academic Venue');
+        const sType = (sw.type as PublicationType) || 'Journal';
+        const sQuartile = (sw.quartile as Quartile) || classifyQuartileFromOfficialMetrics(sType, sVenue, undefined);
+        finalPublications.push({
+          id: String(sw.id || `verified-${sIdx}`),
+          title: sTitle,
+          year: Number(sw.year) || 2020,
+          citations: Number(sw.citations) || 0,
+          venue: sVenue,
+          quartile: sQuartile,
+          type: sType,
+          authorshipRole: sw.authorshipRole || (Array.isArray(sw.coAuthorNames) && sw.coAuthorNames[0]?.toLowerCase().includes(targetName.toLowerCase().slice(0, 5)) ? 'First Author' : 'Co-Author'),
+          openAccess: Boolean(sw.openAccess),
+          doi: sw.doi,
+          url: sw.url || (sw.doi ? `https://doi.org/${sw.doi}` : undefined),
+          coAuthors: Array.isArray(sw.coAuthors) ? sw.coAuthors : (Array.isArray(sw.coAuthorNames) ? sw.coAuthorNames.map((n: string) => ({ name: n, universityName: 'Independent / Unlisted', country: 'Unlisted' })) : []),
+          authorAffiliation: sw.authorAffiliation,
+          impactFactor: typeof sw.impactFactor === 'number' ? sw.impactFactor : getJournalImpactFactor(sVenue, sType, undefined),
+        });
+      }
+    }
   }
 
   if (finalPublications.length === 0) {
@@ -5634,13 +5692,15 @@ export async function buildLiveResearcherProfile(
         .map((t: any) => String(t.display_name))
     : [];
 
-  const cleanScholarId =
-    scraped?.userId ||
-    userIdInput ||
-    slugifyInstitution(targetName).slice(0, 12);
-
   // Extract authoritative citationsByYear and papersByYear from OpenAlex author counts_by_year
   let finalOfficialMetrics = scraped?.officialMetrics;
+  const storeDigest =
+    bundledMirrorDigests[cleanScholarId] ||
+    (cleanScholarId ? (bundledMirrorDigests as any)[`scholar-${cleanScholarId}`] : undefined);
+  const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[cleanScholarId];
+  const snapProf: ResearcherProfile | undefined = snapObj?.profile || (snapObj?.publications ? snapObj : undefined);
+  const snapMetrics = snapProf?.officialMetrics;
+
   if (Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
     const oaCitByYr: Record<number, number> = {};
     const oaWorksByYr: Record<number, number> = {};
@@ -5655,28 +5715,52 @@ export async function buildLiveResearcherProfile(
         oaWorksByYr[y] = w;
       }
     }
+    const authoritativeTotalCitations =
+      typeof finalOfficialMetrics?.totalCitations === 'number' && finalOfficialMetrics.totalCitations > 0
+        ? finalOfficialMetrics.totalCitations
+        : typeof snapMetrics?.totalCitations === 'number' && snapMetrics.totalCitations > 0
+        ? snapMetrics.totalCitations
+        : typeof storeDigest?.totalCitations === 'number' && storeDigest.totalCitations > 0
+        ? storeDigest.totalCitations
+        : Number(primaryOpenAlexAuthor?.cited_by_count || 0);
+
+    const authoritativeHIndex =
+      typeof finalOfficialMetrics?.hIndex === 'number' && finalOfficialMetrics.hIndex > 0
+        ? finalOfficialMetrics.hIndex
+        : typeof snapMetrics?.hIndex === 'number' && snapMetrics.hIndex > 0
+        ? snapMetrics.hIndex
+        : typeof storeDigest?.hIndex === 'number' && storeDigest.hIndex > 0
+        ? storeDigest.hIndex
+        : Number(primaryOpenAlexAuthor?.summary_stats?.h_index || 0);
+
+    const authoritativeI10Index =
+      typeof finalOfficialMetrics?.i10Index === 'number' && finalOfficialMetrics.i10Index > 0
+        ? finalOfficialMetrics.i10Index
+        : typeof snapMetrics?.i10Index === 'number' && snapMetrics.i10Index > 0
+        ? snapMetrics.i10Index
+        : typeof (storeDigest as any)?.i10Index === 'number' && (storeDigest as any).i10Index > 0
+        ? (storeDigest as any).i10Index
+        : Number(primaryOpenAlexAuthor?.summary_stats?.i10_index || 0);
+
     finalOfficialMetrics = {
-      totalCitations:
-        typeof finalOfficialMetrics?.totalCitations === 'number'
-          ? finalOfficialMetrics.totalCitations
-          : Number(primaryOpenAlexAuthor?.cited_by_count || 0),
-      hIndex:
-        typeof finalOfficialMetrics?.hIndex === 'number'
-          ? finalOfficialMetrics.hIndex
-          : Number(primaryOpenAlexAuthor?.summary_stats?.h_index || 0),
-      i10Index:
-        typeof finalOfficialMetrics?.i10Index === 'number'
-          ? finalOfficialMetrics.i10Index
-          : Number(primaryOpenAlexAuthor?.summary_stats?.i10_index || 0),
+      totalCitations: authoritativeTotalCitations,
+      hIndex: authoritativeHIndex,
+      i10Index: authoritativeI10Index,
       citationsByYear:
         finalOfficialMetrics?.citationsByYear &&
         Object.keys(finalOfficialMetrics.citationsByYear).length > 0
           ? finalOfficialMetrics.citationsByYear
+          : snapMetrics?.citationsByYear &&
+            Object.keys(snapMetrics.citationsByYear).length > 0
+          ? snapMetrics.citationsByYear
           : oaCitByYr,
       papersByYear:
         finalOfficialMetrics?.papersByYear &&
         Object.keys(finalOfficialMetrics.papersByYear).length > 0
           ? finalOfficialMetrics.papersByYear
+          : snapMetrics?.papersByYear &&
+            Object.keys(snapMetrics.papersByYear).length > 0
+          ? snapMetrics.papersByYear
           : oaWorksByYr,
     };
   }
@@ -10256,7 +10340,18 @@ app.get('/api/scholar/analyze', async (req, res) => {
       resolvedId || userId,
       queryName
     );
-    if (!result) {
+    let finalResult = result;
+    if (!finalResult) {
+      const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[resolvedId || userId];
+      const snapProf: ResearcherProfile | undefined = snapObj?.profile || (snapObj?.publications ? snapObj : undefined);
+      if (snapProf && snapProf.publications && snapProf.publications.length > 0) {
+        finalResult = {
+          profile: snapProf,
+          source: 'verified-snapshot',
+        };
+      }
+    }
+    if (!finalResult) {
       res.status(404).json({
         error:
           'Could not find public publications for that Google Scholar profile.',
@@ -10264,27 +10359,37 @@ app.get('/api/scholar/analyze', async (req, res) => {
       return;
     }
 
-    result.profile.publications = enrichAndPrewarmProfileCoAuthors(
-      result.profile.publications || []
+    finalResult.profile.publications = enrichAndPrewarmProfileCoAuthors(
+      finalResult.profile.publications || []
     );
 
     profileCache.set(cacheKey, {
       timestamp: Date.now(),
-      data: result,
+      data: finalResult,
     });
-    if (result.profile.scholarUserId) {
-      profileCache.set(`${result.profile.scholarUserId.toLowerCase()}::`, {
+    if (finalResult.profile.scholarUserId) {
+      profileCache.set(`${finalResult.profile.scholarUserId.toLowerCase()}::`, {
         timestamp: Date.now(),
-        data: result,
+        data: finalResult,
       });
     }
-    const digest = buildWorksDigestFromProfile(result.profile);
+    const digest = buildWorksDigestFromProfile(finalResult.profile);
     if (digest) {
       void getSocialStore().recordResearcherWorksDigest(digest).catch(() => {});
     }
 
-    res.json(result);
+    res.json(finalResult);
   } catch {
+    const fallbackId = isValidScholarId(userId) ? userId : '';
+    const snapObj = fallbackId ? (verifiedScholarSnapshot as Record<string, any>)?.[fallbackId] : null;
+    const snapProf: ResearcherProfile | undefined = snapObj?.profile || (snapObj?.publications ? snapObj : undefined);
+    if (snapProf && snapProf.publications && snapProf.publications.length > 0) {
+      res.json({
+        profile: snapProf,
+        source: 'verified-snapshot',
+      });
+      return;
+    }
     res
       .status(500)
       .json({ error: 'Failed to analyze Google Scholar profile.' });
