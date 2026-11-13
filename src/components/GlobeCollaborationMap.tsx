@@ -1176,7 +1176,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
     <section
       id="global-map"
       aria-labelledby="globe-section-heading"
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs relative"
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs relative lg:flex-1 lg:min-h-0 lg:flex lg:flex-col"
     >
       {/* Offscreen Full Flattened World Map used when exporting PNG or PDF Report */}
       <div
@@ -1347,39 +1347,16 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         </svg>
       </div>
 
-      {/* Top Header */}
-      <div className="px-4 sm:px-6 py-3 border-b border-slate-200 flex items-center justify-between gap-4 shrink-0">
-        <h2
-          id="globe-section-heading"
-          className="text-base font-bold text-slate-900 tracking-tight"
-        >
-          World Collaboration Map
-        </h2>
-
-        <button
-          type="button"
-          onClick={() =>
-            onExportChartPng(
-              'chart-collaboration-globe',
-              `Global Research Collaboration Network — ${profile.name}`,
-              'global_collaboration_world_map.png',
-              true
-            )
-          }
-          aria-label="Export Flattened World Collaboration Map as PNG"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-        >
-          <ImageDown className="w-3.5 h-3.5" />
-          <span>Export World Map PNG</span>
-        </button>
-      </div>
+      <h2 id="globe-section-heading" className="sr-only">
+        World Collaboration Map
+      </h2>
 
       {/* Main Split Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 items-stretch lg:flex-1 lg:min-h-0">
         {/* Left 7 Columns: Clean Globe Viewport */}
         <div
           id="chart-collaboration-globe"
-          className="lg:col-span-7 bg-[#060d1c] text-slate-100 flex items-center justify-center relative select-none overflow-hidden h-[440px] sm:h-[520px] lg:h-[660px] lg:sticky lg:top-20"
+          className="lg:col-span-7 bg-[#060d1c] text-slate-100 flex items-center justify-center relative select-none overflow-hidden h-[440px] sm:h-[500px] lg:h-full lg:min-h-0"
         >
           <div
             ref={globeContainerRef}
@@ -1684,6 +1661,25 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               </div>
             )}
 
+            {/* Export World Map PNG Button inside the globe box (top-right corner) */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onExportChartPng(
+                  'chart-collaboration-globe',
+                  `Global Research Collaboration Network — ${profile.name}`,
+                  'global_collaboration_world_map.png',
+                  true
+                );
+              }}
+              aria-label="Export Flattened World Collaboration Map as PNG"
+              className="absolute top-3 right-3 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-900/85 hover:bg-slate-800/95 hover:text-white border border-slate-700/80 rounded-lg backdrop-blur-xs transition-colors whitespace-nowrap shadow-md cursor-pointer"
+            >
+              <ImageDown className="w-3.5 h-3.5" />
+              <span>Export World Map PNG</span>
+            </button>
+
             {/* Floating Globe Controls: Zoom In, Zoom Out, Recenter, Auto-Rotate */}
             <div className="absolute bottom-3 right-3 z-30 flex flex-col items-center gap-1 bg-slate-900/85 backdrop-blur-xs p-1 rounded-lg border border-slate-700/80 shadow-md">
               <button
@@ -1769,9 +1765,9 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         </div>
 
         {/* Right 5 Columns: Selected University Inspector */}
-        <div className="lg:col-span-5 p-4 sm:p-5 bg-white flex flex-col">
+        <div className="lg:col-span-5 p-3.5 sm:p-4 bg-white flex flex-col lg:h-full lg:min-h-0 lg:overflow-hidden">
           {selectedUni ? (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 lg:h-full lg:min-h-0">
               <div ref={uniDropdownRef} className="relative shrink-0">
                 <button
                   id="inspector-university-select"
@@ -1907,12 +1903,12 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-col">
-                <div className="flex items-center justify-between gap-2 mb-2 shrink-0">
-                  <h4 className="text-sm font-bold text-slate-800">
+              <div className="flex flex-col min-h-0 lg:flex-1">
+                <div className="flex items-center justify-between gap-2 mb-1.5 shrink-0">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-800">
                     Co-Authors ({filteredSelectedCoAuthors.length})
                   </h4>
-                  <div className="relative w-44 sm:w-52">
+                  <div className="relative w-40 sm:w-48">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="text"
@@ -1920,11 +1916,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                       onChange={(e) => setCoAuthorQuery(e.target.value)}
                       placeholder="Find co-author..."
                       aria-label="Find co-author in selected university"
-                      className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:outline-none focus:border-blue-600"
+                      className="w-full pl-7 pr-2 py-1 text-xs border border-slate-200 rounded-md focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
-                <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg h-[250px] sm:h-[280px] overflow-y-auto">
+                <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg h-[180px] lg:h-auto lg:flex-1 lg:min-h-0 overflow-y-auto">
                   {filteredSelectedCoAuthors.map((author) => (
                     <div
                       key={author.name}
@@ -2010,11 +2006,11 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-col">
-                <h4 className="text-sm font-bold text-slate-800 mb-2 shrink-0">
+              <div className="flex flex-col min-h-0 lg:flex-1">
+                <h4 className="text-xs sm:text-sm font-bold text-slate-800 mb-1.5 shrink-0">
                   Collaborative Papers ({selectedUni.papers.length})
                 </h4>
-                <div className="space-y-2.5 h-[300px] sm:h-[340px] overflow-y-auto pr-1">
+                <div className="space-y-2 h-[200px] lg:h-auto lg:flex-1 lg:min-h-0 overflow-y-auto pr-1">
                   {selectedUni.papers.map((paper) => (
                     <article
                       key={paper.id}

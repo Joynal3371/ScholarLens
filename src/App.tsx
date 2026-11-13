@@ -520,7 +520,8 @@ export default function App() {
 
   const fetchProfileFromServer = async (
     userId: string,
-    queryName?: string
+    queryName?: string,
+    forceRefresh?: boolean
   ) => {
     if (analyzeAbortRef.current) {
       analyzeAbortRef.current.abort();
@@ -544,6 +545,7 @@ export default function App() {
       const params = new URLSearchParams({
         userId,
         ...(queryName ? { queryName } : {}),
+        ...(forceRefresh ? { refresh: '1' } : {}),
       });
       const res = await fetch(`/api/scholar/analyze?${params.toString()}`, {
         signal: controller.signal,
@@ -970,7 +972,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 pb-24 ${
-        activePage === 'directories'
+        activePage === 'directories' || activePage === 'map'
           ? 'lg:h-screen lg:overflow-hidden lg:pb-16'
           : 'lg:pb-20'
       }`}
@@ -1385,15 +1387,15 @@ export default function App() {
       {/* Main Centered Multi-Page Workspace (80% width on desktop: 10% left & 10% right margins) */}
       <div
         className={`flex-1 w-[94%] sm:w-[90%] md:w-[80%] mx-auto ${
-          activePage === 'directories'
-            ? 'py-3 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden'
+          activePage === 'directories' || activePage === 'map'
+            ? 'py-2 sm:py-3 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden'
             : 'py-4 sm:py-5'
         }`}
       >
         <main
           className={`w-full ${
-            activePage === 'directories'
-              ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col gap-4'
+            activePage === 'directories' || activePage === 'map'
+              ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col gap-3'
               : 'space-y-5'
           }`}
         >
@@ -2111,7 +2113,7 @@ export default function App() {
             <div
               className={
                 !isAnalyzing && activePage === 'map'
-                  ? 'block'
+                  ? 'lg:flex-1 lg:min-h-0 lg:flex lg:flex-col'
                   : 'fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0 select-none'
               }
             >
@@ -2292,39 +2294,43 @@ export default function App() {
           <button
             type="button"
             onClick={() => {
-              if (!authUser) {
-                setPendingExport(null);
-                setIsAuthModalOpen(true);
-                return;
-              }
               const targetScholar =
-                authUser.scholarUserId || authUser.scholarUrl;
+                authUser?.scholarUserId ||
+                authUser?.scholarUrl ||
+                activeProfile?.scholarUserId;
+              const targetName = authUser?.name || activeProfile?.name;
+
               const parsed = targetScholar
                 ? parseGoogleScholarInput(targetScholar)
                 : null;
               const queryId =
                 parsed?.valid && parsed.userId ? parsed.userId : targetScholar;
-              if (
-                queryId &&
-                (!activeProfile || activeProfile.scholarUserId !== queryId)
-              ) {
-                if (activePage === 'overview' && activeProfile) {
-                  pushNavHistory();
-                  navigateToPage('overview', { skipHistory: true });
+
+              if (!queryId) {
+                if (authUser) {
+                  setIsProfileModalOpen(true);
                 } else {
-                  navigateToPage('overview');
+                  setPendingExport(null);
+                  setIsAuthModalOpen(true);
                 }
-                void fetchProfileFromServer(queryId, authUser.name);
-              } else {
+                return;
+              }
+
+              if (activePage !== 'overview') {
+                if (activeProfile) {
+                  pushNavHistory();
+                }
                 navigateToPage('overview');
               }
+              void fetchProfileFromServer(queryId, targetName, true);
             }}
             data-testid="bottom-nav-profile"
             aria-current={
               activePage === 'overview' &&
               Boolean(
-                authUser?.scholarUserId &&
-                  activeProfile?.scholarUserId === authUser.scholarUserId
+                (authUser?.scholarUserId &&
+                  activeProfile?.scholarUserId === authUser.scholarUserId) ||
+                  (!authUser && activeProfile)
               )
                 ? 'page'
                 : undefined
@@ -2332,8 +2338,9 @@ export default function App() {
             className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
               activePage === 'overview' &&
               Boolean(
-                authUser?.scholarUserId &&
-                  activeProfile?.scholarUserId === authUser.scholarUserId
+                (authUser?.scholarUserId &&
+                  activeProfile?.scholarUserId === authUser.scholarUserId) ||
+                  (!authUser && activeProfile)
               )
                 ? 'bg-blue-600 text-white font-semibold shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
