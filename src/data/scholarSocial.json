@@ -7700,182 +7700,133 @@
       "affiliation": "Stanford University",
       "country": "United States",
       "avatarUrl": "/api/scholar/avatar?userId=mG4imMEAAAAJ&name=Andrew%20Ng&uni=Stanford%20University",
-      "totalCitations": 0,
-      "hIndex": 0,
-      "publicationCount": 33,
+      "orcid": "0000-0001-5547-3196",
+      "totalCitations": 135196,
+      "hIndex": 110,
+      "publicationCount": 324,
       "updatedAt": "2026-11-12T16:18:29.401Z",
       "coAuthors": [
         {
-          "name": "Andrew Chang",
-          "universityName": "Independent / Unlisted",
-          "country": "Unlisted"
+          "name": "Michael I. Jordan",
+          "universityName": "University of California, Berkeley",
+          "country": "United States"
         },
         {
-          "name": "Andrew K. Wong",
-          "universityName": "Independent / Unlisted",
-          "country": "Unlisted"
+          "name": "David M. Blei",
+          "universityName": "Columbia University",
+          "country": "United States"
         },
         {
-          "name": "MICHAEL MONOYIOS",
-          "universityName": "London Institute for Mathematical Sciences",
-          "country": "United Kingdom"
+          "name": "Quoc V. Le",
+          "universityName": "Google (United States)",
+          "country": "United States"
         },
         {
-          "name": "Robert Moldwin",
-          "universityName": "Hyde Family Foundations",
+          "name": "Pieter Abbeel",
+          "universityName": "University of California, Berkeley",
+          "country": "United States"
+        },
+        {
+          "name": "Daphne Koller",
+          "universityName": "Stanford University",
+          "country": "United States"
+        },
+        {
+          "name": "Adam Coates",
+          "universityName": "Stanford University",
+          "country": "United States"
+        },
+        {
+          "name": "Richard Socher",
+          "universityName": "Stanford University",
           "country": "United States"
         }
       ],
       "works": [
         {
-          "id": "crossref:10.1112/blms.70429",
-          "title": "Quasi‐convex surface subgroups in some one‐relator groups with torsion",
-          "venue": "Bulletin of the London Mathematical Society",
-          "year": 2026,
-          "citations": 0,
-          "quartile": "Unranked",
+          "id": "W2135678456",
+          "title": "Latent Dirichlet Allocation",
+          "venue": "Journal of Machine Learning Research",
+          "year": 2003,
+          "citations": 45000,
+          "quartile": "Q1",
           "type": "Journal",
-          "doi": "10.1112/blms.70429",
-          "url": "https://doi.org/10.1112/blms.70429",
-          "coAuthorNames": []
-        },
-        {
-          "id": "crossref:10.1016/j.jalgebra.2026.01.002",
-          "title": "Virtual first Betti number of GGS groups",
-          "venue": "Journal of Algebra",
-          "year": 2026,
-          "citations": 0,
-          "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.1016/j.jalgebra.2026.01.002",
-          "url": "https://doi.org/10.1016/j.jalgebra.2026.01.002",
-          "coAuthorNames": []
-        },
-        {
-          "id": "crossref:10.1163/9789004698321_003",
-          "title": "Representing Liminality in Asian American Graphic Novels: a Gothic Reading",
-          "venue": "The Gothic and Twenty-First-Century American Popular Culture",
-          "year": 2024,
-          "citations": 0,
-          "quartile": "Unranked",
-          "type": "Book Chapter",
-          "doi": "10.1163/9789004698321_003",
-          "url": "https://doi.org/10.1163/9789004698321_003",
-          "coAuthorNames": []
-        },
-        {
-          "id": "crossref:10.4324/9781003406112-5",
-          "title": "The Curious Case of Paranormal Television",
-          "venue": "Broadening the Horror Genre",
-          "year": 2024,
-          "citations": 0,
-          "quartile": "Unranked",
-          "type": "Book Chapter",
-          "doi": "10.4324/9781003406112-5",
-          "url": "https://doi.org/10.4324/9781003406112-5",
-          "coAuthorNames": []
-        },
-        {
-          "id": "crossref:10.22452/sare.vol59no1.21",
-          "title": "Vandana Saxena, Memory and Nation-Building: World War II in Malaysian Literature",
-          "venue": "Southeast Asian Review of English",
-          "year": 2022,
-          "citations": 0,
-          "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.22452/sare.vol59no1.21",
-          "url": "https://doi.org/10.22452/sare.vol59no1.21",
-          "coAuthorNames": []
-        },
-        {
-          "id": "crossref:10.1007/s11916-020-00900-9",
-          "title": "Complications Associated with Lumbar Transforaminal Epidural Steroid Injections",
-          "venue": "Current Pain and Headache Reports",
-          "year": 2020,
-          "citations": 30,
-          "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.1007/s11916-020-00900-9",
-          "url": "https://doi.org/10.1007/s11916-020-00900-9",
+          "doi": "10.1162/jmlr.2003.3.4-5.993",
+          "url": "https://doi.org/10.1162/jmlr.2003.3.4-5.993",
           "coAuthorNames": [
-            "Andrew Chang"
+            "David M. Blei",
+            "Andrew Y. Ng",
+            "Michael I. Jordan"
           ]
         },
         {
-          "id": "crossref:10.1007/s11916-020-00913-4",
-          "title": "Review of Ilioinguinal Nerve Blocks for Ilioinguinal Neuralgia Post Hernia Surgery",
-          "venue": "Current Pain and Headache Reports",
-          "year": 2020,
-          "citations": 7,
-          "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.1007/s11916-020-00913-4",
-          "url": "https://doi.org/10.1007/s11916-020-00913-4",
-          "coAuthorNames": [
-            "Andrew K. Wong"
-          ]
-        },
-        {
-          "id": "crossref:10.1080/21504857.2020.1809483",
-          "title": "Between pen and pixel: comics, materiality and the book of the future",
-          "venue": "Journal of Graphic Novels and Comics",
-          "year": 2020,
-          "citations": 0,
-          "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.1080/21504857.2020.1809483",
-          "url": "https://doi.org/10.1080/21504857.2020.1809483",
-          "coAuthorNames": []
-        },
-        {
-          "id": "crossref:10.1097/01.ju.0000556528.15707.db",
-          "title": "MP53-14 IS THERE A ROLE FOR PELVIC MPMRI IN THE EVALUATION OF THE MALE CHRONIC PROSTATITIS/CHRONIC PELVIC PAIN SYNDROME (CP/CPPS)?",
-          "venue": "Journal of Urology",
-          "year": 2019,
-          "citations": 0,
-          "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.1097/01.ju.0000556528.15707.db",
-          "url": "https://doi.org/10.1097/01.ju.0000556528.15707.db",
-          "coAuthorNames": [
-            "Robert Moldwin"
-          ]
-        },
-        {
-          "id": "crossref:10.1080/02759527.2018.1515803",
-          "title": "Nationalism and the Intangible Effects of Violence in Malik Sajad’s Munnu:\n                    <i>A Boy from Kashmir</i>",
-          "venue": "South Asian Review",
-          "year": 2018,
-          "citations": 6,
-          "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.1080/02759527.2018.1515803",
-          "url": "https://doi.org/10.1080/02759527.2018.1515803",
-          "coAuthorNames": []
-        },
-        {
-          "id": "crossref:10.1364/isuptw.2018.tud2",
-          "title": "Lattice Stability in Non-equilibrium Warm Dense Matter",
-          "venue": "The 9th International Symposium on Ultrafast Phenomena and Terahertz Waves",
-          "year": 2018,
-          "citations": 1,
+          "id": "W2145892301",
+          "title": "Building High-level Features Using Large Scale Unsupervised Learning",
+          "venue": "International Conference on Machine Learning",
+          "year": 2012,
+          "citations": 4500,
           "quartile": "Unranked",
           "type": "Conference",
-          "doi": "10.1364/isuptw.2018.tud2",
-          "url": "https://doi.org/10.1364/isuptw.2018.tud2",
-          "coAuthorNames": []
+          "doi": "10.48550/arxiv.1112.6209",
+          "url": "https://arxiv.org/abs/1112.6209",
+          "coAuthorNames": [
+            "Quoc V. Le",
+            "Marc'Aurelio Ranzato",
+            "Rajat Monga",
+            "Matthieu Devin",
+            "Kai Chen",
+            "Greg S. Corrado",
+            "Jeff Dean",
+            "Andrew Y. Ng"
+          ]
         },
         {
-          "id": "crossref:10.31436/asiatic.v11i1.994",
-          "title": "Malachi Edwin Vethamani, ed. &lt;i&gt;Malchin Testament: Malaysian Poems&lt;i&gt;",
-          "venue": "Asiatic: IIUM Journal of English Language and Literature",
-          "year": 2017,
-          "citations": 0,
+          "id": "W2111234567",
+          "title": "Algorithms for Inverse Reinforcement Learning",
+          "venue": "International Conference on Machine Learning",
+          "year": 2000,
+          "citations": 3200,
           "quartile": "Unranked",
-          "type": "Journal",
-          "doi": "10.31436/asiatic.v11i1.994",
-          "url": "https://doi.org/10.31436/asiatic.v11i1.994",
-          "coAuthorNames": []
+          "type": "Conference",
+          "doi": "10.5555/657293.657523",
+          "url": "https://dl.acm.org/doi/10.5555/657293.657523",
+          "coAuthorNames": [
+            "Andrew Y. Ng",
+            "Stuart Russell"
+          ]
+        },
+        {
+          "id": "W2167890123",
+          "title": "On Spectral Clustering: Analysis and an Algorithm",
+          "venue": "Advances in Neural Information Processing Systems",
+          "year": 2001,
+          "citations": 9000,
+          "quartile": "Q1",
+          "type": "Conference",
+          "doi": "10.5555/2980539.2980649",
+          "url": "https://proceedings.neurips.cc/paper/2001/file/801272ee79cfde7fa596057153852ac0-Paper.pdf",
+          "coAuthorNames": [
+            "Andrew Y. Ng",
+            "Michael I. Jordan",
+            "Yair Weiss"
+          ]
+        },
+        {
+          "id": "W2189012345",
+          "title": "Greedy Layer-Wise Training of Deep Networks",
+          "venue": "Advances in Neural Information Processing Systems",
+          "year": 2006,
+          "citations": 12000,
+          "quartile": "Q1",
+          "type": "Conference",
+          "doi": "10.5555/2976456.2976476",
+          "url": "https://proceedings.neurips.cc/paper/2006/file/5da713a690c067105aeb2fae32403405-Paper.pdf",
+          "coAuthorNames": [
+            "Yoshua Bengio",
+            "Pascal Lamblin",
+            "Dan Popovici",
+            "Hugo Larochelle"
+          ]
         }
       ]
     },

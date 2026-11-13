@@ -216,3 +216,49 @@ test('lookupScholarIdentityInStores ignores generic placeholder affiliations lik
   assert.equal(res.name, 'Xiao Chen');
   assert.equal(res.affiliationHint, undefined);
 });
+
+test('lookupScholarIdentityInStores and lookupScholarWorkEvidenceInStores resolve identity, ORCID, and titles from works-digest', () => {
+  const digests = {
+    X6_inMYAAAAJ: {
+      scholarUserId: 'X6_inMYAAAAJ',
+      name: 'Aminul Islam',
+      affiliation: 'Technical University of Denmark',
+      country: 'Denmark',
+      orcid: '0000-0002-8275-6631',
+      works: [
+        {
+          id: 'w-1',
+          title: 'A review of recent developments on the regulatory, structural and functional aspects of gum arabic',
+          year: 1997,
+        },
+        {
+          id: 'w-2',
+          title: 'Advances in ultrasonic welding of thermoplastic composites: a review',
+          year: 2020,
+        },
+      ],
+    },
+  };
+
+  const identity = lookupScholarIdentityInStores({
+    scholarId: 'X6_inMYAAAAJ',
+    digests,
+  });
+  assert.ok(identity);
+  assert.equal(identity.name, 'Aminul Islam');
+  assert.equal(identity.affiliationHint, 'Technical University of Denmark');
+  assert.equal(identity.countryCodeHint, 'DK');
+  assert.equal(identity.orcid, '0000-0002-8275-6631');
+  assert.equal(identity.source, 'works-digest');
+
+  const evidence = lookupScholarWorkEvidenceInStores({
+    scholarId: 'X6_inMYAAAAJ',
+    digests,
+  });
+  assert.ok(evidence);
+  assert.equal(evidence.affiliationHint, 'Technical University of Denmark');
+  assert.equal(evidence.countryCodeHint, 'DK');
+  assert.ok(evidence.knownWorkTitles.length >= 2);
+  assert.ok(evidence.knownWorkTitles.some((t) => t.includes('gum arabic')));
+  assert.ok(evidence.knownWorkTitles.some((t) => t.includes('ultrasonic welding')));
+});

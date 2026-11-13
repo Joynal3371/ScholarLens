@@ -519,9 +519,47 @@ async function fetchOpenAlexJson(
       });
       if (!autoRes.ok) return null;
       const autoData = (await autoRes.json()) as any;
-      const autoItems: any[] = Array.isArray(autoData?.results)
-        ? autoData.results
+      let autoItems: any[] = Array.isArray(autoData?.results)
+        ? [...autoData.results]
         : [];
+
+      if (entity === 'authors') {
+        const decoded = decodeURIComponent(encodedQuery.replace(/\+/g, ' ')).trim();
+        const words = decoded.split(/\s+/).filter(Boolean);
+        if (words.length === 2) {
+          const invertedQuery = encodeURIComponent(`${words[1]} ${words[0]}`);
+          try {
+            const invUrl = `https://api.openalex.org/autocomplete/authors?q=${invertedQuery}`;
+            const invRes = await fetch(invUrl, {
+              headers: { 'User-Agent': 'ScholarLens/2.0' },
+              signal: AbortSignal.timeout(Math.min(timeoutMs, 2500)),
+            });
+            if (invRes.ok) {
+              const invData = (await invRes.json()) as any;
+              const invItems: any[] = Array.isArray(invData?.results) ? invData.results : [];
+              const seenIds = new Set(autoItems.map((x) => String(x?.id || '')));
+              for (const it of invItems) {
+                const iId = String(it?.id || '');
+                if (iId && !seenIds.has(iId)) {
+                  seenIds.add(iId);
+                  autoItems.push(it);
+                }
+              }
+            }
+          } catch {
+            // Ignore inverted query failure
+          }
+        }
+        autoItems.sort((a, b) => {
+          const aNameMatch =
+            a?.display_name && isSameResearcherName(a.display_name, decoded) ? 1 : 0;
+          const bNameMatch =
+            b?.display_name && isSameResearcherName(b.display_name, decoded) ? 1 : 0;
+          if (aNameMatch !== bNameMatch) return bNameMatch - aNameMatch;
+          return Number(b?.cited_by_count || 0) - Number(a?.cited_by_count || 0);
+        });
+      }
+
       if (autoItems.length === 0) {
         const emptyResult = { results: [] };
         openAlexJsonCache.set(canonicalUrl, {
@@ -531,7 +569,7 @@ async function fetchOpenAlexJson(
         return emptyResult;
       }
       const maxSingletons =
-        entity === 'authors' ? 6 : entity === 'institutions' ? 3 : 2;
+        entity === 'authors' ? 10 : entity === 'institutions' ? 3 : 2;
       const shortIds = autoItems
         .slice(0, maxSingletons)
         .map((item) =>
@@ -2931,6 +2969,7 @@ export async function buildLiveResearcherProfile(
   }
 
   // If bundled stores already identify this Scholar ID or a queryName is provided, cap GS scraping so blocked cloud proxies never starve OpenAlex
+  const bundledMirrorDigests = getSocialStore().getMirrorWorksDigests();
   const fastStoreIdentity =
     !effectiveQueryName && isValidScholarId(effectiveUserId)
       ? lookupScholarIdentityInStores({
@@ -2938,6 +2977,7 @@ export async function buildLiveResearcherProfile(
           colleagueList: scholarColleagueList,
           coAuthorMap: rawCoAuthorMap,
           verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
+          digests: bundledMirrorDigests,
         })
       : null;
 
@@ -2948,6 +2988,7 @@ export async function buildLiveResearcherProfile(
           colleagueList: scholarColleagueList,
           coAuthorMap: rawCoAuthorMap,
           verifiedSnapshot: verifiedScholarSnapshot as Record<string, any>,
+          digests: bundledMirrorDigests,
         })
       : { knownWorkTitles: [], knownCollaboratorNames: [] };
 
@@ -5320,13 +5361,31 @@ export async function buildLiveResearcherProfile(
       oaDetails.venue,
       title
     );
-    const srcMetrics =
+    let srcMetrics =
       (oaDetails.sourceId
         ? sourceMetricsCache.get(oaDetails.sourceId)
         : undefined) ||
       (oaDetails.venue !== 'Academic Venue'
         ? officialSourceByNameCache.get(oaDetails.venue.toLowerCase())
         : undefined);
+    if (
+      !srcMetrics &&
+      oaDetails.venue &&
+      oaDetails.venue !== 'Academic Venue' &&
+      (type === 'Journal' || type === 'Review')
+    ) {
+      srcMetrics =
+        (await resolveOfficialJournalMetricsByVenue(oaDetails.venue)) ||
+        undefined;
+      if (srcMetrics) {
+        if (oaDetails.sourceId) {
+          sourceMetricsCache.set(oaDetails.sourceId, srcMetrics);
+        }
+        if (oaDetails.venue) {
+          officialSourceByNameCache.set(oaDetails.venue.toLowerCase(), srcMetrics);
+        }
+      }
+    }
     const quartile = classifyQuartileFromOfficialMetrics(
       type,
       oaDetails.venue,
@@ -9786,9 +9845,10 @@ app.get('/api/scholar/avatar', async (req, res) => {
     }
   }
 
-  if (rawSnapshot && typeof rawSnapshot === 'object' && nameKey) {
-    for (const [, sVal] of Object.entries(rawSnapshot)) {
-      const prof: ResearcherProfile | undefined = sVal?.profile || sVal;
+  const rawSnap: Record<string, any> = (verifiedScholarSnapshot as any) || {};
+  if (typeof rawSnap === 'object' && nameKey) {
+    for (const [, sVal] of Object.entries(rawSnap)) {
+      const prof: ResearcherProfile | undefined = (sVal as any)?.profile || (sVal as any);
       if (
         prof &&
         prof.name &&

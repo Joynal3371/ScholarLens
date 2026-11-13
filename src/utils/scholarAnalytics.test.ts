@@ -13,6 +13,7 @@ import {
   DEFAULT_FILTER_STATE,
   normalizePublicationsVenueConsistency,
   getJournalImpactFactor,
+  getAuthoritativeQuartile,
 } from './scholarAnalytics';
 import { PRESET_PROFILES, findVerifiedPresetProfile } from './scholarPresets';
 import { projectOrthographic, interpolateGreatCircle } from './globeProjection';
@@ -273,4 +274,24 @@ test('aggregateCountries counts resolved countries on unlisted-university co-aut
     countries.some((c) => c.country === 'Unlisted' || c.countryCode === 'UN'),
     false
   );
+});
+
+test('getJournalImpactFactor and getAuthoritativeQuartile resolve authoritative metrics for top peer-reviewed journals', () => {
+  assert.equal(getAuthoritativeQuartile('Materials'), 'Q1');
+  assert.equal(getJournalImpactFactor('Materials', 'Journal'), 3.1);
+
+  assert.equal(getAuthoritativeQuartile('Food Hydrocolloids'), 'Q1');
+  assert.equal(getJournalImpactFactor('Food Hydrocolloids', 'Journal'), 10.7);
+
+  assert.equal(getAuthoritativeQuartile('Polymer Testing'), 'Q1');
+  assert.equal(getJournalImpactFactor('Polymer Testing', 'Journal'), 5.1);
+
+  assert.equal(getAuthoritativeQuartile('Journal of Cleaner Production'), 'Q1');
+  assert.equal(getJournalImpactFactor('Journal of Cleaner Production', 'Journal'), 9.7);
+
+  assert.equal(getAuthoritativeQuartile('Sustainable Materials and Technologies'), 'Q1');
+  assert.equal(getJournalImpactFactor('Sustainable Materials and Technologies', 'Journal'), 8.6);
+
+  assert.equal(getAuthoritativeQuartile('Biomedical Materials'), 'Q2');
+  assert.equal(getJournalImpactFactor('Biomedical Materials', 'Journal'), 3.7);
 });

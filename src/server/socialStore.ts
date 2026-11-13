@@ -902,6 +902,10 @@ export class SocialNetworkStore {
     await this.deleteJsonDoc(`social_post_${cleanId}`);
   }
 
+  getMirrorWorksDigests(): Record<string, ResearcherWorksDigest> {
+    return this.mirror.worksDigests || {};
+  }
+
   async listResearcherWorksDigests(): Promise<Record<string, ResearcherWorksDigest>> {
     const remote = await this.readJsonDoc<{ digests?: Record<string, ResearcherWorksDigest> }>(
       'social_works_digests'
@@ -911,6 +915,9 @@ export class SocialNetworkStore {
       return remote.digests;
     }
     if (remote === null) {
+      if (Object.keys(this.mirror.worksDigests || {}).length > 0) {
+        return this.mirror.worksDigests;
+      }
       this.mirror.worksDigests = {};
       return {};
     }

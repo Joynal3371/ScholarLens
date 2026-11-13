@@ -1,3 +1,5 @@
+import { inferCountryCodeFromAffiliationString } from './affiliationParser';
+
 function decodeHtmlEntitiesBasic(raw: string): string {
   return String(raw || '')
     .replace(/&amp;/gi, '&')
@@ -96,7 +98,12 @@ function isInformativeAffiliation(raw?: string): boolean {
 
 function normalizeCountryCodeOpt(raw?: string): string | undefined {
   const cc = String(raw || '').trim().toUpperCase();
-  return cc.length === 2 && cc !== 'UN' ? cc : undefined;
+  if (cc.length === 2 && cc !== 'UN') return cc;
+  if (raw && raw.length > 2) {
+    const inferred = inferCountryCodeFromAffiliationString(raw);
+    if (inferred && inferred.length === 2 && inferred !== 'UN') return inferred;
+  }
+  return undefined;
 }
 
 /**
@@ -329,7 +336,17 @@ function collectScholarStoreIdentityAndEvidence(
       recordName(String(digest.name), 'works-digest', 80);
       const digestOrcid = extractEmbeddedOrcid(String(digest.orcid || ''));
       if (digestOrcid && !bestOrcid) bestOrcid = digestOrcid;
-      recordAffilVote(digest.affiliation, undefined, 300);
+      recordAffilVote(digest.affiliation, digest.country, 300);
+      for (const pub of digest?.works || []) {
+        const title = String(pub?.title || '').trim();
+        if (title) {
+          evidenceItems.push({
+            title,
+            affil: String(digest.affiliation || '').trim(),
+            year: Number(pub?.year || 0),
+          });
+        }
+      }
     }
     for (const ca of digest?.coAuthors || []) {
       if (String(ca?.scholarUserId || '').trim() === targetId && ca?.name) {
