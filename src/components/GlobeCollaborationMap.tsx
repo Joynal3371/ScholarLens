@@ -1638,29 +1638,6 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               </g>
             </svg>
 
-            {/* Dynamic Interactive Globe Stat Badge: Pinned at top-left of the 3D globe viewport */}
-            {dynamicGlobeStat && (
-              <div className="pointer-events-none absolute top-3 left-3 z-30 bg-slate-900/90 backdrop-blur-xs border border-slate-700/80 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 max-w-[85%] transition-all">
-                <span
-                  className={`w-2.5 h-2.5 rounded-full shrink-0 ring-2 ${
-                    dynamicGlobeStat.isHome
-                      ? 'bg-amber-400 ring-amber-400/30'
-                      : dynamicGlobeStat.type === 'country'
-                      ? 'bg-emerald-400 ring-emerald-400/30'
-                      : dynamicGlobeStat.type === 'overview'
-                      ? 'bg-indigo-400 ring-indigo-400/30'
-                      : 'bg-sky-400 ring-sky-400/30'
-                  }`}
-                />
-                <div className="truncate text-xs font-semibold">
-                  {dynamicGlobeStat.title}
-                  <span className="text-slate-300 font-normal ml-1.5 font-mono text-[11px]">
-                    · {dynamicGlobeStat.subtitle}
-                  </span>
-                </div>
-              </div>
-            )}
-
             {/* Export World Map PNG Button inside the globe box (bottom-left corner) */}
             <button
               type="button"
@@ -1768,101 +1745,94 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
         <div className="lg:col-span-5 p-3.5 sm:p-4 bg-white flex flex-col lg:h-full lg:min-h-0 lg:overflow-hidden">
           {selectedUni ? (
             <div className="flex flex-col gap-3 lg:h-full lg:min-h-0">
-              <div ref={uniDropdownRef} className="relative shrink-0">
-                <button
-                  id="inspector-university-select"
-                  type="button"
-                  onClick={() => setIsUniDropdownOpen((prev) => !prev)}
-                  aria-expanded={isUniDropdownOpen}
-                  aria-label="Select collaborating institution"
-                  className="w-full px-3 py-2 text-xs font-medium bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg text-slate-900 flex items-center justify-between gap-2 text-left focus:outline-none focus:border-blue-600 cursor-pointer"
-                >
-                  <span className="truncate">
-                    {selectedUni.universityName} — {selectedUni.paperCount}{' '}
-                    {selectedUni.paperCount === 1 ? 'paper' : 'papers'}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
-                </button>
-
-                {isUniDropdownOpen && (
-                  <div className="absolute z-40 mt-1 inset-x-0 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
-                    <div className="p-2 border-b border-slate-100 bg-slate-50/70">
-                      <div className="relative">
-                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <input
-                          type="text"
-                          value={uniSearchQuery}
-                          onChange={(e) => setUniSearchQuery(e.target.value)}
-                          placeholder="Search university..."
-                          aria-label="Search collaborating university"
-                          autoFocus
-                          className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-md text-slate-900 focus:outline-none focus:border-blue-600"
-                        />
-                        {uniSearchQuery && (
-                          <button
-                            type="button"
-                            onClick={() => setUniSearchQuery('')}
-                            aria-label="Clear university search"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="max-h-56 overflow-y-auto divide-y divide-slate-100">
-                      {filteredDropdownUniversities.map((u) => {
-                        const isSelected =
-                          u.universityId === selectedUni.universityId;
-                        return (
-                          <button
-                            key={u.universityId}
-                            type="button"
-                            onClick={() => {
-                              focusOnUniversity(u);
-                              setIsUniDropdownOpen(false);
-                              setUniSearchQuery('');
-                            }}
-                            className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between gap-2 transition-colors cursor-pointer ${
-                              isSelected
-                                ? 'bg-blue-50 text-blue-900 font-semibold'
-                                : 'text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate">{u.universityName}</div>
-                              <div className="text-[11px] text-slate-500 truncate">
-                                {u.city} · {u.country}
-                              </div>
-                            </div>
-                            <span className="font-mono text-[11px] text-slate-600 shrink-0 tabular-nums">
-                              {u.paperCount} papers
-                            </span>
-                          </button>
-                        );
-                      })}
-                      {filteredDropdownUniversities.length === 0 && (
-                        <div className="px-3 py-3 text-center text-xs text-slate-500">
-                          No matching universities
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="border-b border-slate-200 pb-3 shrink-0">
+              <div ref={uniDropdownRef} className="relative border-b border-slate-200 pb-3 shrink-0">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3
-                      data-testid="selected-university-name"
-                      className="text-lg font-bold text-slate-900"
+                  <div className="relative min-w-0 flex-1">
+                    <button
+                      id="inspector-university-select"
+                      type="button"
+                      onClick={() => setIsUniDropdownOpen((prev) => !prev)}
+                      aria-expanded={isUniDropdownOpen}
+                      aria-label="Select collaborating institution"
+                      className="group inline-flex items-center gap-1.5 text-left focus:outline-none cursor-pointer max-w-full"
                     >
-                      {selectedUni.universityName}
-                    </h3>
+                      <h3
+                        data-testid="selected-university-name"
+                        className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate"
+                      >
+                        {selectedUni.universityName}
+                      </h3>
+                      <ChevronDown className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                    </button>
                     <div className="text-xs text-slate-500 font-medium mt-0.5">
                       {selectedUni.city} · {selectedUni.country}
                     </div>
+
+                    {isUniDropdownOpen && (
+                      <div className="absolute z-40 mt-1 left-0 right-0 sm:right-auto sm:w-80 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                        <div className="p-2 border-b border-slate-100 bg-slate-50/70">
+                          <div className="relative">
+                            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <input
+                              type="text"
+                              value={uniSearchQuery}
+                              onChange={(e) => setUniSearchQuery(e.target.value)}
+                              placeholder="Search university..."
+                              aria-label="Search collaborating university"
+                              autoFocus
+                              className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-md text-slate-900 focus:outline-none focus:border-blue-600"
+                            />
+                            {uniSearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setUniSearchQuery('')}
+                                aria-label="Clear university search"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="max-h-56 overflow-y-auto divide-y divide-slate-100">
+                          {filteredDropdownUniversities.map((u) => {
+                            const isSelected =
+                              u.universityId === selectedUni.universityId;
+                            return (
+                              <button
+                                key={u.universityId}
+                                type="button"
+                                onClick={() => {
+                                  focusOnUniversity(u);
+                                  setIsUniDropdownOpen(false);
+                                  setUniSearchQuery('');
+                                }}
+                                className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between gap-2 transition-colors cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-blue-50 text-blue-900 font-semibold'
+                                    : 'text-slate-700 hover:bg-slate-50'
+                                }`}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate">{u.universityName}</div>
+                                  <div className="text-[11px] text-slate-500 truncate">
+                                    {u.city} · {u.country}
+                                  </div>
+                                </div>
+                                <span className="font-mono text-[11px] text-slate-600 shrink-0 tabular-nums">
+                                  {u.paperCount} papers
+                                </span>
+                              </button>
+                            );
+                          })}
+                          {filteredDropdownUniversities.length === 0 && (
+                            <div className="px-3 py-3 text-center text-xs text-slate-500">
+                              No matching universities
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <button

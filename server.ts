@@ -5751,6 +5751,30 @@ export async function buildLiveResearcherProfile(
       : !snapProf?.name;
   const snapMetrics = isSnapMetricsMatching ? snapProf?.officialMetrics : undefined;
 
+  let matchedSnapProfile: ResearcherProfile | undefined =
+    isSnapMetricsMatching && snapProf ? snapProf : undefined;
+  if (!matchedSnapProfile && targetName) {
+    for (const snapItem of Object.values(verifiedScholarSnapshot as Record<string, any>)) {
+      const p: ResearcherProfile | undefined =
+        snapItem?.profile || (snapItem?.publications ? snapItem : undefined);
+      if (p?.name && isSameResearcherName(p.name, targetName)) {
+        matchedSnapProfile = p;
+        break;
+      }
+    }
+  }
+
+  const verifiedStoreFields =
+    (matchedSnapProfile?.fields && Array.isArray(matchedSnapProfile.fields) && matchedSnapProfile.fields.length > 0
+      ? matchedSnapProfile.fields
+      : undefined) ||
+    (fallbackIdentity?.fields && Array.isArray(fallbackIdentity.fields) && fallbackIdentity.fields.length > 0
+      ? fallbackIdentity.fields
+      : undefined) ||
+    ((storeDigest as any)?.fields && Array.isArray((storeDigest as any).fields) && (storeDigest as any).fields.length > 0
+      ? (storeDigest as any).fields
+      : undefined);
+
   if (Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
     const oaCitByYr: Record<number, number> = {};
     const oaWorksByYr: Record<number, number> = {};
@@ -5944,8 +5968,13 @@ export async function buildLiveResearcherProfile(
       scraped?.verifiedDomain || 'scholar.google.com',
     orcid: orcidRaw,
     fields:
-      scraped && scraped.fields.length > 0
+      scraped &&
+      scraped.fields &&
+      scraped.fields.length > 0 &&
+      (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName))
         ? scraped.fields
+        : verifiedStoreFields && verifiedStoreFields.length > 0
+        ? verifiedStoreFields
         : openAlexTopics.length > 0
         ? openAlexTopics
         : ['Engineering', 'Computer Science'],

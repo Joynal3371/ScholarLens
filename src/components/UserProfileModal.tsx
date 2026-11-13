@@ -9,6 +9,7 @@ import {
   User as UserIcon,
   ExternalLink,
   Lock,
+  GraduationCap,
 } from 'lucide-react';
 import { AuthenticatedResearcher } from './AuthGateModal';
 import { updateCustomUserProfile, deleteCustomUserAccount } from '../firebase';
@@ -83,7 +84,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   useEffect(() => {
     if (user && isOpen) {
       setDisplayName(user.name || '');
-      setPhotoURL(user.photoURL || '');
+      const initialPhoto =
+        user.photoURL ||
+        (user.scholarUserId || user.name
+          ? `/api/scholar/avatar?userId=${encodeURIComponent(
+              user.scholarUserId || ''
+            )}&name=${encodeURIComponent(user.name || '')}${
+              user.orcidId ? `&orcid=${encodeURIComponent(user.orcidId)}` : ''
+            }`
+          : '');
+      setPhotoURL(initialPhoto);
       setScholarUrl(user.scholarUrl || '');
       setError(null);
     }
@@ -339,34 +349,65 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             >
               Google Scholar Profile
             </label>
-            {user.provider === 'orcid' || Boolean(user.scholarUserId) ? (
-              <div
-                id="profile-scholar-url"
-                data-testid="locked-scholar-profile"
-                className="w-full px-3 py-2 text-xs font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between gap-2 select-all"
-              >
-                <span className="truncate">
-                  {scholarUrl ||
-                    (user.scholarUserId
-                      ? `https://scholar.google.com/citations?user=${user.scholarUserId}`
-                      : 'Verified via ORCID')}
-                </span>
-                <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
-              </div>
-            ) : (
-              <input
-                id="profile-scholar-url"
-                type="url"
-                required
-                value={scholarUrl}
-                onChange={(e) => {
-                  setScholarUrl(e.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder="https://scholar.google.com/citations?user=..."
-                className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600"
-              />
-            )}
+            {(() => {
+              const cleanScholarLink =
+                scholarUrl ||
+                (user.scholarUserId
+                  ? `https://scholar.google.com/citations?user=${user.scholarUserId}`
+                  : '');
+              if (cleanScholarLink) {
+                return (
+                  <div
+                    id="profile-scholar-url"
+                    data-testid="locked-scholar-profile"
+                    className="px-3 py-2.5 bg-blue-50/80 border border-blue-200 rounded-lg flex items-center justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-2 text-xs font-semibold text-blue-900">
+                      <GraduationCap className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span>Google Scholar</span>
+                    </div>
+                    <a
+                      href={cleanScholarLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Visit Google Scholar profile"
+                      className="text-xs font-mono font-medium text-blue-800 hover:underline inline-flex items-center gap-1 max-w-[210px] sm:max-w-[240px] truncate"
+                    >
+                      <span className="truncate">
+                        {cleanScholarLink.replace(/^https?:\/\//, '')}
+                      </span>
+                      <ExternalLink className="w-3 h-3 text-blue-600 shrink-0" />
+                    </a>
+                  </div>
+                );
+              }
+              if (user.provider === 'orcid') {
+                return (
+                  <div
+                    id="profile-scholar-url"
+                    data-testid="locked-scholar-profile"
+                    className="w-full px-3 py-2 text-xs font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between gap-2 select-all"
+                  >
+                    <span className="truncate">Verified via ORCID</span>
+                    <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+                  </div>
+                );
+              }
+              return (
+                <input
+                  id="profile-scholar-url"
+                  type="url"
+                  required
+                  value={scholarUrl}
+                  onChange={(e) => {
+                    setScholarUrl(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  placeholder="https://scholar.google.com/citations?user=..."
+                  className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600"
+                />
+              );
+            })()}
           </div>
 
           {/* ORCID Verified Identity */}

@@ -571,6 +571,14 @@ export default function App() {
         ),
       };
       setActiveProfile(resolved);
+      if (authUser && resolved.avatarUrl && !authUser.photoURL) {
+        const isUserMatch =
+          (authUser.scholarUserId && resolved.scholarUserId === authUser.scholarUserId) ||
+          resolved.name.trim().toLowerCase() === authUser.name.trim().toLowerCase();
+        if (isUserMatch) {
+          saveSessionUser({ ...authUser, photoURL: resolved.avatarUrl });
+        }
+      }
       setScholarUrlInput('');
       setFilter(DEFAULT_FILTER_STATE);
 
@@ -1036,10 +1044,11 @@ export default function App() {
           </div>
 
           {/* Center: Global Search Bar (researchers, papers, journals, or Scholar ID / URL) */}
-          <div
-            ref={headerSearchContainerRef}
-            className="order-3 sm:order-2 w-full sm:w-auto sm:flex-1 sm:max-w-2xl relative"
-          >
+          {Boolean(activeProfile) && (
+            <div
+              ref={headerSearchContainerRef}
+              className="order-3 sm:order-2 w-full sm:w-auto sm:flex-1 sm:max-w-2xl relative"
+            >
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               {isAnalyzing && (
@@ -1319,7 +1328,8 @@ export default function App() {
                   </button>
                 </div>
               )}
-          </div>
+            </div>
+          )}
 
           {/* Right: Corner User Account Badge / Sign In */}
           <div className="order-2 sm:order-3 flex items-center gap-2 sm:gap-2.5 shrink-0">
@@ -1332,26 +1342,61 @@ export default function App() {
                 title="Profile Settings"
                 className="flex items-center gap-2 pl-1.5 pr-2.5 sm:pr-3 py-1 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-full transition-colors cursor-pointer"
               >
-                <div className="relative w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                  {authUser.photoURL && authUser.photoURL.trim() ? (
-                    <img
-                      src={authUser.photoURL.trim()}
-                      alt={authUser.name}
-                      className="w-full h-full object-cover rounded-full"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <span>{userInitials || <User className="w-3.5 h-3.5" />}</span>
-                  )}
-                  {authUser.orcidId && (
-                    <span
-                      title={`Verified ORCID: ${authUser.orcidId}`}
-                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#A6CE39] text-[#283800] rounded-full border border-white text-[8px] font-black flex items-center justify-center leading-none shadow-xs"
-                    >
-                      iD
-                    </span>
-                  )}
-                </div>
+                {(() => {
+                  const authUserAvatarUrl =
+                    (authUser.photoURL && authUser.photoURL.trim()) ||
+                    (activeProfile &&
+                      ((authUser.scholarUserId &&
+                        activeProfile.scholarUserId === authUser.scholarUserId) ||
+                        activeProfile.name.trim().toLowerCase() ===
+                          authUser.name.trim().toLowerCase()) &&
+                      activeProfile.avatarUrl
+                        ? activeProfile.avatarUrl
+                        : '') ||
+                    (authUser.scholarUserId || authUser.name
+                      ? `/api/scholar/avatar?userId=${encodeURIComponent(
+                          authUser.scholarUserId || ''
+                        )}&name=${encodeURIComponent(authUser.name || '')}${
+                          authUser.orcidId
+                            ? `&orcid=${encodeURIComponent(authUser.orcidId)}`
+                            : ''
+                        }`
+                      : '');
+                  return (
+                    <div className="relative w-7 h-7 shrink-0">
+                      <div className="w-full h-full rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center overflow-hidden">
+                        {authUserAvatarUrl ? (
+                          <img
+                            src={authUserAvatarUrl}
+                            alt={authUser.name}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                        <span
+                          className={
+                            authUserAvatarUrl
+                              ? 'absolute inset-0 flex items-center justify-center -z-10'
+                              : ''
+                          }
+                        >
+                          {userInitials || <User className="w-3.5 h-3.5" />}
+                        </span>
+                      </div>
+                      {authUser.orcidId && (
+                        <span
+                          title={`Verified ORCID: ${authUser.orcidId}`}
+                          className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#A6CE39] text-[#283800] rounded-full border border-white text-[8px] font-black flex items-center justify-center leading-none shadow-xs z-10 pointer-events-none"
+                        >
+                          iD
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="flex flex-col text-left">
                   <span
                     data-testid="authenticated-user-badge"

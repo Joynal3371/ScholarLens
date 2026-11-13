@@ -20,3269 +20,6 @@ var firebase_applet_config_default = {
 
 // src/server/orcidAuth.ts
 import crypto from "crypto";
-var OrcidConflictError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 409;
-    this.name = "OrcidConflictError";
-  }
-};
-var OrcidValidationError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 400;
-    this.name = "OrcidValidationError";
-  }
-};
-var OrcidUnauthorizedError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 401;
-    this.name = "OrcidUnauthorizedError";
-  }
-};
-var ORCID_SESSION_COOKIE_NAME = "scholarlens_session";
-var ORCID_STATE_COOKIE_NAME = "scholarlens_orcid_state";
-var DEFAULT_STATE_TTL_MS = 10 * 60 * 1e3;
-var DEFAULT_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1e3;
-function getOrcidEndpoints(env = "production") {
-  const isSandbox = env === "sandbox";
-  const baseDomain = isSandbox ? "sandbox.orcid.org" : "orcid.org";
-  const publicDomain = isSandbox ? "pub.sandbox.orcid.org" : "pub.orcid.org";
-  return {
-    env: isSandbox ? "sandbox" : "production",
-    baseDomain,
-    issuer: `https://${baseDomain}`,
-    authorizeUrl: `https://${baseDomain}/oauth/authorize`,
-    tokenUrl: `https://${baseDomain}/oauth/token`,
-    userinfoUrl: `https://${baseDomain}/oauth/userinfo`,
-    jwksUrl: `https://${baseDomain}/oauth/jwks`,
-    publicApiBase: `https://${publicDomain}/v3.0`
-  };
-}
-function normalizeOrcidId(rawInput) {
-  if (!rawInput || typeof rawInput !== "string") return null;
-  const trimmed = rawInput.trim().replace(/^https?:\/\/(sandbox\.)?orcid\.org\//i, "").replace(/[/?#].*$/, "").toUpperCase();
-  const digits = trimmed.replace(/[^0-9X]/g, "");
-  if (!/^\d{15}[\dX]$/.test(digits)) {
-    return null;
-  }
-  return `${digits.slice(0, 4)}-${digits.slice(4, 8)}-${digits.slice(8, 12)}-${digits.slice(12, 16)}`;
-}
-function orcidIdToUid(orcidId) {
-  const normalized = normalizeOrcidId(orcidId);
-  if (!normalized) {
-    throw new OrcidValidationError("Invalid ORCID iD format.");
-  }
-  return `orcid_${normalized.replace(/-/g, "")}`;
-}
-var ORCID_OAUTH_CLIENT_ID_PATTERN = /^APP-[A-Za-z0-9]{12,32}$/;
-function validateOrcidClientId(rawClientId) {
-  const clientId = String(rawClientId || "").trim();
-  if (!clientId || clientId === "MY_ORCID_CLIENT_ID" || clientId === "APP-XXXXXXXXXXXXXXXX") {
-    return {
-      valid: false,
-      clientId: "",
-      error: "ORCID OAuth Client ID is missing or still a placeholder. Register an application at https://orcid.org/developer-tools and use its APP-... Client ID."
-    };
-  }
-  if (/orcid\.org/i.test(clientId) || normalizeOrcidId(clientId) !== null) {
-    return {
-      valid: false,
-      clientId,
-      error: "Entered a personal ORCID iD / profile URL instead of an OAuth Application Client ID. Do not use your 0000-0000-0000-0000 ORCID iD as client_id; obtain an APP-... Client ID from ORCID Developer Tools."
-    };
-  }
-  if (!ORCID_OAUTH_CLIENT_ID_PATTERN.test(clientId)) {
-    return {
-      valid: false,
-      clientId,
-      error: 'Invalid ORCID Client ID format. Official ORCID OAuth Client IDs begin with "APP-" followed by alphanumeric characters (e.g. APP-1234567890ABCDEF) and must match the selected environment (Production or Sandbox).'
-    };
-  }
-  return {
-    valid: true,
-    clientId
-  };
-}
-function firstHeaderToken(value) {
-  if (!value) return "";
-  const raw = Array.isArray(value) ? value[0] : value;
-  return String(raw || "").split(",")[0].trim();
-}
-function resolvePublicBaseUrl(params) {
-  const appUrl = (params.appUrlEnv || "").trim();
-  if (appUrl && !appUrl.includes("MY_APP_URL")) {
-    return appUrl.replace(/\/$/, "");
-  }
-  const forwardedHost = firstHeaderToken(params.headers["x-forwarded-host"]);
-  const host = forwardedHost || firstHeaderToken(params.headers.host) || "localhost:3000";
-  const forwardedProto = firstHeaderToken(params.headers["x-forwarded-proto"]);
-  let proto = forwardedProto || params.protocol || "http";
-  if (!forwardedProto && host && !host.startsWith("localhost") && !host.startsWith("127.0.0.1") && proto === "http") {
-    proto = "https";
-  }
-  return `${proto}://${host}`.replace(/\/$/, "");
-}
-function parseCookies(cookieHeader) {
-  const out = {};
-  if (!cookieHeader) return out;
-  for (const part of cookieHeader.split(";")) {
-    const idx = part.indexOf("=");
-    if (idx <= 0) continue;
-    const key = part.slice(0, idx).trim();
-    const rawVal = part.slice(idx + 1).trim();
-    if (!key) continue;
-    try {
-      out[key] = decodeURIComponent(rawVal);
-    } catch {
-      out[key] = rawVal;
-    }
-  }
-  return out;
-}
-function serializeCookie(name, value, options = {}) {
-  const segments = [`${name}=${encodeURIComponent(value)}`];
-  segments.push(`Path=${options.path || "/"}`);
-  if (options.httpOnly !== false) segments.push("HttpOnly");
-  segments.push(`SameSite=${options.sameSite || "Lax"}`);
-  if (options.secure) segments.push("Secure");
-  if (typeof options.maxAgeSeconds === "number") {
-    segments.push(`Max-Age=${Math.max(0, Math.floor(options.maxAgeSeconds))}`);
-  }
-  return segments.join("; ");
-}
-function deriveAuthSecret(env) {
-  const explicit = (env.sessionSecret || env.authSecret || "").trim();
-  if (explicit) return explicit;
-  const seed = [
-    "scholarlens-auth-signing-key-v1",
-    (env.orcidClientSecret || "").trim(),
-    (env.firebaseProjectId || "").trim(),
-    (env.firebaseApiKey || "").trim()
-  ].join(":");
-  return crypto.createHmac("sha256", "scholarlens-root-salt").update(seed).digest("hex");
-}
-function base64UrlEncode(input) {
-  return Buffer.from(input).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-function base64UrlDecodeToBuffer(input) {
-  const padded = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
-  return Buffer.from(padded, "base64");
-}
-function signTokenPayload(payload, secret) {
-  const encoded = base64UrlEncode(JSON.stringify(payload));
-  const sig = base64UrlEncode(crypto.createHmac("sha256", secret).update(encoded).digest());
-  return `${encoded}.${sig}`;
-}
-function verifyTokenPayload(token, secret, nowMs = Date.now()) {
-  if (!token || typeof token !== "string") return null;
-  const parts = token.split(".");
-  if (parts.length !== 2) return null;
-  const [encoded, providedSig] = parts;
-  if (!encoded || !providedSig) return null;
-  const expectedSig = base64UrlEncode(crypto.createHmac("sha256", secret).update(encoded).digest());
-  const providedBuf = Buffer.from(providedSig, "utf8");
-  const expectedBuf = Buffer.from(expectedSig, "utf8");
-  if (providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
-    return null;
-  }
-  try {
-    const parsed = JSON.parse(base64UrlDecodeToBuffer(encoded).toString("utf8"));
-    if (!parsed || typeof parsed !== "object") return null;
-    if (typeof parsed.exp === "number" && parsed.exp < nowMs) {
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-function createSignedOAuthState(params, secret) {
-  const nowMs = params.nowMs ?? Date.now();
-  const cleanScholarId = typeof params.scholarUserId === "string" ? params.scholarUserId.trim() : "";
-  const cleanScholarQuery = typeof params.scholarQueryName === "string" ? params.scholarQueryName.trim() : "";
-  const payload = {
-    nonce: base64UrlEncode(crypto.randomBytes(18)),
-    csrf: base64UrlEncode(crypto.randomBytes(18)),
-    redirectUri: params.redirectUri,
-    env: params.env,
-    mode: params.mode === "redirect" ? "redirect" : "popup",
-    ...params.linkUid ? { linkUid: params.linkUid } : {},
-    ...cleanScholarId ? { scholarUserId: cleanScholarId } : {},
-    ...cleanScholarQuery ? { scholarQueryName: cleanScholarQuery } : {},
-    iat: nowMs,
-    exp: nowMs + (params.ttlMs ?? DEFAULT_STATE_TTL_MS)
-  };
-  return {
-    stateToken: signTokenPayload(payload, secret),
-    payload
-  };
-}
-function verifySignedOAuthState(stateToken, secret, options = {}) {
-  const payload = verifyTokenPayload(stateToken, secret, options.nowMs);
-  if (!payload || !payload.csrf || !payload.nonce || !payload.redirectUri) {
-    return null;
-  }
-  if (options.requireCsrf !== false) {
-    if (!options.expectedCsrf) {
-      return null;
-    }
-    const a = Buffer.from(payload.csrf, "utf8");
-    const b = Buffer.from(options.expectedCsrf, "utf8");
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
-      return null;
-    }
-  }
-  return payload;
-}
-function createSignedSessionToken(params, secret) {
-  const nowMs = params.nowMs ?? Date.now();
-  const safeName = typeof params.name === "string" ? params.name.trim().slice(0, 160) : "";
-  const payload = {
-    uid: params.uid,
-    ...params.orcidId ? { orcidId: params.orcidId } : {},
-    ...safeName ? { name: safeName } : {},
-    provider: params.provider,
-    iat: nowMs,
-    exp: nowMs + (params.ttlMs ?? DEFAULT_SESSION_TTL_MS)
-  };
-  return signTokenPayload(payload, secret);
-}
-function verifySignedSessionToken(token, secret, nowMs = Date.now()) {
-  const payload = verifyTokenPayload(token, secret, nowMs);
-  if (!payload || !payload.uid || !payload.provider) {
-    return null;
-  }
-  return payload;
-}
-var jwksCache = /* @__PURE__ */ new Map();
-var JWKS_CACHE_TTL_MS = 60 * 60 * 1e3;
-async function fetchJwksKeys(jwksUrl, fetchImpl, forceRefresh = false) {
-  const cached = jwksCache.get(jwksUrl);
-  if (!forceRefresh && cached && Date.now() - cached.fetchedAt < JWKS_CACHE_TTL_MS) {
-    return cached.keys;
-  }
-  const resp = await fetchImpl(jwksUrl, { headers: { Accept: "application/json" } });
-  if (!resp.ok) {
-    throw new OrcidUnauthorizedError(`Failed to fetch ORCID JWKS (${resp.status}).`);
-  }
-  const json = await resp.json();
-  const keys = Array.isArray(json?.keys) ? json.keys : [];
-  jwksCache.set(jwksUrl, { keys, fetchedAt: Date.now() });
-  return keys;
-}
-async function verifyOrcidIdToken(params) {
-  const parts = String(params.idToken || "").split(".");
-  if (parts.length !== 3) {
-    throw new OrcidUnauthorizedError("Malformed ORCID ID token.");
-  }
-  const [headerB64, payloadB64, signatureB64] = parts;
-  let header;
-  let claims;
-  try {
-    header = JSON.parse(base64UrlDecodeToBuffer(headerB64).toString("utf8"));
-    claims = JSON.parse(base64UrlDecodeToBuffer(payloadB64).toString("utf8"));
-  } catch {
-    throw new OrcidUnauthorizedError("Unreadable ORCID ID token payload.");
-  }
-  if (header.alg !== "RS256") {
-    throw new OrcidUnauthorizedError(`Unsupported ORCID ID token algorithm: ${header.alg || "none"}`);
-  }
-  const fetchImpl = params.fetchImpl || fetch;
-  let keys = params.jwksOverride || await fetchJwksKeys(params.jwksUrl, fetchImpl, false);
-  const findMatchingKey = (keyList) => {
-    if (header.kid) {
-      return keyList.find((k) => k.kid === header.kid && k.kty === "RSA");
-    }
-    const rsaKeys = keyList.filter((k) => k.kty === "RSA" && (!k.use || k.use === "sig"));
-    return rsaKeys.length === 1 ? rsaKeys[0] : rsaKeys[0];
-  };
-  let jwk = findMatchingKey(keys);
-  if (!jwk && !params.jwksOverride) {
-    keys = await fetchJwksKeys(params.jwksUrl, fetchImpl, true);
-    jwk = findMatchingKey(keys);
-  }
-  if (!jwk) {
-    throw new OrcidUnauthorizedError("Matching ORCID signing key not found in JWKS.");
-  }
-  const publicKey = crypto.createPublicKey({ key: jwk, format: "jwk" });
-  const signingInput = Buffer.from(`${headerB64}.${payloadB64}`, "utf8");
-  const signatureBuf = base64UrlDecodeToBuffer(signatureB64);
-  const signatureValid = crypto.verify("RSA-SHA256", signingInput, publicKey, signatureBuf);
-  if (!signatureValid) {
-    throw new OrcidUnauthorizedError("Invalid ORCID ID token signature.");
-  }
-  const normalizedIss = String(claims.iss || "").replace(/\/$/, "");
-  const normalizedExpectedIss = params.expectedIssuer.replace(/\/$/, "");
-  if (normalizedIss !== normalizedExpectedIss) {
-    throw new OrcidUnauthorizedError(`ORCID ID token issuer mismatch: ${normalizedIss}`);
-  }
-  const audClaim = claims.aud;
-  const audMatches = Array.isArray(audClaim) ? audClaim.includes(params.clientId) : audClaim === params.clientId;
-  if (!audMatches) {
-    throw new OrcidUnauthorizedError("ORCID ID token audience does not match client ID.");
-  }
-  const nowSec = params.nowSeconds ?? Math.floor(Date.now() / 1e3);
-  const exp = Number(claims.exp);
-  if (!Number.isFinite(exp) || exp < nowSec - 60) {
-    throw new OrcidUnauthorizedError("ORCID ID token has expired.");
-  }
-  if (claims.nbf !== void 0 && Number(claims.nbf) > nowSec + 60) {
-    throw new OrcidUnauthorizedError("ORCID ID token is not yet valid.");
-  }
-  if (params.expectedNonce && claims.nonce !== params.expectedNonce) {
-    throw new OrcidUnauthorizedError("ORCID ID token nonce mismatch.");
-  }
-  const subOrcid = normalizeOrcidId(String(claims.sub || ""));
-  if (!subOrcid) {
-    throw new OrcidUnauthorizedError("ORCID ID token subject is missing or malformed.");
-  }
-  const givenName = typeof claims.given_name === "string" ? claims.given_name.trim() : void 0;
-  const familyName = typeof claims.family_name === "string" ? claims.family_name.trim() : void 0;
-  const combinedName = typeof claims.name === "string" && claims.name.trim() || [givenName, familyName].filter(Boolean).join(" ").trim() || subOrcid;
-  return {
-    orcidId: subOrcid,
-    name: combinedName,
-    ...givenName ? { givenName } : {},
-    ...familyName ? { familyName } : {},
-    ...typeof claims.auth_time === "number" ? { authTime: claims.auth_time } : {},
-    ...Array.isArray(claims.amr) ? { amr: claims.amr.map(String) } : {},
-    verifiedVia: "id_token"
-  };
-}
-async function exchangeOrcidAuthorizationCode(params) {
-  const endpoints = getOrcidEndpoints(params.env);
-  const fetchImpl = params.fetchImpl || fetch;
-  const body = new URLSearchParams({
-    client_id: params.clientId,
-    client_secret: params.clientSecret,
-    grant_type: "authorization_code",
-    code: params.code,
-    redirect_uri: params.redirectUri
-  });
-  const resp = await fetchImpl(endpoints.tokenUrl, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: body.toString()
-  });
-  const data = await resp.json().catch(() => ({}));
-  if (!resp.ok || data.error) {
-    throw new OrcidUnauthorizedError(
-      data.error_description || data.error || `ORCID token exchange failed (${resp.status}).`
-    );
-  }
-  return data;
-}
-async function fetchOrcidUserInfo(params) {
-  const endpoints = getOrcidEndpoints(params.env);
-  const fetchImpl = params.fetchImpl || fetch;
-  try {
-    const resp = await fetchImpl(endpoints.userinfoUrl, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${params.accessToken}`
-      }
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    const orcidId = normalizeOrcidId(String(data.sub || ""));
-    if (!orcidId) return null;
-    const givenName = typeof data.given_name === "string" ? data.given_name.trim() : void 0;
-    const familyName = typeof data.family_name === "string" ? data.family_name.trim() : void 0;
-    const name = typeof data.name === "string" && data.name.trim() || [givenName, familyName].filter(Boolean).join(" ").trim() || orcidId;
-    return {
-      orcidId,
-      name,
-      ...givenName ? { givenName } : {},
-      ...familyName ? { familyName } : {},
-      verifiedVia: "userinfo"
-    };
-  } catch {
-    return null;
-  }
-}
-async function verifyAndResolveOrcidIdentity(params) {
-  const endpoints = getOrcidEndpoints(params.env);
-  const tokenOrcid = normalizeOrcidId(params.tokenData.orcid);
-  let verifiedFromIdToken = null;
-  if (params.tokenData.id_token) {
-    verifiedFromIdToken = await verifyOrcidIdToken({
-      idToken: params.tokenData.id_token,
-      clientId: params.clientId,
-      expectedIssuer: endpoints.issuer,
-      expectedNonce: params.expectedNonce,
-      jwksUrl: endpoints.jwksUrl,
-      jwksOverride: params.jwksOverride,
-      fetchImpl: params.fetchImpl
-    });
-    if (tokenOrcid && verifiedFromIdToken.orcidId !== tokenOrcid) {
-      throw new OrcidUnauthorizedError("ORCID ID token subject does not match token response ORCID.");
-    }
-  }
-  let verifiedFromUserInfo = null;
-  if (params.tokenData.access_token) {
-    verifiedFromUserInfo = await fetchOrcidUserInfo({
-      accessToken: params.tokenData.access_token,
-      env: params.env,
-      fetchImpl: params.fetchImpl
-    });
-    if (verifiedFromUserInfo && verifiedFromIdToken && verifiedFromUserInfo.orcidId !== verifiedFromIdToken.orcidId) {
-      throw new OrcidUnauthorizedError("ORCID UserInfo subject mismatch.");
-    }
-  }
-  const primary = verifiedFromIdToken || verifiedFromUserInfo;
-  if (primary) {
-    const preferredName = verifiedFromUserInfo?.name && verifiedFromUserInfo.name !== primary.orcidId ? verifiedFromUserInfo.name : primary.name !== primary.orcidId ? primary.name : (params.tokenData.name || "").trim() || primary.orcidId;
-    return {
-      ...primary,
-      name: preferredName
-    };
-  }
-  if (!tokenOrcid) {
-    throw new OrcidUnauthorizedError("ORCID response did not contain a verified ORCID iD.");
-  }
-  return {
-    orcidId: tokenOrcid,
-    name: (params.tokenData.name || "").trim() || tokenOrcid,
-    verifiedVia: "token_response"
-  };
-}
-function toFirestoreValue(val) {
-  if (val === null || val === void 0) return { nullValue: null };
-  if (typeof val === "string") return { stringValue: val };
-  if (typeof val === "boolean") return { booleanValue: val };
-  if (typeof val === "number") {
-    return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
-  }
-  if (Array.isArray(val)) {
-    return { arrayValue: { values: val.map((item) => toFirestoreValue(item)) } };
-  }
-  if (typeof val === "object") {
-    const fields = {};
-    for (const [k, v] of Object.entries(val)) {
-      if (v !== void 0) fields[k] = toFirestoreValue(v);
-    }
-    return { mapValue: { fields } };
-  }
-  return { stringValue: String(val) };
-}
-function fromFirestoreFields(fields) {
-  const out = {};
-  if (!fields) return out;
-  for (const [key, val] of Object.entries(fields)) {
-    out[key] = decodeFirestoreValue(val);
-  }
-  return out;
-}
-function decodeFirestoreValue(val) {
-  if (!val) return void 0;
-  if ("stringValue" in val) return val.stringValue;
-  if ("timestampValue" in val) return val.timestampValue;
-  if ("booleanValue" in val) return val.booleanValue;
-  if ("integerValue" in val) return Number(val.integerValue);
-  if ("doubleValue" in val) return val.doubleValue;
-  if ("nullValue" in val) return null;
-  if ("mapValue" in val) return fromFirestoreFields(val.mapValue?.fields);
-  if ("arrayValue" in val) {
-    return Array.isArray(val.arrayValue?.values) ? val.arrayValue.values.map((item) => decodeFirestoreValue(item)) : [];
-  }
-  return void 0;
-}
-function createInMemoryAccountMirror() {
-  const orcidIndex = /* @__PURE__ */ new Map();
-  const users = /* @__PURE__ */ new Map();
-  const scholarClaims = /* @__PURE__ */ new Map();
-  return {
-    getOrcidIndex(orcidId) {
-      return orcidIndex.get(orcidId) || null;
-    },
-    setOrcidIndex(entry) {
-      orcidIndex.set(entry.orcidId, { ...entry });
-    },
-    deleteOrcidIndex(orcidId) {
-      orcidIndex.delete(orcidId);
-    },
-    getUser(uid) {
-      const found = users.get(uid);
-      return found ? { ...found } : null;
-    },
-    setUser(user) {
-      users.set(user.uid, { ...user });
-    },
-    deleteUser(uid) {
-      users.delete(uid);
-    },
-    findUidByOrcidInUsers(orcidId) {
-      for (const user of users.values()) {
-        if (user.orcidId === orcidId) return user.uid;
-      }
-      return null;
-    },
-    getScholarClaim(scholarUserId) {
-      const found = scholarClaims.get(scholarUserId);
-      return found ? { ...found } : null;
-    },
-    setScholarClaim(claim) {
-      scholarClaims.set(claim.scholarUserId, { ...claim });
-    },
-    deleteScholarClaim(scholarUserId) {
-      scholarClaims.delete(scholarUserId);
-    }
-  };
-}
-function docFieldsToResearcher(uidFallback, raw) {
-  const providerRaw = String(raw.provider || "orcid");
-  const provider = providerRaw === "google" || providerRaw === "email" ? providerRaw : "orcid";
-  const orcidId = normalizeOrcidId(typeof raw.orcidId === "string" ? raw.orcidId : void 0) || void 0;
-  const displayName = String(raw.name || raw.displayName || "").trim() || orcidId || uidFallback;
-  const emailOrId = String(raw.emailOrId || raw.email || orcidId || uidFallback).trim();
-  return {
-    uid: String(raw.uid || uidFallback),
-    name: displayName,
-    emailOrId,
-    ...typeof raw.photoURL === "string" && raw.photoURL ? { photoURL: raw.photoURL } : {},
-    ...typeof raw.scholarUrl === "string" && raw.scholarUrl ? { scholarUrl: raw.scholarUrl } : {},
-    ...typeof raw.scholarUserId === "string" && raw.scholarUserId ? { scholarUserId: raw.scholarUserId } : {},
-    ...orcidId ? { orcidId } : {},
-    verified: raw.verified !== void 0 ? Boolean(raw.verified) : Boolean(orcidId),
-    provider,
-    ...typeof raw.createdAt === "string" ? { createdAt: raw.createdAt } : {},
-    ...typeof raw.updatedAt === "string" ? { updatedAt: raw.updatedAt } : {},
-    ...typeof raw.lastLoginAt === "string" ? { lastLoginAt: raw.lastLoginAt } : {}
-  };
-}
-function researcherToFirestoreUserDoc(user) {
-  const safeName = (user.name || user.orcidId || user.uid).trim().slice(0, 160);
-  const safeScholarId = user.scholarUserId && /^[a-zA-Z0-9_-]{1,64}$/.test(user.scholarUserId.trim()) ? user.scholarUserId.trim() : "";
-  return {
-    uid: user.uid,
-    name: safeName,
-    displayName: safeName,
-    email: user.provider === "orcid" ? "" : (user.emailOrId || "").slice(0, 320),
-    emailOrId: (user.emailOrId || user.orcidId || user.uid).slice(0, 320),
-    photoURL: (user.photoURL || "").slice(0, 15e4),
-    scholarUrl: (user.scholarUrl || "").slice(0, 500),
-    scholarUserId: safeScholarId,
-    orcidId: user.orcidId || "",
-    verified: Boolean(user.verified),
-    provider: user.provider,
-    createdAt: user.createdAt || (/* @__PURE__ */ new Date()).toISOString(),
-    updatedAt: user.updatedAt || (/* @__PURE__ */ new Date()).toISOString(),
-    lastLoginAt: user.lastLoginAt || (/* @__PURE__ */ new Date()).toISOString()
-  };
-}
-var OrcidAccountStore = class {
-  constructor(options) {
-    this.firestoreDocBase = options.firestoreDocBase.replace(/\/$/, "");
-    this.getBridgeToken = options.getBridgeToken;
-    this.mirror = options.mirror || createInMemoryAccountMirror();
-    this.fetchImpl = options.fetchImpl || fetch;
-    this.onPersistMirror = options.onPersistMirror;
-  }
-  get firestoreRootDocumentPath() {
-    const marker = "/v1/";
-    const idx = this.firestoreDocBase.indexOf(marker);
-    return idx >= 0 ? this.firestoreDocBase.slice(idx + marker.length) : "";
-  }
-  async getDoc(collection, docId) {
-    try {
-      const token = await this.getBridgeToken();
-      if (!token) return "UNAVAILABLE";
-      const resp = await this.fetchImpl(
-        `${this.firestoreDocBase}/${encodeURIComponent(collection)}/${encodeURIComponent(docId)}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      if (resp.status === 404) return null;
-      if (!resp.ok) {
-        const body = await resp.text().catch(() => "");
-        console.warn(`[OrcidStore] Firestore GET ${collection}/${docId} failed (${resp.status}):`, body.slice(0, 200));
-        return "UNAVAILABLE";
-      }
-      const doc = await resp.json();
-      return fromFirestoreFields(doc.fields);
-    } catch (err) {
-      console.warn(`[OrcidStore] Firestore GET ${collection}/${docId} error:`, err);
-      return "UNAVAILABLE";
-    }
-  }
-  async upsertDoc(collection, docId, data) {
-    try {
-      const token = await this.getBridgeToken();
-      if (!token) return false;
-      const fields = {};
-      for (const [k, v] of Object.entries(data)) {
-        if (v !== void 0) fields[k] = toFirestoreValue(v);
-      }
-      const resp = await this.fetchImpl(
-        `${this.firestoreDocBase}/${encodeURIComponent(collection)}/${encodeURIComponent(docId)}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ fields })
-        }
-      );
-      if (!resp.ok) {
-        const body = await resp.text().catch(() => "");
-        console.warn(`[OrcidStore] Firestore PATCH ${collection}/${docId} failed (${resp.status}):`, body.slice(0, 200));
-        return false;
-      }
-      return true;
-    } catch (err) {
-      console.warn(`[OrcidStore] Firestore PATCH ${collection}/${docId} error:`, err);
-      return false;
-    }
-  }
-  async deleteDoc(collection, docId) {
-    try {
-      const token = await this.getBridgeToken();
-      if (!token) return false;
-      const resp = await this.fetchImpl(
-        `${this.firestoreDocBase}/${encodeURIComponent(collection)}/${encodeURIComponent(docId)}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      if (resp.status === 404) return true;
-      if (!resp.ok) {
-        const body = await resp.text().catch(() => "");
-        console.warn(`[OrcidStore] Firestore DELETE ${collection}/${docId} failed (${resp.status}):`, body.slice(0, 200));
-        return false;
-      }
-      return true;
-    } catch (err) {
-      console.warn(`[OrcidStore] Firestore DELETE ${collection}/${docId} error:`, err);
-      return false;
-    }
-  }
-  /**
-   * Atomically creates `/orcidAccounts/{orcidId}` with precondition `exists: false`
-   * and writes the corresponding `/users/{uid}` profile in the same Firestore commit.
-   */
-  async atomicCreateOrcidBinding(orcidId, indexData, userData) {
-    try {
-      const token = await this.getBridgeToken();
-      if (!token || !this.firestoreRootDocumentPath) return "UNAVAILABLE";
-      const toFields = (obj) => {
-        const out = {};
-        for (const [k, v] of Object.entries(obj)) {
-          if (v !== void 0) out[k] = toFirestoreValue(v);
-        }
-        return out;
-      };
-      const commitUrl = `${this.firestoreDocBase}:commit`;
-      const resp = await this.fetchImpl(commitUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          writes: [
-            {
-              update: {
-                name: `${this.firestoreRootDocumentPath}/orcidAccounts/${orcidId}`,
-                fields: toFields(indexData)
-              },
-              currentDocument: { exists: false }
-            },
-            {
-              update: {
-                name: `${this.firestoreRootDocumentPath}/users/${String(userData.uid)}`,
-                fields: toFields(userData)
-              }
-            }
-          ]
-        })
-      });
-      if (resp.ok) return "OK";
-      const errText = await resp.text().catch(() => "");
-      if (resp.status === 409 || errText.includes("ALREADY_EXISTS") || errText.includes("already exists")) {
-        return "ALREADY_EXISTS";
-      }
-      console.warn(`[OrcidStore] Firestore atomic commit failed (${resp.status}):`, errText.slice(0, 250));
-      return "UNAVAILABLE";
-    } catch (err) {
-      console.warn("[OrcidStore] Firestore atomic commit error:", err);
-      return "UNAVAILABLE";
-    }
-  }
-  /**
-   * Authenticates an existing account bound to `orcidId` or creates a brand new one,
-   * strictly enforcing that one ORCID iD maps to at most one ScholarLens account.
-   */
-  async authenticateOrRegisterOrcidUser(params) {
-    const canonicalOrcid = normalizeOrcidId(params.orcidId);
-    if (!canonicalOrcid) {
-      throw new OrcidValidationError("Invalid ORCID iD received from provider.");
-    }
-    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
-    const linkToUid = params.linkToUid?.trim() || void 0;
-    const cleanScholarUserId = params.scholarUserId?.trim() || void 0;
-    const cleanScholarUrl = params.scholarUrl?.trim() || void 0;
-    const cleanPhotoURL = params.photoURL?.trim() || void 0;
-    const remoteIndex = await this.getDoc("orcidAccounts", canonicalOrcid);
-    let existingUid = null;
-    if (remoteIndex && remoteIndex !== "UNAVAILABLE" && typeof remoteIndex.uid === "string") {
-      existingUid = remoteIndex.uid;
-    } else if (remoteIndex === null) {
-      this.mirror.deleteOrcidIndex(canonicalOrcid);
-    } else if (remoteIndex === "UNAVAILABLE") {
-      const mirrorIndex = this.mirror.getOrcidIndex(canonicalOrcid);
-      if (mirrorIndex?.uid) {
-        existingUid = mirrorIndex.uid;
-      } else {
-        existingUid = this.mirror.findUidByOrcidInUsers(canonicalOrcid);
-      }
-    }
-    if (existingUid) {
-      if (linkToUid && linkToUid !== existingUid) {
-        throw new OrcidConflictError(
-          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
-        );
-      }
-      const remoteUser = await this.getDoc("users", existingUid);
-      const baseUser = remoteUser && remoteUser !== "UNAVAILABLE" ? docFieldsToResearcher(existingUid, remoteUser) : (remoteUser === "UNAVAILABLE" ? this.mirror.getUser(existingUid) : null) || {
-        uid: existingUid,
-        name: params.verifiedName || canonicalOrcid,
-        emailOrId: canonicalOrcid,
-        orcidId: canonicalOrcid,
-        verified: true,
-        provider: "orcid",
-        createdAt: nowIso
-      };
-      const updatedUser = {
-        ...baseUser,
-        uid: existingUid,
-        name: baseUser.name && baseUser.name !== canonicalOrcid ? baseUser.name : params.verifiedName || canonicalOrcid,
-        emailOrId: baseUser.emailOrId || canonicalOrcid,
-        ...baseUser.photoURL ? { photoURL: baseUser.photoURL } : cleanPhotoURL ? { photoURL: cleanPhotoURL } : {},
-        ...cleanScholarUrl ? { scholarUrl: cleanScholarUrl } : baseUser.scholarUrl ? { scholarUrl: baseUser.scholarUrl } : {},
-        ...cleanScholarUserId ? { scholarUserId: cleanScholarUserId } : baseUser.scholarUserId ? { scholarUserId: baseUser.scholarUserId } : {},
-        orcidId: canonicalOrcid,
-        verified: true,
-        updatedAt: nowIso,
-        lastLoginAt: nowIso
-      };
-      await this.upsertDoc("users", existingUid, researcherToFirestoreUserDoc(updatedUser));
-      this.mirror.setOrcidIndex({
-        orcidId: canonicalOrcid,
-        uid: existingUid,
-        name: updatedUser.name,
-        createdAt: updatedUser.createdAt || nowIso,
-        updatedAt: nowIso
-      });
-      this.mirror.setUser(updatedUser);
-      this.onPersistMirror?.();
-      return { user: updatedUser, isNewAccount: false };
-    }
-    if (linkToUid) {
-      const targetRemote = await this.getDoc("users", linkToUid);
-      const targetLocal = this.mirror.getUser(linkToUid);
-      const existingTargetUser = targetRemote && targetRemote !== "UNAVAILABLE" ? docFieldsToResearcher(linkToUid, targetRemote) : targetLocal;
-      if (existingTargetUser?.orcidId && existingTargetUser.orcidId !== canonicalOrcid) {
-        throw new OrcidConflictError(
-          `This account is already linked to ORCID iD ${existingTargetUser.orcidId}.`
-        );
-      }
-    }
-    const targetUid = linkToUid || orcidIdToUid(canonicalOrcid);
-    let existingProfile = null;
-    if (linkToUid) {
-      const remoteExisting = await this.getDoc("users", linkToUid);
-      existingProfile = remoteExisting && remoteExisting !== "UNAVAILABLE" ? docFieldsToResearcher(linkToUid, remoteExisting) : this.mirror.getUser(linkToUid);
-    }
-    const newUser = {
-      uid: targetUid,
-      name: existingProfile?.name || params.verifiedName && params.verifiedName.trim() || canonicalOrcid,
-      emailOrId: existingProfile?.emailOrId || canonicalOrcid,
-      ...cleanPhotoURL || existingProfile?.photoURL ? { photoURL: cleanPhotoURL || existingProfile?.photoURL } : {},
-      ...cleanScholarUrl || existingProfile?.scholarUrl ? { scholarUrl: cleanScholarUrl || existingProfile?.scholarUrl } : {},
-      ...cleanScholarUserId || existingProfile?.scholarUserId ? { scholarUserId: cleanScholarUserId || existingProfile?.scholarUserId } : {},
-      orcidId: canonicalOrcid,
-      verified: true,
-      provider: existingProfile?.provider || "orcid",
-      createdAt: existingProfile?.createdAt || nowIso,
-      updatedAt: nowIso,
-      lastLoginAt: nowIso
-    };
-    const indexDoc = {
-      orcidId: canonicalOrcid,
-      uid: targetUid,
-      name: newUser.name,
-      createdAt: nowIso,
-      updatedAt: nowIso
-    };
-    const commitStatus = await this.atomicCreateOrcidBinding(
-      canonicalOrcid,
-      indexDoc,
-      researcherToFirestoreUserDoc(newUser)
-    );
-    if (commitStatus === "ALREADY_EXISTS") {
-      const winnerIndex = await this.getDoc("orcidAccounts", canonicalOrcid);
-      const winnerUid = winnerIndex && winnerIndex !== "UNAVAILABLE" && typeof winnerIndex.uid === "string" ? winnerIndex.uid : null;
-      if (linkToUid && winnerUid !== linkToUid) {
-        throw new OrcidConflictError(
-          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
-        );
-      }
-      if (winnerUid) {
-        const winnerUser = await this.getUserByUid(winnerUid);
-        if (winnerUser) {
-          return { user: winnerUser, isNewAccount: false };
-        }
-      }
-      throw new OrcidConflictError(
-        `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
-      );
-    }
-    if (commitStatus === "UNAVAILABLE") {
-      const mirrorExisting = this.mirror.getOrcidIndex(canonicalOrcid)?.uid || this.mirror.findUidByOrcidInUsers(canonicalOrcid);
-      if (mirrorExisting && mirrorExisting !== targetUid) {
-        throw new OrcidConflictError(
-          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
-        );
-      }
-    }
-    this.mirror.setOrcidIndex(indexDoc);
-    this.mirror.setUser(newUser);
-    this.onPersistMirror?.();
-    return { user: newUser, isNewAccount: !linkToUid };
-  }
-  async getUserLookupResult(uid) {
-    if (!uid) return { status: "NOT_FOUND" };
-    const remote = await this.getDoc("users", uid);
-    if (remote && remote !== "UNAVAILABLE") {
-      const record = docFieldsToResearcher(uid, remote);
-      this.mirror.setUser(record);
-      return { status: "FOUND", user: record };
-    }
-    if (remote === "UNAVAILABLE") {
-      const mirrored = this.mirror.getUser(uid);
-      return mirrored ? { status: "FOUND", user: mirrored } : { status: "UNAVAILABLE" };
-    }
-    this.mirror.deleteUser(uid);
-    return { status: "NOT_FOUND" };
-  }
-  async getUserByUid(uid) {
-    const result = await this.getUserLookupResult(uid);
-    return result.status === "FOUND" ? result.user : null;
-  }
-  async updateUserProfile(uid, updates, fallbackUser) {
-    const lookup = await this.getUserLookupResult(uid);
-    const existing = lookup.status === "FOUND" ? lookup.user : lookup.status === "UNAVAILABLE" && fallbackUser?.uid === uid ? fallbackUser : null;
-    if (!existing) return null;
-    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
-    const nextUser = {
-      ...existing,
-      ...updates.name !== void 0 && updates.name.trim() ? { name: updates.name.trim() } : {},
-      ...updates.photoURL !== void 0 ? { photoURL: updates.photoURL.trim() } : {},
-      ...updates.scholarUrl !== void 0 ? { scholarUrl: updates.scholarUrl.trim() } : {},
-      ...updates.scholarUserId !== void 0 ? { scholarUserId: updates.scholarUserId.trim() } : {},
-      updatedAt: nowIso
-    };
-    await this.upsertDoc("users", uid, researcherToFirestoreUserDoc(nextUser));
-    this.mirror.setUser(nextUser);
-    this.onPersistMirror?.();
-    return nextUser;
-  }
-  async getScholarClaim(scholarUserId) {
-    const cleanId = scholarUserId.trim();
-    if (!cleanId) return null;
-    const remote = await this.getDoc("scholarClaims", cleanId);
-    if (remote && remote !== "UNAVAILABLE" && typeof remote.orcidId === "string") {
-      const claim = {
-        scholarUserId: String(remote.scholarUserId || cleanId),
-        orcidId: String(remote.orcidId),
-        claimedByUid: String(remote.claimedByUid || ""),
-        researcherName: String(remote.researcherName || ""),
-        ...typeof remote.scholarUrl === "string" && remote.scholarUrl ? { scholarUrl: remote.scholarUrl } : {},
-        createdAt: String(remote.createdAt || (/* @__PURE__ */ new Date()).toISOString()),
-        updatedAt: String(remote.updatedAt || remote.createdAt || (/* @__PURE__ */ new Date()).toISOString())
-      };
-      this.mirror.setScholarClaim?.(claim);
-      return claim;
-    }
-    if (remote === null) {
-      this.mirror.deleteScholarClaim?.(cleanId);
-      return null;
-    }
-    return this.mirror.getScholarClaim?.(cleanId) || null;
-  }
-  async upsertScholarClaim(params) {
-    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
-    const cleanScholarId = params.scholarUserId.trim();
-    const claim = {
-      scholarUserId: cleanScholarId,
-      orcidId: params.orcidId.trim(),
-      claimedByUid: params.claimedByUid.trim(),
-      researcherName: params.researcherName.trim() || params.orcidId.trim(),
-      ...params.scholarUrl?.trim() ? { scholarUrl: params.scholarUrl.trim() } : {},
-      createdAt: params.createdAt || nowIso,
-      updatedAt: nowIso
-    };
-    await this.upsertDoc("scholarClaims", cleanScholarId, { ...claim });
-    this.mirror.setScholarClaim?.(claim);
-    this.onPersistMirror?.();
-    return claim;
-  }
-  async deleteScholarClaim(scholarUserId) {
-    const cleanId = scholarUserId.trim();
-    if (!cleanId) return;
-    await this.deleteDoc("scholarClaims", cleanId);
-    this.mirror.deleteScholarClaim?.(cleanId);
-    this.onPersistMirror?.();
-  }
-  async deleteUserAccount(uid) {
-    const existing = await this.getUserByUid(uid);
-    const orcidId = existing?.orcidId ? normalizeOrcidId(existing.orcidId) : null;
-    if (orcidId) {
-      const remoteIndex = await this.getDoc("orcidAccounts", orcidId);
-      const localIndex = this.mirror.getOrcidIndex(orcidId);
-      const ownerUid = (remoteIndex && remoteIndex !== "UNAVAILABLE" && typeof remoteIndex.uid === "string" ? remoteIndex.uid : null) || localIndex?.uid;
-      if (!ownerUid || ownerUid === uid) {
-        await this.deleteDoc("orcidAccounts", orcidId);
-        this.mirror.deleteOrcidIndex(orcidId);
-      }
-    }
-    if (existing?.scholarUserId) {
-      const claim = await this.getScholarClaim(existing.scholarUserId);
-      if (!claim || claim.claimedByUid === uid || orcidId && claim.orcidId === orcidId) {
-        await this.deleteDoc("scholarClaims", existing.scholarUserId);
-        this.mirror.deleteScholarClaim?.(existing.scholarUserId);
-      }
-    }
-    await this.deleteDoc("users", uid);
-    this.mirror.deleteUser(uid);
-    this.onPersistMirror?.();
-    return true;
-  }
-};
-
-// src/server/socialStore.ts
-import crypto2 from "crypto";
-import fs from "fs";
-import path from "path";
-function canonicalPairId(uidA, uidB) {
-  const cleanA = String(uidA || "").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
-  const cleanB = String(uidB || "").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
-  return [cleanA, cleanB].sort().join("__");
-}
-function sanitizePostId(rawId) {
-  return String(rawId || "").trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
-}
-var SocialValidationError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 400;
-    this.name = "SocialValidationError";
-  }
-};
-var SocialForbiddenError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 403;
-    this.name = "SocialForbiddenError";
-  }
-};
-var SocialNotFoundError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 404;
-    this.name = "SocialNotFoundError";
-  }
-};
-function parseFirestoreString(field) {
-  return typeof field?.stringValue === "string" ? field.stringValue : "";
-}
-function parseFirestoreBoolean(field) {
-  return typeof field?.booleanValue === "boolean" ? field.booleanValue : false;
-}
-function isAllowedImageInput(url) {
-  const clean = String(url || "").trim();
-  if (!clean || clean.length > 36e4) return false;
-  if (/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(clean)) {
-    return true;
-  }
-  return /^https?:\/\/.+/i.test(clean) && clean.length <= 2e3;
-}
-function isAllowedVideoInput(url) {
-  const clean = String(url || "").trim();
-  if (!clean) return { valid: false, kind: "external" };
-  if (/^data:video\/(mp4|webm|ogg);base64,[A-Za-z0-9+/=]+$/i.test(clean)) {
-    return { valid: clean.length <= 75e4, kind: "upload" };
-  }
-  if (/^https?:\/\/.+/i.test(clean) && clean.length <= 2e3) {
-    return { valid: true, kind: "external" };
-  }
-  return { valid: false, kind: "external" };
-}
-var SocialNetworkStore = class {
-  constructor(options) {
-    this.mirror = {
-      connections: [],
-      threadsIndex: {},
-      threads: {},
-      postsOrder: [],
-      posts: {},
-      worksDigests: {}
-    };
-    this.firestoreDocBase = options.firestoreDocBase.replace(/\/$/, "");
-    this.getBridgeToken = options.getBridgeToken;
-    this.fetchImpl = options.fetchImpl || fetch;
-    this.mirrorFilePath = options.mirrorFilePath;
-    this.fallbackUsersProvider = options.fallbackUsersProvider;
-    this.loadMirrorFromDisk();
-  }
-  loadMirrorFromDisk() {
-    if (!this.mirrorFilePath) return;
-    try {
-      if (fs.existsSync(this.mirrorFilePath)) {
-        const parsed = JSON.parse(fs.readFileSync(this.mirrorFilePath, "utf8"));
-        this.mirror = {
-          connections: Array.isArray(parsed?.connections) ? parsed.connections : [],
-          threadsIndex: parsed?.threadsIndex && typeof parsed.threadsIndex === "object" ? parsed.threadsIndex : {},
-          threads: parsed?.threads && typeof parsed.threads === "object" ? parsed.threads : {},
-          postsOrder: Array.isArray(parsed?.postsOrder) ? parsed.postsOrder : [],
-          posts: parsed?.posts && typeof parsed.posts === "object" ? parsed.posts : {},
-          worksDigests: parsed?.worksDigests && typeof parsed.worksDigests === "object" ? parsed.worksDigests : {}
-        };
-      }
-    } catch {
-    }
-  }
-  persistMirrorToDisk() {
-    if (!this.mirrorFilePath) return;
-    try {
-      const dir = path.dirname(this.mirrorFilePath);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(this.mirrorFilePath, JSON.stringify(this.mirror, null, 2), "utf8");
-    } catch {
-    }
-  }
-  async readJsonDoc(docKey) {
-    try {
-      const token = await this.getBridgeToken();
-      if (!token || !this.firestoreDocBase) return "UNAVAILABLE";
-      const resp = await this.fetchImpl(
-        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: AbortSignal.timeout(4e3)
-        }
-      );
-      if (resp.status === 404) return null;
-      if (!resp.ok) return "UNAVAILABLE";
-      const data = await resp.json();
-      const rawJson = parseFirestoreString(data?.fields?.payloadJson);
-      if (!rawJson) return null;
-      return JSON.parse(rawJson);
-    } catch {
-      return "UNAVAILABLE";
-    }
-  }
-  async writeJsonDoc(docKey, payload) {
-    const serialized = JSON.stringify(payload);
-    if (serialized.length > 9e5) {
-      throw new SocialValidationError(
-        "Attachment payload exceeds storage size limit. Please use smaller compressed images or a video link."
-      );
-    }
-    try {
-      const token = await this.getBridgeToken();
-      if (!token || !this.firestoreDocBase) return false;
-      const resp = await this.fetchImpl(
-        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            fields: {
-              key: { stringValue: docKey },
-              payloadJson: { stringValue: serialized },
-              updatedAtMs: { integerValue: String(Date.now()) }
-            }
-          }),
-          signal: AbortSignal.timeout(4500)
-        }
-      );
-      return resp.ok;
-    } catch {
-      return false;
-    }
-  }
-  async deleteJsonDoc(docKey) {
-    try {
-      const token = await this.getBridgeToken();
-      if (!token || !this.firestoreDocBase) return false;
-      const resp = await this.fetchImpl(
-        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-          signal: AbortSignal.timeout(4e3)
-        }
-      );
-      return resp.ok || resp.status === 404;
-    } catch {
-      return false;
-    }
-  }
-  /**
-   * Lists sanitized researcher profiles registered on ScholarLens from Firestore `users` + fallback mirror.
-   */
-  async listRegisteredResearchers() {
-    const byUid = /* @__PURE__ */ new Map();
-    const fallbackUsers = this.fallbackUsersProvider?.() || [];
-    for (const u of fallbackUsers) {
-      if (!u.uid) continue;
-      byUid.set(u.uid, { ...u });
-    }
-    try {
-      const token = await this.getBridgeToken();
-      if (token && this.firestoreDocBase) {
-        const resp = await this.fetchImpl(
-          `${this.firestoreDocBase}:runQuery`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              structuredQuery: {
-                from: [{ collectionId: "users" }],
-                limit: 120
-              }
-            }),
-            signal: AbortSignal.timeout(4500)
-          }
-        );
-        if (resp.ok) {
-          const rows = await resp.json();
-          for (const row of Array.isArray(rows) ? rows : []) {
-            const docItem = row?.document;
-            const fields = docItem?.fields;
-            if (!fields) continue;
-            const docUid = parseFirestoreString(fields.uid) || String(docItem?.name || "").split("/").pop() || "";
-            if (!docUid) continue;
-            const name = parseFirestoreString(fields.name) || parseFirestoreString(fields.displayName) || parseFirestoreString(fields.orcidId) || "Researcher";
-            const photoURL = parseFirestoreString(fields.photoURL) || void 0;
-            const scholarUrl = parseFirestoreString(fields.scholarUrl) || void 0;
-            const scholarUserId = parseFirestoreString(fields.scholarUserId) || void 0;
-            const orcidId = parseFirestoreString(fields.orcidId) || void 0;
-            const verified = parseFirestoreBoolean(fields.verified) || Boolean(orcidId);
-            byUid.set(docUid, {
-              uid: docUid,
-              name,
-              ...photoURL ? { photoURL } : {},
-              ...scholarUrl ? { scholarUrl } : {},
-              ...scholarUserId ? { scholarUserId } : {},
-              ...orcidId ? { orcidId } : {},
-              verified
-            });
-          }
-        }
-      }
-    } catch {
-    }
-    return Array.from(byUid.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }
-  async loadConnections() {
-    const remote = await this.readJsonDoc("social_connections");
-    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.edges)) {
-      this.mirror.connections = remote.edges;
-      return remote.edges;
-    }
-    if (remote === null) {
-      this.mirror.connections = [];
-      return [];
-    }
-    return this.mirror.connections;
-  }
-  async saveConnections(edges) {
-    this.mirror.connections = edges;
-    this.persistMirrorToDisk();
-    await this.writeJsonDoc("social_connections", { edges });
-  }
-  async getConnectionsOverview(currentUid) {
-    const edges = await this.loadConnections();
-    const acceptedUids = [];
-    const incomingRequests = [];
-    const outgoingRequests = [];
-    const statusByUid = {};
-    for (const edge of edges) {
-      if (edge.requesterUid !== currentUid && edge.recipientUid !== currentUid) {
-        continue;
-      }
-      const otherUid = edge.requesterUid === currentUid ? edge.recipientUid : edge.requesterUid;
-      if (edge.status === "accepted") {
-        acceptedUids.push(otherUid);
-        statusByUid[otherUid] = "connected";
-      } else if (edge.recipientUid === currentUid) {
-        incomingRequests.push(edge);
-        statusByUid[otherUid] = "pending_received";
-      } else {
-        outgoingRequests.push(edge);
-        statusByUid[otherUid] = "pending_sent";
-      }
-    }
-    return { acceptedUids, incomingRequests, outgoingRequests, statusByUid };
-  }
-  async sendConnectionRequest(fromUid, toUid, note) {
-    const cleanFrom = String(fromUid || "").trim();
-    const cleanTo = String(toUid || "").trim();
-    if (!cleanFrom || !cleanTo) {
-      throw new SocialValidationError("Both sender and recipient identifiers are required.");
-    }
-    if (cleanFrom === cleanTo) {
-      throw new SocialValidationError("You cannot send a connection request to yourself.");
-    }
-    const pairId = canonicalPairId(cleanFrom, cleanTo);
-    const edges = await this.loadConnections();
-    const existingIdx = edges.findIndex((e) => e.id === pairId);
-    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
-    if (existingIdx >= 0) {
-      const existing = edges[existingIdx];
-      if (existing.status === "accepted") {
-        return { status: "connected", edge: existing };
-      }
-      if (existing.requesterUid === cleanTo && existing.recipientUid === cleanFrom) {
-        const updated = {
-          ...existing,
-          status: "accepted",
-          updatedAt: nowIso
-        };
-        edges[existingIdx] = updated;
-        await this.saveConnections(edges);
-        return { status: "connected", edge: updated };
-      }
-      return { status: "pending_sent", edge: existing };
-    }
-    const created = {
-      id: pairId,
-      requesterUid: cleanFrom,
-      recipientUid: cleanTo,
-      status: "pending",
-      ...note && note.trim() ? { note: note.trim().slice(0, 280) } : {},
-      createdAt: nowIso,
-      updatedAt: nowIso
-    };
-    const next = [...edges, created];
-    await this.saveConnections(next);
-    return { status: "pending_sent", edge: created };
-  }
-  async respondConnectionRequest(currentUid, requesterUid, action) {
-    const pairId = canonicalPairId(currentUid, requesterUid);
-    const edges = await this.loadConnections();
-    const idx = edges.findIndex((e) => e.id === pairId);
-    if (idx < 0) {
-      throw new SocialNotFoundError("Connection invitation was not found.");
-    }
-    const edge = edges[idx];
-    if (edge.status === "pending" && edge.recipientUid !== currentUid) {
-      throw new SocialForbiddenError("Only the recipient can respond to a connection invitation.");
-    }
-    if (action === "accept") {
-      edges[idx] = {
-        ...edge,
-        status: "accepted",
-        updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-      };
-      await this.saveConnections(edges);
-      return { status: "connected" };
-    }
-    const filtered = edges.filter((e) => e.id !== pairId);
-    await this.saveConnections(filtered);
-    return { status: "none" };
-  }
-  async removeConnection(currentUid, otherUid) {
-    const pairId = canonicalPairId(currentUid, otherUid);
-    const edges = await this.loadConnections();
-    const next = edges.filter((e) => e.id !== pairId);
-    if (next.length !== edges.length) {
-      await this.saveConnections(next);
-    }
-    return { status: "none" };
-  }
-  async loadThreadsIndex() {
-    const remote = await this.readJsonDoc(
-      "social_threads_index"
-    );
-    if (remote && remote !== "UNAVAILABLE" && remote.threads) {
-      this.mirror.threadsIndex = remote.threads;
-      return remote.threads;
-    }
-    if (remote === null) {
-      this.mirror.threadsIndex = {};
-      return {};
-    }
-    return this.mirror.threadsIndex;
-  }
-  async saveThreadsIndex(threads) {
-    this.mirror.threadsIndex = threads;
-    this.persistMirrorToDisk();
-    await this.writeJsonDoc("social_threads_index", { threads });
-  }
-  async loadThreadMessages(threadId) {
-    const remote = await this.readJsonDoc(
-      `social_thread_${threadId}`
-    );
-    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.messages)) {
-      this.mirror.threads[threadId] = remote.messages;
-      return remote.messages;
-    }
-    if (remote === null) {
-      this.mirror.threads[threadId] = [];
-      return [];
-    }
-    return this.mirror.threads[threadId] || [];
-  }
-  async saveThreadMessages(threadId, messages) {
-    const trimmed = messages.slice(-250);
-    this.mirror.threads[threadId] = trimmed;
-    this.persistMirrorToDisk();
-    await this.writeJsonDoc(`social_thread_${threadId}`, { messages: trimmed });
-  }
-  async listConversationsForUser(currentUid) {
-    const index = await this.loadThreadsIndex();
-    return Object.values(index).filter((t) => Array.isArray(t.participants) && t.participants.includes(currentUid)).sort((a, b) => String(b.lastMessageAt).localeCompare(String(a.lastMessageAt)));
-  }
-  async getThreadWithUser(currentUid, partnerUid) {
-    const threadId = canonicalPairId(currentUid, partnerUid);
-    const [index, messages] = await Promise.all([
-      this.loadThreadsIndex(),
-      this.loadThreadMessages(threadId)
-    ]);
-    const summary = index[threadId] || {
-      threadId,
-      participants: [currentUid, partnerUid].sort(),
-      lastMessageText: "",
-      lastMessageAt: "",
-      lastSenderUid: "",
-      unreadBy: {}
-    };
-    if (summary.unreadBy?.[currentUid]) {
-      summary.unreadBy = { ...summary.unreadBy, [currentUid]: 0 };
-      index[threadId] = summary;
-      await this.saveThreadsIndex(index);
-    }
-    return {
-      ...summary,
-      messages
-    };
-  }
-  async sendMessage(senderUid, recipientUid, rawText) {
-    const cleanSender = String(senderUid || "").trim();
-    const cleanRecipient = String(recipientUid || "").trim();
-    const cleanText = String(rawText || "").trim();
-    if (!cleanSender || !cleanRecipient) {
-      throw new SocialValidationError("Sender and recipient are required.");
-    }
-    if (cleanSender === cleanRecipient) {
-      throw new SocialValidationError("You cannot send direct messages to yourself.");
-    }
-    if (!cleanText) {
-      throw new SocialValidationError("Message cannot be empty.");
-    }
-    if (cleanText.length > 4e3) {
-      throw new SocialValidationError("Message exceeds maximum length of 4,000 characters.");
-    }
-    const threadId = canonicalPairId(cleanSender, cleanRecipient);
-    const [index, existingMessages] = await Promise.all([
-      this.loadThreadsIndex(),
-      this.loadThreadMessages(threadId)
-    ]);
-    const msg = {
-      id: `msg_${Date.now()}_${crypto2.randomBytes(4).toString("hex")}`,
-      senderUid: cleanSender,
-      recipientUid: cleanRecipient,
-      text: cleanText,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    const nextMessages = [...existingMessages, msg];
-    await this.saveThreadMessages(threadId, nextMessages);
-    const prevUnread = Number(index[threadId]?.unreadBy?.[cleanRecipient] || 0);
-    index[threadId] = {
-      threadId,
-      participants: [cleanSender, cleanRecipient].sort(),
-      lastMessageText: cleanText.slice(0, 140),
-      lastMessageAt: msg.createdAt,
-      lastSenderUid: cleanSender,
-      unreadBy: {
-        ...index[threadId]?.unreadBy || {},
-        [cleanSender]: 0,
-        [cleanRecipient]: prevUnread + 1
-      }
-    };
-    await this.saveThreadsIndex(index);
-    return msg;
-  }
-  async loadPostsOrder() {
-    const remote = await this.readJsonDoc("social_posts_index");
-    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.order)) {
-      this.mirror.postsOrder = remote.order;
-      return remote.order;
-    }
-    if (remote === null) {
-      this.mirror.postsOrder = [];
-      return [];
-    }
-    return this.mirror.postsOrder;
-  }
-  async savePostsOrder(order) {
-    const trimmed = order.slice(0, 120);
-    this.mirror.postsOrder = trimmed;
-    this.persistMirrorToDisk();
-    await this.writeJsonDoc("social_posts_index", { order: trimmed });
-  }
-  async loadPostDoc(postId) {
-    const cleanId = sanitizePostId(postId);
-    if (!cleanId) return null;
-    const remote = await this.readJsonDoc(`social_post_${cleanId}`);
-    if (remote && remote !== "UNAVAILABLE" && remote.id) {
-      this.mirror.posts[cleanId] = remote;
-      return remote;
-    }
-    if (remote === null) return null;
-    return this.mirror.posts[cleanId] || null;
-  }
-  async savePostDoc(post) {
-    this.mirror.posts[post.id] = post;
-    this.persistMirrorToDisk();
-    await this.writeJsonDoc(`social_post_${post.id}`, post);
-  }
-  async createPost(authorUid, input) {
-    const caption = String(input.caption || "").trim().slice(0, 4e3);
-    const images = [];
-    for (const rawImg of Array.isArray(input.images) ? input.images : []) {
-      const cleanImg = String(rawImg || "").trim();
-      if (!cleanImg) continue;
-      if (!isAllowedImageInput(cleanImg)) {
-        throw new SocialValidationError(
-          "Each image must be a valid HTTP(S) URL or compressed JPEG/PNG/WebP/GIF under 350 KB."
-        );
-      }
-      images.push(cleanImg);
-      if (images.length >= 3) break;
-    }
-    let video = null;
-    if (input.videoUrl && String(input.videoUrl).trim()) {
-      const cleanVideo = String(input.videoUrl).trim();
-      const check = isAllowedVideoInput(cleanVideo);
-      if (!check.valid) {
-        throw new SocialValidationError(
-          "Video must be a valid HTTP(S) video link (e.g., YouTube/MP4) or uploaded MP4/WebM clip under 750 KB."
-        );
-      }
-      video = { url: cleanVideo, kind: check.kind };
-    }
-    let mentionedWork = null;
-    if (input.mentionedWork && String(input.mentionedWork.title || "").trim()) {
-      const w = input.mentionedWork;
-      mentionedWork = {
-        ...w.id ? { id: String(w.id).slice(0, 80) } : {},
-        title: String(w.title).trim().slice(0, 320),
-        ...w.venue ? { venue: String(w.venue).trim().slice(0, 200) } : {},
-        ...typeof w.year === "number" && Number.isFinite(w.year) ? { year: w.year } : {},
-        ...typeof w.citations === "number" && Number.isFinite(w.citations) ? { citations: w.citations } : {},
-        ...w.quartile ? { quartile: String(w.quartile).slice(0, 16) } : {},
-        ...w.type ? { type: String(w.type).slice(0, 32) } : {},
-        ...w.doi ? { doi: String(w.doi).slice(0, 160) } : {},
-        ...w.url && /^https?:\/\//i.test(w.url) ? { url: String(w.url).slice(0, 500) } : {}
-      };
-    }
-    const taggedCoAuthors = [];
-    const seenTags = /* @__PURE__ */ new Set();
-    for (const tag of Array.isArray(input.taggedCoAuthors) ? input.taggedCoAuthors : []) {
-      const name = String(tag?.name || "").trim().slice(0, 120);
-      if (!name) continue;
-      const key = name.toLowerCase();
-      if (seenTags.has(key)) continue;
-      seenTags.add(key);
-      taggedCoAuthors.push({
-        name,
-        ...tag.scholarUserId ? { scholarUserId: String(tag.scholarUserId).slice(0, 64) } : {},
-        ...tag.uid ? { uid: String(tag.uid).slice(0, 128) } : {},
-        ...tag.university ? { university: String(tag.university).slice(0, 180) } : {}
-      });
-      if (taggedCoAuthors.length >= 15) break;
-    }
-    if (!caption && !mentionedWork && images.length === 0 && !video) {
-      throw new SocialValidationError(
-        "Please add a caption, mention a research work, or attach an image/video before posting."
-      );
-    }
-    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
-    const post = {
-      id: `post_${Date.now()}_${crypto2.randomBytes(4).toString("hex")}`,
-      authorUid,
-      caption,
-      mentionedWork,
-      taggedCoAuthors,
-      images,
-      video,
-      likes: [],
-      comments: [],
-      createdAt: nowIso,
-      updatedAt: nowIso
-    };
-    await this.savePostDoc(post);
-    const order = await this.loadPostsOrder();
-    await this.savePostsOrder([post.id, ...order.filter((id) => id !== post.id)]);
-    return post;
-  }
-  async listPosts(limit = 40) {
-    const order = await this.loadPostsOrder();
-    const slice = order.slice(0, limit);
-    const docs = await Promise.all(slice.map((id) => this.loadPostDoc(id)));
-    return docs.filter((p) => Boolean(p));
-  }
-  async toggleLikePost(uid, postId) {
-    const post = await this.loadPostDoc(postId);
-    if (!post) throw new SocialNotFoundError("Post not found.");
-    const likes = Array.isArray(post.likes) ? [...post.likes] : [];
-    const idx = likes.indexOf(uid);
-    if (idx >= 0) {
-      likes.splice(idx, 1);
-    } else {
-      likes.push(uid);
-    }
-    const updated = {
-      ...post,
-      likes,
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    await this.savePostDoc(updated);
-    return updated;
-  }
-  async addCommentToPost(uid, postId, rawText) {
-    const cleanText = String(rawText || "").trim();
-    if (!cleanText) throw new SocialValidationError("Comment cannot be empty.");
-    if (cleanText.length > 1500) {
-      throw new SocialValidationError("Comment exceeds 1,500 characters.");
-    }
-    const post = await this.loadPostDoc(postId);
-    if (!post) throw new SocialNotFoundError("Post not found.");
-    const comment = {
-      id: `cmt_${Date.now()}_${crypto2.randomBytes(3).toString("hex")}`,
-      authorUid: uid,
-      text: cleanText,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    const updated = {
-      ...post,
-      comments: [...post.comments || [], comment].slice(-100),
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    await this.savePostDoc(updated);
-    return updated;
-  }
-  async deletePost(uid, postId) {
-    const post = await this.loadPostDoc(postId);
-    if (!post) throw new SocialNotFoundError("Post not found.");
-    if (post.authorUid !== uid) {
-      throw new SocialForbiddenError("Only the author can delete this post.");
-    }
-    const cleanId = sanitizePostId(postId);
-    delete this.mirror.posts[cleanId];
-    const order = await this.loadPostsOrder();
-    await this.savePostsOrder(order.filter((id) => id !== cleanId));
-    await this.deleteJsonDoc(`social_post_${cleanId}`);
-  }
-  getMirrorWorksDigests() {
-    return this.mirror.worksDigests || {};
-  }
-  async listResearcherWorksDigests() {
-    const remote = await this.readJsonDoc(
-      "social_works_digests"
-    );
-    if (remote && remote !== "UNAVAILABLE" && remote.digests) {
-      this.mirror.worksDigests = remote.digests;
-      return remote.digests;
-    }
-    if (remote === null) {
-      if (Object.keys(this.mirror.worksDigests || {}).length > 0) {
-        return this.mirror.worksDigests;
-      }
-      this.mirror.worksDigests = {};
-      return {};
-    }
-    return this.mirror.worksDigests;
-  }
-  async recordResearcherWorksDigest(digest) {
-    const cleanId = String(digest.scholarUserId || "").trim();
-    if (!cleanId) return;
-    const digests = { ...await this.listResearcherWorksDigests() };
-    digests[cleanId] = {
-      ...digest,
-      scholarUserId: cleanId,
-      works: (digest.works || []).slice(0, 12)
-    };
-    const sortedEntries = Object.entries(digests).sort((a, b) => String(b[1].updatedAt).localeCompare(String(a[1].updatedAt))).slice(0, 20);
-    const trimmed = Object.fromEntries(sortedEntries);
-    this.mirror.worksDigests = trimmed;
-    this.persistMirrorToDisk();
-    await this.writeJsonDoc("social_works_digests", { digests: trimmed });
-  }
-};
-
-// src/server/feedRanking.ts
-function normalizeResearcherKey(name) {
-  return String(name || "").toLowerCase().replace(/\./g, " ").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
-}
-function areSimilarResearcherNames(a, b) {
-  const normA = normalizeResearcherKey(a);
-  const normB = normalizeResearcherKey(b);
-  if (!normA || !normB) return false;
-  if (normA === normB) return true;
-  const partsA = normA.split(" ");
-  const partsB = normB.split(" ");
-  const lastA = partsA[partsA.length - 1];
-  const lastB = partsB[partsB.length - 1];
-  if (lastA !== lastB) return false;
-  const firstA = partsA[0] || "";
-  const firstB = partsB[0] || "";
-  if (!firstA || !firstB) return false;
-  return firstA === firstB || firstA.length === 1 && firstB.startsWith(firstA) || firstB.length === 1 && firstA.startsWith(firstB);
-}
-function matchesNameSet(name, set) {
-  const clean = normalizeResearcherKey(name);
-  if (!clean) return false;
-  if (set.has(clean)) return true;
-  for (const candidate of set) {
-    if (areSimilarResearcherNames(clean, candidate)) return true;
-  }
-  return false;
-}
-function buildFeedNetworkSets(params) {
-  const viewerUid = String(params.viewerUid || "").trim();
-  const viewerNames = /* @__PURE__ */ new Set();
-  if (params.viewerName) viewerNames.add(normalizeResearcherKey(params.viewerName));
-  const viewerScholarIds = /* @__PURE__ */ new Set();
-  if (params.viewerScholarUserId) {
-    viewerScholarIds.add(String(params.viewerScholarUserId).trim());
-  }
-  const connectedUids = /* @__PURE__ */ new Set();
-  if (viewerUid) connectedUids.add(viewerUid);
-  for (const uid of params.acceptedUids || []) {
-    if (uid) connectedUids.add(String(uid).trim());
-  }
-  const connectedScholarIds = /* @__PURE__ */ new Set();
-  const connectedNames = /* @__PURE__ */ new Set();
-  for (const user of params.registeredUsers || []) {
-    if (connectedUids.has(user.uid)) {
-      if (user.scholarUserId) {
-        connectedScholarIds.add(user.scholarUserId.trim());
-      }
-      if (user.name) {
-        connectedNames.add(normalizeResearcherKey(user.name));
-      }
-    }
-  }
-  const isViewer = (name, sid) => {
-    const cleanSid = String(sid || "").trim();
-    if (cleanSid && viewerScholarIds.size > 0) {
-      if (viewerScholarIds.has(cleanSid)) return true;
-      return false;
-    }
-    if (cleanSid && viewerScholarIds.has(cleanSid)) return true;
-    return matchesNameSet(name, viewerNames);
-  };
-  const coAuthorScholarIds = /* @__PURE__ */ new Set();
-  const coAuthorNames = /* @__PURE__ */ new Set();
-  const registerCoAuthor = (name, sid) => {
-    const cleanSid = String(sid || "").trim();
-    const cleanName = normalizeResearcherKey(name);
-    if (isViewer(name, sid)) return;
-    if (cleanSid && !connectedScholarIds.has(cleanSid)) {
-      coAuthorScholarIds.add(cleanSid);
-    }
-    if (cleanName && !matchesNameSet(cleanName, connectedNames)) {
-      coAuthorNames.add(cleanName);
-    }
-  };
-  for (const digest of Object.values(params.digests || {})) {
-    const digestSid = String(digest.scholarUserId || "").trim();
-    const viewerDigest = digestSid && viewerScholarIds.size > 0 ? viewerScholarIds.has(digestSid) : matchesNameSet(digest.name, viewerNames);
-    if (viewerDigest) {
-      for (const ca of digest.coAuthors || []) {
-        registerCoAuthor(ca.name, ca.scholarUserId);
-      }
-      for (const work of digest.works || []) {
-        for (const name of work.coAuthorNames || []) {
-          registerCoAuthor(name);
-        }
-      }
-      continue;
-    }
-    let viewerAppearsOnDigest = false;
-    for (const ca of digest.coAuthors || []) {
-      if (isViewer(ca.name, ca.scholarUserId)) {
-        viewerAppearsOnDigest = true;
-        break;
-      }
-    }
-    if (!viewerAppearsOnDigest) {
-      for (const work of digest.works || []) {
-        if ((work.coAuthorNames || []).some((n) => isViewer(n))) {
-          viewerAppearsOnDigest = true;
-          break;
-        }
-      }
-    }
-    if (viewerAppearsOnDigest) {
-      registerCoAuthor(digest.name, digest.scholarUserId);
-    }
-  }
-  const secondDegreeScholarIds = /* @__PURE__ */ new Set();
-  const secondDegreeNames = /* @__PURE__ */ new Set();
-  const registerSecondDegree = (name, sid) => {
-    const cleanSid = String(sid || "").trim();
-    const cleanName = normalizeResearcherKey(name);
-    if (isViewer(name, sid)) return;
-    if (cleanSid && connectedScholarIds.has(cleanSid)) return;
-    if (cleanSid && coAuthorScholarIds.has(cleanSid)) return;
-    if (cleanName && matchesNameSet(cleanName, connectedNames)) return;
-    if (cleanName && matchesNameSet(cleanName, coAuthorNames)) return;
-    if (cleanSid) secondDegreeScholarIds.add(cleanSid);
-    if (cleanName) secondDegreeNames.add(cleanName);
-  };
-  for (const digest of Object.values(params.digests || {})) {
-    const digestSid = String(digest.scholarUserId || "").trim();
-    const isDirectCoAuthorDigest = digestSid && coAuthorScholarIds.has(digestSid) || matchesNameSet(digest.name, coAuthorNames);
-    if (isDirectCoAuthorDigest) {
-      for (const ca of digest.coAuthors || []) {
-        registerSecondDegree(ca.name, ca.scholarUserId);
-      }
-      for (const work of digest.works || []) {
-        for (const name of work.coAuthorNames || []) {
-          registerSecondDegree(name);
-        }
-      }
-      continue;
-    }
-    let directCoAuthorOnDigest = false;
-    for (const work of digest.works || []) {
-      const workHasDirectCoAuthor = (work.coAuthorNames || []).some(
-        (n) => matchesNameSet(n, coAuthorNames)
-      );
-      if (workHasDirectCoAuthor) {
-        directCoAuthorOnDigest = true;
-        for (const sibling of work.coAuthorNames || []) {
-          registerSecondDegree(sibling);
-        }
-      }
-    }
-    if (directCoAuthorOnDigest) {
-      registerSecondDegree(digest.name, digest.scholarUserId);
-    }
-  }
-  return {
-    viewerUid,
-    viewerNames,
-    viewerScholarIds,
-    connectedUids,
-    connectedScholarIds,
-    connectedNames,
-    coAuthorScholarIds,
-    coAuthorNames,
-    secondDegreeScholarIds,
-    secondDegreeNames
-  };
-}
-function classifyFeedItemPriority(item, network) {
-  const authorUid = String(item.author?.uid || "").trim();
-  const authorSid = String(item.author?.scholarUserId || "").trim();
-  const authorName = item.author?.name;
-  const isViewerAuthor = authorUid && authorUid === network.viewerUid || authorSid && network.viewerScholarIds.has(authorSid) || matchesNameSet(authorName, network.viewerNames) && (!authorSid || network.viewerScholarIds.size === 0 || network.viewerScholarIds.has(authorSid));
-  if (isViewerAuthor) {
-    return {
-      tier: 1,
-      reason: "connected",
-      label: "Your Update"
-    };
-  }
-  if (authorUid && network.connectedUids.has(authorUid) || authorSid && network.connectedScholarIds.has(authorSid) || matchesNameSet(authorName, network.connectedNames)) {
-    return {
-      tier: 1,
-      reason: "connected",
-      label: "Connected"
-    };
-  }
-  const taggedList = (item.taggedCoAuthors || []).map((t) => t.name || "");
-  const workCoAuthors = item.work?.coAuthorNames || [];
-  if (authorSid && network.coAuthorScholarIds.has(authorSid) || matchesNameSet(authorName, network.coAuthorNames) || taggedList.some((n) => matchesNameSet(n, network.viewerNames)) || workCoAuthors.some((n) => matchesNameSet(n, network.viewerNames))) {
-    return {
-      tier: 2,
-      reason: "coauthor",
-      label: "Co-Author"
-    };
-  }
-  if (authorSid && network.secondDegreeScholarIds.has(authorSid) || matchesNameSet(authorName, network.secondDegreeNames) || taggedList.some(
-    (n) => matchesNameSet(n, network.coAuthorNames) || matchesNameSet(n, network.secondDegreeNames)
-  ) || workCoAuthors.some(
-    (n) => matchesNameSet(n, network.coAuthorNames) || matchesNameSet(n, network.secondDegreeNames)
-  )) {
-    return {
-      tier: 3,
-      reason: "coauthor_coauthor",
-      label: "Co-Author's Co-Author"
-    };
-  }
-  return {
-    tier: 4,
-    reason: "community",
-    label: "Community"
-  };
-}
-function sortAndRankFeedItems(items, network) {
-  const annotated = items.map((item) => {
-    const classification = classifyFeedItemPriority(item, network);
-    return {
-      ...item,
-      networkTier: classification.tier,
-      suggestionReason: classification.reason,
-      suggestionLabel: classification.label
-    };
-  });
-  annotated.sort((a, b) => {
-    const tierDiff = (a.networkTier || 4) - (b.networkTier || 4);
-    if (tierDiff !== 0) return tierDiff;
-    if (a.kind !== b.kind && Math.abs(b.sortScore - a.sortScore) < 30 * 86400 * 1e3) {
-      return a.kind === "post" ? -1 : 1;
-    }
-    return b.sortScore - a.sortScore;
-  });
-  return annotated;
-}
-function sliceEndlessFeed(rankedItems, offset, limit, allowInfiniteRepeat) {
-  const total = rankedItems.length;
-  if (total === 0) {
-    return { items: [], hasMore: false };
-  }
-  if (!allowInfiniteRepeat) {
-    const paged = rankedItems.slice(offset, offset + limit);
-    return {
-      items: paged,
-      hasMore: offset + paged.length < total
-    };
-  }
-  const out = [];
-  for (let i = 0; i < limit; i++) {
-    const absIndex = offset + i;
-    const cycle = Math.floor(absIndex / total);
-    const baseItem = rankedItems[absIndex % total];
-    out.push(
-      cycle === 0 ? baseItem : {
-        ...baseItem,
-        feedId: `${baseItem.feedId}__c${cycle}_${absIndex}`
-      }
-    );
-  }
-  return { items: out, hasMore: true };
-}
-
-// src/server/openAlexDisambiguation.ts
-var AFFIL_STOPWORDS = /* @__PURE__ */ new Set([
-  "dept",
-  "department",
-  "student",
-  "professor",
-  "prof",
-  "researcher",
-  "fellow",
-  "post",
-  "graduate",
-  "undergraduate",
-  "associate",
-  "assistant",
-  "emeritus",
-  "chairman",
-  "chair",
-  "dr",
-  "faculty",
-  "univ",
-  "university",
-  "institute",
-  "institution",
-  "academic",
-  "college",
-  "school",
-  "international",
-  "unlisted",
-  "technology",
-  "science",
-  "engineering",
-  "computer",
-  "and",
-  "the",
-  "for",
-  "of"
-]);
-function normalizeAsciiWords(input) {
-  return String(input || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
-}
-function extractAffiliationKeywords(text) {
-  const cleaned = normalizeAsciiWords(text).replace(
-    /\bindependent\s+(?:researcher|scholar|scientist|author|consultant|unlisted)\b/g,
-    " "
-  ).replace(/^independent(?:\s+unlisted)?$/g, " ");
-  return Array.from(
-    new Set(
-      cleaned.split(/\s+/).filter((t) => t.length >= 3 && !AFFIL_STOPWORDS.has(t))
-    )
-  );
-}
-function stripAuthorHonorificsBasic(name) {
-  return String(name || "").replace(/\([^)]*\)/g, " ").replace(/\[[^\]]*\]/g, " ").replace(/,\s*(?:phd|ph\.d\.|dr\.?|prof\.?)\b.*/gi, " ").replace(/\b(?:prof(?:essor)?|dr|engr|eng)\b\.?/gi, " ").replace(/\s+/g, " ").trim();
-}
-var MUHAMMAD_PREFIX_VARIANTS = /* @__PURE__ */ new Set([
-  "md",
-  "mohd",
-  "mohammed",
-  "muhammad",
-  "mohammad",
-  "muhammed",
-  "mohamad"
-]);
-function areGivenNameTokensCompatible(a, b) {
-  if (!a || !b) return false;
-  if (a === b) return true;
-  if (a.replace(/v|w/g, "b") === b.replace(/v|w/g, "b")) return true;
-  if (MUHAMMAD_PREFIX_VARIANTS.has(a) && MUHAMMAD_PREFIX_VARIANTS.has(b)) {
-    return true;
-  }
-  if (a.length === 1 || b.length === 1) {
-    return a[0] === b[0];
-  }
-  return false;
-}
-function isOrderedGivenSubsequence(shortTokens, longTokens) {
-  if (shortTokens.length === 0 || longTokens.length < shortTokens.length) {
-    return false;
-  }
-  let j = 0;
-  let firstMatchIndex = -1;
-  let matchedNonPrefix = false;
-  for (let i = 0; i < shortTokens.length; i++) {
-    const tok = shortTokens[i];
-    let found = false;
-    while (j < longTokens.length) {
-      if (areGivenNameTokensCompatible(tok, longTokens[j])) {
-        if (firstMatchIndex === -1) firstMatchIndex = j;
-        if (!MUHAMMAD_PREFIX_VARIANTS.has(tok) || !MUHAMMAD_PREFIX_VARIANTS.has(longTokens[j])) {
-          matchedNonPrefix = true;
-        }
-        j++;
-        found = true;
-        break;
-      }
-      j++;
-    }
-    if (!found) return false;
-  }
-  if (firstMatchIndex > 0 && shortTokens[0].length === 1 && shortTokens.length === 1) {
-    return false;
-  }
-  const longHasExtraDistinguishingToken = longTokens.length > shortTokens.length && longTokens.some((t) => t.length >= 2 && !MUHAMMAD_PREFIX_VARIANTS.has(t));
-  if (!matchedNonPrefix && longHasExtraDistinguishingToken) {
-    return false;
-  }
-  return true;
-}
-function isSameResearcherNameMatch(candidateName, targetName) {
-  const c = String(candidateName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
-  const t = String(targetName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
-  if (!c || !t) return false;
-  if (c === t) return true;
-  const cNorm = c.replace(/v|w/g, "b");
-  const tNorm = t.replace(/v|w/g, "b");
-  if (cNorm === tNorm) return true;
-  const cTokens = c.split(/\s+/).filter(Boolean);
-  const tTokens = t.split(/\s+/).filter(Boolean);
-  if (cTokens.length < 2 || tTokens.length < 2) {
-    return false;
-  }
-  if (cTokens.length === tTokens.length && [...cTokens].sort().join(" ") === [...tTokens].sort().join(" ")) {
-    return true;
-  }
-  const cLast = cTokens[cTokens.length - 1];
-  const tLast = tTokens[tTokens.length - 1];
-  if (cLast !== tLast && cLast.replace(/v|w/g, "b") !== tLast.replace(/v|w/g, "b")) {
-    const getHyphenSurnameParts = (raw) => {
-      const lastRaw = String(raw || "").trim().split(/\s+/).pop() || "";
-      if (!/[-‐‑‒–—]/.test(lastRaw)) return null;
-      const parts = lastRaw.split(/[-‐‑‒–—]+/).map(
-        (p) => p.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "")
-      ).filter((p) => p.length >= 2);
-      return parts.length >= 2 ? parts : null;
-    };
-    const cHyphenParts = getHyphenSurnameParts(candidateName);
-    const tHyphenParts = getHyphenSurnameParts(targetName);
-    const hyphenLastMatches = cHyphenParts && cHyphenParts.includes(tLast) && cTokens.length >= 3 && cTokens.slice(0, -cHyphenParts.length).join(" ") === tTokens.slice(0, -1).join(" ") || tHyphenParts && tHyphenParts.includes(cLast) && tTokens.length >= 3 && tTokens.slice(0, -tHyphenParts.length).join(" ") === cTokens.slice(0, -1).join(" ");
-    if (hyphenLastMatches) {
-      return true;
-    }
-    return false;
-  }
-  const cGiven = cTokens.slice(0, -1);
-  const tGiven = tTokens.slice(0, -1);
-  if (cGiven.join("") === tGiven.join("")) return true;
-  if (cGiven.length === 1 && cGiven[0].length >= 2 && cGiven[0].length === tGiven.length && tGiven.every((tok, idx) => tok[0] === cGiven[0][idx])) {
-    return true;
-  }
-  if (tGiven.length === 1 && tGiven[0].length >= 2 && tGiven[0].length === cGiven.length && cGiven.every((tok, idx) => tok[0] === tGiven[0][idx])) {
-    return true;
-  }
-  const stripLeadingPrefix = (tokens) => tokens.length >= 2 && MUHAMMAD_PREFIX_VARIANTS.has(tokens[0]) ? tokens.slice(1) : tokens;
-  const collapseSingleLetterRuns = (tokens) => {
-    const out = [];
-    let i = 0;
-    while (i < tokens.length) {
-      if (tokens[i].length === 1) {
-        let j = i;
-        while (j < tokens.length && tokens[j].length === 1) j++;
-        if (j - i >= 2) {
-          out.push(tokens.slice(i, j).join(""));
-        } else {
-          out.push(tokens[i]);
-        }
-        i = j;
-      } else {
-        out.push(tokens[i]);
-        i++;
-      }
-    }
-    return out;
-  };
-  const buildVariants = (tokens) => {
-    const variants = [tokens];
-    const stripped = stripLeadingPrefix(tokens);
-    if (stripped !== tokens) variants.push(stripped);
-    const collapsed = collapseSingleLetterRuns(tokens);
-    if (collapsed.length !== tokens.length) variants.push(collapsed);
-    return variants;
-  };
-  const cVariants = buildVariants(cGiven);
-  const tVariants = buildVariants(tGiven);
-  for (const cv of cVariants) {
-    for (const tv of tVariants) {
-      const [shortTokens, longTokens] = cv.length <= tv.length ? [cv, tv] : [tv, cv];
-      if (isOrderedGivenSubsequence(shortTokens, longTokens)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-function scoreOpenAlexAuthorCandidate(author, cleanSearchName, affilTokens, homeCountryCode, isSameName) {
-  const disp = String(author?.display_name || "");
-  if (!disp || !isSameName(disp, cleanSearchName)) return null;
-  const normSearchExact = normalizeAsciiWords(
-    stripAuthorHonorificsBasic(cleanSearchName)
-  ).replace(/[0-9]/g, "").replace(/\s+/g, " ").trim();
-  const normSearchNoMid = normSearchExact.split(" ").filter((w, i, arr) => i === 0 || i === arr.length - 1 || w.length > 1).join(" ");
-  const normDispExact = normalizeAsciiWords(stripAuthorHonorificsBasic(disp)).replace(/[0-9]/g, "").replace(/\s+/g, " ").trim();
-  const normDispNoMid = normDispExact.split(" ").filter((w, i, arr) => i === 0 || i === arr.length - 1 || w.length > 1).join(" ");
-  const joinCompactInitials = (s) => s.replace(/\b(?:[a-z]\s+)+[a-z]\b/g, (m) => m.replace(/\s+/g, ""));
-  const normDispCompact = joinCompactInitials(normDispExact);
-  const normSearchCompact = joinCompactInitials(normSearchExact);
-  const normDispSorted = normDispNoMid.split(" ").filter(Boolean).sort().join(" ");
-  const normSearchSorted = normSearchNoMid.split(" ").filter(Boolean).sort().join(" ");
-  let score = 0;
-  if (normDispExact === normSearchExact) {
-    score += 25;
-  } else if (normDispCompact === normSearchCompact || normDispNoMid === normSearchNoMid) {
-    score += 24;
-  } else if (normDispSorted && normDispSorted === normSearchSorted) {
-    score += 23;
-  }
-  const candidateInstitutions = [];
-  if (Array.isArray(author.last_known_institutions)) {
-    for (const inst of author.last_known_institutions) {
-      if (inst?.display_name || inst?.country_code) {
-        candidateInstitutions.push({
-          name: normalizeAsciiWords(String(inst.display_name || "")),
-          countryCode: String(inst.country_code || "").toUpperCase()
-        });
-      }
-    }
-  }
-  if (Array.isArray(author.affiliations)) {
-    for (const aff of author.affiliations) {
-      if (aff?.institution?.display_name || aff?.institution?.country_code) {
-        candidateInstitutions.push({
-          name: normalizeAsciiWords(String(aff.institution.display_name || "")),
-          countryCode: String(aff.institution.country_code || "").toUpperCase()
-        });
-      }
-    }
-  }
-  let affilMatches = 0;
-  for (const token of affilTokens) {
-    if (candidateInstitutions.some((ci) => ci.name.includes(token))) {
-      affilMatches++;
-      score += 30;
-    }
-  }
-  let countryMatches = 0;
-  const upperHomeCountry = String(homeCountryCode || "").trim().toUpperCase();
-  if (upperHomeCountry && candidateInstitutions.some((ci) => ci.countryCode === upperHomeCountry)) {
-    countryMatches = 1;
-    score += 15;
-  }
-  const worksCount = Number(author.works_count || 0);
-  score += Math.min(25, Math.log10(worksCount + 1) * 8);
-  const id = String(author.id || "").replace("https://openalex.org/", "").trim();
-  if (!id) return null;
-  return {
-    author,
-    id,
-    score,
-    affilMatches,
-    countryMatches,
-    worksCount
-  };
-}
-function pickDisambiguationTitles(publications, limit = 4) {
-  const chosen = [];
-  const seen = /* @__PURE__ */ new Set();
-  const tryAdd = (pub) => {
-    const t = String(pub?.title || "").trim();
-    const key = t.toLowerCase();
-    if (!t || t.length < 10 || seen.has(key)) return false;
-    seen.add(key);
-    chosen.push(t);
-    return true;
-  };
-  for (const pub of publications.slice(0, 3)) {
-    if (chosen.length >= limit) break;
-    tryAdd(pub);
-  }
-  const recentPub = publications.find((p) => (p.year || 0) >= 2018 && p.title.length >= 20);
-  if (recentPub && chosen.length < limit) {
-    tryAdd(recentPub);
-  }
-  for (const pub of publications) {
-    if (chosen.length >= limit) break;
-    tryAdd(pub);
-  }
-  return chosen;
-}
-function normalizeOrcidUrl(raw) {
-  return String(raw || "").trim().replace(/^https?:\/\/orcid\.org\//i, "").toUpperCase();
-}
-function areOrcidsConflicting(orcidA, orcidB) {
-  const cleanA = normalizeOrcidUrl(orcidA);
-  const cleanB = normalizeOrcidUrl(orcidB);
-  return Boolean(cleanA && cleanB && cleanA !== cleanB);
-}
-function rankOpenAlexAuthorsFromWorks(worksByTitle, cleanSearchName, affilTokens, homeCountryCode, isSameName, matchWorkFn, collaboratorNames = []) {
-  const upperHomeCountry = String(homeCountryCode || "").trim().toUpperCase();
-  const cleanCollaborators = collaboratorNames.map((n) => stripAuthorHonorificsBasic(n).trim()).filter(Boolean);
-  const candidates = /* @__PURE__ */ new Map();
-  for (const entry of worksByTitle) {
-    const titleKey = entry.title.toLowerCase();
-    for (const w of entry.works) {
-      if (!matchWorkFn(entry.title, [w])) continue;
-      const authorships = Array.isArray(w.authorships) ? w.authorships : [];
-      const workCollabCount = cleanCollaborators.length > 0 ? authorships.filter((otherAu) => {
-        const otherName = String(otherAu.author?.display_name || "").trim();
-        return otherName && cleanCollaborators.some((colName) => isSameName(otherName, colName));
-      }).length : 0;
-      for (const au of authorships) {
-        const auName = String(au.author?.display_name || "");
-        const auId = String(au.author?.id || "").replace("https://openalex.org/", "").trim();
-        if (!auId || !auName || !isSameName(auName, cleanSearchName)) continue;
-        let stats = candidates.get(auId);
-        if (!stats) {
-          stats = {
-            id: auId,
-            orcid: normalizeOrcidUrl(au.author?.orcid) || void 0,
-            affilHits: 0,
-            countryHits: 0,
-            titleHits: 0,
-            collaboratorHits: 0,
-            seenTitles: /* @__PURE__ */ new Set()
-          };
-          candidates.set(auId, stats);
-        } else if (!stats.orcid) {
-          const normO = normalizeOrcidUrl(au.author?.orcid);
-          if (normO) stats.orcid = normO;
-        }
-        if (!stats.seenTitles.has(titleKey)) {
-          stats.seenTitles.add(titleKey);
-          stats.titleHits++;
-          stats.collaboratorHits += workCollabCount;
-        }
-        const insts = Array.isArray(au.institutions) ? au.institutions : [];
-        let workAffilMatched = false;
-        let workCountryMatched = false;
-        for (const inst of insts) {
-          const iName = normalizeAsciiWords(String(inst?.display_name || ""));
-          const iCode = String(inst?.country_code || "").trim().toUpperCase();
-          if (affilTokens.some((tok) => iName.includes(tok))) {
-            workAffilMatched = true;
-          }
-          if (upperHomeCountry && iCode === upperHomeCountry) {
-            workCountryMatched = true;
-          }
-        }
-        if (workAffilMatched) stats.affilHits++;
-        if (workCountryMatched) stats.countryHits++;
-      }
-    }
-  }
-  return Array.from(candidates.values()).map((c) => ({
-    id: c.id,
-    ...c.orcid ? { orcid: c.orcid } : {},
-    affilHits: c.affilHits,
-    countryHits: c.countryHits,
-    titleHits: c.titleHits,
-    collaboratorHits: c.collaboratorHits,
-    score: c.affilHits * 60 + c.collaboratorHits * 45 + c.countryHits * 25 + c.titleHits * 15
-  })).sort(
-    (a, b) => b.score - a.score || b.collaboratorHits - a.collaboratorHits || b.affilHits - a.affilHits || b.titleHits - a.titleHits || (b.orcid ? 1 : 0) - (a.orcid ? 1 : 0)
-  );
-}
-var SKIPPED_PROFILE_HOSTS = [
-  "scholar.google",
-  "linkedin.com",
-  "researchgate.net",
-  "scopus.com",
-  "twitter.com",
-  "x.com",
-  "facebook.com",
-  "instagram.com",
-  "github.com",
-  "youtube.com",
-  "orcid.org",
-  "publons.com",
-  "webofscience.com",
-  "semanticscholar.org",
-  "dblp.org",
-  "ieee.org",
-  "acm.org",
-  "springer.com",
-  "elsevier.com",
-  "wikipedia.org"
-];
-var PREFERRED_PROFILE_PATTERNS = [
-  /orbit\./i,
-  /pure\./i,
-  /profiles?\./i,
-  /people\./i,
-  /faculty/i,
-  /staff/i,
-  /person/i,
-  /\.edu(?:\/|$|\.)/i,
-  /\.ac\.[a-z]{2}(?:\/|$)/i,
-  /\.dk(?:\/|$)/i,
-  /\.se(?:\/|$)/i,
-  /\.de(?:\/|$)/i,
-  /\.uk(?:\/|$)/i
-];
-function pickInstitutionalProfileUrls(researcherUrls) {
-  const scored = [];
-  const seen = /* @__PURE__ */ new Set();
-  for (const item of researcherUrls || []) {
-    const raw = String(item?.url?.value || item?.url || "").trim();
-    if (!raw || !/^https?:\/\//i.test(raw)) continue;
-    const lower = raw.toLowerCase();
-    if (SKIPPED_PROFILE_HOSTS.some((h) => lower.includes(h))) continue;
-    if (seen.has(raw)) continue;
-    seen.add(raw);
-    let priority = 1;
-    if (/\/persons?\//i.test(lower) || /pure|orbit/i.test(lower)) priority += 4;
-    if (PREFERRED_PROFILE_PATTERNS.some((re) => re.test(lower))) priority += 2;
-    if (raw.startsWith("https://")) priority += 1;
-    scored.push({ url: raw, priority });
-  }
-  return scored.sort((a, b) => b.priority - a.priority).map((s) => s.url);
-}
-var REJECTED_IMAGE_PATTERNS = /(?:logo|icon|favicon|placeholder|default|avatar_scholar|cleardot|blank|spinner|orcid|banner|badge|wordmark|seal|header|footer|share|\.svg(?:$|\?))/i;
-function extractPortraitUrlFromHtml(html, pageUrl) {
-  if (!html) return null;
-  const candidateAttrRegexes = [
-    /<meta[^>]*property=["']og:image(?::secure_url)?["'][^>]*content=["']([^"']+)["']/i,
-    /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image(?::secure_url)?["']/i,
-    /<meta[^>]*name=["']twitter:image(?::src)?["'][^>]*content=["']([^"']+)["']/i,
-    /<img[^>]*class=["'][^"']*(?:portrait|avatar|headshot|profile-?photo|person-?image)[^"']*["'][^>]*src=["']([^"']+)["']/i,
-    /<img[^>]*src=["']([^"']*\/files-asset\/[^"']+)["']/i
-  ];
-  for (const re of candidateAttrRegexes) {
-    const match = html.match(re);
-    const rawCandidate = match?.[1]?.trim();
-    if (!rawCandidate || rawCandidate.startsWith("data:")) continue;
-    if (REJECTED_IMAGE_PATTERNS.test(rawCandidate)) continue;
-    try {
-      const resolved = new URL(rawCandidate, pageUrl).toString();
-      if (/^https?:\/\//i.test(resolved) && !REJECTED_IMAGE_PATTERNS.test(resolved)) {
-        return resolved;
-      }
-    } catch {
-    }
-  }
-  return null;
-}
-function buildYahooScholarSearchQueries(name, university) {
-  const cleanName = stripAuthorHonorificsBasic(name);
-  if (!cleanName) return [];
-  const cleanUni = String(university || "").trim();
-  const isGenericUni = !cleanUni || /^(?:independent\s*\/\s*unlisted|unlisted|unknown(?:\s+university)?)$/i.test(
-    cleanUni
-  );
-  const queries = [];
-  if (!isGenericUni) {
-    const shortUni = cleanUni.split(",")[0].trim();
-    queries.push(`"${cleanName}" "${shortUni}" scholar.google.com/citations`);
-  }
-  queries.push(`${cleanName} scholar.google.com/citations`);
-  return queries;
-}
-function extractSameInstitutionAuthorIds(instAuthors, cleanSearchName, isSameName, maxIds = 8, primaryOrcid) {
-  const ids = [];
-  const normalizedPrimaryOrcid = normalizeOrcidUrl(primaryOrcid);
-  const matching = (instAuthors || []).filter((cand) => {
-    const cName = String(cand?.display_name || "").trim();
-    const cId = String(cand?.id || "").replace("https://openalex.org/", "").trim();
-    return Boolean(cId && cName && isSameName(cName, cleanSearchName));
-  });
-  const distinctOrcids = new Set(
-    matching.map((cand) => normalizeOrcidUrl(cand?.orcid)).filter(Boolean)
-  );
-  const skipAllOrcids = !normalizedPrimaryOrcid && distinctOrcids.size > 1;
-  const sorted = [...matching].sort(
-    (a, b) => Number(b?.works_count || 0) - Number(a?.works_count || 0)
-  );
-  for (const cand of sorted) {
-    const cId = String(cand?.id || "").replace("https://openalex.org/", "").trim();
-    const candOrcid = normalizeOrcidUrl(cand?.orcid);
-    if (normalizedPrimaryOrcid && areOrcidsConflicting(normalizedPrimaryOrcid, candOrcid)) {
-      continue;
-    }
-    if (skipAllOrcids && candOrcid) {
-      continue;
-    }
-    if (!ids.includes(cId)) {
-      ids.push(cId);
-      if (ids.length >= maxIds) break;
-    }
-  }
-  return ids;
-}
-function shouldKeepCrossrefFallbackWork(params) {
-  const { title, authors, targetName, isSameName, affilTokens, candidateTitles } = params;
-  const matchingAuthors = (authors || []).filter((au) => {
-    const full = `${au?.given || ""} ${au?.family || ""}`.trim();
-    return Boolean(full && isSameName(full, targetName));
-  });
-  if (matchingAuthors.length === 0) return false;
-  const normTitle = normalizeAsciiWords(title);
-  if (normTitle && candidateTitles && candidateTitles.length > 0) {
-    const titleMatched = candidateTitles.some((cand) => {
-      const cNorm = normalizeAsciiWords(cand);
-      if (!cNorm) return false;
-      if (cNorm === normTitle) return true;
-      return Math.min(cNorm.length, normTitle.length) >= 24 && (normTitle.includes(cNorm) || cNorm.includes(normTitle));
-    });
-    if (titleMatched) return true;
-  }
-  if (affilTokens.length === 0) return false;
-  for (const au of matchingAuthors) {
-    const affList = Array.isArray(au?.affiliation) ? au.affiliation : [];
-    const affText = normalizeAsciiWords(
-      affList.map((af) => String(af?.name || af || "")).join(" ")
-    );
-    if (affText && affilTokens.some((tok) => affText.includes(tok))) {
-      return true;
-    }
-  }
-  return false;
-}
-function mapOrcidWorksSummaryToOpenAlexFormat(worksData, authorName, orcidId, existingKeys = /* @__PURE__ */ new Set(), affiliationHint = "") {
-  const groups = Array.isArray(worksData?.group) ? worksData.group : [];
-  const cleanOrcid = String(orcidId || "").trim();
-  const cleanAffil = String(affiliationHint || "").trim();
-  const mapped = [];
-  for (const group of groups) {
-    const summary = Array.isArray(group?.["work-summary"]) ? group["work-summary"][0] : null;
-    if (!summary) continue;
-    const title = String(summary?.title?.title?.value || "").trim();
-    if (!title) continue;
-    const normTitleKey = normalizeAsciiWords(title);
-    const extIds = Array.isArray(
-      summary?.["external-ids"]?.["external-id"]
-    ) ? summary["external-ids"]["external-id"] : [];
-    const doiEntry = extIds.find(
-      (e) => String(e?.["external-id-type"] || "").toLowerCase() === "doi" && String(e?.["external-id-relationship"] || "").toLowerCase() === "self"
-    ) || extIds.find(
-      (e) => String(e?.["external-id-type"] || "").toLowerCase() === "doi"
-    );
-    const rawDoi = String(doiEntry?.["external-id-value"] || "").trim();
-    const doiKey = rawDoi.toLowerCase();
-    if (doiKey && existingKeys.has(`doi:${doiKey}`) || normTitleKey && existingKeys.has(`title:${normTitleKey}`)) {
-      continue;
-    }
-    if (doiKey) existingKeys.add(`doi:${doiKey}`);
-    if (normTitleKey) existingKeys.add(`title:${normTitleKey}`);
-    const venue = String(summary?.["journal-title"]?.value || "").trim() || "Academic Venue";
-    const year = Number(summary?.["publication-date"]?.year?.value) || 2020;
-    const workUrl = String(summary?.url?.value || "").trim() || (rawDoi ? `https://doi.org/${rawDoi}` : void 0);
-    mapped.push({
-      id: rawDoi ? `orcid:${rawDoi}` : `orcid:${title.slice(0, 48)}`,
-      title,
-      display_name: title,
-      publication_year: year,
-      type: String(summary?.type || "journal-article").replace(/-/g, "_"),
-      doi: rawDoi ? `https://doi.org/${rawDoi}` : void 0,
-      open_access: { is_oa: false },
-      cited_by_count: 0,
-      primary_location: {
-        source: { display_name: venue, type: "journal" },
-        landing_page_url: workUrl
-      },
-      authorships: [
-        {
-          author_position: "first",
-          author: {
-            display_name: authorName,
-            orcid: cleanOrcid ? `https://orcid.org/${cleanOrcid}` : void 0
-          },
-          institutions: [],
-          raw_affiliation_strings: cleanAffil ? [cleanAffil] : []
-        }
-      ]
-    });
-  }
-  return mapped;
-}
-
-// src/server/affiliationParser.ts
-var ISO_COUNTRY_INFO = {
-  AF: { country: "Afghanistan", continent: "Asia", lat: 34.5553, lng: 69.2075 },
-  AL: { country: "Albania", continent: "Europe", lat: 41.3275, lng: 19.8187 },
-  DZ: { country: "Algeria", continent: "Africa", lat: 36.7538, lng: 3.0588 },
-  AR: { country: "Argentina", continent: "South America", lat: -34.6037, lng: -58.3816 },
-  AM: { country: "Armenia", continent: "Asia", lat: 40.1792, lng: 44.4991 },
-  AU: { country: "Australia", continent: "Oceania", lat: -33.8688, lng: 151.2093 },
-  AT: { country: "Austria", continent: "Europe", lat: 48.2082, lng: 16.3738 },
-  AZ: { country: "Azerbaijan", continent: "Asia", lat: 40.4093, lng: 49.8671 },
-  BH: { country: "Bahrain", continent: "Asia", lat: 26.2285, lng: 50.586 },
-  BD: { country: "Bangladesh", continent: "Asia", lat: 23.8103, lng: 90.4125 },
-  BY: { country: "Belarus", continent: "Europe", lat: 53.9006, lng: 27.559 },
-  BE: { country: "Belgium", continent: "Europe", lat: 50.8503, lng: 4.3517 },
-  BA: { country: "Bosnia and Herzegovina", continent: "Europe", lat: 43.8563, lng: 18.4131 },
-  BR: { country: "Brazil", continent: "South America", lat: -23.5505, lng: -46.6333 },
-  BN: { country: "Brunei", continent: "Asia", lat: 4.9031, lng: 114.9398 },
-  BG: { country: "Bulgaria", continent: "Europe", lat: 42.6977, lng: 23.3219 },
-  KH: { country: "Cambodia", continent: "Asia", lat: 11.5564, lng: 104.9282 },
-  CM: { country: "Cameroon", continent: "Africa", lat: 3.848, lng: 11.5021 },
-  CA: { country: "Canada", continent: "North America", lat: 45.4215, lng: -75.6972 },
-  CL: { country: "Chile", continent: "South America", lat: -33.4489, lng: -70.6693 },
-  CN: { country: "China", continent: "Asia", lat: 39.9042, lng: 116.4074 },
-  CO: { country: "Colombia", continent: "South America", lat: 4.711, lng: -74.0721 },
-  CR: { country: "Costa Rica", continent: "North America", lat: 9.9281, lng: -84.0907 },
-  HR: { country: "Croatia", continent: "Europe", lat: 45.815, lng: 15.9819 },
-  CU: { country: "Cuba", continent: "North America", lat: 23.1136, lng: -82.3666 },
-  CY: { country: "Cyprus", continent: "Europe", lat: 35.1856, lng: 33.3823 },
-  CZ: { country: "Czechia", continent: "Europe", lat: 50.0755, lng: 14.4378 },
-  DK: { country: "Denmark", continent: "Europe", lat: 55.6761, lng: 12.5683 },
-  EC: { country: "Ecuador", continent: "South America", lat: -0.1807, lng: -78.4678 },
-  EG: { country: "Egypt", continent: "Africa", lat: 30.0444, lng: 31.2357 },
-  EE: { country: "Estonia", continent: "Europe", lat: 59.437, lng: 24.7536 },
-  ET: { country: "Ethiopia", continent: "Africa", lat: 9.032, lng: 38.7469 },
-  FI: { country: "Finland", continent: "Europe", lat: 60.1699, lng: 24.9384 },
-  FR: { country: "France", continent: "Europe", lat: 48.8566, lng: 2.3522 },
-  GE: { country: "Georgia", continent: "Asia", lat: 41.7151, lng: 44.8271 },
-  DE: { country: "Germany", continent: "Europe", lat: 52.52, lng: 13.405 },
-  GH: { country: "Ghana", continent: "Africa", lat: 5.6037, lng: -0.187 },
-  GR: { country: "Greece", continent: "Europe", lat: 37.9838, lng: 23.7275 },
-  HK: { country: "China (Hong Kong)", continent: "Asia", lat: 22.3193, lng: 114.1694 },
-  HU: { country: "Hungary", continent: "Europe", lat: 47.4979, lng: 19.0402 },
-  IS: { country: "Iceland", continent: "Europe", lat: 64.1466, lng: -21.9426 },
-  IN: { country: "India", continent: "Asia", lat: 28.6139, lng: 77.209 },
-  ID: { country: "Indonesia", continent: "Asia", lat: -6.2088, lng: 106.8456 },
-  IR: { country: "Iran", continent: "Asia", lat: 35.6892, lng: 51.389 },
-  IQ: { country: "Iraq", continent: "Asia", lat: 33.3152, lng: 44.3661 },
-  IE: { country: "Ireland", continent: "Europe", lat: 53.3498, lng: -6.2603 },
-  IL: { country: "Israel", continent: "Asia", lat: 31.7683, lng: 35.2137 },
-  IT: { country: "Italy", continent: "Europe", lat: 41.9028, lng: 12.4964 },
-  JP: { country: "Japan", continent: "Asia", lat: 35.6762, lng: 139.6503 },
-  JO: { country: "Jordan", continent: "Asia", lat: 31.9454, lng: 35.9284 },
-  KZ: { country: "Kazakhstan", continent: "Asia", lat: 51.1694, lng: 71.4491 },
-  KE: { country: "Kenya", continent: "Africa", lat: -1.2921, lng: 36.8219 },
-  KW: { country: "Kuwait", continent: "Asia", lat: 29.3759, lng: 47.9774 },
-  LV: { country: "Latvia", continent: "Europe", lat: 56.9496, lng: 24.1052 },
-  LB: { country: "Lebanon", continent: "Asia", lat: 33.8938, lng: 35.5018 },
-  LY: { country: "Libya", continent: "Africa", lat: 32.8872, lng: 13.1913 },
-  LT: { country: "Lithuania", continent: "Europe", lat: 54.6872, lng: 25.2797 },
-  LU: { country: "Luxembourg", continent: "Europe", lat: 49.6116, lng: 6.1319 },
-  MO: { country: "Macau", continent: "Asia", lat: 22.1987, lng: 113.5439 },
-  MY: { country: "Malaysia", continent: "Asia", lat: 3.139, lng: 101.6869 },
-  MT: { country: "Malta", continent: "Europe", lat: 35.8989, lng: 14.5146 },
-  MX: { country: "Mexico", continent: "North America", lat: 19.4326, lng: -99.1332 },
-  MA: { country: "Morocco", continent: "Africa", lat: 34.0209, lng: -6.8416 },
-  MM: { country: "Myanmar", continent: "Asia", lat: 16.8661, lng: 96.1951 },
-  MK: { country: "North Macedonia", continent: "Europe", lat: 41.9981, lng: 21.4254 },
-  NP: { country: "Nepal", continent: "Asia", lat: 27.7172, lng: 85.324 },
-  NL: { country: "Netherlands", continent: "Europe", lat: 52.3676, lng: 4.9041 },
-  NZ: { country: "New Zealand", continent: "Oceania", lat: -36.8485, lng: 174.7633 },
-  NG: { country: "Nigeria", continent: "Africa", lat: 9.0765, lng: 7.3986 },
-  NO: { country: "Norway", continent: "Europe", lat: 59.9139, lng: 10.7522 },
-  OM: { country: "Oman", continent: "Asia", lat: 23.588, lng: 58.3829 },
-  PK: { country: "Pakistan", continent: "Asia", lat: 33.6844, lng: 73.0479 },
-  PS: { country: "Palestine", continent: "Asia", lat: 31.9038, lng: 35.2034 },
-  PE: { country: "Peru", continent: "South America", lat: -12.0464, lng: -77.0428 },
-  PH: { country: "Philippines", continent: "Asia", lat: 14.5995, lng: 120.9842 },
-  PL: { country: "Poland", continent: "Europe", lat: 52.2297, lng: 21.0122 },
-  PT: { country: "Portugal", continent: "Europe", lat: 38.7223, lng: -9.1393 },
-  QA: { country: "Qatar", continent: "Asia", lat: 25.2854, lng: 51.531 },
-  RO: { country: "Romania", continent: "Europe", lat: 44.4268, lng: 26.1025 },
-  RU: { country: "Russia", continent: "Europe", lat: 55.7558, lng: 37.6173 },
-  RW: { country: "Rwanda", continent: "Africa", lat: -1.9441, lng: 30.0619 },
-  SA: { country: "Saudi Arabia", continent: "Asia", lat: 24.7136, lng: 46.6753 },
-  SN: { country: "Senegal", continent: "Africa", lat: 14.7167, lng: -17.4677 },
-  RS: { country: "Serbia", continent: "Europe", lat: 44.7866, lng: 20.4489 },
-  SG: { country: "Singapore", continent: "Asia", lat: 1.3521, lng: 103.8198 },
-  SK: { country: "Slovakia", continent: "Europe", lat: 48.1486, lng: 17.1077 },
-  SI: { country: "Slovenia", continent: "Europe", lat: 46.0569, lng: 14.5058 },
-  ZA: { country: "South Africa", continent: "Africa", lat: -33.9249, lng: 18.4241 },
-  KR: { country: "South Korea", continent: "Asia", lat: 37.5665, lng: 126.978 },
-  ES: { country: "Spain", continent: "Europe", lat: 40.4168, lng: -3.7038 },
-  LK: { country: "Sri Lanka", continent: "Asia", lat: 6.9271, lng: 79.8612 },
-  SD: { country: "Sudan", continent: "Africa", lat: 15.5007, lng: 32.5599 },
-  SE: { country: "Sweden", continent: "Europe", lat: 59.3293, lng: 18.0686 },
-  CH: { country: "Switzerland", continent: "Europe", lat: 47.3769, lng: 8.5417 },
-  SY: { country: "Syria", continent: "Asia", lat: 33.5138, lng: 36.2765 },
-  TW: { country: "Taiwan", continent: "Asia", lat: 25.033, lng: 121.5654 },
-  TZ: { country: "Tanzania", continent: "Africa", lat: -6.163, lng: 35.7516 },
-  TH: { country: "Thailand", continent: "Asia", lat: 13.7563, lng: 100.5018 },
-  TN: { country: "Tunisia", continent: "Africa", lat: 36.8065, lng: 10.1815 },
-  TR: { country: "Turkey", continent: "Asia", lat: 39.9334, lng: 32.8597 },
-  UG: { country: "Uganda", continent: "Africa", lat: 0.3476, lng: 32.5825 },
-  UA: { country: "Ukraine", continent: "Europe", lat: 50.4501, lng: 30.5234 },
-  AE: { country: "United Arab Emirates", continent: "Asia", lat: 24.4539, lng: 54.3773 },
-  GB: { country: "United Kingdom", continent: "Europe", lat: 51.5074, lng: -0.1278 },
-  US: { country: "United States", continent: "North America", lat: 38.8951, lng: -77.0364 },
-  UY: { country: "Uruguay", continent: "South America", lat: -34.9011, lng: -56.1645 },
-  UZ: { country: "Uzbekistan", continent: "Asia", lat: 41.2995, lng: 69.2401 },
-  VE: { country: "Venezuela", continent: "South America", lat: 10.4806, lng: -66.9036 },
-  VN: { country: "Vietnam", continent: "Asia", lat: 21.0278, lng: 105.8342 },
-  YE: { country: "Yemen", continent: "Asia", lat: 15.3694, lng: 44.191 },
-  ZM: { country: "Zambia", continent: "Africa", lat: -15.3875, lng: 28.3228 },
-  ZW: { country: "Zimbabwe", continent: "Africa", lat: -17.8252, lng: 31.0335 }
-};
-var regionDisplayNames = typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames(["en"], { type: "region" }) : null;
-function getCountryGeoInfo(countryCodeRaw, fallbackCountryName) {
-  const cc = String(countryCodeRaw || "").trim().toUpperCase();
-  if (cc && ISO_COUNTRY_INFO[cc]) {
-    return ISO_COUNTRY_INFO[cc];
-  }
-  if (/^[A-Z]{2}$/.test(cc) && cc !== "UN") {
-    let resolvedName = fallbackCountryName?.trim() || "";
-    if (!resolvedName && regionDisplayNames) {
-      try {
-        resolvedName = regionDisplayNames.of(cc) || "";
-      } catch {
-      }
-    }
-    return {
-      country: resolvedName || cc,
-      continent: "Asia",
-      lat: 20,
-      lng: 10
-    };
-  }
-  return ISO_COUNTRY_INFO.US;
-}
-var COUNTRY_NAME_ALIASES = [
-  [/\b(?:united states(?: of america)?|u\.s\.a\.|usa|u\.s\.)\b/i, "US"],
-  [/\b(?:united kingdom|u\.k\.|england|scotland|wales|northern ireland)\b/i, "GB"],
-  [/\b(?:people'?s republic of china|p\.?r\.?\s*china|china)\b/i, "CN"],
-  [/\bhong kong\b/i, "HK"],
-  [/\b(?:republic of korea|south korea)\b/i, "KR"],
-  [/\btaiwan\b/i, "TW"],
-  [/\bbangladesh\b/i, "BD"],
-  [/\bmalaysia\b/i, "MY"],
-  [/\b(?:north macedonia|macedonia)\b/i, "MK"],
-  [/\blibya\b/i, "LY"],
-  [/\bgermany|deutschland\b/i, "DE"],
-  [/\bfrance\b/i, "FR"],
-  [/\bcanada\b/i, "CA"],
-  [/\baustralia\b/i, "AU"],
-  [/\bjapan\b/i, "JP"],
-  [/\bindia\b/i, "IN"],
-  [/\bpakistan\b/i, "PK"],
-  [/\bsingapore\b/i, "SG"],
-  [/\bindonesia\b/i, "ID"],
-  [/\bthailand\b/i, "TH"],
-  [/\bvietnam\b/i, "VN"],
-  [/\bsaudi arabia|ksa\b/i, "SA"],
-  [/\b(?:united arab emirates|uae)\b/i, "AE"],
-  [/\bqatar\b/i, "QA"],
-  [/\boman\b/i, "OM"],
-  [/\bkuwait\b/i, "KW"],
-  [/\bjordan\b/i, "JO"],
-  [/\biran\b/i, "IR"],
-  [/\biraq\b/i, "IQ"],
-  [/\bisrael\b/i, "IL"],
-  [/\bturkey|türkiye\b/i, "TR"],
-  [/\begypt\b/i, "EG"],
-  [/\bmorocco\b/i, "MA"],
-  [/\balgeria\b/i, "DZ"],
-  [/\btunisia\b/i, "TN"],
-  [/\bnigeria\b/i, "NG"],
-  [/\bsouth africa\b/i, "ZA"],
-  [/\bkenya\b/i, "KE"],
-  [/\bethiopia\b/i, "ET"],
-  [/\bghana\b/i, "GH"],
-  [/\bspain|españa\b/i, "ES"],
-  [/\bitaly|italia\b/i, "IT"],
-  [/\b(?:the )?netherlands|holland\b/i, "NL"],
-  [/\bswitzerland|schweiz|suisse\b/i, "CH"],
-  [/\bsweden\b/i, "SE"],
-  [/\bnorway\b/i, "NO"],
-  [/\bdenmark\b/i, "DK"],
-  [/\bfinland\b/i, "FI"],
-  [/\bbelgium\b/i, "BE"],
-  [/\baustria\b/i, "AT"],
-  [/\bireland\b/i, "IE"],
-  [/\bportugal\b/i, "PT"],
-  [/\bpoland\b/i, "PL"],
-  [/\bgreece\b/i, "GR"],
-  [/\bromania\b/i, "RO"],
-  [/\bhungary\b/i, "HU"],
-  [/\bczech(?:ia| republic)\b/i, "CZ"],
-  [/\brussia(?:n federation)?\b/i, "RU"],
-  [/\bukraine\b/i, "UA"],
-  [/\bbrazil|brasil\b/i, "BR"],
-  [/\bmexico|méxico\b/i, "MX"],
-  [/\bargentina\b/i, "AR"],
-  [/\bchile\b/i, "CL"],
-  [/\bcolombia\b/i, "CO"],
-  [/\bnew zealand\b/i, "NZ"],
-  [/\bnepal\b/i, "NP"],
-  [/\bsri lanka\b/i, "LK"],
-  [/\bphilippines\b/i, "PH"]
-];
-var US_STATE_CODES = /* @__PURE__ */ new Set([
-  "AL",
-  "AK",
-  "AZ",
-  "AR",
-  "CA",
-  "CO",
-  "CT",
-  "DE",
-  "FL",
-  "GA",
-  "HI",
-  "ID",
-  "IL",
-  "IN",
-  "IA",
-  "KS",
-  "KY",
-  "LA",
-  "ME",
-  "MD",
-  "MA",
-  "MI",
-  "MN",
-  "MS",
-  "MO",
-  "MT",
-  "NE",
-  "NV",
-  "NH",
-  "NJ",
-  "NM",
-  "NY",
-  "NC",
-  "ND",
-  "OH",
-  "OK",
-  "OR",
-  "PA",
-  "RI",
-  "SC",
-  "SD",
-  "TN",
-  "TX",
-  "UT",
-  "VT",
-  "VA",
-  "WA",
-  "WV",
-  "WI",
-  "WY",
-  "DC"
-]);
-function inferCountryCodeFromAffiliationString(rawAffil, explicitCountries) {
-  for (const rawCode of explicitCountries || []) {
-    const upper = String(rawCode || "").trim().toUpperCase();
-    if (/^[A-Z]{2}$/.test(upper) && upper !== "UN") {
-      return upper;
-    }
-  }
-  const text = String(rawAffil || "").replace(/#TAB#/g, " ").trim();
-  if (!text) return "";
-  const parts = text.split(",").map((p) => p.trim()).filter(Boolean);
-  for (let i = parts.length - 1; i >= Math.max(0, parts.length - 3); i--) {
-    const seg = parts[i];
-    for (const [pattern, code] of COUNTRY_NAME_ALIASES) {
-      if (pattern.test(seg)) {
-        return code;
-      }
-    }
-    const trailingUsState = seg.match(/\b([A-Z]{2})(?:\s+\d{5}(?:-\d{4})?)?$/);
-    if (trailingUsState && US_STATE_CODES.has(trailingUsState[1])) {
-      return "US";
-    }
-  }
-  for (const [pattern, code] of COUNTRY_NAME_ALIASES) {
-    if (pattern.test(text)) {
-      return code;
-    }
-  }
-  if (/(?:,|\s)UK\b/.test(text)) return "GB";
-  return "";
-}
-var PURE_SUBUNIT_PREFIX_RE = /^(?:department|dept\.?|school|faculty|division|chair|group|unit|branch|program|programme)\s+of\b/i;
-var STRONG_INSTITUTION_KEYWORD_RE = /\b(?:university|universiti|universit[eéaàä]|universitat|universidad|universidade|polytechnic|polytechnique|institute|institut|college|academy|hospital|medical\s+center|medical\s+centre|national\s+laboratory|laboratories|research\s+center|research\s+centre|meta\s+ai|google|deepmind|openai|microsoft|ibm|nvidia|fair|cnrs|inria|csiro|cern|max\s+planck)\b/i;
-var STREET_OR_BUILDING_RE = /(?:^\d+\s+[A-Za-z]|\b(?:prosp\.?|prospect|prospekt|ul\.?|ulitsa|street|st\.?|ave\.?|avenue|blvd\.?|boulevard|rd\.?|road|lane|ln\.?|drive|dr\.?|building|bldg\.?|apt\.?|suite|room|rm\.?)\s*#?\d+\b)/i;
-var PURE_GEO_OR_POSTAL_RE = /^(?:p\.?\s*o\.?\s*box\b.*|\d{4,6}(?:-\d{4})?|[a-z]{1,2}\d{1,2}\s*\d[a-z]{2}|[A-Z]{2}(?:\s+\d{5})?|usa|u\.s\.a\.|uk|u\.k\.|p\.?r\.?\s*china|china|germany|malaysia|libya|bangladesh|canada|australia|japan|india|france|italy|spain|singapore|south korea|brazil|netherlands|switzerland|sweden|norway|denmark|finland|belgium|austria|ireland|portugal|poland|greece|turkey|egypt|saudi arabia|pakistan|indonesia|thailand|vietnam|taiwan)$/i;
-function extractInstitutionFromRawAffiliations(rawStrings, rawCountries) {
-  const cleanedLines = (rawStrings || []).map(
-    (s) => String(s || "").replace(/#TAB#/g, " ").replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim()
-  ).filter((s) => s.length >= 3);
-  const explicitCC = inferCountryCodeFromAffiliationString("", rawCountries);
-  let fallbackCountryCode = explicitCC;
-  for (const line of cleanedLines) {
-    const countryCode = inferCountryCodeFromAffiliationString(line, rawCountries);
-    if (countryCode && !fallbackCountryCode) {
-      fallbackCountryCode = countryCode;
-    }
-    const rawSegments = line.split(/\s*(?:,|;|\|)\s*/).map(
-      (seg) => seg.replace(/Universiti\s+Kebagsaan\s+Malaysia/gi, "Universiti Kebangsaan Malaysia").replace(/\b\d{4,6}\b$/g, "").trim()
-    ).filter(
-      (seg) => seg.length >= 3 && !PURE_GEO_OR_POSTAL_RE.test(seg) && !COUNTRY_NAME_ALIASES.some(
-        ([pattern]) => seg.replace(pattern, "").replace(/[\s.,-]+/g, "") === ""
-      ) && !/^\d+$/.test(seg)
-    );
-    const primarySeg = rawSegments.find(
-      (seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg) && !PURE_SUBUNIT_PREFIX_RE.test(seg) && !/^faculty\s+of\b/i.test(seg) && !/^school\s+of\b/i.test(seg)
-    ) || rawSegments.find(
-      (seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg) && !PURE_SUBUNIT_PREFIX_RE.test(seg)
-    ) || rawSegments.find((seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg));
-    if (primarySeg) {
-      return {
-        institutionName: primarySeg,
-        countryCode
-      };
-    }
-    const firstStreetIdx = rawSegments.findIndex((seg) => STREET_OR_BUILDING_RE.test(seg));
-    const preStreetSegments = firstStreetIdx >= 0 ? rawSegments.slice(0, firstStreetIdx) : rawSegments;
-    const orgSeg = preStreetSegments.find(
-      (seg) => !PURE_SUBUNIT_PREFIX_RE.test(seg) && !STREET_OR_BUILDING_RE.test(seg)
-    );
-    if (orgSeg && orgSeg.length >= 4) {
-      return {
-        institutionName: orgSeg,
-        countryCode
-      };
-    }
-  }
-  if (fallbackCountryCode) {
-    return {
-      institutionName: "",
-      countryCode: fallbackCountryCode
-    };
-  }
-  return null;
-}
-
-// src/server/scholarIdentityResolver.ts
-function decodeHtmlEntitiesBasic(raw) {
-  return String(raw || "").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&nbsp;/gi, " ").replace(/&#(\d+);/g, (_m, n) => String.fromCharCode(Number(n))).replace(
-    /&#x([0-9a-f]+);/gi,
-    (_m, h) => String.fromCharCode(parseInt(h, 16))
-  );
-}
-function cleanTextFragment(raw) {
-  return decodeHtmlEntitiesBasic(
-    String(raw || "").replace(/<[^>]+>/g, " ").replace(/[\u202A-\u202E\u200E\u200F]/g, " ")
-  ).replace(/\s+/g, " ").trim();
-}
-function escapeRegExp(val) {
-  return val.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-function extractNameFromScholarTitle(rawTitle) {
-  const cleaned = cleanTextFragment(rawTitle).replace(/\s*[-–|]\s*Google\s+(?:Scholar|Acad[eè]mic|Akademik|Cendekia).*$/i, "").replace(/^Google\s+Scholar(?:\s+Profiles)?$/i, "").replace(/^(?:Citations|Profil)\s*$/i, "").trim();
-  if (!cleaned || cleaned.length < 3 || /^google\s*scholar$/i.test(cleaned) || /^citations$/i.test(cleaned)) {
-    return "";
-  }
-  return cleaned;
-}
-function extractEmbeddedOrcid(text) {
-  const match = String(text || "").match(/\b(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/i);
-  return match ? match[1].toUpperCase() : void 0;
-}
-var GENERIC_PLACEHOLDER_AFFILS = /* @__PURE__ */ new Set([
-  "independent / unlisted",
-  "independent",
-  "unlisted",
-  "unknown",
-  "unknown university",
-  "international",
-  "academic researcher",
-  "academic institution",
-  "research institution",
-  "academic research university",
-  "academic university",
-  "research university"
-]);
-function isInformativeAffiliation(raw) {
-  const clean = String(raw || "").trim().toLowerCase();
-  return Boolean(clean && clean.length >= 3 && !GENERIC_PLACEHOLDER_AFFILS.has(clean));
-}
-function normalizeCountryCodeOpt(raw) {
-  const cc = String(raw || "").trim().toUpperCase();
-  if (cc.length === 2 && cc !== "UN") return cc;
-  if (raw && raw.length > 2) {
-    const inferred = inferCountryCodeFromAffiliationString(raw);
-    if (inferred && inferred.length === 2 && inferred !== "UN") return inferred;
-  }
-  return void 0;
-}
-function extractScholarIdentityFromYahooHtml(html, scholarId) {
-  if (!html || !scholarId) return null;
-  const escapedId = escapeRegExp(scholarId.trim());
-  const exactUserUrlRe = new RegExp(
-    `scholar\\.google\\.[^"'\\s<]*citations[^"'\\s<]*[?&]user=${escapedId}(?:&|$|#|"|')`
-  );
-  const directUserParamRe = new RegExp(`[?&]user=${escapedId}(?:&|$|#)`);
-  const blocks = html.split(/<div[^>]*class="[^"]*algo(?:-sr)?[^"]*"/i).slice(1);
-  for (const rawBlock of blocks) {
-    const seg = rawBlock.slice(0, 5e3);
-    const hrefMatches = [...seg.matchAll(/href="([^"]+)"/gi)].map(
-      (m) => m[1]
-    );
-    let pointsToExactUser = false;
-    for (const href of hrefMatches) {
-      let decoded = decodeHtmlEntitiesBasic(href);
-      try {
-        decoded = decodeURIComponent(decoded);
-        decoded = decodeURIComponent(decoded);
-      } catch {
-      }
-      if (exactUserUrlRe.test(decoded) || decoded.includes("scholar.google.") && directUserParamRe.test(decoded)) {
-        pointsToExactUser = true;
-        break;
-      }
-    }
-    if (!pointsToExactUser) continue;
-    const titleMatch = seg.match(
-      /<h3[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i
-    );
-    const titleName = titleMatch?.[1] ? extractNameFromScholarTitle(titleMatch[1]) : "";
-    const snippetMatch = seg.match(/<div[^>]*class="[^"]*compText[^"]*"[^>]*>([\s\S]*?)<\/div>/i) || seg.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-    const snippetText = snippetMatch?.[1] ? cleanTextFragment(snippetMatch[1]) : "";
-    let resolvedName = titleName;
-    let affiliationHint = "";
-    if (snippetText) {
-      const beforeCitedBy = snippetText.split(/\bCited\s+by\b/i)[0] || "";
-      const cleanParts = beforeCitedBy.split(/\s+[-–]\s+/).map((p) => p.replace(/^Verified email at\s+\S+/i, "").trim()).filter((p) => p && !/^google\s+scholar$/i.test(p));
-      if (!resolvedName && cleanParts.length >= 1) {
-        const candidateName = extractNameFromScholarTitle(cleanParts[0]);
-        if (candidateName && candidateName.split(/\s+/).length <= 6) {
-          resolvedName = candidateName;
-        }
-      }
-      if (cleanParts.length >= 2) {
-        affiliationHint = cleanParts.slice(resolvedName && cleanParts[0].includes(resolvedName) ? 1 : 0).join(", ").slice(0, 140);
-      } else if (resolvedName && cleanParts.length === 1 && cleanParts[0] !== resolvedName) {
-        affiliationHint = cleanParts[0].slice(0, 140);
-      }
-    }
-    if (resolvedName) {
-      return {
-        name: resolvedName,
-        ...affiliationHint ? { affiliationHint } : {},
-        source: "yahoo-scholar-index"
-      };
-    }
-  }
-  return null;
-}
-function collectScholarStoreIdentityAndEvidence(params) {
-  const targetId = String(params.scholarId || "").trim();
-  if (!targetId) {
-    return { identity: null, knownWorkTitles: [], knownCollaboratorNames: [] };
-  }
-  const bestName = {
-    value: null
-  };
-  const coAuthorNameCounts = /* @__PURE__ */ new Map();
-  const affilVotes = /* @__PURE__ */ new Map();
-  const evidenceItems = [];
-  let bestOrcid;
-  const recordName = (name, source, priority) => {
-    const clean = String(name || "").trim();
-    if (!clean) return;
-    const embeddedOrcid = extractEmbeddedOrcid(clean);
-    if (embeddedOrcid && !bestOrcid) {
-      bestOrcid = embeddedOrcid;
-    }
-    if (!bestName.value || priority > bestName.value.priority) {
-      bestName.value = { name: clean, source, priority };
-    }
-  };
-  const recordCoAuthorName = (name, source, priority) => {
-    const clean = String(name || "").trim();
-    if (!clean) return;
-    const key = clean.toLowerCase();
-    const prev = coAuthorNameCounts.get(key);
-    if (prev) {
-      prev.count++;
-      if (priority > prev.priority) {
-        prev.priority = priority;
-        prev.source = source;
-        prev.display = clean;
-      }
-    } else {
-      coAuthorNameCounts.set(key, {
-        display: clean,
-        count: 1,
-        source,
-        priority
-      });
-    }
-  };
-  const recordAffilVote = (rawAffil, rawCountry, weight) => {
-    const cleanAffil = String(rawAffil || "").trim();
-    if (!isInformativeAffiliation(cleanAffil)) return;
-    const key = cleanAffil.toLowerCase();
-    const cc = normalizeCountryCodeOpt(rawCountry);
-    const prev = affilVotes.get(key);
-    if (prev) {
-      prev.weight += weight;
-      if (!prev.countryCode && cc) prev.countryCode = cc;
-    } else {
-      affilVotes.set(key, { affil: cleanAffil, countryCode: cc, weight });
-    }
-  };
-  for (const reg of params.registeredUsers || []) {
-    if (String(reg?.scholarUserId || "").trim() === targetId && reg?.name) {
-      recordName(reg.name, "registered-user", 100);
-      recordAffilVote(reg.affiliation, void 0, 1e3);
-    }
-  }
-  for (const snapVal of Object.values(params.verifiedSnapshot || {})) {
-    const prof = snapVal?.profile || (snapVal?.publications ? snapVal : void 0);
-    if (!prof) continue;
-    if (String(prof.scholarUserId || "").trim() === targetId && prof.name) {
-      recordName(prof.name, "snapshot-profile", 90);
-      const snapOrcid = extractEmbeddedOrcid(String(prof.orcid || ""));
-      if (snapOrcid && !bestOrcid) bestOrcid = snapOrcid;
-      recordAffilVote(
-        prof.homeUniversity || prof.affiliation,
-        void 0,
-        500
-      );
-      for (const pub of prof.publications || []) {
-        const title = String(pub?.title || "").trim();
-        if (title) {
-          evidenceItems.push({
-            title,
-            affil: String(prof.homeUniversity || prof.affiliation || "").trim(),
-            year: Number(pub?.year || 0)
-          });
-        }
-      }
-    }
-    for (const pub of prof.publications || []) {
-      for (const ca of pub?.coAuthors || []) {
-        if (String(ca?.scholarUserId || "").trim() === targetId && ca?.name) {
-          recordCoAuthorName(String(ca.name), "snapshot-coauthor", 40);
-          recordAffilVote(ca.universityName, ca.countryCode, 1);
-          const title = String(pub?.title || "").trim();
-          if (title) {
-            evidenceItems.push({
-              title,
-              collaborator: String(prof.name || "").trim() || void 0,
-              affil: String(ca.universityName || "").trim(),
-              year: Number(pub?.year || 0)
-            });
-          }
-        }
-      }
-    }
-  }
-  for (const digest of Object.values(params.digests || {})) {
-    if (String(digest?.scholarUserId || "").trim() === targetId && digest?.name) {
-      recordName(String(digest.name), "works-digest", 80);
-      const digestOrcid = extractEmbeddedOrcid(String(digest.orcid || ""));
-      if (digestOrcid && !bestOrcid) bestOrcid = digestOrcid;
-      recordAffilVote(digest.affiliation, digest.country, 300);
-      for (const pub of digest?.works || []) {
-        const title = String(pub?.title || "").trim();
-        if (title) {
-          evidenceItems.push({
-            title,
-            affil: String(digest.affiliation || "").trim(),
-            year: Number(pub?.year || 0)
-          });
-        }
-      }
-    }
-    for (const ca of digest?.coAuthors || []) {
-      if (String(ca?.scholarUserId || "").trim() === targetId && ca?.name) {
-        recordCoAuthorName(String(ca.name), "digest-coauthor", 45);
-        recordAffilVote(ca.universityName, ca.countryCode, 1);
-      }
-    }
-  }
-  for (const item of params.colleagueList || []) {
-    const id = String(item?.u || item?.userId || "").trim();
-    const nm = String(item?.n || item?.name || "").trim();
-    if (id === targetId && nm) {
-      recordName(nm, "colleague-list", 70);
-      recordAffilVote(item?.university, void 0, 2);
-    }
-  }
-  for (const entry of Object.values(params.colleagueDirectory || {})) {
-    if (String(entry?.userId || "").trim() === targetId && entry?.name) {
-      recordName(String(entry.name), "colleague-directory", 65);
-      recordAffilVote(entry.university, void 0, 2);
-    }
-  }
-  for (const [rawKey, entry] of Object.entries(params.coAuthorMap || {})) {
-    if (String(entry?.u || "").trim() === targetId && rawKey.trim()) {
-      recordName(rawKey.trim(), "coauthor-map", 20);
-    }
-  }
-  if (coAuthorNameCounts.size > 0 && (!bestName.value || bestName.value.priority < 50)) {
-    const sortedCo = [...coAuthorNameCounts.values()].sort(
-      (a, b) => b.count - a.count || b.priority - a.priority
-    );
-    bestName.value = {
-      name: sortedCo[0].display,
-      source: sortedCo[0].source,
-      priority: sortedCo[0].priority
-    };
-  }
-  if (!bestName.value) {
-    return { identity: null, knownWorkTitles: [], knownCollaboratorNames: [] };
-  }
-  const topAffil = [...affilVotes.values()].sort((a, b) => b.weight - a.weight)[0];
-  const winningAffilLower = topAffil?.affil.toLowerCase();
-  const sortedEvidence = [...evidenceItems].sort((a, b) => {
-    const aAligned = winningAffilLower && a.affil?.toLowerCase() === winningAffilLower ? 1 : 0;
-    const bAligned = winningAffilLower && b.affil?.toLowerCase() === winningAffilLower ? 1 : 0;
-    return bAligned - aAligned || b.year - a.year;
-  });
-  const knownWorkTitles = [];
-  const seenTitles = /* @__PURE__ */ new Set();
-  const knownCollaboratorNames = [];
-  const seenCollabs = /* @__PURE__ */ new Set();
-  for (const item of sortedEvidence) {
-    if (winningAffilLower && item.affil && isInformativeAffiliation(item.affil) && item.affil.toLowerCase() !== winningAffilLower && knownWorkTitles.length > 0) {
-      continue;
-    }
-    const tKey = item.title.toLowerCase();
-    if (!seenTitles.has(tKey) && knownWorkTitles.length < 6) {
-      seenTitles.add(tKey);
-      knownWorkTitles.push(item.title);
-    }
-    if (item.collaborator) {
-      const cKey = item.collaborator.toLowerCase();
-      if (!seenCollabs.has(cKey) && knownCollaboratorNames.length < 6) {
-        seenCollabs.add(cKey);
-        knownCollaboratorNames.push(item.collaborator);
-      }
-    }
-  }
-  const resolvedOrcid = bestOrcid || extractEmbeddedOrcid(bestName.value.name);
-  return {
-    identity: {
-      name: bestName.value.name,
-      ...topAffil?.affil ? { affiliationHint: topAffil.affil } : {},
-      ...topAffil?.countryCode ? { countryCodeHint: topAffil.countryCode } : {},
-      ...resolvedOrcid ? { orcid: resolvedOrcid } : {},
-      source: bestName.value.source
-    },
-    knownWorkTitles,
-    knownCollaboratorNames
-  };
-}
-function lookupScholarIdentityInStores(params) {
-  return collectScholarStoreIdentityAndEvidence(params).identity;
-}
-function lookupScholarWorkEvidenceInStores(params) {
-  const res = collectScholarStoreIdentityAndEvidence(params);
-  return {
-    knownWorkTitles: res.knownWorkTitles,
-    knownCollaboratorNames: res.knownCollaboratorNames,
-    ...res.identity?.affiliationHint ? { affiliationHint: res.identity.affiliationHint } : {},
-    ...res.identity?.countryCodeHint ? { countryCodeHint: res.identity.countryCodeHint } : {}
-  };
-}
-function decodeSearchRedirectUrl(rawHref) {
-  const unescaped = decodeHtmlEntitiesBasic(rawHref);
-  try {
-    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
-    if (uddgMatch?.[1]) {
-      return decodeURIComponent(decodeURIComponent(uddgMatch[1]));
-    }
-  } catch {
-  }
-  try {
-    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
-    if (uddgMatch?.[1]) {
-      return decodeURIComponent(uddgMatch[1]);
-    }
-  } catch {
-  }
-  try {
-    return decodeURIComponent(unescaped);
-  } catch {
-    return unescaped;
-  }
-}
-function extractScholarIdentityFromDdgHtml(html, scholarId) {
-  if (!html || !scholarId) return null;
-  const escapedId = escapeRegExp(scholarId.trim());
-  const exactUserParamRe = new RegExp(`[?&]user=${escapedId}(?:&|$|#)`);
-  const titleAnchorRe = /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
-  const snippetRe = /class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/(?:a|div|span)>/i;
-  const blocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
-  const segments = blocks.length > 0 ? blocks : [...html.matchAll(/<h2[^>]*class="[^"]*result__title[^"]*"[\s\S]{0,1800}/gi)].map(
-    (m) => m[0]
-  );
-  for (const rawSeg of segments) {
-    const seg = rawSeg.slice(0, 4e3);
-    const anchor = seg.match(titleAnchorRe);
-    if (!anchor) continue;
-    const decodedHref = decodeSearchRedirectUrl(anchor[1] || "");
-    const hrefMatchesExact = decodedHref.includes("scholar.google.") && exactUserParamRe.test(decodedHref);
-    if (!hrefMatchesExact) continue;
-    const titleName = extractNameFromScholarTitle(anchor[2] || "");
-    const snippetRaw = seg.match(snippetRe)?.[1] || "";
-    const snippetText = snippetRaw ? cleanTextFragment(snippetRaw) : "";
-    let resolvedName = titleName;
-    let affiliationHint = "";
-    if (snippetText) {
-      const beforeCitedBy = snippetText.split(/\bCited\s+by\b/i)[0] || "";
-      const cleanParts = beforeCitedBy.split(/\s+[-–]\s+/).map((p) => p.replace(/^Verified email at\s+\S+/i, "").trim()).filter((p) => p && !/^google\s+scholar$/i.test(p));
-      if (!resolvedName && cleanParts.length >= 1) {
-        const candidateName = extractNameFromScholarTitle(cleanParts[0]);
-        if (candidateName && candidateName.split(/\s+/).length <= 6) {
-          resolvedName = candidateName;
-        }
-      }
-      if (cleanParts.length >= 2) {
-        affiliationHint = cleanParts.slice(resolvedName && cleanParts[0].includes(resolvedName) ? 1 : 0).join(", ").slice(0, 140);
-      } else if (resolvedName && cleanParts.length === 1 && cleanParts[0] !== resolvedName) {
-        affiliationHint = cleanParts[0].slice(0, 140);
-      }
-    }
-    if (resolvedName) {
-      return {
-        name: resolvedName,
-        ...affiliationHint ? { affiliationHint } : {},
-        source: "ddg-scholar-index"
-      };
-    }
-  }
-  return null;
-}
-function extractCandidateScholarIdsFromSearchHtml(html, researcherName, affiliationHint, nameMatcher) {
-  if (!html || !researcherName) return [];
-  const cleanTarget = researcherName.trim();
-  const affTokens = String(affiliationHint || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(
-    (t) => t.length >= 4 && !(/* @__PURE__ */ new Set([
-      "university",
-      "institute",
-      "college",
-      "department",
-      "research",
-      "school",
-      "center",
-      "centre",
-      "national",
-      "international"
-    ])).has(t)
-  );
-  const scored = [];
-  const seen = /* @__PURE__ */ new Set();
-  const ddgBlocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
-  const yahooBlocks = html.split(/<div[^>]*class="[^"]*algo(?:-sr)?[^"]*"/i).slice(1);
-  const blocks = ddgBlocks.length > 0 ? ddgBlocks : yahooBlocks;
-  for (const rawBlock of blocks) {
-    const seg = rawBlock.slice(0, 4500);
-    const hrefs = [...seg.matchAll(/href="([^"]+)"/gi)].map(
-      (m) => decodeSearchRedirectUrl(m[1])
-    );
-    const scholarHref = hrefs.find(
-      (h) => h.includes("scholar.google.") && /[?&]user=([a-zA-Z0-9_-]{10,14})/.test(h)
-    );
-    if (!scholarHref) continue;
-    const idMatch = scholarHref.match(/[?&]user=([a-zA-Z0-9_-]{10,14})/);
-    const candId = idMatch?.[1]?.trim();
-    if (!candId || seen.has(candId)) continue;
-    const titleHtml = seg.match(/<a[^>]*class="[^"]*result__a[^"]*"[^>]*>([\s\S]*?)<\/a>/i)?.[1] || seg.match(/<h3[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i)?.[1] || "";
-    const titleName = extractNameFromScholarTitle(titleHtml);
-    if (!titleName) continue;
-    const matchesName = nameMatcher ? nameMatcher(titleName, cleanTarget) : titleName.toLowerCase() === cleanTarget.toLowerCase();
-    if (!matchesName) continue;
-    const fullText = cleanTextFragment(seg).toLowerCase();
-    const affHits = affTokens.filter((tok) => fullText.includes(tok)).length;
-    seen.add(candId);
-    scored.push({
-      id: candId,
-      score: 10 + affHits * 15
-    });
-  }
-  return scored.sort((a, b) => b.score - a.score).map((entry) => entry.id);
-}
-function extractGeneralUrlsFromDdgHtml(html) {
-  if (!html) return [];
-  const urls = [];
-  const seen = /* @__PURE__ */ new Set();
-  const matches = html.matchAll(
-    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"/gi
-  );
-  for (const m of matches) {
-    const decoded = decodeSearchRedirectUrl(m[1] || "").trim();
-    if (!decoded || !/^https?:\/\//i.test(decoded)) continue;
-    if (/duckduckgo\.com|google\.com\/search|scholar\.google\.|youtube\.com|facebook\.com|twitter\.com|x\.com|linkedin\.com\/pub\/dir/i.test(
-      decoded
-    )) {
-      continue;
-    }
-    if (!seen.has(decoded)) {
-      seen.add(decoded);
-      urls.push(decoded);
-    }
-  }
-  return urls;
-}
 
 // src/data/verifiedScholarCache.json
 var verifiedScholarCache_default = {
@@ -20447,6 +17184,7 @@ var verifiedScholarCache_default = {
     scholarUrl: "https://scholar.google.com/citations?user=3nI1dHsAAAAJ&hl=en",
     avatarUrl: "data:image/jpeg;base64,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",
     name: "Joynal Abadin",
+    orcid: "0009-0007-9332-9241",
     affiliation: "Undergraduate Student, Dept. of EEE, Green University of Bangladesh",
     homeUniversityId: "green-university-of-bangladesh",
     homeUniversity: "Green University of Bangladesh",
@@ -84998,6 +81736,3316 @@ var verifiedScholarCache_default = {
   }
 };
 
+// src/server/orcidAuth.ts
+function findSnapshotProfileForOrcid(orcidId, scholarUserId, name) {
+  if (!orcidId && !scholarUserId && !name) return void 0;
+  const snapshot = verifiedScholarCache_default;
+  if (scholarUserId && snapshot[scholarUserId]) {
+    const prof = snapshot[scholarUserId].profile || (snapshot[scholarUserId].publications ? snapshot[scholarUserId] : void 0);
+    if (prof) return prof;
+  }
+  for (const entry of Object.values(snapshot)) {
+    const prof = entry?.profile || (entry?.publications ? entry : void 0);
+    if (!prof) continue;
+    if (orcidId && prof.orcid && prof.orcid === orcidId) return prof;
+    if (scholarUserId && prof.scholarUserId && prof.scholarUserId === scholarUserId) return prof;
+    if (name && prof.name && prof.name.trim().toLowerCase() === name.trim().toLowerCase()) return prof;
+  }
+  return void 0;
+}
+var OrcidConflictError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 409;
+    this.name = "OrcidConflictError";
+  }
+};
+var OrcidValidationError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+    this.name = "OrcidValidationError";
+  }
+};
+var OrcidUnauthorizedError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+    this.name = "OrcidUnauthorizedError";
+  }
+};
+var ORCID_SESSION_COOKIE_NAME = "scholarlens_session";
+var ORCID_STATE_COOKIE_NAME = "scholarlens_orcid_state";
+var DEFAULT_STATE_TTL_MS = 10 * 60 * 1e3;
+var DEFAULT_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1e3;
+function getOrcidEndpoints(env = "production") {
+  const isSandbox = env === "sandbox";
+  const baseDomain = isSandbox ? "sandbox.orcid.org" : "orcid.org";
+  const publicDomain = isSandbox ? "pub.sandbox.orcid.org" : "pub.orcid.org";
+  return {
+    env: isSandbox ? "sandbox" : "production",
+    baseDomain,
+    issuer: `https://${baseDomain}`,
+    authorizeUrl: `https://${baseDomain}/oauth/authorize`,
+    tokenUrl: `https://${baseDomain}/oauth/token`,
+    userinfoUrl: `https://${baseDomain}/oauth/userinfo`,
+    jwksUrl: `https://${baseDomain}/oauth/jwks`,
+    publicApiBase: `https://${publicDomain}/v3.0`
+  };
+}
+function normalizeOrcidId(rawInput) {
+  if (!rawInput || typeof rawInput !== "string") return null;
+  const trimmed = rawInput.trim().replace(/^https?:\/\/(sandbox\.)?orcid\.org\//i, "").replace(/[/?#].*$/, "").toUpperCase();
+  const digits = trimmed.replace(/[^0-9X]/g, "");
+  if (!/^\d{15}[\dX]$/.test(digits)) {
+    return null;
+  }
+  return `${digits.slice(0, 4)}-${digits.slice(4, 8)}-${digits.slice(8, 12)}-${digits.slice(12, 16)}`;
+}
+function orcidIdToUid(orcidId) {
+  const normalized = normalizeOrcidId(orcidId);
+  if (!normalized) {
+    throw new OrcidValidationError("Invalid ORCID iD format.");
+  }
+  return `orcid_${normalized.replace(/-/g, "")}`;
+}
+var ORCID_OAUTH_CLIENT_ID_PATTERN = /^APP-[A-Za-z0-9]{12,32}$/;
+function validateOrcidClientId(rawClientId) {
+  const clientId = String(rawClientId || "").trim();
+  if (!clientId || clientId === "MY_ORCID_CLIENT_ID" || clientId === "APP-XXXXXXXXXXXXXXXX") {
+    return {
+      valid: false,
+      clientId: "",
+      error: "ORCID OAuth Client ID is missing or still a placeholder. Register an application at https://orcid.org/developer-tools and use its APP-... Client ID."
+    };
+  }
+  if (/orcid\.org/i.test(clientId) || normalizeOrcidId(clientId) !== null) {
+    return {
+      valid: false,
+      clientId,
+      error: "Entered a personal ORCID iD / profile URL instead of an OAuth Application Client ID. Do not use your 0000-0000-0000-0000 ORCID iD as client_id; obtain an APP-... Client ID from ORCID Developer Tools."
+    };
+  }
+  if (!ORCID_OAUTH_CLIENT_ID_PATTERN.test(clientId)) {
+    return {
+      valid: false,
+      clientId,
+      error: 'Invalid ORCID Client ID format. Official ORCID OAuth Client IDs begin with "APP-" followed by alphanumeric characters (e.g. APP-1234567890ABCDEF) and must match the selected environment (Production or Sandbox).'
+    };
+  }
+  return {
+    valid: true,
+    clientId
+  };
+}
+function firstHeaderToken(value) {
+  if (!value) return "";
+  const raw = Array.isArray(value) ? value[0] : value;
+  return String(raw || "").split(",")[0].trim();
+}
+function resolvePublicBaseUrl(params) {
+  const appUrl = (params.appUrlEnv || "").trim();
+  if (appUrl && !appUrl.includes("MY_APP_URL")) {
+    return appUrl.replace(/\/$/, "");
+  }
+  const forwardedHost = firstHeaderToken(params.headers["x-forwarded-host"]);
+  const host = forwardedHost || firstHeaderToken(params.headers.host) || "localhost:3000";
+  const forwardedProto = firstHeaderToken(params.headers["x-forwarded-proto"]);
+  let proto = forwardedProto || params.protocol || "http";
+  if (!forwardedProto && host && !host.startsWith("localhost") && !host.startsWith("127.0.0.1") && proto === "http") {
+    proto = "https";
+  }
+  return `${proto}://${host}`.replace(/\/$/, "");
+}
+function parseCookies(cookieHeader) {
+  const out = {};
+  if (!cookieHeader) return out;
+  for (const part of cookieHeader.split(";")) {
+    const idx = part.indexOf("=");
+    if (idx <= 0) continue;
+    const key = part.slice(0, idx).trim();
+    const rawVal = part.slice(idx + 1).trim();
+    if (!key) continue;
+    try {
+      out[key] = decodeURIComponent(rawVal);
+    } catch {
+      out[key] = rawVal;
+    }
+  }
+  return out;
+}
+function serializeCookie(name, value, options = {}) {
+  const segments = [`${name}=${encodeURIComponent(value)}`];
+  segments.push(`Path=${options.path || "/"}`);
+  if (options.httpOnly !== false) segments.push("HttpOnly");
+  segments.push(`SameSite=${options.sameSite || "Lax"}`);
+  if (options.secure) segments.push("Secure");
+  if (typeof options.maxAgeSeconds === "number") {
+    segments.push(`Max-Age=${Math.max(0, Math.floor(options.maxAgeSeconds))}`);
+  }
+  return segments.join("; ");
+}
+function deriveAuthSecret(env) {
+  const explicit = (env.sessionSecret || env.authSecret || "").trim();
+  if (explicit) return explicit;
+  const seed = [
+    "scholarlens-auth-signing-key-v1",
+    (env.orcidClientSecret || "").trim(),
+    (env.firebaseProjectId || "").trim(),
+    (env.firebaseApiKey || "").trim()
+  ].join(":");
+  return crypto.createHmac("sha256", "scholarlens-root-salt").update(seed).digest("hex");
+}
+function base64UrlEncode(input) {
+  return Buffer.from(input).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+function base64UrlDecodeToBuffer(input) {
+  const padded = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
+  return Buffer.from(padded, "base64");
+}
+function signTokenPayload(payload, secret) {
+  const encoded = base64UrlEncode(JSON.stringify(payload));
+  const sig = base64UrlEncode(crypto.createHmac("sha256", secret).update(encoded).digest());
+  return `${encoded}.${sig}`;
+}
+function verifyTokenPayload(token, secret, nowMs = Date.now()) {
+  if (!token || typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [encoded, providedSig] = parts;
+  if (!encoded || !providedSig) return null;
+  const expectedSig = base64UrlEncode(crypto.createHmac("sha256", secret).update(encoded).digest());
+  const providedBuf = Buffer.from(providedSig, "utf8");
+  const expectedBuf = Buffer.from(expectedSig, "utf8");
+  if (providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(base64UrlDecodeToBuffer(encoded).toString("utf8"));
+    if (!parsed || typeof parsed !== "object") return null;
+    if (typeof parsed.exp === "number" && parsed.exp < nowMs) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+function createSignedOAuthState(params, secret) {
+  const nowMs = params.nowMs ?? Date.now();
+  const cleanScholarId = typeof params.scholarUserId === "string" ? params.scholarUserId.trim() : "";
+  const cleanScholarQuery = typeof params.scholarQueryName === "string" ? params.scholarQueryName.trim() : "";
+  const payload = {
+    nonce: base64UrlEncode(crypto.randomBytes(18)),
+    csrf: base64UrlEncode(crypto.randomBytes(18)),
+    redirectUri: params.redirectUri,
+    env: params.env,
+    mode: params.mode === "redirect" ? "redirect" : "popup",
+    ...params.linkUid ? { linkUid: params.linkUid } : {},
+    ...cleanScholarId ? { scholarUserId: cleanScholarId } : {},
+    ...cleanScholarQuery ? { scholarQueryName: cleanScholarQuery } : {},
+    iat: nowMs,
+    exp: nowMs + (params.ttlMs ?? DEFAULT_STATE_TTL_MS)
+  };
+  return {
+    stateToken: signTokenPayload(payload, secret),
+    payload
+  };
+}
+function verifySignedOAuthState(stateToken, secret, options = {}) {
+  const payload = verifyTokenPayload(stateToken, secret, options.nowMs);
+  if (!payload || !payload.csrf || !payload.nonce || !payload.redirectUri) {
+    return null;
+  }
+  if (options.requireCsrf !== false) {
+    if (!options.expectedCsrf) {
+      return null;
+    }
+    const a = Buffer.from(payload.csrf, "utf8");
+    const b = Buffer.from(options.expectedCsrf, "utf8");
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      return null;
+    }
+  }
+  return payload;
+}
+function createSignedSessionToken(params, secret) {
+  const nowMs = params.nowMs ?? Date.now();
+  const safeName = typeof params.name === "string" ? params.name.trim().slice(0, 160) : "";
+  const payload = {
+    uid: params.uid,
+    ...params.orcidId ? { orcidId: params.orcidId } : {},
+    ...safeName ? { name: safeName } : {},
+    provider: params.provider,
+    iat: nowMs,
+    exp: nowMs + (params.ttlMs ?? DEFAULT_SESSION_TTL_MS)
+  };
+  return signTokenPayload(payload, secret);
+}
+function verifySignedSessionToken(token, secret, nowMs = Date.now()) {
+  const payload = verifyTokenPayload(token, secret, nowMs);
+  if (!payload || !payload.uid || !payload.provider) {
+    return null;
+  }
+  return payload;
+}
+var jwksCache = /* @__PURE__ */ new Map();
+var JWKS_CACHE_TTL_MS = 60 * 60 * 1e3;
+async function fetchJwksKeys(jwksUrl, fetchImpl, forceRefresh = false) {
+  const cached = jwksCache.get(jwksUrl);
+  if (!forceRefresh && cached && Date.now() - cached.fetchedAt < JWKS_CACHE_TTL_MS) {
+    return cached.keys;
+  }
+  const resp = await fetchImpl(jwksUrl, { headers: { Accept: "application/json" } });
+  if (!resp.ok) {
+    throw new OrcidUnauthorizedError(`Failed to fetch ORCID JWKS (${resp.status}).`);
+  }
+  const json = await resp.json();
+  const keys = Array.isArray(json?.keys) ? json.keys : [];
+  jwksCache.set(jwksUrl, { keys, fetchedAt: Date.now() });
+  return keys;
+}
+async function verifyOrcidIdToken(params) {
+  const parts = String(params.idToken || "").split(".");
+  if (parts.length !== 3) {
+    throw new OrcidUnauthorizedError("Malformed ORCID ID token.");
+  }
+  const [headerB64, payloadB64, signatureB64] = parts;
+  let header;
+  let claims;
+  try {
+    header = JSON.parse(base64UrlDecodeToBuffer(headerB64).toString("utf8"));
+    claims = JSON.parse(base64UrlDecodeToBuffer(payloadB64).toString("utf8"));
+  } catch {
+    throw new OrcidUnauthorizedError("Unreadable ORCID ID token payload.");
+  }
+  if (header.alg !== "RS256") {
+    throw new OrcidUnauthorizedError(`Unsupported ORCID ID token algorithm: ${header.alg || "none"}`);
+  }
+  const fetchImpl = params.fetchImpl || fetch;
+  let keys = params.jwksOverride || await fetchJwksKeys(params.jwksUrl, fetchImpl, false);
+  const findMatchingKey = (keyList) => {
+    if (header.kid) {
+      return keyList.find((k) => k.kid === header.kid && k.kty === "RSA");
+    }
+    const rsaKeys = keyList.filter((k) => k.kty === "RSA" && (!k.use || k.use === "sig"));
+    return rsaKeys.length === 1 ? rsaKeys[0] : rsaKeys[0];
+  };
+  let jwk = findMatchingKey(keys);
+  if (!jwk && !params.jwksOverride) {
+    keys = await fetchJwksKeys(params.jwksUrl, fetchImpl, true);
+    jwk = findMatchingKey(keys);
+  }
+  if (!jwk) {
+    throw new OrcidUnauthorizedError("Matching ORCID signing key not found in JWKS.");
+  }
+  const publicKey = crypto.createPublicKey({ key: jwk, format: "jwk" });
+  const signingInput = Buffer.from(`${headerB64}.${payloadB64}`, "utf8");
+  const signatureBuf = base64UrlDecodeToBuffer(signatureB64);
+  const signatureValid = crypto.verify("RSA-SHA256", signingInput, publicKey, signatureBuf);
+  if (!signatureValid) {
+    throw new OrcidUnauthorizedError("Invalid ORCID ID token signature.");
+  }
+  const normalizedIss = String(claims.iss || "").replace(/\/$/, "");
+  const normalizedExpectedIss = params.expectedIssuer.replace(/\/$/, "");
+  if (normalizedIss !== normalizedExpectedIss) {
+    throw new OrcidUnauthorizedError(`ORCID ID token issuer mismatch: ${normalizedIss}`);
+  }
+  const audClaim = claims.aud;
+  const audMatches = Array.isArray(audClaim) ? audClaim.includes(params.clientId) : audClaim === params.clientId;
+  if (!audMatches) {
+    throw new OrcidUnauthorizedError("ORCID ID token audience does not match client ID.");
+  }
+  const nowSec = params.nowSeconds ?? Math.floor(Date.now() / 1e3);
+  const exp = Number(claims.exp);
+  if (!Number.isFinite(exp) || exp < nowSec - 60) {
+    throw new OrcidUnauthorizedError("ORCID ID token has expired.");
+  }
+  if (claims.nbf !== void 0 && Number(claims.nbf) > nowSec + 60) {
+    throw new OrcidUnauthorizedError("ORCID ID token is not yet valid.");
+  }
+  if (params.expectedNonce && claims.nonce !== params.expectedNonce) {
+    throw new OrcidUnauthorizedError("ORCID ID token nonce mismatch.");
+  }
+  const subOrcid = normalizeOrcidId(String(claims.sub || ""));
+  if (!subOrcid) {
+    throw new OrcidUnauthorizedError("ORCID ID token subject is missing or malformed.");
+  }
+  const givenName = typeof claims.given_name === "string" ? claims.given_name.trim() : void 0;
+  const familyName = typeof claims.family_name === "string" ? claims.family_name.trim() : void 0;
+  const combinedName = typeof claims.name === "string" && claims.name.trim() || [givenName, familyName].filter(Boolean).join(" ").trim() || subOrcid;
+  return {
+    orcidId: subOrcid,
+    name: combinedName,
+    ...givenName ? { givenName } : {},
+    ...familyName ? { familyName } : {},
+    ...typeof claims.auth_time === "number" ? { authTime: claims.auth_time } : {},
+    ...Array.isArray(claims.amr) ? { amr: claims.amr.map(String) } : {},
+    verifiedVia: "id_token"
+  };
+}
+async function exchangeOrcidAuthorizationCode(params) {
+  const endpoints = getOrcidEndpoints(params.env);
+  const fetchImpl = params.fetchImpl || fetch;
+  const body = new URLSearchParams({
+    client_id: params.clientId,
+    client_secret: params.clientSecret,
+    grant_type: "authorization_code",
+    code: params.code,
+    redirect_uri: params.redirectUri
+  });
+  const resp = await fetchImpl(endpoints.tokenUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: body.toString()
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok || data.error) {
+    throw new OrcidUnauthorizedError(
+      data.error_description || data.error || `ORCID token exchange failed (${resp.status}).`
+    );
+  }
+  return data;
+}
+async function fetchOrcidUserInfo(params) {
+  const endpoints = getOrcidEndpoints(params.env);
+  const fetchImpl = params.fetchImpl || fetch;
+  try {
+    const resp = await fetchImpl(endpoints.userinfoUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${params.accessToken}`
+      }
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    const orcidId = normalizeOrcidId(String(data.sub || ""));
+    if (!orcidId) return null;
+    const givenName = typeof data.given_name === "string" ? data.given_name.trim() : void 0;
+    const familyName = typeof data.family_name === "string" ? data.family_name.trim() : void 0;
+    const name = typeof data.name === "string" && data.name.trim() || [givenName, familyName].filter(Boolean).join(" ").trim() || orcidId;
+    return {
+      orcidId,
+      name,
+      ...givenName ? { givenName } : {},
+      ...familyName ? { familyName } : {},
+      verifiedVia: "userinfo"
+    };
+  } catch {
+    return null;
+  }
+}
+async function verifyAndResolveOrcidIdentity(params) {
+  const endpoints = getOrcidEndpoints(params.env);
+  const tokenOrcid = normalizeOrcidId(params.tokenData.orcid);
+  let verifiedFromIdToken = null;
+  if (params.tokenData.id_token) {
+    verifiedFromIdToken = await verifyOrcidIdToken({
+      idToken: params.tokenData.id_token,
+      clientId: params.clientId,
+      expectedIssuer: endpoints.issuer,
+      expectedNonce: params.expectedNonce,
+      jwksUrl: endpoints.jwksUrl,
+      jwksOverride: params.jwksOverride,
+      fetchImpl: params.fetchImpl
+    });
+    if (tokenOrcid && verifiedFromIdToken.orcidId !== tokenOrcid) {
+      throw new OrcidUnauthorizedError("ORCID ID token subject does not match token response ORCID.");
+    }
+  }
+  let verifiedFromUserInfo = null;
+  if (params.tokenData.access_token) {
+    verifiedFromUserInfo = await fetchOrcidUserInfo({
+      accessToken: params.tokenData.access_token,
+      env: params.env,
+      fetchImpl: params.fetchImpl
+    });
+    if (verifiedFromUserInfo && verifiedFromIdToken && verifiedFromUserInfo.orcidId !== verifiedFromIdToken.orcidId) {
+      throw new OrcidUnauthorizedError("ORCID UserInfo subject mismatch.");
+    }
+  }
+  const primary = verifiedFromIdToken || verifiedFromUserInfo;
+  if (primary) {
+    const preferredName = verifiedFromUserInfo?.name && verifiedFromUserInfo.name !== primary.orcidId ? verifiedFromUserInfo.name : primary.name !== primary.orcidId ? primary.name : (params.tokenData.name || "").trim() || primary.orcidId;
+    return {
+      ...primary,
+      name: preferredName
+    };
+  }
+  if (!tokenOrcid) {
+    throw new OrcidUnauthorizedError("ORCID response did not contain a verified ORCID iD.");
+  }
+  return {
+    orcidId: tokenOrcid,
+    name: (params.tokenData.name || "").trim() || tokenOrcid,
+    verifiedVia: "token_response"
+  };
+}
+function toFirestoreValue(val) {
+  if (val === null || val === void 0) return { nullValue: null };
+  if (typeof val === "string") return { stringValue: val };
+  if (typeof val === "boolean") return { booleanValue: val };
+  if (typeof val === "number") {
+    return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
+  }
+  if (Array.isArray(val)) {
+    return { arrayValue: { values: val.map((item) => toFirestoreValue(item)) } };
+  }
+  if (typeof val === "object") {
+    const fields = {};
+    for (const [k, v] of Object.entries(val)) {
+      if (v !== void 0) fields[k] = toFirestoreValue(v);
+    }
+    return { mapValue: { fields } };
+  }
+  return { stringValue: String(val) };
+}
+function fromFirestoreFields(fields) {
+  const out = {};
+  if (!fields) return out;
+  for (const [key, val] of Object.entries(fields)) {
+    out[key] = decodeFirestoreValue(val);
+  }
+  return out;
+}
+function decodeFirestoreValue(val) {
+  if (!val) return void 0;
+  if ("stringValue" in val) return val.stringValue;
+  if ("timestampValue" in val) return val.timestampValue;
+  if ("booleanValue" in val) return val.booleanValue;
+  if ("integerValue" in val) return Number(val.integerValue);
+  if ("doubleValue" in val) return val.doubleValue;
+  if ("nullValue" in val) return null;
+  if ("mapValue" in val) return fromFirestoreFields(val.mapValue?.fields);
+  if ("arrayValue" in val) {
+    return Array.isArray(val.arrayValue?.values) ? val.arrayValue.values.map((item) => decodeFirestoreValue(item)) : [];
+  }
+  return void 0;
+}
+function createInMemoryAccountMirror() {
+  const orcidIndex = /* @__PURE__ */ new Map();
+  const users = /* @__PURE__ */ new Map();
+  const scholarClaims = /* @__PURE__ */ new Map();
+  return {
+    getOrcidIndex(orcidId) {
+      return orcidIndex.get(orcidId) || null;
+    },
+    setOrcidIndex(entry) {
+      orcidIndex.set(entry.orcidId, { ...entry });
+    },
+    deleteOrcidIndex(orcidId) {
+      orcidIndex.delete(orcidId);
+    },
+    getUser(uid) {
+      const found = users.get(uid);
+      return found ? { ...found } : null;
+    },
+    setUser(user) {
+      users.set(user.uid, { ...user });
+    },
+    deleteUser(uid) {
+      users.delete(uid);
+    },
+    findUidByOrcidInUsers(orcidId) {
+      for (const user of users.values()) {
+        if (user.orcidId === orcidId) return user.uid;
+      }
+      return null;
+    },
+    getScholarClaim(scholarUserId) {
+      const found = scholarClaims.get(scholarUserId);
+      return found ? { ...found } : null;
+    },
+    setScholarClaim(claim) {
+      scholarClaims.set(claim.scholarUserId, { ...claim });
+    },
+    deleteScholarClaim(scholarUserId) {
+      scholarClaims.delete(scholarUserId);
+    }
+  };
+}
+function docFieldsToResearcher(uidFallback, raw) {
+  const providerRaw = String(raw.provider || "orcid");
+  const provider = providerRaw === "google" || providerRaw === "email" ? providerRaw : "orcid";
+  const orcidId = normalizeOrcidId(typeof raw.orcidId === "string" ? raw.orcidId : void 0) || void 0;
+  const displayName = String(raw.name || raw.displayName || "").trim() || orcidId || uidFallback;
+  const emailOrId = String(raw.emailOrId || raw.email || orcidId || uidFallback).trim();
+  return {
+    uid: String(raw.uid || uidFallback),
+    name: displayName,
+    emailOrId,
+    ...typeof raw.photoURL === "string" && raw.photoURL ? { photoURL: raw.photoURL } : {},
+    ...typeof raw.scholarUrl === "string" && raw.scholarUrl ? { scholarUrl: raw.scholarUrl } : {},
+    ...typeof raw.scholarUserId === "string" && raw.scholarUserId ? { scholarUserId: raw.scholarUserId } : {},
+    ...orcidId ? { orcidId } : {},
+    verified: raw.verified !== void 0 ? Boolean(raw.verified) : Boolean(orcidId),
+    provider,
+    ...typeof raw.createdAt === "string" ? { createdAt: raw.createdAt } : {},
+    ...typeof raw.updatedAt === "string" ? { updatedAt: raw.updatedAt } : {},
+    ...typeof raw.lastLoginAt === "string" ? { lastLoginAt: raw.lastLoginAt } : {}
+  };
+}
+function researcherToFirestoreUserDoc(user) {
+  const safeName = (user.name || user.orcidId || user.uid).trim().slice(0, 160);
+  const safeScholarId = user.scholarUserId && /^[a-zA-Z0-9_-]{1,64}$/.test(user.scholarUserId.trim()) ? user.scholarUserId.trim() : "";
+  return {
+    uid: user.uid,
+    name: safeName,
+    displayName: safeName,
+    email: user.provider === "orcid" ? "" : (user.emailOrId || "").slice(0, 320),
+    emailOrId: (user.emailOrId || user.orcidId || user.uid).slice(0, 320),
+    photoURL: (user.photoURL || "").slice(0, 15e4),
+    scholarUrl: (user.scholarUrl || "").slice(0, 500),
+    scholarUserId: safeScholarId,
+    orcidId: user.orcidId || "",
+    verified: Boolean(user.verified),
+    provider: user.provider,
+    createdAt: user.createdAt || (/* @__PURE__ */ new Date()).toISOString(),
+    updatedAt: user.updatedAt || (/* @__PURE__ */ new Date()).toISOString(),
+    lastLoginAt: user.lastLoginAt || (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+var OrcidAccountStore = class {
+  constructor(options) {
+    this.firestoreDocBase = options.firestoreDocBase.replace(/\/$/, "");
+    this.getBridgeToken = options.getBridgeToken;
+    this.mirror = options.mirror || createInMemoryAccountMirror();
+    this.fetchImpl = options.fetchImpl || fetch;
+    this.onPersistMirror = options.onPersistMirror;
+  }
+  get firestoreRootDocumentPath() {
+    const marker = "/v1/";
+    const idx = this.firestoreDocBase.indexOf(marker);
+    return idx >= 0 ? this.firestoreDocBase.slice(idx + marker.length) : "";
+  }
+  async getDoc(collection, docId) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token) return "UNAVAILABLE";
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/${encodeURIComponent(collection)}/${encodeURIComponent(docId)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (resp.status === 404) return null;
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => "");
+        console.warn(`[OrcidStore] Firestore GET ${collection}/${docId} failed (${resp.status}):`, body.slice(0, 200));
+        return "UNAVAILABLE";
+      }
+      const doc = await resp.json();
+      return fromFirestoreFields(doc.fields);
+    } catch (err) {
+      console.warn(`[OrcidStore] Firestore GET ${collection}/${docId} error:`, err);
+      return "UNAVAILABLE";
+    }
+  }
+  async upsertDoc(collection, docId, data) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token) return false;
+      const fields = {};
+      for (const [k, v] of Object.entries(data)) {
+        if (v !== void 0) fields[k] = toFirestoreValue(v);
+      }
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/${encodeURIComponent(collection)}/${encodeURIComponent(docId)}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ fields })
+        }
+      );
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => "");
+        console.warn(`[OrcidStore] Firestore PATCH ${collection}/${docId} failed (${resp.status}):`, body.slice(0, 200));
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn(`[OrcidStore] Firestore PATCH ${collection}/${docId} error:`, err);
+      return false;
+    }
+  }
+  async deleteDoc(collection, docId) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token) return false;
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/${encodeURIComponent(collection)}/${encodeURIComponent(docId)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (resp.status === 404) return true;
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => "");
+        console.warn(`[OrcidStore] Firestore DELETE ${collection}/${docId} failed (${resp.status}):`, body.slice(0, 200));
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn(`[OrcidStore] Firestore DELETE ${collection}/${docId} error:`, err);
+      return false;
+    }
+  }
+  /**
+   * Atomically creates `/orcidAccounts/{orcidId}` with precondition `exists: false`
+   * and writes the corresponding `/users/{uid}` profile in the same Firestore commit.
+   */
+  async atomicCreateOrcidBinding(orcidId, indexData, userData) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token || !this.firestoreRootDocumentPath) return "UNAVAILABLE";
+      const toFields = (obj) => {
+        const out = {};
+        for (const [k, v] of Object.entries(obj)) {
+          if (v !== void 0) out[k] = toFirestoreValue(v);
+        }
+        return out;
+      };
+      const commitUrl = `${this.firestoreDocBase}:commit`;
+      const resp = await this.fetchImpl(commitUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          writes: [
+            {
+              update: {
+                name: `${this.firestoreRootDocumentPath}/orcidAccounts/${orcidId}`,
+                fields: toFields(indexData)
+              },
+              currentDocument: { exists: false }
+            },
+            {
+              update: {
+                name: `${this.firestoreRootDocumentPath}/users/${String(userData.uid)}`,
+                fields: toFields(userData)
+              }
+            }
+          ]
+        })
+      });
+      if (resp.ok) return "OK";
+      const errText = await resp.text().catch(() => "");
+      if (resp.status === 409 || errText.includes("ALREADY_EXISTS") || errText.includes("already exists")) {
+        return "ALREADY_EXISTS";
+      }
+      console.warn(`[OrcidStore] Firestore atomic commit failed (${resp.status}):`, errText.slice(0, 250));
+      return "UNAVAILABLE";
+    } catch (err) {
+      console.warn("[OrcidStore] Firestore atomic commit error:", err);
+      return "UNAVAILABLE";
+    }
+  }
+  /**
+   * Authenticates an existing account bound to `orcidId` or creates a brand new one,
+   * strictly enforcing that one ORCID iD maps to at most one ScholarLens account.
+   */
+  async authenticateOrRegisterOrcidUser(params) {
+    const canonicalOrcid = normalizeOrcidId(params.orcidId);
+    if (!canonicalOrcid) {
+      throw new OrcidValidationError("Invalid ORCID iD received from provider.");
+    }
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    const linkToUid = params.linkToUid?.trim() || void 0;
+    const cleanScholarUserId = params.scholarUserId?.trim() || void 0;
+    const cleanScholarUrl = params.scholarUrl?.trim() || void 0;
+    const cleanPhotoURL = params.photoURL?.trim() || void 0;
+    const remoteIndex = await this.getDoc("orcidAccounts", canonicalOrcid);
+    let existingUid = null;
+    if (remoteIndex && remoteIndex !== "UNAVAILABLE" && typeof remoteIndex.uid === "string") {
+      existingUid = remoteIndex.uid;
+    } else if (remoteIndex === null) {
+      this.mirror.deleteOrcidIndex(canonicalOrcid);
+    } else if (remoteIndex === "UNAVAILABLE") {
+      const mirrorIndex = this.mirror.getOrcidIndex(canonicalOrcid);
+      if (mirrorIndex?.uid) {
+        existingUid = mirrorIndex.uid;
+      } else {
+        existingUid = this.mirror.findUidByOrcidInUsers(canonicalOrcid);
+      }
+    }
+    if (existingUid) {
+      if (linkToUid && linkToUid !== existingUid) {
+        throw new OrcidConflictError(
+          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
+        );
+      }
+      const remoteUser = await this.getDoc("users", existingUid);
+      const baseUser = remoteUser && remoteUser !== "UNAVAILABLE" ? docFieldsToResearcher(existingUid, remoteUser) : (remoteUser === "UNAVAILABLE" ? this.mirror.getUser(existingUid) : null) || {
+        uid: existingUid,
+        name: params.verifiedName || canonicalOrcid,
+        emailOrId: canonicalOrcid,
+        orcidId: canonicalOrcid,
+        verified: true,
+        provider: "orcid",
+        createdAt: nowIso
+      };
+      const snapForUpdated = findSnapshotProfileForOrcid(
+        canonicalOrcid,
+        cleanScholarUserId || baseUser.scholarUserId,
+        baseUser.name
+      );
+      const updatedUser = {
+        ...baseUser,
+        uid: existingUid,
+        name: baseUser.name && baseUser.name !== canonicalOrcid ? baseUser.name : params.verifiedName || snapForUpdated?.name || canonicalOrcid,
+        emailOrId: baseUser.emailOrId || canonicalOrcid,
+        ...baseUser.photoURL ? { photoURL: baseUser.photoURL } : cleanPhotoURL ? { photoURL: cleanPhotoURL } : snapForUpdated?.avatarUrl ? { photoURL: snapForUpdated.avatarUrl } : {},
+        ...cleanScholarUrl ? { scholarUrl: cleanScholarUrl } : baseUser.scholarUrl ? { scholarUrl: baseUser.scholarUrl } : snapForUpdated?.scholarUrl ? { scholarUrl: snapForUpdated.scholarUrl } : {},
+        ...cleanScholarUserId ? { scholarUserId: cleanScholarUserId } : baseUser.scholarUserId ? { scholarUserId: baseUser.scholarUserId } : snapForUpdated?.scholarUserId ? { scholarUserId: snapForUpdated.scholarUserId } : {},
+        orcidId: canonicalOrcid,
+        verified: true,
+        updatedAt: nowIso,
+        lastLoginAt: nowIso
+      };
+      await this.upsertDoc("users", existingUid, researcherToFirestoreUserDoc(updatedUser));
+      this.mirror.setOrcidIndex({
+        orcidId: canonicalOrcid,
+        uid: existingUid,
+        name: updatedUser.name,
+        createdAt: updatedUser.createdAt || nowIso,
+        updatedAt: nowIso
+      });
+      this.mirror.setUser(updatedUser);
+      this.onPersistMirror?.();
+      return { user: updatedUser, isNewAccount: false };
+    }
+    if (linkToUid) {
+      const targetRemote = await this.getDoc("users", linkToUid);
+      const targetLocal = this.mirror.getUser(linkToUid);
+      const existingTargetUser = targetRemote && targetRemote !== "UNAVAILABLE" ? docFieldsToResearcher(linkToUid, targetRemote) : targetLocal;
+      if (existingTargetUser?.orcidId && existingTargetUser.orcidId !== canonicalOrcid) {
+        throw new OrcidConflictError(
+          `This account is already linked to ORCID iD ${existingTargetUser.orcidId}.`
+        );
+      }
+    }
+    const targetUid = linkToUid || orcidIdToUid(canonicalOrcid);
+    let existingProfile = null;
+    if (linkToUid) {
+      const remoteExisting = await this.getDoc("users", linkToUid);
+      existingProfile = remoteExisting && remoteExisting !== "UNAVAILABLE" ? docFieldsToResearcher(linkToUid, remoteExisting) : this.mirror.getUser(linkToUid);
+    }
+    const snapForNew = findSnapshotProfileForOrcid(
+      canonicalOrcid,
+      cleanScholarUserId || existingProfile?.scholarUserId,
+      existingProfile?.name || params.verifiedName
+    );
+    const newUser = {
+      uid: targetUid,
+      name: existingProfile?.name || params.verifiedName && params.verifiedName.trim() || snapForNew?.name || canonicalOrcid,
+      emailOrId: existingProfile?.emailOrId || canonicalOrcid,
+      ...cleanPhotoURL || existingProfile?.photoURL || snapForNew?.avatarUrl ? { photoURL: cleanPhotoURL || existingProfile?.photoURL || snapForNew?.avatarUrl } : {},
+      ...cleanScholarUrl || existingProfile?.scholarUrl || snapForNew?.scholarUrl ? { scholarUrl: cleanScholarUrl || existingProfile?.scholarUrl || snapForNew?.scholarUrl } : {},
+      ...cleanScholarUserId || existingProfile?.scholarUserId || snapForNew?.scholarUserId ? { scholarUserId: cleanScholarUserId || existingProfile?.scholarUserId || snapForNew?.scholarUserId } : {},
+      orcidId: canonicalOrcid,
+      verified: true,
+      provider: existingProfile?.provider || "orcid",
+      createdAt: existingProfile?.createdAt || nowIso,
+      updatedAt: nowIso,
+      lastLoginAt: nowIso
+    };
+    const indexDoc = {
+      orcidId: canonicalOrcid,
+      uid: targetUid,
+      name: newUser.name,
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    const commitStatus = await this.atomicCreateOrcidBinding(
+      canonicalOrcid,
+      indexDoc,
+      researcherToFirestoreUserDoc(newUser)
+    );
+    if (commitStatus === "ALREADY_EXISTS") {
+      const winnerIndex = await this.getDoc("orcidAccounts", canonicalOrcid);
+      const winnerUid = winnerIndex && winnerIndex !== "UNAVAILABLE" && typeof winnerIndex.uid === "string" ? winnerIndex.uid : null;
+      if (linkToUid && winnerUid !== linkToUid) {
+        throw new OrcidConflictError(
+          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
+        );
+      }
+      if (winnerUid) {
+        const winnerUser = await this.getUserByUid(winnerUid);
+        if (winnerUser) {
+          return { user: winnerUser, isNewAccount: false };
+        }
+      }
+      throw new OrcidConflictError(
+        `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
+      );
+    }
+    if (commitStatus === "UNAVAILABLE") {
+      const mirrorExisting = this.mirror.getOrcidIndex(canonicalOrcid)?.uid || this.mirror.findUidByOrcidInUsers(canonicalOrcid);
+      if (mirrorExisting && mirrorExisting !== targetUid) {
+        throw new OrcidConflictError(
+          `ORCID iD ${canonicalOrcid} is already associated with another ScholarLens account.`
+        );
+      }
+    }
+    this.mirror.setOrcidIndex(indexDoc);
+    this.mirror.setUser(newUser);
+    this.onPersistMirror?.();
+    return { user: newUser, isNewAccount: !linkToUid };
+  }
+  async getUserLookupResult(uid) {
+    if (!uid) return { status: "NOT_FOUND" };
+    const remote = await this.getDoc("users", uid);
+    if (remote && remote !== "UNAVAILABLE") {
+      const record = docFieldsToResearcher(uid, remote);
+      this.mirror.setUser(record);
+      return { status: "FOUND", user: record };
+    }
+    if (remote === "UNAVAILABLE") {
+      const mirrored = this.mirror.getUser(uid);
+      return mirrored ? { status: "FOUND", user: mirrored } : { status: "UNAVAILABLE" };
+    }
+    this.mirror.deleteUser(uid);
+    return { status: "NOT_FOUND" };
+  }
+  async getUserByUid(uid) {
+    const result = await this.getUserLookupResult(uid);
+    return result.status === "FOUND" ? result.user : null;
+  }
+  async updateUserProfile(uid, updates, fallbackUser) {
+    const lookup = await this.getUserLookupResult(uid);
+    const existing = lookup.status === "FOUND" ? lookup.user : lookup.status === "UNAVAILABLE" && fallbackUser?.uid === uid ? fallbackUser : null;
+    if (!existing) return null;
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    const nextUser = {
+      ...existing,
+      ...updates.name !== void 0 && updates.name.trim() ? { name: updates.name.trim() } : {},
+      ...updates.photoURL !== void 0 ? { photoURL: updates.photoURL.trim() } : {},
+      ...updates.scholarUrl !== void 0 ? { scholarUrl: updates.scholarUrl.trim() } : {},
+      ...updates.scholarUserId !== void 0 ? { scholarUserId: updates.scholarUserId.trim() } : {},
+      updatedAt: nowIso
+    };
+    await this.upsertDoc("users", uid, researcherToFirestoreUserDoc(nextUser));
+    this.mirror.setUser(nextUser);
+    this.onPersistMirror?.();
+    return nextUser;
+  }
+  async getScholarClaim(scholarUserId) {
+    const cleanId = scholarUserId.trim();
+    if (!cleanId) return null;
+    const remote = await this.getDoc("scholarClaims", cleanId);
+    if (remote && remote !== "UNAVAILABLE" && typeof remote.orcidId === "string") {
+      const claim = {
+        scholarUserId: String(remote.scholarUserId || cleanId),
+        orcidId: String(remote.orcidId),
+        claimedByUid: String(remote.claimedByUid || ""),
+        researcherName: String(remote.researcherName || ""),
+        ...typeof remote.scholarUrl === "string" && remote.scholarUrl ? { scholarUrl: remote.scholarUrl } : {},
+        createdAt: String(remote.createdAt || (/* @__PURE__ */ new Date()).toISOString()),
+        updatedAt: String(remote.updatedAt || remote.createdAt || (/* @__PURE__ */ new Date()).toISOString())
+      };
+      this.mirror.setScholarClaim?.(claim);
+      return claim;
+    }
+    if (remote === null) {
+      this.mirror.deleteScholarClaim?.(cleanId);
+      return null;
+    }
+    return this.mirror.getScholarClaim?.(cleanId) || null;
+  }
+  async upsertScholarClaim(params) {
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    const cleanScholarId = params.scholarUserId.trim();
+    const claim = {
+      scholarUserId: cleanScholarId,
+      orcidId: params.orcidId.trim(),
+      claimedByUid: params.claimedByUid.trim(),
+      researcherName: params.researcherName.trim() || params.orcidId.trim(),
+      ...params.scholarUrl?.trim() ? { scholarUrl: params.scholarUrl.trim() } : {},
+      createdAt: params.createdAt || nowIso,
+      updatedAt: nowIso
+    };
+    await this.upsertDoc("scholarClaims", cleanScholarId, { ...claim });
+    this.mirror.setScholarClaim?.(claim);
+    this.onPersistMirror?.();
+    return claim;
+  }
+  async deleteScholarClaim(scholarUserId) {
+    const cleanId = scholarUserId.trim();
+    if (!cleanId) return;
+    await this.deleteDoc("scholarClaims", cleanId);
+    this.mirror.deleteScholarClaim?.(cleanId);
+    this.onPersistMirror?.();
+  }
+  async deleteUserAccount(uid) {
+    const existing = await this.getUserByUid(uid);
+    const orcidId = existing?.orcidId ? normalizeOrcidId(existing.orcidId) : null;
+    if (orcidId) {
+      const remoteIndex = await this.getDoc("orcidAccounts", orcidId);
+      const localIndex = this.mirror.getOrcidIndex(orcidId);
+      const ownerUid = (remoteIndex && remoteIndex !== "UNAVAILABLE" && typeof remoteIndex.uid === "string" ? remoteIndex.uid : null) || localIndex?.uid;
+      if (!ownerUid || ownerUid === uid) {
+        await this.deleteDoc("orcidAccounts", orcidId);
+        this.mirror.deleteOrcidIndex(orcidId);
+      }
+    }
+    if (existing?.scholarUserId) {
+      const claim = await this.getScholarClaim(existing.scholarUserId);
+      if (!claim || claim.claimedByUid === uid || orcidId && claim.orcidId === orcidId) {
+        await this.deleteDoc("scholarClaims", existing.scholarUserId);
+        this.mirror.deleteScholarClaim?.(existing.scholarUserId);
+      }
+    }
+    await this.deleteDoc("users", uid);
+    this.mirror.deleteUser(uid);
+    this.onPersistMirror?.();
+    return true;
+  }
+};
+
+// src/server/socialStore.ts
+import crypto2 from "crypto";
+import fs from "fs";
+import path from "path";
+function canonicalPairId(uidA, uidB) {
+  const cleanA = String(uidA || "").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+  const cleanB = String(uidB || "").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+  return [cleanA, cleanB].sort().join("__");
+}
+function sanitizePostId(rawId) {
+  return String(rawId || "").trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+}
+var SocialValidationError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+    this.name = "SocialValidationError";
+  }
+};
+var SocialForbiddenError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403;
+    this.name = "SocialForbiddenError";
+  }
+};
+var SocialNotFoundError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 404;
+    this.name = "SocialNotFoundError";
+  }
+};
+function parseFirestoreString(field) {
+  return typeof field?.stringValue === "string" ? field.stringValue : "";
+}
+function parseFirestoreBoolean(field) {
+  return typeof field?.booleanValue === "boolean" ? field.booleanValue : false;
+}
+function isAllowedImageInput(url) {
+  const clean = String(url || "").trim();
+  if (!clean || clean.length > 36e4) return false;
+  if (/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(clean)) {
+    return true;
+  }
+  return /^https?:\/\/.+/i.test(clean) && clean.length <= 2e3;
+}
+function isAllowedVideoInput(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return { valid: false, kind: "external" };
+  if (/^data:video\/(mp4|webm|ogg);base64,[A-Za-z0-9+/=]+$/i.test(clean)) {
+    return { valid: clean.length <= 75e4, kind: "upload" };
+  }
+  if (/^https?:\/\/.+/i.test(clean) && clean.length <= 2e3) {
+    return { valid: true, kind: "external" };
+  }
+  return { valid: false, kind: "external" };
+}
+var SocialNetworkStore = class {
+  constructor(options) {
+    this.mirror = {
+      connections: [],
+      threadsIndex: {},
+      threads: {},
+      postsOrder: [],
+      posts: {},
+      worksDigests: {}
+    };
+    this.firestoreDocBase = options.firestoreDocBase.replace(/\/$/, "");
+    this.getBridgeToken = options.getBridgeToken;
+    this.fetchImpl = options.fetchImpl || fetch;
+    this.mirrorFilePath = options.mirrorFilePath;
+    this.fallbackUsersProvider = options.fallbackUsersProvider;
+    this.loadMirrorFromDisk();
+  }
+  loadMirrorFromDisk() {
+    if (!this.mirrorFilePath) return;
+    try {
+      if (fs.existsSync(this.mirrorFilePath)) {
+        const parsed = JSON.parse(fs.readFileSync(this.mirrorFilePath, "utf8"));
+        this.mirror = {
+          connections: Array.isArray(parsed?.connections) ? parsed.connections : [],
+          threadsIndex: parsed?.threadsIndex && typeof parsed.threadsIndex === "object" ? parsed.threadsIndex : {},
+          threads: parsed?.threads && typeof parsed.threads === "object" ? parsed.threads : {},
+          postsOrder: Array.isArray(parsed?.postsOrder) ? parsed.postsOrder : [],
+          posts: parsed?.posts && typeof parsed.posts === "object" ? parsed.posts : {},
+          worksDigests: parsed?.worksDigests && typeof parsed.worksDigests === "object" ? parsed.worksDigests : {}
+        };
+      }
+    } catch {
+    }
+  }
+  persistMirrorToDisk() {
+    if (!this.mirrorFilePath) return;
+    try {
+      const dir = path.dirname(this.mirrorFilePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(this.mirrorFilePath, JSON.stringify(this.mirror, null, 2), "utf8");
+    } catch {
+    }
+  }
+  async readJsonDoc(docKey) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token || !this.firestoreDocBase) return "UNAVAILABLE";
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(4e3)
+        }
+      );
+      if (resp.status === 404) return null;
+      if (!resp.ok) return "UNAVAILABLE";
+      const data = await resp.json();
+      const rawJson = parseFirestoreString(data?.fields?.payloadJson);
+      if (!rawJson) return null;
+      return JSON.parse(rawJson);
+    } catch {
+      return "UNAVAILABLE";
+    }
+  }
+  async writeJsonDoc(docKey, payload) {
+    const serialized = JSON.stringify(payload);
+    if (serialized.length > 9e5) {
+      throw new SocialValidationError(
+        "Attachment payload exceeds storage size limit. Please use smaller compressed images or a video link."
+      );
+    }
+    try {
+      const token = await this.getBridgeToken();
+      if (!token || !this.firestoreDocBase) return false;
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            fields: {
+              key: { stringValue: docKey },
+              payloadJson: { stringValue: serialized },
+              updatedAtMs: { integerValue: String(Date.now()) }
+            }
+          }),
+          signal: AbortSignal.timeout(4500)
+        }
+      );
+      return resp.ok;
+    } catch {
+      return false;
+    }
+  }
+  async deleteJsonDoc(docKey) {
+    try {
+      const token = await this.getBridgeToken();
+      if (!token || !this.firestoreDocBase) return false;
+      const resp = await this.fetchImpl(
+        `${this.firestoreDocBase}/appConfig/${encodeURIComponent(docKey)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(4e3)
+        }
+      );
+      return resp.ok || resp.status === 404;
+    } catch {
+      return false;
+    }
+  }
+  /**
+   * Lists sanitized researcher profiles registered on ScholarLens from Firestore `users` + fallback mirror.
+   */
+  async listRegisteredResearchers() {
+    const byUid = /* @__PURE__ */ new Map();
+    const fallbackUsers = this.fallbackUsersProvider?.() || [];
+    for (const u of fallbackUsers) {
+      if (!u.uid) continue;
+      byUid.set(u.uid, { ...u });
+    }
+    try {
+      const token = await this.getBridgeToken();
+      if (token && this.firestoreDocBase) {
+        const resp = await this.fetchImpl(
+          `${this.firestoreDocBase}:runQuery`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              structuredQuery: {
+                from: [{ collectionId: "users" }],
+                limit: 120
+              }
+            }),
+            signal: AbortSignal.timeout(4500)
+          }
+        );
+        if (resp.ok) {
+          const rows = await resp.json();
+          for (const row of Array.isArray(rows) ? rows : []) {
+            const docItem = row?.document;
+            const fields = docItem?.fields;
+            if (!fields) continue;
+            const docUid = parseFirestoreString(fields.uid) || String(docItem?.name || "").split("/").pop() || "";
+            if (!docUid) continue;
+            const name = parseFirestoreString(fields.name) || parseFirestoreString(fields.displayName) || parseFirestoreString(fields.orcidId) || "Researcher";
+            const photoURL = parseFirestoreString(fields.photoURL) || void 0;
+            const scholarUrl = parseFirestoreString(fields.scholarUrl) || void 0;
+            const scholarUserId = parseFirestoreString(fields.scholarUserId) || void 0;
+            const orcidId = parseFirestoreString(fields.orcidId) || void 0;
+            const verified = parseFirestoreBoolean(fields.verified) || Boolean(orcidId);
+            byUid.set(docUid, {
+              uid: docUid,
+              name,
+              ...photoURL ? { photoURL } : {},
+              ...scholarUrl ? { scholarUrl } : {},
+              ...scholarUserId ? { scholarUserId } : {},
+              ...orcidId ? { orcidId } : {},
+              verified
+            });
+          }
+        }
+      }
+    } catch {
+    }
+    return Array.from(byUid.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+  async loadConnections() {
+    const remote = await this.readJsonDoc("social_connections");
+    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.edges)) {
+      this.mirror.connections = remote.edges;
+      return remote.edges;
+    }
+    if (remote === null) {
+      this.mirror.connections = [];
+      return [];
+    }
+    return this.mirror.connections;
+  }
+  async saveConnections(edges) {
+    this.mirror.connections = edges;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_connections", { edges });
+  }
+  async getConnectionsOverview(currentUid) {
+    const edges = await this.loadConnections();
+    const acceptedUids = [];
+    const incomingRequests = [];
+    const outgoingRequests = [];
+    const statusByUid = {};
+    for (const edge of edges) {
+      if (edge.requesterUid !== currentUid && edge.recipientUid !== currentUid) {
+        continue;
+      }
+      const otherUid = edge.requesterUid === currentUid ? edge.recipientUid : edge.requesterUid;
+      if (edge.status === "accepted") {
+        acceptedUids.push(otherUid);
+        statusByUid[otherUid] = "connected";
+      } else if (edge.recipientUid === currentUid) {
+        incomingRequests.push(edge);
+        statusByUid[otherUid] = "pending_received";
+      } else {
+        outgoingRequests.push(edge);
+        statusByUid[otherUid] = "pending_sent";
+      }
+    }
+    return { acceptedUids, incomingRequests, outgoingRequests, statusByUid };
+  }
+  async sendConnectionRequest(fromUid, toUid, note) {
+    const cleanFrom = String(fromUid || "").trim();
+    const cleanTo = String(toUid || "").trim();
+    if (!cleanFrom || !cleanTo) {
+      throw new SocialValidationError("Both sender and recipient identifiers are required.");
+    }
+    if (cleanFrom === cleanTo) {
+      throw new SocialValidationError("You cannot send a connection request to yourself.");
+    }
+    const pairId = canonicalPairId(cleanFrom, cleanTo);
+    const edges = await this.loadConnections();
+    const existingIdx = edges.findIndex((e) => e.id === pairId);
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    if (existingIdx >= 0) {
+      const existing = edges[existingIdx];
+      if (existing.status === "accepted") {
+        return { status: "connected", edge: existing };
+      }
+      if (existing.requesterUid === cleanTo && existing.recipientUid === cleanFrom) {
+        const updated = {
+          ...existing,
+          status: "accepted",
+          updatedAt: nowIso
+        };
+        edges[existingIdx] = updated;
+        await this.saveConnections(edges);
+        return { status: "connected", edge: updated };
+      }
+      return { status: "pending_sent", edge: existing };
+    }
+    const created = {
+      id: pairId,
+      requesterUid: cleanFrom,
+      recipientUid: cleanTo,
+      status: "pending",
+      ...note && note.trim() ? { note: note.trim().slice(0, 280) } : {},
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    const next = [...edges, created];
+    await this.saveConnections(next);
+    return { status: "pending_sent", edge: created };
+  }
+  async respondConnectionRequest(currentUid, requesterUid, action) {
+    const pairId = canonicalPairId(currentUid, requesterUid);
+    const edges = await this.loadConnections();
+    const idx = edges.findIndex((e) => e.id === pairId);
+    if (idx < 0) {
+      throw new SocialNotFoundError("Connection invitation was not found.");
+    }
+    const edge = edges[idx];
+    if (edge.status === "pending" && edge.recipientUid !== currentUid) {
+      throw new SocialForbiddenError("Only the recipient can respond to a connection invitation.");
+    }
+    if (action === "accept") {
+      edges[idx] = {
+        ...edge,
+        status: "accepted",
+        updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      await this.saveConnections(edges);
+      return { status: "connected" };
+    }
+    const filtered = edges.filter((e) => e.id !== pairId);
+    await this.saveConnections(filtered);
+    return { status: "none" };
+  }
+  async removeConnection(currentUid, otherUid) {
+    const pairId = canonicalPairId(currentUid, otherUid);
+    const edges = await this.loadConnections();
+    const next = edges.filter((e) => e.id !== pairId);
+    if (next.length !== edges.length) {
+      await this.saveConnections(next);
+    }
+    return { status: "none" };
+  }
+  async loadThreadsIndex() {
+    const remote = await this.readJsonDoc(
+      "social_threads_index"
+    );
+    if (remote && remote !== "UNAVAILABLE" && remote.threads) {
+      this.mirror.threadsIndex = remote.threads;
+      return remote.threads;
+    }
+    if (remote === null) {
+      this.mirror.threadsIndex = {};
+      return {};
+    }
+    return this.mirror.threadsIndex;
+  }
+  async saveThreadsIndex(threads) {
+    this.mirror.threadsIndex = threads;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_threads_index", { threads });
+  }
+  async loadThreadMessages(threadId) {
+    const remote = await this.readJsonDoc(
+      `social_thread_${threadId}`
+    );
+    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.messages)) {
+      this.mirror.threads[threadId] = remote.messages;
+      return remote.messages;
+    }
+    if (remote === null) {
+      this.mirror.threads[threadId] = [];
+      return [];
+    }
+    return this.mirror.threads[threadId] || [];
+  }
+  async saveThreadMessages(threadId, messages) {
+    const trimmed = messages.slice(-250);
+    this.mirror.threads[threadId] = trimmed;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc(`social_thread_${threadId}`, { messages: trimmed });
+  }
+  async listConversationsForUser(currentUid) {
+    const index = await this.loadThreadsIndex();
+    return Object.values(index).filter((t) => Array.isArray(t.participants) && t.participants.includes(currentUid)).sort((a, b) => String(b.lastMessageAt).localeCompare(String(a.lastMessageAt)));
+  }
+  async getThreadWithUser(currentUid, partnerUid) {
+    const threadId = canonicalPairId(currentUid, partnerUid);
+    const [index, messages] = await Promise.all([
+      this.loadThreadsIndex(),
+      this.loadThreadMessages(threadId)
+    ]);
+    const summary = index[threadId] || {
+      threadId,
+      participants: [currentUid, partnerUid].sort(),
+      lastMessageText: "",
+      lastMessageAt: "",
+      lastSenderUid: "",
+      unreadBy: {}
+    };
+    if (summary.unreadBy?.[currentUid]) {
+      summary.unreadBy = { ...summary.unreadBy, [currentUid]: 0 };
+      index[threadId] = summary;
+      await this.saveThreadsIndex(index);
+    }
+    return {
+      ...summary,
+      messages
+    };
+  }
+  async sendMessage(senderUid, recipientUid, rawText) {
+    const cleanSender = String(senderUid || "").trim();
+    const cleanRecipient = String(recipientUid || "").trim();
+    const cleanText = String(rawText || "").trim();
+    if (!cleanSender || !cleanRecipient) {
+      throw new SocialValidationError("Sender and recipient are required.");
+    }
+    if (cleanSender === cleanRecipient) {
+      throw new SocialValidationError("You cannot send direct messages to yourself.");
+    }
+    if (!cleanText) {
+      throw new SocialValidationError("Message cannot be empty.");
+    }
+    if (cleanText.length > 4e3) {
+      throw new SocialValidationError("Message exceeds maximum length of 4,000 characters.");
+    }
+    const threadId = canonicalPairId(cleanSender, cleanRecipient);
+    const [index, existingMessages] = await Promise.all([
+      this.loadThreadsIndex(),
+      this.loadThreadMessages(threadId)
+    ]);
+    const msg = {
+      id: `msg_${Date.now()}_${crypto2.randomBytes(4).toString("hex")}`,
+      senderUid: cleanSender,
+      recipientUid: cleanRecipient,
+      text: cleanText,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const nextMessages = [...existingMessages, msg];
+    await this.saveThreadMessages(threadId, nextMessages);
+    const prevUnread = Number(index[threadId]?.unreadBy?.[cleanRecipient] || 0);
+    index[threadId] = {
+      threadId,
+      participants: [cleanSender, cleanRecipient].sort(),
+      lastMessageText: cleanText.slice(0, 140),
+      lastMessageAt: msg.createdAt,
+      lastSenderUid: cleanSender,
+      unreadBy: {
+        ...index[threadId]?.unreadBy || {},
+        [cleanSender]: 0,
+        [cleanRecipient]: prevUnread + 1
+      }
+    };
+    await this.saveThreadsIndex(index);
+    return msg;
+  }
+  async loadPostsOrder() {
+    const remote = await this.readJsonDoc("social_posts_index");
+    if (remote && remote !== "UNAVAILABLE" && Array.isArray(remote.order)) {
+      this.mirror.postsOrder = remote.order;
+      return remote.order;
+    }
+    if (remote === null) {
+      this.mirror.postsOrder = [];
+      return [];
+    }
+    return this.mirror.postsOrder;
+  }
+  async savePostsOrder(order) {
+    const trimmed = order.slice(0, 120);
+    this.mirror.postsOrder = trimmed;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_posts_index", { order: trimmed });
+  }
+  async loadPostDoc(postId) {
+    const cleanId = sanitizePostId(postId);
+    if (!cleanId) return null;
+    const remote = await this.readJsonDoc(`social_post_${cleanId}`);
+    if (remote && remote !== "UNAVAILABLE" && remote.id) {
+      this.mirror.posts[cleanId] = remote;
+      return remote;
+    }
+    if (remote === null) return null;
+    return this.mirror.posts[cleanId] || null;
+  }
+  async savePostDoc(post) {
+    this.mirror.posts[post.id] = post;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc(`social_post_${post.id}`, post);
+  }
+  async createPost(authorUid, input) {
+    const caption = String(input.caption || "").trim().slice(0, 4e3);
+    const images = [];
+    for (const rawImg of Array.isArray(input.images) ? input.images : []) {
+      const cleanImg = String(rawImg || "").trim();
+      if (!cleanImg) continue;
+      if (!isAllowedImageInput(cleanImg)) {
+        throw new SocialValidationError(
+          "Each image must be a valid HTTP(S) URL or compressed JPEG/PNG/WebP/GIF under 350 KB."
+        );
+      }
+      images.push(cleanImg);
+      if (images.length >= 3) break;
+    }
+    let video = null;
+    if (input.videoUrl && String(input.videoUrl).trim()) {
+      const cleanVideo = String(input.videoUrl).trim();
+      const check = isAllowedVideoInput(cleanVideo);
+      if (!check.valid) {
+        throw new SocialValidationError(
+          "Video must be a valid HTTP(S) video link (e.g., YouTube/MP4) or uploaded MP4/WebM clip under 750 KB."
+        );
+      }
+      video = { url: cleanVideo, kind: check.kind };
+    }
+    let mentionedWork = null;
+    if (input.mentionedWork && String(input.mentionedWork.title || "").trim()) {
+      const w = input.mentionedWork;
+      mentionedWork = {
+        ...w.id ? { id: String(w.id).slice(0, 80) } : {},
+        title: String(w.title).trim().slice(0, 320),
+        ...w.venue ? { venue: String(w.venue).trim().slice(0, 200) } : {},
+        ...typeof w.year === "number" && Number.isFinite(w.year) ? { year: w.year } : {},
+        ...typeof w.citations === "number" && Number.isFinite(w.citations) ? { citations: w.citations } : {},
+        ...w.quartile ? { quartile: String(w.quartile).slice(0, 16) } : {},
+        ...w.type ? { type: String(w.type).slice(0, 32) } : {},
+        ...w.doi ? { doi: String(w.doi).slice(0, 160) } : {},
+        ...w.url && /^https?:\/\//i.test(w.url) ? { url: String(w.url).slice(0, 500) } : {}
+      };
+    }
+    const taggedCoAuthors = [];
+    const seenTags = /* @__PURE__ */ new Set();
+    for (const tag of Array.isArray(input.taggedCoAuthors) ? input.taggedCoAuthors : []) {
+      const name = String(tag?.name || "").trim().slice(0, 120);
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (seenTags.has(key)) continue;
+      seenTags.add(key);
+      taggedCoAuthors.push({
+        name,
+        ...tag.scholarUserId ? { scholarUserId: String(tag.scholarUserId).slice(0, 64) } : {},
+        ...tag.uid ? { uid: String(tag.uid).slice(0, 128) } : {},
+        ...tag.university ? { university: String(tag.university).slice(0, 180) } : {}
+      });
+      if (taggedCoAuthors.length >= 15) break;
+    }
+    if (!caption && !mentionedWork && images.length === 0 && !video) {
+      throw new SocialValidationError(
+        "Please add a caption, mention a research work, or attach an image/video before posting."
+      );
+    }
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    const post = {
+      id: `post_${Date.now()}_${crypto2.randomBytes(4).toString("hex")}`,
+      authorUid,
+      caption,
+      mentionedWork,
+      taggedCoAuthors,
+      images,
+      video,
+      likes: [],
+      comments: [],
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    await this.savePostDoc(post);
+    const order = await this.loadPostsOrder();
+    await this.savePostsOrder([post.id, ...order.filter((id) => id !== post.id)]);
+    return post;
+  }
+  async listPosts(limit = 40) {
+    const order = await this.loadPostsOrder();
+    const slice = order.slice(0, limit);
+    const docs = await Promise.all(slice.map((id) => this.loadPostDoc(id)));
+    return docs.filter((p) => Boolean(p));
+  }
+  async toggleLikePost(uid, postId) {
+    const post = await this.loadPostDoc(postId);
+    if (!post) throw new SocialNotFoundError("Post not found.");
+    const likes = Array.isArray(post.likes) ? [...post.likes] : [];
+    const idx = likes.indexOf(uid);
+    if (idx >= 0) {
+      likes.splice(idx, 1);
+    } else {
+      likes.push(uid);
+    }
+    const updated = {
+      ...post,
+      likes,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    await this.savePostDoc(updated);
+    return updated;
+  }
+  async addCommentToPost(uid, postId, rawText) {
+    const cleanText = String(rawText || "").trim();
+    if (!cleanText) throw new SocialValidationError("Comment cannot be empty.");
+    if (cleanText.length > 1500) {
+      throw new SocialValidationError("Comment exceeds 1,500 characters.");
+    }
+    const post = await this.loadPostDoc(postId);
+    if (!post) throw new SocialNotFoundError("Post not found.");
+    const comment = {
+      id: `cmt_${Date.now()}_${crypto2.randomBytes(3).toString("hex")}`,
+      authorUid: uid,
+      text: cleanText,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const updated = {
+      ...post,
+      comments: [...post.comments || [], comment].slice(-100),
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    await this.savePostDoc(updated);
+    return updated;
+  }
+  async deletePost(uid, postId) {
+    const post = await this.loadPostDoc(postId);
+    if (!post) throw new SocialNotFoundError("Post not found.");
+    if (post.authorUid !== uid) {
+      throw new SocialForbiddenError("Only the author can delete this post.");
+    }
+    const cleanId = sanitizePostId(postId);
+    delete this.mirror.posts[cleanId];
+    const order = await this.loadPostsOrder();
+    await this.savePostsOrder(order.filter((id) => id !== cleanId));
+    await this.deleteJsonDoc(`social_post_${cleanId}`);
+  }
+  getMirrorWorksDigests() {
+    return this.mirror.worksDigests || {};
+  }
+  async listResearcherWorksDigests() {
+    const remote = await this.readJsonDoc(
+      "social_works_digests"
+    );
+    if (remote && remote !== "UNAVAILABLE" && remote.digests) {
+      this.mirror.worksDigests = remote.digests;
+      return remote.digests;
+    }
+    if (remote === null) {
+      if (Object.keys(this.mirror.worksDigests || {}).length > 0) {
+        return this.mirror.worksDigests;
+      }
+      this.mirror.worksDigests = {};
+      return {};
+    }
+    return this.mirror.worksDigests;
+  }
+  async recordResearcherWorksDigest(digest) {
+    const cleanId = String(digest.scholarUserId || "").trim();
+    if (!cleanId) return;
+    const digests = { ...await this.listResearcherWorksDigests() };
+    digests[cleanId] = {
+      ...digest,
+      scholarUserId: cleanId,
+      works: (digest.works || []).slice(0, 12)
+    };
+    const sortedEntries = Object.entries(digests).sort((a, b) => String(b[1].updatedAt).localeCompare(String(a[1].updatedAt))).slice(0, 20);
+    const trimmed = Object.fromEntries(sortedEntries);
+    this.mirror.worksDigests = trimmed;
+    this.persistMirrorToDisk();
+    await this.writeJsonDoc("social_works_digests", { digests: trimmed });
+  }
+};
+
+// src/server/feedRanking.ts
+function normalizeResearcherKey(name) {
+  return String(name || "").toLowerCase().replace(/\./g, " ").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+function areSimilarResearcherNames(a, b) {
+  const normA = normalizeResearcherKey(a);
+  const normB = normalizeResearcherKey(b);
+  if (!normA || !normB) return false;
+  if (normA === normB) return true;
+  const partsA = normA.split(" ");
+  const partsB = normB.split(" ");
+  const lastA = partsA[partsA.length - 1];
+  const lastB = partsB[partsB.length - 1];
+  if (lastA !== lastB) return false;
+  const firstA = partsA[0] || "";
+  const firstB = partsB[0] || "";
+  if (!firstA || !firstB) return false;
+  return firstA === firstB || firstA.length === 1 && firstB.startsWith(firstA) || firstB.length === 1 && firstA.startsWith(firstB);
+}
+function matchesNameSet(name, set) {
+  const clean = normalizeResearcherKey(name);
+  if (!clean) return false;
+  if (set.has(clean)) return true;
+  for (const candidate of set) {
+    if (areSimilarResearcherNames(clean, candidate)) return true;
+  }
+  return false;
+}
+function buildFeedNetworkSets(params) {
+  const viewerUid = String(params.viewerUid || "").trim();
+  const viewerNames = /* @__PURE__ */ new Set();
+  if (params.viewerName) viewerNames.add(normalizeResearcherKey(params.viewerName));
+  const viewerScholarIds = /* @__PURE__ */ new Set();
+  if (params.viewerScholarUserId) {
+    viewerScholarIds.add(String(params.viewerScholarUserId).trim());
+  }
+  const connectedUids = /* @__PURE__ */ new Set();
+  if (viewerUid) connectedUids.add(viewerUid);
+  for (const uid of params.acceptedUids || []) {
+    if (uid) connectedUids.add(String(uid).trim());
+  }
+  const connectedScholarIds = /* @__PURE__ */ new Set();
+  const connectedNames = /* @__PURE__ */ new Set();
+  for (const user of params.registeredUsers || []) {
+    if (connectedUids.has(user.uid)) {
+      if (user.scholarUserId) {
+        connectedScholarIds.add(user.scholarUserId.trim());
+      }
+      if (user.name) {
+        connectedNames.add(normalizeResearcherKey(user.name));
+      }
+    }
+  }
+  const isViewer = (name, sid) => {
+    const cleanSid = String(sid || "").trim();
+    if (cleanSid && viewerScholarIds.size > 0) {
+      if (viewerScholarIds.has(cleanSid)) return true;
+      return false;
+    }
+    if (cleanSid && viewerScholarIds.has(cleanSid)) return true;
+    return matchesNameSet(name, viewerNames);
+  };
+  const coAuthorScholarIds = /* @__PURE__ */ new Set();
+  const coAuthorNames = /* @__PURE__ */ new Set();
+  const registerCoAuthor = (name, sid) => {
+    const cleanSid = String(sid || "").trim();
+    const cleanName = normalizeResearcherKey(name);
+    if (isViewer(name, sid)) return;
+    if (cleanSid && !connectedScholarIds.has(cleanSid)) {
+      coAuthorScholarIds.add(cleanSid);
+    }
+    if (cleanName && !matchesNameSet(cleanName, connectedNames)) {
+      coAuthorNames.add(cleanName);
+    }
+  };
+  for (const digest of Object.values(params.digests || {})) {
+    const digestSid = String(digest.scholarUserId || "").trim();
+    const viewerDigest = digestSid && viewerScholarIds.size > 0 ? viewerScholarIds.has(digestSid) : matchesNameSet(digest.name, viewerNames);
+    if (viewerDigest) {
+      for (const ca of digest.coAuthors || []) {
+        registerCoAuthor(ca.name, ca.scholarUserId);
+      }
+      for (const work of digest.works || []) {
+        for (const name of work.coAuthorNames || []) {
+          registerCoAuthor(name);
+        }
+      }
+      continue;
+    }
+    let viewerAppearsOnDigest = false;
+    for (const ca of digest.coAuthors || []) {
+      if (isViewer(ca.name, ca.scholarUserId)) {
+        viewerAppearsOnDigest = true;
+        break;
+      }
+    }
+    if (!viewerAppearsOnDigest) {
+      for (const work of digest.works || []) {
+        if ((work.coAuthorNames || []).some((n) => isViewer(n))) {
+          viewerAppearsOnDigest = true;
+          break;
+        }
+      }
+    }
+    if (viewerAppearsOnDigest) {
+      registerCoAuthor(digest.name, digest.scholarUserId);
+    }
+  }
+  const secondDegreeScholarIds = /* @__PURE__ */ new Set();
+  const secondDegreeNames = /* @__PURE__ */ new Set();
+  const registerSecondDegree = (name, sid) => {
+    const cleanSid = String(sid || "").trim();
+    const cleanName = normalizeResearcherKey(name);
+    if (isViewer(name, sid)) return;
+    if (cleanSid && connectedScholarIds.has(cleanSid)) return;
+    if (cleanSid && coAuthorScholarIds.has(cleanSid)) return;
+    if (cleanName && matchesNameSet(cleanName, connectedNames)) return;
+    if (cleanName && matchesNameSet(cleanName, coAuthorNames)) return;
+    if (cleanSid) secondDegreeScholarIds.add(cleanSid);
+    if (cleanName) secondDegreeNames.add(cleanName);
+  };
+  for (const digest of Object.values(params.digests || {})) {
+    const digestSid = String(digest.scholarUserId || "").trim();
+    const isDirectCoAuthorDigest = digestSid && coAuthorScholarIds.has(digestSid) || matchesNameSet(digest.name, coAuthorNames);
+    if (isDirectCoAuthorDigest) {
+      for (const ca of digest.coAuthors || []) {
+        registerSecondDegree(ca.name, ca.scholarUserId);
+      }
+      for (const work of digest.works || []) {
+        for (const name of work.coAuthorNames || []) {
+          registerSecondDegree(name);
+        }
+      }
+      continue;
+    }
+    let directCoAuthorOnDigest = false;
+    for (const work of digest.works || []) {
+      const workHasDirectCoAuthor = (work.coAuthorNames || []).some(
+        (n) => matchesNameSet(n, coAuthorNames)
+      );
+      if (workHasDirectCoAuthor) {
+        directCoAuthorOnDigest = true;
+        for (const sibling of work.coAuthorNames || []) {
+          registerSecondDegree(sibling);
+        }
+      }
+    }
+    if (directCoAuthorOnDigest) {
+      registerSecondDegree(digest.name, digest.scholarUserId);
+    }
+  }
+  return {
+    viewerUid,
+    viewerNames,
+    viewerScholarIds,
+    connectedUids,
+    connectedScholarIds,
+    connectedNames,
+    coAuthorScholarIds,
+    coAuthorNames,
+    secondDegreeScholarIds,
+    secondDegreeNames
+  };
+}
+function classifyFeedItemPriority(item, network) {
+  const authorUid = String(item.author?.uid || "").trim();
+  const authorSid = String(item.author?.scholarUserId || "").trim();
+  const authorName = item.author?.name;
+  const isViewerAuthor = authorUid && authorUid === network.viewerUid || authorSid && network.viewerScholarIds.has(authorSid) || matchesNameSet(authorName, network.viewerNames) && (!authorSid || network.viewerScholarIds.size === 0 || network.viewerScholarIds.has(authorSid));
+  if (isViewerAuthor) {
+    return {
+      tier: 1,
+      reason: "connected",
+      label: "Your Update"
+    };
+  }
+  if (authorUid && network.connectedUids.has(authorUid) || authorSid && network.connectedScholarIds.has(authorSid) || matchesNameSet(authorName, network.connectedNames)) {
+    return {
+      tier: 1,
+      reason: "connected",
+      label: "Connected"
+    };
+  }
+  const taggedList = (item.taggedCoAuthors || []).map((t) => t.name || "");
+  const workCoAuthors = item.work?.coAuthorNames || [];
+  if (authorSid && network.coAuthorScholarIds.has(authorSid) || matchesNameSet(authorName, network.coAuthorNames) || taggedList.some((n) => matchesNameSet(n, network.viewerNames)) || workCoAuthors.some((n) => matchesNameSet(n, network.viewerNames))) {
+    return {
+      tier: 2,
+      reason: "coauthor",
+      label: "Co-Author"
+    };
+  }
+  if (authorSid && network.secondDegreeScholarIds.has(authorSid) || matchesNameSet(authorName, network.secondDegreeNames) || taggedList.some(
+    (n) => matchesNameSet(n, network.coAuthorNames) || matchesNameSet(n, network.secondDegreeNames)
+  ) || workCoAuthors.some(
+    (n) => matchesNameSet(n, network.coAuthorNames) || matchesNameSet(n, network.secondDegreeNames)
+  )) {
+    return {
+      tier: 3,
+      reason: "coauthor_coauthor",
+      label: "Co-Author's Co-Author"
+    };
+  }
+  return {
+    tier: 4,
+    reason: "community",
+    label: "Community"
+  };
+}
+function sortAndRankFeedItems(items, network) {
+  const annotated = items.map((item) => {
+    const classification = classifyFeedItemPriority(item, network);
+    return {
+      ...item,
+      networkTier: classification.tier,
+      suggestionReason: classification.reason,
+      suggestionLabel: classification.label
+    };
+  });
+  annotated.sort((a, b) => {
+    const tierDiff = (a.networkTier || 4) - (b.networkTier || 4);
+    if (tierDiff !== 0) return tierDiff;
+    if (a.kind !== b.kind && Math.abs(b.sortScore - a.sortScore) < 30 * 86400 * 1e3) {
+      return a.kind === "post" ? -1 : 1;
+    }
+    return b.sortScore - a.sortScore;
+  });
+  return annotated;
+}
+function sliceEndlessFeed(rankedItems, offset, limit, allowInfiniteRepeat) {
+  const total = rankedItems.length;
+  if (total === 0) {
+    return { items: [], hasMore: false };
+  }
+  if (!allowInfiniteRepeat) {
+    const paged = rankedItems.slice(offset, offset + limit);
+    return {
+      items: paged,
+      hasMore: offset + paged.length < total
+    };
+  }
+  const out = [];
+  for (let i = 0; i < limit; i++) {
+    const absIndex = offset + i;
+    const cycle = Math.floor(absIndex / total);
+    const baseItem = rankedItems[absIndex % total];
+    out.push(
+      cycle === 0 ? baseItem : {
+        ...baseItem,
+        feedId: `${baseItem.feedId}__c${cycle}_${absIndex}`
+      }
+    );
+  }
+  return { items: out, hasMore: true };
+}
+
+// src/server/openAlexDisambiguation.ts
+var AFFIL_STOPWORDS = /* @__PURE__ */ new Set([
+  "dept",
+  "department",
+  "student",
+  "professor",
+  "prof",
+  "researcher",
+  "fellow",
+  "post",
+  "graduate",
+  "undergraduate",
+  "associate",
+  "assistant",
+  "emeritus",
+  "chairman",
+  "chair",
+  "dr",
+  "faculty",
+  "univ",
+  "university",
+  "institute",
+  "institution",
+  "academic",
+  "college",
+  "school",
+  "international",
+  "unlisted",
+  "technology",
+  "science",
+  "engineering",
+  "computer",
+  "and",
+  "the",
+  "for",
+  "of"
+]);
+function normalizeAsciiWords(input) {
+  return String(input || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+function extractAffiliationKeywords(text) {
+  const cleaned = normalizeAsciiWords(text).replace(
+    /\bindependent\s+(?:researcher|scholar|scientist|author|consultant|unlisted)\b/g,
+    " "
+  ).replace(/^independent(?:\s+unlisted)?$/g, " ");
+  return Array.from(
+    new Set(
+      cleaned.split(/\s+/).filter((t) => t.length >= 3 && !AFFIL_STOPWORDS.has(t))
+    )
+  );
+}
+function stripAuthorHonorificsBasic(name) {
+  return String(name || "").replace(/\([^)]*\)/g, " ").replace(/\[[^\]]*\]/g, " ").replace(/,\s*(?:phd|ph\.d\.|dr\.?|prof\.?)\b.*/gi, " ").replace(/\b(?:prof(?:essor)?|dr|engr|eng)\b\.?/gi, " ").replace(/\s+/g, " ").trim();
+}
+var MUHAMMAD_PREFIX_VARIANTS = /* @__PURE__ */ new Set([
+  "md",
+  "mohd",
+  "mohammed",
+  "muhammad",
+  "mohammad",
+  "muhammed",
+  "mohamad"
+]);
+function areGivenNameTokensCompatible(a, b) {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.replace(/v|w/g, "b") === b.replace(/v|w/g, "b")) return true;
+  if (MUHAMMAD_PREFIX_VARIANTS.has(a) && MUHAMMAD_PREFIX_VARIANTS.has(b)) {
+    return true;
+  }
+  if (a.length === 1 || b.length === 1) {
+    return a[0] === b[0];
+  }
+  return false;
+}
+function isOrderedGivenSubsequence(shortTokens, longTokens) {
+  if (shortTokens.length === 0 || longTokens.length < shortTokens.length) {
+    return false;
+  }
+  let j = 0;
+  let firstMatchIndex = -1;
+  let matchedNonPrefix = false;
+  for (let i = 0; i < shortTokens.length; i++) {
+    const tok = shortTokens[i];
+    let found = false;
+    while (j < longTokens.length) {
+      if (areGivenNameTokensCompatible(tok, longTokens[j])) {
+        if (firstMatchIndex === -1) firstMatchIndex = j;
+        if (!MUHAMMAD_PREFIX_VARIANTS.has(tok) || !MUHAMMAD_PREFIX_VARIANTS.has(longTokens[j])) {
+          matchedNonPrefix = true;
+        }
+        j++;
+        found = true;
+        break;
+      }
+      j++;
+    }
+    if (!found) return false;
+  }
+  if (firstMatchIndex > 0 && shortTokens[0].length === 1 && shortTokens.length === 1) {
+    return false;
+  }
+  const longHasExtraDistinguishingToken = longTokens.length > shortTokens.length && longTokens.some((t) => t.length >= 2 && !MUHAMMAD_PREFIX_VARIANTS.has(t));
+  if (!matchedNonPrefix && longHasExtraDistinguishingToken) {
+    return false;
+  }
+  return true;
+}
+function isSameResearcherNameMatch(candidateName, targetName) {
+  const c = String(candidateName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+  const t = String(targetName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+  if (!c || !t) return false;
+  if (c === t) return true;
+  const cNorm = c.replace(/v|w/g, "b");
+  const tNorm = t.replace(/v|w/g, "b");
+  if (cNorm === tNorm) return true;
+  const cTokens = c.split(/\s+/).filter(Boolean);
+  const tTokens = t.split(/\s+/).filter(Boolean);
+  if (cTokens.length < 2 || tTokens.length < 2) {
+    return false;
+  }
+  if (cTokens.length === tTokens.length && [...cTokens].sort().join(" ") === [...tTokens].sort().join(" ")) {
+    return true;
+  }
+  const cLast = cTokens[cTokens.length - 1];
+  const tLast = tTokens[tTokens.length - 1];
+  if (cLast !== tLast && cLast.replace(/v|w/g, "b") !== tLast.replace(/v|w/g, "b")) {
+    const getHyphenSurnameParts = (raw) => {
+      const lastRaw = String(raw || "").trim().split(/\s+/).pop() || "";
+      if (!/[-‐‑‒–—]/.test(lastRaw)) return null;
+      const parts = lastRaw.split(/[-‐‑‒–—]+/).map(
+        (p) => p.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "")
+      ).filter((p) => p.length >= 2);
+      return parts.length >= 2 ? parts : null;
+    };
+    const cHyphenParts = getHyphenSurnameParts(candidateName);
+    const tHyphenParts = getHyphenSurnameParts(targetName);
+    const hyphenLastMatches = cHyphenParts && cHyphenParts.includes(tLast) && cTokens.length >= 3 && cTokens.slice(0, -cHyphenParts.length).join(" ") === tTokens.slice(0, -1).join(" ") || tHyphenParts && tHyphenParts.includes(cLast) && tTokens.length >= 3 && tTokens.slice(0, -tHyphenParts.length).join(" ") === cTokens.slice(0, -1).join(" ");
+    if (hyphenLastMatches) {
+      return true;
+    }
+    return false;
+  }
+  const cGiven = cTokens.slice(0, -1);
+  const tGiven = tTokens.slice(0, -1);
+  if (cGiven.join("") === tGiven.join("")) return true;
+  if (cGiven.length === 1 && cGiven[0].length >= 2 && cGiven[0].length === tGiven.length && tGiven.every((tok, idx) => tok[0] === cGiven[0][idx])) {
+    return true;
+  }
+  if (tGiven.length === 1 && tGiven[0].length >= 2 && tGiven[0].length === cGiven.length && cGiven.every((tok, idx) => tok[0] === tGiven[0][idx])) {
+    return true;
+  }
+  const stripLeadingPrefix = (tokens) => tokens.length >= 2 && MUHAMMAD_PREFIX_VARIANTS.has(tokens[0]) ? tokens.slice(1) : tokens;
+  const collapseSingleLetterRuns = (tokens) => {
+    const out = [];
+    let i = 0;
+    while (i < tokens.length) {
+      if (tokens[i].length === 1) {
+        let j = i;
+        while (j < tokens.length && tokens[j].length === 1) j++;
+        if (j - i >= 2) {
+          out.push(tokens.slice(i, j).join(""));
+        } else {
+          out.push(tokens[i]);
+        }
+        i = j;
+      } else {
+        out.push(tokens[i]);
+        i++;
+      }
+    }
+    return out;
+  };
+  const buildVariants = (tokens) => {
+    const variants = [tokens];
+    const stripped = stripLeadingPrefix(tokens);
+    if (stripped !== tokens) variants.push(stripped);
+    const collapsed = collapseSingleLetterRuns(tokens);
+    if (collapsed.length !== tokens.length) variants.push(collapsed);
+    return variants;
+  };
+  const cVariants = buildVariants(cGiven);
+  const tVariants = buildVariants(tGiven);
+  for (const cv of cVariants) {
+    for (const tv of tVariants) {
+      const [shortTokens, longTokens] = cv.length <= tv.length ? [cv, tv] : [tv, cv];
+      if (isOrderedGivenSubsequence(shortTokens, longTokens)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+function scoreOpenAlexAuthorCandidate(author, cleanSearchName, affilTokens, homeCountryCode, isSameName) {
+  const disp = String(author?.display_name || "");
+  if (!disp || !isSameName(disp, cleanSearchName)) return null;
+  const normSearchExact = normalizeAsciiWords(
+    stripAuthorHonorificsBasic(cleanSearchName)
+  ).replace(/[0-9]/g, "").replace(/\s+/g, " ").trim();
+  const normSearchNoMid = normSearchExact.split(" ").filter((w, i, arr) => i === 0 || i === arr.length - 1 || w.length > 1).join(" ");
+  const normDispExact = normalizeAsciiWords(stripAuthorHonorificsBasic(disp)).replace(/[0-9]/g, "").replace(/\s+/g, " ").trim();
+  const normDispNoMid = normDispExact.split(" ").filter((w, i, arr) => i === 0 || i === arr.length - 1 || w.length > 1).join(" ");
+  const joinCompactInitials = (s) => s.replace(/\b(?:[a-z]\s+)+[a-z]\b/g, (m) => m.replace(/\s+/g, ""));
+  const normDispCompact = joinCompactInitials(normDispExact);
+  const normSearchCompact = joinCompactInitials(normSearchExact);
+  const normDispSorted = normDispNoMid.split(" ").filter(Boolean).sort().join(" ");
+  const normSearchSorted = normSearchNoMid.split(" ").filter(Boolean).sort().join(" ");
+  let score = 0;
+  if (normDispExact === normSearchExact) {
+    score += 25;
+  } else if (normDispCompact === normSearchCompact || normDispNoMid === normSearchNoMid) {
+    score += 24;
+  } else if (normDispSorted && normDispSorted === normSearchSorted) {
+    score += 23;
+  }
+  const candidateInstitutions = [];
+  if (Array.isArray(author.last_known_institutions)) {
+    for (const inst of author.last_known_institutions) {
+      if (inst?.display_name || inst?.country_code) {
+        candidateInstitutions.push({
+          name: normalizeAsciiWords(String(inst.display_name || "")),
+          countryCode: String(inst.country_code || "").toUpperCase()
+        });
+      }
+    }
+  }
+  if (Array.isArray(author.affiliations)) {
+    for (const aff of author.affiliations) {
+      if (aff?.institution?.display_name || aff?.institution?.country_code) {
+        candidateInstitutions.push({
+          name: normalizeAsciiWords(String(aff.institution.display_name || "")),
+          countryCode: String(aff.institution.country_code || "").toUpperCase()
+        });
+      }
+    }
+  }
+  let affilMatches = 0;
+  for (const token of affilTokens) {
+    if (candidateInstitutions.some((ci) => ci.name.includes(token))) {
+      affilMatches++;
+      score += 30;
+    }
+  }
+  let countryMatches = 0;
+  const upperHomeCountry = String(homeCountryCode || "").trim().toUpperCase();
+  if (upperHomeCountry && candidateInstitutions.some((ci) => ci.countryCode === upperHomeCountry)) {
+    countryMatches = 1;
+    score += 15;
+  }
+  const worksCount = Number(author.works_count || 0);
+  score += Math.min(25, Math.log10(worksCount + 1) * 8);
+  const id = String(author.id || "").replace("https://openalex.org/", "").trim();
+  if (!id) return null;
+  return {
+    author,
+    id,
+    score,
+    affilMatches,
+    countryMatches,
+    worksCount
+  };
+}
+function pickDisambiguationTitles(publications, limit = 4) {
+  const chosen = [];
+  const seen = /* @__PURE__ */ new Set();
+  const tryAdd = (pub) => {
+    const t = String(pub?.title || "").trim();
+    const key = t.toLowerCase();
+    if (!t || t.length < 10 || seen.has(key)) return false;
+    seen.add(key);
+    chosen.push(t);
+    return true;
+  };
+  for (const pub of publications.slice(0, 3)) {
+    if (chosen.length >= limit) break;
+    tryAdd(pub);
+  }
+  const recentPub = publications.find((p) => (p.year || 0) >= 2018 && p.title.length >= 20);
+  if (recentPub && chosen.length < limit) {
+    tryAdd(recentPub);
+  }
+  for (const pub of publications) {
+    if (chosen.length >= limit) break;
+    tryAdd(pub);
+  }
+  return chosen;
+}
+function normalizeOrcidUrl(raw) {
+  return String(raw || "").trim().replace(/^https?:\/\/orcid\.org\//i, "").toUpperCase();
+}
+function areOrcidsConflicting(orcidA, orcidB) {
+  const cleanA = normalizeOrcidUrl(orcidA);
+  const cleanB = normalizeOrcidUrl(orcidB);
+  return Boolean(cleanA && cleanB && cleanA !== cleanB);
+}
+function rankOpenAlexAuthorsFromWorks(worksByTitle, cleanSearchName, affilTokens, homeCountryCode, isSameName, matchWorkFn, collaboratorNames = []) {
+  const upperHomeCountry = String(homeCountryCode || "").trim().toUpperCase();
+  const cleanCollaborators = collaboratorNames.map((n) => stripAuthorHonorificsBasic(n).trim()).filter(Boolean);
+  const candidates = /* @__PURE__ */ new Map();
+  for (const entry of worksByTitle) {
+    const titleKey = entry.title.toLowerCase();
+    for (const w of entry.works) {
+      if (!matchWorkFn(entry.title, [w])) continue;
+      const authorships = Array.isArray(w.authorships) ? w.authorships : [];
+      const workCollabCount = cleanCollaborators.length > 0 ? authorships.filter((otherAu) => {
+        const otherName = String(otherAu.author?.display_name || "").trim();
+        return otherName && cleanCollaborators.some((colName) => isSameName(otherName, colName));
+      }).length : 0;
+      for (const au of authorships) {
+        const auName = String(au.author?.display_name || "");
+        const auId = String(au.author?.id || "").replace("https://openalex.org/", "").trim();
+        if (!auId || !auName || !isSameName(auName, cleanSearchName)) continue;
+        let stats = candidates.get(auId);
+        if (!stats) {
+          stats = {
+            id: auId,
+            orcid: normalizeOrcidUrl(au.author?.orcid) || void 0,
+            affilHits: 0,
+            countryHits: 0,
+            titleHits: 0,
+            collaboratorHits: 0,
+            seenTitles: /* @__PURE__ */ new Set()
+          };
+          candidates.set(auId, stats);
+        } else if (!stats.orcid) {
+          const normO = normalizeOrcidUrl(au.author?.orcid);
+          if (normO) stats.orcid = normO;
+        }
+        if (!stats.seenTitles.has(titleKey)) {
+          stats.seenTitles.add(titleKey);
+          stats.titleHits++;
+          stats.collaboratorHits += workCollabCount;
+        }
+        const insts = Array.isArray(au.institutions) ? au.institutions : [];
+        let workAffilMatched = false;
+        let workCountryMatched = false;
+        for (const inst of insts) {
+          const iName = normalizeAsciiWords(String(inst?.display_name || ""));
+          const iCode = String(inst?.country_code || "").trim().toUpperCase();
+          if (affilTokens.some((tok) => iName.includes(tok))) {
+            workAffilMatched = true;
+          }
+          if (upperHomeCountry && iCode === upperHomeCountry) {
+            workCountryMatched = true;
+          }
+        }
+        if (workAffilMatched) stats.affilHits++;
+        if (workCountryMatched) stats.countryHits++;
+      }
+    }
+  }
+  return Array.from(candidates.values()).map((c) => ({
+    id: c.id,
+    ...c.orcid ? { orcid: c.orcid } : {},
+    affilHits: c.affilHits,
+    countryHits: c.countryHits,
+    titleHits: c.titleHits,
+    collaboratorHits: c.collaboratorHits,
+    score: c.affilHits * 60 + c.collaboratorHits * 45 + c.countryHits * 25 + c.titleHits * 15
+  })).sort(
+    (a, b) => b.score - a.score || b.collaboratorHits - a.collaboratorHits || b.affilHits - a.affilHits || b.titleHits - a.titleHits || (b.orcid ? 1 : 0) - (a.orcid ? 1 : 0)
+  );
+}
+var SKIPPED_PROFILE_HOSTS = [
+  "scholar.google",
+  "linkedin.com",
+  "researchgate.net",
+  "scopus.com",
+  "twitter.com",
+  "x.com",
+  "facebook.com",
+  "instagram.com",
+  "github.com",
+  "youtube.com",
+  "orcid.org",
+  "publons.com",
+  "webofscience.com",
+  "semanticscholar.org",
+  "dblp.org",
+  "ieee.org",
+  "acm.org",
+  "springer.com",
+  "elsevier.com",
+  "wikipedia.org"
+];
+var PREFERRED_PROFILE_PATTERNS = [
+  /orbit\./i,
+  /pure\./i,
+  /profiles?\./i,
+  /people\./i,
+  /faculty/i,
+  /staff/i,
+  /person/i,
+  /\.edu(?:\/|$|\.)/i,
+  /\.ac\.[a-z]{2}(?:\/|$)/i,
+  /\.dk(?:\/|$)/i,
+  /\.se(?:\/|$)/i,
+  /\.de(?:\/|$)/i,
+  /\.uk(?:\/|$)/i
+];
+function pickInstitutionalProfileUrls(researcherUrls) {
+  const scored = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const item of researcherUrls || []) {
+    const raw = String(item?.url?.value || item?.url || "").trim();
+    if (!raw || !/^https?:\/\//i.test(raw)) continue;
+    const lower = raw.toLowerCase();
+    if (SKIPPED_PROFILE_HOSTS.some((h) => lower.includes(h))) continue;
+    if (seen.has(raw)) continue;
+    seen.add(raw);
+    let priority = 1;
+    if (/\/persons?\//i.test(lower) || /pure|orbit/i.test(lower)) priority += 4;
+    if (PREFERRED_PROFILE_PATTERNS.some((re) => re.test(lower))) priority += 2;
+    if (raw.startsWith("https://")) priority += 1;
+    scored.push({ url: raw, priority });
+  }
+  return scored.sort((a, b) => b.priority - a.priority).map((s) => s.url);
+}
+var REJECTED_IMAGE_PATTERNS = /(?:logo|icon|favicon|placeholder|default|avatar_scholar|cleardot|blank|spinner|orcid|banner|badge|wordmark|seal|header|footer|share|\.svg(?:$|\?))/i;
+function extractPortraitUrlFromHtml(html, pageUrl) {
+  if (!html) return null;
+  const candidateAttrRegexes = [
+    /<meta[^>]*property=["']og:image(?::secure_url)?["'][^>]*content=["']([^"']+)["']/i,
+    /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image(?::secure_url)?["']/i,
+    /<meta[^>]*name=["']twitter:image(?::src)?["'][^>]*content=["']([^"']+)["']/i,
+    /<img[^>]*class=["'][^"']*(?:portrait|avatar|headshot|profile-?photo|person-?image)[^"']*["'][^>]*src=["']([^"']+)["']/i,
+    /<img[^>]*src=["']([^"']*\/files-asset\/[^"']+)["']/i
+  ];
+  for (const re of candidateAttrRegexes) {
+    const match = html.match(re);
+    const rawCandidate = match?.[1]?.trim();
+    if (!rawCandidate || rawCandidate.startsWith("data:")) continue;
+    if (REJECTED_IMAGE_PATTERNS.test(rawCandidate)) continue;
+    try {
+      const resolved = new URL(rawCandidate, pageUrl).toString();
+      if (/^https?:\/\//i.test(resolved) && !REJECTED_IMAGE_PATTERNS.test(resolved)) {
+        return resolved;
+      }
+    } catch {
+    }
+  }
+  return null;
+}
+function buildYahooScholarSearchQueries(name, university) {
+  const cleanName = stripAuthorHonorificsBasic(name);
+  if (!cleanName) return [];
+  const cleanUni = String(university || "").trim();
+  const isGenericUni = !cleanUni || /^(?:independent\s*\/\s*unlisted|unlisted|unknown(?:\s+university)?)$/i.test(
+    cleanUni
+  );
+  const queries = [];
+  if (!isGenericUni) {
+    const shortUni = cleanUni.split(",")[0].trim();
+    queries.push(`"${cleanName}" "${shortUni}" scholar.google.com/citations`);
+  }
+  queries.push(`${cleanName} scholar.google.com/citations`);
+  return queries;
+}
+function extractSameInstitutionAuthorIds(instAuthors, cleanSearchName, isSameName, maxIds = 8, primaryOrcid) {
+  const ids = [];
+  const normalizedPrimaryOrcid = normalizeOrcidUrl(primaryOrcid);
+  const matching = (instAuthors || []).filter((cand) => {
+    const cName = String(cand?.display_name || "").trim();
+    const cId = String(cand?.id || "").replace("https://openalex.org/", "").trim();
+    return Boolean(cId && cName && isSameName(cName, cleanSearchName));
+  });
+  const distinctOrcids = new Set(
+    matching.map((cand) => normalizeOrcidUrl(cand?.orcid)).filter(Boolean)
+  );
+  const skipAllOrcids = !normalizedPrimaryOrcid && distinctOrcids.size > 1;
+  const sorted = [...matching].sort(
+    (a, b) => Number(b?.works_count || 0) - Number(a?.works_count || 0)
+  );
+  for (const cand of sorted) {
+    const cId = String(cand?.id || "").replace("https://openalex.org/", "").trim();
+    const candOrcid = normalizeOrcidUrl(cand?.orcid);
+    if (normalizedPrimaryOrcid && areOrcidsConflicting(normalizedPrimaryOrcid, candOrcid)) {
+      continue;
+    }
+    if (skipAllOrcids && candOrcid) {
+      continue;
+    }
+    if (!ids.includes(cId)) {
+      ids.push(cId);
+      if (ids.length >= maxIds) break;
+    }
+  }
+  return ids;
+}
+function shouldKeepCrossrefFallbackWork(params) {
+  const { title, authors, targetName, isSameName, affilTokens, candidateTitles } = params;
+  const matchingAuthors = (authors || []).filter((au) => {
+    const full = `${au?.given || ""} ${au?.family || ""}`.trim();
+    return Boolean(full && isSameName(full, targetName));
+  });
+  if (matchingAuthors.length === 0) return false;
+  const normTitle = normalizeAsciiWords(title);
+  if (normTitle && candidateTitles && candidateTitles.length > 0) {
+    const titleMatched = candidateTitles.some((cand) => {
+      const cNorm = normalizeAsciiWords(cand);
+      if (!cNorm) return false;
+      if (cNorm === normTitle) return true;
+      return Math.min(cNorm.length, normTitle.length) >= 24 && (normTitle.includes(cNorm) || cNorm.includes(normTitle));
+    });
+    if (titleMatched) return true;
+  }
+  if (affilTokens.length === 0) return false;
+  for (const au of matchingAuthors) {
+    const affList = Array.isArray(au?.affiliation) ? au.affiliation : [];
+    const affText = normalizeAsciiWords(
+      affList.map((af) => String(af?.name || af || "")).join(" ")
+    );
+    if (affText && affilTokens.some((tok) => affText.includes(tok))) {
+      return true;
+    }
+  }
+  return false;
+}
+function mapOrcidWorksSummaryToOpenAlexFormat(worksData, authorName, orcidId, existingKeys = /* @__PURE__ */ new Set(), affiliationHint = "") {
+  const groups = Array.isArray(worksData?.group) ? worksData.group : [];
+  const cleanOrcid = String(orcidId || "").trim();
+  const cleanAffil = String(affiliationHint || "").trim();
+  const mapped = [];
+  for (const group of groups) {
+    const summary = Array.isArray(group?.["work-summary"]) ? group["work-summary"][0] : null;
+    if (!summary) continue;
+    const title = String(summary?.title?.title?.value || "").trim();
+    if (!title) continue;
+    const normTitleKey = normalizeAsciiWords(title);
+    const extIds = Array.isArray(
+      summary?.["external-ids"]?.["external-id"]
+    ) ? summary["external-ids"]["external-id"] : [];
+    const doiEntry = extIds.find(
+      (e) => String(e?.["external-id-type"] || "").toLowerCase() === "doi" && String(e?.["external-id-relationship"] || "").toLowerCase() === "self"
+    ) || extIds.find(
+      (e) => String(e?.["external-id-type"] || "").toLowerCase() === "doi"
+    );
+    const rawDoi = String(doiEntry?.["external-id-value"] || "").trim();
+    const doiKey = rawDoi.toLowerCase();
+    if (doiKey && existingKeys.has(`doi:${doiKey}`) || normTitleKey && existingKeys.has(`title:${normTitleKey}`)) {
+      continue;
+    }
+    if (doiKey) existingKeys.add(`doi:${doiKey}`);
+    if (normTitleKey) existingKeys.add(`title:${normTitleKey}`);
+    const venue = String(summary?.["journal-title"]?.value || "").trim() || "Academic Venue";
+    const year = Number(summary?.["publication-date"]?.year?.value) || 2020;
+    const workUrl = String(summary?.url?.value || "").trim() || (rawDoi ? `https://doi.org/${rawDoi}` : void 0);
+    mapped.push({
+      id: rawDoi ? `orcid:${rawDoi}` : `orcid:${title.slice(0, 48)}`,
+      title,
+      display_name: title,
+      publication_year: year,
+      type: String(summary?.type || "journal-article").replace(/-/g, "_"),
+      doi: rawDoi ? `https://doi.org/${rawDoi}` : void 0,
+      open_access: { is_oa: false },
+      cited_by_count: 0,
+      primary_location: {
+        source: { display_name: venue, type: "journal" },
+        landing_page_url: workUrl
+      },
+      authorships: [
+        {
+          author_position: "first",
+          author: {
+            display_name: authorName,
+            orcid: cleanOrcid ? `https://orcid.org/${cleanOrcid}` : void 0
+          },
+          institutions: [],
+          raw_affiliation_strings: cleanAffil ? [cleanAffil] : []
+        }
+      ]
+    });
+  }
+  return mapped;
+}
+
+// src/server/affiliationParser.ts
+var ISO_COUNTRY_INFO = {
+  AF: { country: "Afghanistan", continent: "Asia", lat: 34.5553, lng: 69.2075 },
+  AL: { country: "Albania", continent: "Europe", lat: 41.3275, lng: 19.8187 },
+  DZ: { country: "Algeria", continent: "Africa", lat: 36.7538, lng: 3.0588 },
+  AR: { country: "Argentina", continent: "South America", lat: -34.6037, lng: -58.3816 },
+  AM: { country: "Armenia", continent: "Asia", lat: 40.1792, lng: 44.4991 },
+  AU: { country: "Australia", continent: "Oceania", lat: -33.8688, lng: 151.2093 },
+  AT: { country: "Austria", continent: "Europe", lat: 48.2082, lng: 16.3738 },
+  AZ: { country: "Azerbaijan", continent: "Asia", lat: 40.4093, lng: 49.8671 },
+  BH: { country: "Bahrain", continent: "Asia", lat: 26.2285, lng: 50.586 },
+  BD: { country: "Bangladesh", continent: "Asia", lat: 23.8103, lng: 90.4125 },
+  BY: { country: "Belarus", continent: "Europe", lat: 53.9006, lng: 27.559 },
+  BE: { country: "Belgium", continent: "Europe", lat: 50.8503, lng: 4.3517 },
+  BA: { country: "Bosnia and Herzegovina", continent: "Europe", lat: 43.8563, lng: 18.4131 },
+  BR: { country: "Brazil", continent: "South America", lat: -23.5505, lng: -46.6333 },
+  BN: { country: "Brunei", continent: "Asia", lat: 4.9031, lng: 114.9398 },
+  BG: { country: "Bulgaria", continent: "Europe", lat: 42.6977, lng: 23.3219 },
+  KH: { country: "Cambodia", continent: "Asia", lat: 11.5564, lng: 104.9282 },
+  CM: { country: "Cameroon", continent: "Africa", lat: 3.848, lng: 11.5021 },
+  CA: { country: "Canada", continent: "North America", lat: 45.4215, lng: -75.6972 },
+  CL: { country: "Chile", continent: "South America", lat: -33.4489, lng: -70.6693 },
+  CN: { country: "China", continent: "Asia", lat: 39.9042, lng: 116.4074 },
+  CO: { country: "Colombia", continent: "South America", lat: 4.711, lng: -74.0721 },
+  CR: { country: "Costa Rica", continent: "North America", lat: 9.9281, lng: -84.0907 },
+  HR: { country: "Croatia", continent: "Europe", lat: 45.815, lng: 15.9819 },
+  CU: { country: "Cuba", continent: "North America", lat: 23.1136, lng: -82.3666 },
+  CY: { country: "Cyprus", continent: "Europe", lat: 35.1856, lng: 33.3823 },
+  CZ: { country: "Czechia", continent: "Europe", lat: 50.0755, lng: 14.4378 },
+  DK: { country: "Denmark", continent: "Europe", lat: 55.6761, lng: 12.5683 },
+  EC: { country: "Ecuador", continent: "South America", lat: -0.1807, lng: -78.4678 },
+  EG: { country: "Egypt", continent: "Africa", lat: 30.0444, lng: 31.2357 },
+  EE: { country: "Estonia", continent: "Europe", lat: 59.437, lng: 24.7536 },
+  ET: { country: "Ethiopia", continent: "Africa", lat: 9.032, lng: 38.7469 },
+  FI: { country: "Finland", continent: "Europe", lat: 60.1699, lng: 24.9384 },
+  FR: { country: "France", continent: "Europe", lat: 48.8566, lng: 2.3522 },
+  GE: { country: "Georgia", continent: "Asia", lat: 41.7151, lng: 44.8271 },
+  DE: { country: "Germany", continent: "Europe", lat: 52.52, lng: 13.405 },
+  GH: { country: "Ghana", continent: "Africa", lat: 5.6037, lng: -0.187 },
+  GR: { country: "Greece", continent: "Europe", lat: 37.9838, lng: 23.7275 },
+  HK: { country: "China (Hong Kong)", continent: "Asia", lat: 22.3193, lng: 114.1694 },
+  HU: { country: "Hungary", continent: "Europe", lat: 47.4979, lng: 19.0402 },
+  IS: { country: "Iceland", continent: "Europe", lat: 64.1466, lng: -21.9426 },
+  IN: { country: "India", continent: "Asia", lat: 28.6139, lng: 77.209 },
+  ID: { country: "Indonesia", continent: "Asia", lat: -6.2088, lng: 106.8456 },
+  IR: { country: "Iran", continent: "Asia", lat: 35.6892, lng: 51.389 },
+  IQ: { country: "Iraq", continent: "Asia", lat: 33.3152, lng: 44.3661 },
+  IE: { country: "Ireland", continent: "Europe", lat: 53.3498, lng: -6.2603 },
+  IL: { country: "Israel", continent: "Asia", lat: 31.7683, lng: 35.2137 },
+  IT: { country: "Italy", continent: "Europe", lat: 41.9028, lng: 12.4964 },
+  JP: { country: "Japan", continent: "Asia", lat: 35.6762, lng: 139.6503 },
+  JO: { country: "Jordan", continent: "Asia", lat: 31.9454, lng: 35.9284 },
+  KZ: { country: "Kazakhstan", continent: "Asia", lat: 51.1694, lng: 71.4491 },
+  KE: { country: "Kenya", continent: "Africa", lat: -1.2921, lng: 36.8219 },
+  KW: { country: "Kuwait", continent: "Asia", lat: 29.3759, lng: 47.9774 },
+  LV: { country: "Latvia", continent: "Europe", lat: 56.9496, lng: 24.1052 },
+  LB: { country: "Lebanon", continent: "Asia", lat: 33.8938, lng: 35.5018 },
+  LY: { country: "Libya", continent: "Africa", lat: 32.8872, lng: 13.1913 },
+  LT: { country: "Lithuania", continent: "Europe", lat: 54.6872, lng: 25.2797 },
+  LU: { country: "Luxembourg", continent: "Europe", lat: 49.6116, lng: 6.1319 },
+  MO: { country: "Macau", continent: "Asia", lat: 22.1987, lng: 113.5439 },
+  MY: { country: "Malaysia", continent: "Asia", lat: 3.139, lng: 101.6869 },
+  MT: { country: "Malta", continent: "Europe", lat: 35.8989, lng: 14.5146 },
+  MX: { country: "Mexico", continent: "North America", lat: 19.4326, lng: -99.1332 },
+  MA: { country: "Morocco", continent: "Africa", lat: 34.0209, lng: -6.8416 },
+  MM: { country: "Myanmar", continent: "Asia", lat: 16.8661, lng: 96.1951 },
+  MK: { country: "North Macedonia", continent: "Europe", lat: 41.9981, lng: 21.4254 },
+  NP: { country: "Nepal", continent: "Asia", lat: 27.7172, lng: 85.324 },
+  NL: { country: "Netherlands", continent: "Europe", lat: 52.3676, lng: 4.9041 },
+  NZ: { country: "New Zealand", continent: "Oceania", lat: -36.8485, lng: 174.7633 },
+  NG: { country: "Nigeria", continent: "Africa", lat: 9.0765, lng: 7.3986 },
+  NO: { country: "Norway", continent: "Europe", lat: 59.9139, lng: 10.7522 },
+  OM: { country: "Oman", continent: "Asia", lat: 23.588, lng: 58.3829 },
+  PK: { country: "Pakistan", continent: "Asia", lat: 33.6844, lng: 73.0479 },
+  PS: { country: "Palestine", continent: "Asia", lat: 31.9038, lng: 35.2034 },
+  PE: { country: "Peru", continent: "South America", lat: -12.0464, lng: -77.0428 },
+  PH: { country: "Philippines", continent: "Asia", lat: 14.5995, lng: 120.9842 },
+  PL: { country: "Poland", continent: "Europe", lat: 52.2297, lng: 21.0122 },
+  PT: { country: "Portugal", continent: "Europe", lat: 38.7223, lng: -9.1393 },
+  QA: { country: "Qatar", continent: "Asia", lat: 25.2854, lng: 51.531 },
+  RO: { country: "Romania", continent: "Europe", lat: 44.4268, lng: 26.1025 },
+  RU: { country: "Russia", continent: "Europe", lat: 55.7558, lng: 37.6173 },
+  RW: { country: "Rwanda", continent: "Africa", lat: -1.9441, lng: 30.0619 },
+  SA: { country: "Saudi Arabia", continent: "Asia", lat: 24.7136, lng: 46.6753 },
+  SN: { country: "Senegal", continent: "Africa", lat: 14.7167, lng: -17.4677 },
+  RS: { country: "Serbia", continent: "Europe", lat: 44.7866, lng: 20.4489 },
+  SG: { country: "Singapore", continent: "Asia", lat: 1.3521, lng: 103.8198 },
+  SK: { country: "Slovakia", continent: "Europe", lat: 48.1486, lng: 17.1077 },
+  SI: { country: "Slovenia", continent: "Europe", lat: 46.0569, lng: 14.5058 },
+  ZA: { country: "South Africa", continent: "Africa", lat: -33.9249, lng: 18.4241 },
+  KR: { country: "South Korea", continent: "Asia", lat: 37.5665, lng: 126.978 },
+  ES: { country: "Spain", continent: "Europe", lat: 40.4168, lng: -3.7038 },
+  LK: { country: "Sri Lanka", continent: "Asia", lat: 6.9271, lng: 79.8612 },
+  SD: { country: "Sudan", continent: "Africa", lat: 15.5007, lng: 32.5599 },
+  SE: { country: "Sweden", continent: "Europe", lat: 59.3293, lng: 18.0686 },
+  CH: { country: "Switzerland", continent: "Europe", lat: 47.3769, lng: 8.5417 },
+  SY: { country: "Syria", continent: "Asia", lat: 33.5138, lng: 36.2765 },
+  TW: { country: "Taiwan", continent: "Asia", lat: 25.033, lng: 121.5654 },
+  TZ: { country: "Tanzania", continent: "Africa", lat: -6.163, lng: 35.7516 },
+  TH: { country: "Thailand", continent: "Asia", lat: 13.7563, lng: 100.5018 },
+  TN: { country: "Tunisia", continent: "Africa", lat: 36.8065, lng: 10.1815 },
+  TR: { country: "Turkey", continent: "Asia", lat: 39.9334, lng: 32.8597 },
+  UG: { country: "Uganda", continent: "Africa", lat: 0.3476, lng: 32.5825 },
+  UA: { country: "Ukraine", continent: "Europe", lat: 50.4501, lng: 30.5234 },
+  AE: { country: "United Arab Emirates", continent: "Asia", lat: 24.4539, lng: 54.3773 },
+  GB: { country: "United Kingdom", continent: "Europe", lat: 51.5074, lng: -0.1278 },
+  US: { country: "United States", continent: "North America", lat: 38.8951, lng: -77.0364 },
+  UY: { country: "Uruguay", continent: "South America", lat: -34.9011, lng: -56.1645 },
+  UZ: { country: "Uzbekistan", continent: "Asia", lat: 41.2995, lng: 69.2401 },
+  VE: { country: "Venezuela", continent: "South America", lat: 10.4806, lng: -66.9036 },
+  VN: { country: "Vietnam", continent: "Asia", lat: 21.0278, lng: 105.8342 },
+  YE: { country: "Yemen", continent: "Asia", lat: 15.3694, lng: 44.191 },
+  ZM: { country: "Zambia", continent: "Africa", lat: -15.3875, lng: 28.3228 },
+  ZW: { country: "Zimbabwe", continent: "Africa", lat: -17.8252, lng: 31.0335 }
+};
+var regionDisplayNames = typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames(["en"], { type: "region" }) : null;
+function getCountryGeoInfo(countryCodeRaw, fallbackCountryName) {
+  const cc = String(countryCodeRaw || "").trim().toUpperCase();
+  if (cc && ISO_COUNTRY_INFO[cc]) {
+    return ISO_COUNTRY_INFO[cc];
+  }
+  if (/^[A-Z]{2}$/.test(cc) && cc !== "UN") {
+    let resolvedName = fallbackCountryName?.trim() || "";
+    if (!resolvedName && regionDisplayNames) {
+      try {
+        resolvedName = regionDisplayNames.of(cc) || "";
+      } catch {
+      }
+    }
+    return {
+      country: resolvedName || cc,
+      continent: "Asia",
+      lat: 20,
+      lng: 10
+    };
+  }
+  return ISO_COUNTRY_INFO.US;
+}
+var COUNTRY_NAME_ALIASES = [
+  [/\b(?:united states(?: of america)?|u\.s\.a\.|usa|u\.s\.)\b/i, "US"],
+  [/\b(?:united kingdom|u\.k\.|england|scotland|wales|northern ireland)\b/i, "GB"],
+  [/\b(?:people'?s republic of china|p\.?r\.?\s*china|china)\b/i, "CN"],
+  [/\bhong kong\b/i, "HK"],
+  [/\b(?:republic of korea|south korea)\b/i, "KR"],
+  [/\btaiwan\b/i, "TW"],
+  [/\bbangladesh\b/i, "BD"],
+  [/\bmalaysia\b/i, "MY"],
+  [/\b(?:north macedonia|macedonia)\b/i, "MK"],
+  [/\blibya\b/i, "LY"],
+  [/\bgermany|deutschland\b/i, "DE"],
+  [/\bfrance\b/i, "FR"],
+  [/\bcanada\b/i, "CA"],
+  [/\baustralia\b/i, "AU"],
+  [/\bjapan\b/i, "JP"],
+  [/\bindia\b/i, "IN"],
+  [/\bpakistan\b/i, "PK"],
+  [/\bsingapore\b/i, "SG"],
+  [/\bindonesia\b/i, "ID"],
+  [/\bthailand\b/i, "TH"],
+  [/\bvietnam\b/i, "VN"],
+  [/\bsaudi arabia|ksa\b/i, "SA"],
+  [/\b(?:united arab emirates|uae)\b/i, "AE"],
+  [/\bqatar\b/i, "QA"],
+  [/\boman\b/i, "OM"],
+  [/\bkuwait\b/i, "KW"],
+  [/\bjordan\b/i, "JO"],
+  [/\biran\b/i, "IR"],
+  [/\biraq\b/i, "IQ"],
+  [/\bisrael\b/i, "IL"],
+  [/\bturkey|türkiye\b/i, "TR"],
+  [/\begypt\b/i, "EG"],
+  [/\bmorocco\b/i, "MA"],
+  [/\balgeria\b/i, "DZ"],
+  [/\btunisia\b/i, "TN"],
+  [/\bnigeria\b/i, "NG"],
+  [/\bsouth africa\b/i, "ZA"],
+  [/\bkenya\b/i, "KE"],
+  [/\bethiopia\b/i, "ET"],
+  [/\bghana\b/i, "GH"],
+  [/\bspain|españa\b/i, "ES"],
+  [/\bitaly|italia\b/i, "IT"],
+  [/\b(?:the )?netherlands|holland\b/i, "NL"],
+  [/\bswitzerland|schweiz|suisse\b/i, "CH"],
+  [/\bsweden\b/i, "SE"],
+  [/\bnorway\b/i, "NO"],
+  [/\bdenmark\b/i, "DK"],
+  [/\bfinland\b/i, "FI"],
+  [/\bbelgium\b/i, "BE"],
+  [/\baustria\b/i, "AT"],
+  [/\bireland\b/i, "IE"],
+  [/\bportugal\b/i, "PT"],
+  [/\bpoland\b/i, "PL"],
+  [/\bgreece\b/i, "GR"],
+  [/\bromania\b/i, "RO"],
+  [/\bhungary\b/i, "HU"],
+  [/\bczech(?:ia| republic)\b/i, "CZ"],
+  [/\brussia(?:n federation)?\b/i, "RU"],
+  [/\bukraine\b/i, "UA"],
+  [/\bbrazil|brasil\b/i, "BR"],
+  [/\bmexico|méxico\b/i, "MX"],
+  [/\bargentina\b/i, "AR"],
+  [/\bchile\b/i, "CL"],
+  [/\bcolombia\b/i, "CO"],
+  [/\bnew zealand\b/i, "NZ"],
+  [/\bnepal\b/i, "NP"],
+  [/\bsri lanka\b/i, "LK"],
+  [/\bphilippines\b/i, "PH"]
+];
+var US_STATE_CODES = /* @__PURE__ */ new Set([
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC"
+]);
+function inferCountryCodeFromAffiliationString(rawAffil, explicitCountries) {
+  for (const rawCode of explicitCountries || []) {
+    const upper = String(rawCode || "").trim().toUpperCase();
+    if (/^[A-Z]{2}$/.test(upper) && upper !== "UN") {
+      return upper;
+    }
+  }
+  const text = String(rawAffil || "").replace(/#TAB#/g, " ").trim();
+  if (!text) return "";
+  const parts = text.split(",").map((p) => p.trim()).filter(Boolean);
+  for (let i = parts.length - 1; i >= Math.max(0, parts.length - 3); i--) {
+    const seg = parts[i];
+    for (const [pattern, code] of COUNTRY_NAME_ALIASES) {
+      if (pattern.test(seg)) {
+        return code;
+      }
+    }
+    const trailingUsState = seg.match(/\b([A-Z]{2})(?:\s+\d{5}(?:-\d{4})?)?$/);
+    if (trailingUsState && US_STATE_CODES.has(trailingUsState[1])) {
+      return "US";
+    }
+  }
+  for (const [pattern, code] of COUNTRY_NAME_ALIASES) {
+    if (pattern.test(text)) {
+      return code;
+    }
+  }
+  if (/(?:,|\s)UK\b/.test(text)) return "GB";
+  return "";
+}
+var PURE_SUBUNIT_PREFIX_RE = /^(?:department|dept\.?|school|faculty|division|chair|group|unit|branch|program|programme)\s+of\b/i;
+var STRONG_INSTITUTION_KEYWORD_RE = /\b(?:university|universiti|universit[eéaàä]|universitat|universidad|universidade|polytechnic|polytechnique|institute|institut|college|academy|hospital|medical\s+center|medical\s+centre|national\s+laboratory|laboratories|research\s+center|research\s+centre|meta\s+ai|google|deepmind|openai|microsoft|ibm|nvidia|fair|cnrs|inria|csiro|cern|max\s+planck)\b/i;
+var STREET_OR_BUILDING_RE = /(?:^\d+\s+[A-Za-z]|\b(?:prosp\.?|prospect|prospekt|ul\.?|ulitsa|street|st\.?|ave\.?|avenue|blvd\.?|boulevard|rd\.?|road|lane|ln\.?|drive|dr\.?|building|bldg\.?|apt\.?|suite|room|rm\.?)\s*#?\d+\b)/i;
+var PURE_GEO_OR_POSTAL_RE = /^(?:p\.?\s*o\.?\s*box\b.*|\d{4,6}(?:-\d{4})?|[a-z]{1,2}\d{1,2}\s*\d[a-z]{2}|[A-Z]{2}(?:\s+\d{5})?|usa|u\.s\.a\.|uk|u\.k\.|p\.?r\.?\s*china|china|germany|malaysia|libya|bangladesh|canada|australia|japan|india|france|italy|spain|singapore|south korea|brazil|netherlands|switzerland|sweden|norway|denmark|finland|belgium|austria|ireland|portugal|poland|greece|turkey|egypt|saudi arabia|pakistan|indonesia|thailand|vietnam|taiwan)$/i;
+function extractInstitutionFromRawAffiliations(rawStrings, rawCountries) {
+  const cleanedLines = (rawStrings || []).map(
+    (s) => String(s || "").replace(/#TAB#/g, " ").replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim()
+  ).filter((s) => s.length >= 3);
+  const explicitCC = inferCountryCodeFromAffiliationString("", rawCountries);
+  let fallbackCountryCode = explicitCC;
+  for (const line of cleanedLines) {
+    const countryCode = inferCountryCodeFromAffiliationString(line, rawCountries);
+    if (countryCode && !fallbackCountryCode) {
+      fallbackCountryCode = countryCode;
+    }
+    const rawSegments = line.split(/\s*(?:,|;|\|)\s*/).map(
+      (seg) => seg.replace(/Universiti\s+Kebagsaan\s+Malaysia/gi, "Universiti Kebangsaan Malaysia").replace(/\b\d{4,6}\b$/g, "").trim()
+    ).filter(
+      (seg) => seg.length >= 3 && !PURE_GEO_OR_POSTAL_RE.test(seg) && !COUNTRY_NAME_ALIASES.some(
+        ([pattern]) => seg.replace(pattern, "").replace(/[\s.,-]+/g, "") === ""
+      ) && !/^\d+$/.test(seg)
+    );
+    const primarySeg = rawSegments.find(
+      (seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg) && !PURE_SUBUNIT_PREFIX_RE.test(seg) && !/^faculty\s+of\b/i.test(seg) && !/^school\s+of\b/i.test(seg)
+    ) || rawSegments.find(
+      (seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg) && !PURE_SUBUNIT_PREFIX_RE.test(seg)
+    ) || rawSegments.find((seg) => STRONG_INSTITUTION_KEYWORD_RE.test(seg));
+    if (primarySeg) {
+      return {
+        institutionName: primarySeg,
+        countryCode
+      };
+    }
+    const firstStreetIdx = rawSegments.findIndex((seg) => STREET_OR_BUILDING_RE.test(seg));
+    const preStreetSegments = firstStreetIdx >= 0 ? rawSegments.slice(0, firstStreetIdx) : rawSegments;
+    const orgSeg = preStreetSegments.find(
+      (seg) => !PURE_SUBUNIT_PREFIX_RE.test(seg) && !STREET_OR_BUILDING_RE.test(seg)
+    );
+    if (orgSeg && orgSeg.length >= 4) {
+      return {
+        institutionName: orgSeg,
+        countryCode
+      };
+    }
+  }
+  if (fallbackCountryCode) {
+    return {
+      institutionName: "",
+      countryCode: fallbackCountryCode
+    };
+  }
+  return null;
+}
+
+// src/server/scholarIdentityResolver.ts
+function decodeHtmlEntitiesBasic(raw) {
+  return String(raw || "").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&nbsp;/gi, " ").replace(/&#(\d+);/g, (_m, n) => String.fromCharCode(Number(n))).replace(
+    /&#x([0-9a-f]+);/gi,
+    (_m, h) => String.fromCharCode(parseInt(h, 16))
+  );
+}
+function cleanTextFragment(raw) {
+  return decodeHtmlEntitiesBasic(
+    String(raw || "").replace(/<[^>]+>/g, " ").replace(/[\u202A-\u202E\u200E\u200F]/g, " ")
+  ).replace(/\s+/g, " ").trim();
+}
+function escapeRegExp(val) {
+  return val.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function extractNameFromScholarTitle(rawTitle) {
+  const cleaned = cleanTextFragment(rawTitle).replace(/\s*[-–|]\s*Google\s+(?:Scholar|Acad[eè]mic|Akademik|Cendekia).*$/i, "").replace(/^Google\s+Scholar(?:\s+Profiles)?$/i, "").replace(/^(?:Citations|Profil)\s*$/i, "").trim();
+  if (!cleaned || cleaned.length < 3 || /^google\s*scholar$/i.test(cleaned) || /^citations$/i.test(cleaned)) {
+    return "";
+  }
+  return cleaned;
+}
+function extractEmbeddedOrcid(text) {
+  const match = String(text || "").match(/\b(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/i);
+  return match ? match[1].toUpperCase() : void 0;
+}
+var GENERIC_PLACEHOLDER_AFFILS = /* @__PURE__ */ new Set([
+  "independent / unlisted",
+  "independent",
+  "unlisted",
+  "unknown",
+  "unknown university",
+  "international",
+  "academic researcher",
+  "academic institution",
+  "research institution",
+  "academic research university",
+  "academic university",
+  "research university"
+]);
+function isInformativeAffiliation(raw) {
+  const clean = String(raw || "").trim().toLowerCase();
+  return Boolean(clean && clean.length >= 3 && !GENERIC_PLACEHOLDER_AFFILS.has(clean));
+}
+function normalizeCountryCodeOpt(raw) {
+  const cc = String(raw || "").trim().toUpperCase();
+  if (cc.length === 2 && cc !== "UN") return cc;
+  if (raw && raw.length > 2) {
+    const inferred = inferCountryCodeFromAffiliationString(raw);
+    if (inferred && inferred.length === 2 && inferred !== "UN") return inferred;
+  }
+  return void 0;
+}
+function extractScholarIdentityFromYahooHtml(html, scholarId) {
+  if (!html || !scholarId) return null;
+  const escapedId = escapeRegExp(scholarId.trim());
+  const exactUserUrlRe = new RegExp(
+    `scholar\\.google\\.[^"'\\s<]*citations[^"'\\s<]*[?&]user=${escapedId}(?:&|$|#|"|')`
+  );
+  const directUserParamRe = new RegExp(`[?&]user=${escapedId}(?:&|$|#)`);
+  const blocks = html.split(/<div[^>]*class="[^"]*algo(?:-sr)?[^"]*"/i).slice(1);
+  for (const rawBlock of blocks) {
+    const seg = rawBlock.slice(0, 5e3);
+    const hrefMatches = [...seg.matchAll(/href="([^"]+)"/gi)].map(
+      (m) => m[1]
+    );
+    let pointsToExactUser = false;
+    for (const href of hrefMatches) {
+      let decoded = decodeHtmlEntitiesBasic(href);
+      try {
+        decoded = decodeURIComponent(decoded);
+        decoded = decodeURIComponent(decoded);
+      } catch {
+      }
+      if (exactUserUrlRe.test(decoded) || decoded.includes("scholar.google.") && directUserParamRe.test(decoded)) {
+        pointsToExactUser = true;
+        break;
+      }
+    }
+    if (!pointsToExactUser) continue;
+    const titleMatch = seg.match(
+      /<h3[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i
+    );
+    const titleName = titleMatch?.[1] ? extractNameFromScholarTitle(titleMatch[1]) : "";
+    const snippetMatch = seg.match(/<div[^>]*class="[^"]*compText[^"]*"[^>]*>([\s\S]*?)<\/div>/i) || seg.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const snippetText = snippetMatch?.[1] ? cleanTextFragment(snippetMatch[1]) : "";
+    let resolvedName = titleName;
+    let affiliationHint = "";
+    if (snippetText) {
+      const beforeCitedBy = snippetText.split(/\bCited\s+by\b/i)[0] || "";
+      const cleanParts = beforeCitedBy.split(/\s+[-–]\s+/).map((p) => p.replace(/^Verified email at\s+\S+/i, "").trim()).filter((p) => p && !/^google\s+scholar$/i.test(p));
+      if (!resolvedName && cleanParts.length >= 1) {
+        const candidateName = extractNameFromScholarTitle(cleanParts[0]);
+        if (candidateName && candidateName.split(/\s+/).length <= 6) {
+          resolvedName = candidateName;
+        }
+      }
+      if (cleanParts.length >= 2) {
+        affiliationHint = cleanParts.slice(resolvedName && cleanParts[0].includes(resolvedName) ? 1 : 0).join(", ").slice(0, 140);
+      } else if (resolvedName && cleanParts.length === 1 && cleanParts[0] !== resolvedName) {
+        affiliationHint = cleanParts[0].slice(0, 140);
+      }
+    }
+    if (resolvedName) {
+      return {
+        name: resolvedName,
+        ...affiliationHint ? { affiliationHint } : {},
+        source: "yahoo-scholar-index"
+      };
+    }
+  }
+  return null;
+}
+function collectScholarStoreIdentityAndEvidence(params) {
+  const targetId = String(params.scholarId || "").trim();
+  if (!targetId) {
+    return { identity: null, knownWorkTitles: [], knownCollaboratorNames: [] };
+  }
+  const bestName = {
+    value: null
+  };
+  const coAuthorNameCounts = /* @__PURE__ */ new Map();
+  const affilVotes = /* @__PURE__ */ new Map();
+  const evidenceItems = [];
+  let bestOrcid;
+  let bestFields;
+  const recordName = (name, source, priority) => {
+    const clean = String(name || "").trim();
+    if (!clean) return;
+    const embeddedOrcid = extractEmbeddedOrcid(clean);
+    if (embeddedOrcid && !bestOrcid) {
+      bestOrcid = embeddedOrcid;
+    }
+    if (!bestName.value || priority > bestName.value.priority) {
+      bestName.value = { name: clean, source, priority };
+    }
+  };
+  const recordCoAuthorName = (name, source, priority) => {
+    const clean = String(name || "").trim();
+    if (!clean) return;
+    const key = clean.toLowerCase();
+    const prev = coAuthorNameCounts.get(key);
+    if (prev) {
+      prev.count++;
+      if (priority > prev.priority) {
+        prev.priority = priority;
+        prev.source = source;
+        prev.display = clean;
+      }
+    } else {
+      coAuthorNameCounts.set(key, {
+        display: clean,
+        count: 1,
+        source,
+        priority
+      });
+    }
+  };
+  const recordAffilVote = (rawAffil, rawCountry, weight) => {
+    const cleanAffil = String(rawAffil || "").trim();
+    if (!isInformativeAffiliation(cleanAffil)) return;
+    const key = cleanAffil.toLowerCase();
+    const cc = normalizeCountryCodeOpt(rawCountry);
+    const prev = affilVotes.get(key);
+    if (prev) {
+      prev.weight += weight;
+      if (!prev.countryCode && cc) prev.countryCode = cc;
+    } else {
+      affilVotes.set(key, { affil: cleanAffil, countryCode: cc, weight });
+    }
+  };
+  for (const reg of params.registeredUsers || []) {
+    if (String(reg?.scholarUserId || "").trim() === targetId && reg?.name) {
+      recordName(reg.name, "registered-user", 100);
+      recordAffilVote(reg.affiliation, void 0, 1e3);
+    }
+  }
+  for (const snapVal of Object.values(params.verifiedSnapshot || {})) {
+    const prof = snapVal?.profile || (snapVal?.publications ? snapVal : void 0);
+    if (!prof) continue;
+    if (String(prof.scholarUserId || "").trim() === targetId && prof.name) {
+      recordName(prof.name, "snapshot-profile", 90);
+      const snapOrcid = extractEmbeddedOrcid(String(prof.orcid || ""));
+      if (snapOrcid && !bestOrcid) bestOrcid = snapOrcid;
+      if (Array.isArray(prof.fields) && prof.fields.length > 0 && !bestFields) {
+        bestFields = prof.fields;
+      }
+      recordAffilVote(
+        prof.homeUniversity || prof.affiliation,
+        void 0,
+        500
+      );
+      for (const pub of prof.publications || []) {
+        const title = String(pub?.title || "").trim();
+        if (title) {
+          evidenceItems.push({
+            title,
+            affil: String(prof.homeUniversity || prof.affiliation || "").trim(),
+            year: Number(pub?.year || 0)
+          });
+        }
+      }
+    }
+    for (const pub of prof.publications || []) {
+      for (const ca of pub?.coAuthors || []) {
+        if (String(ca?.scholarUserId || "").trim() === targetId && ca?.name) {
+          recordCoAuthorName(String(ca.name), "snapshot-coauthor", 40);
+          recordAffilVote(ca.universityName, ca.countryCode, 1);
+          const title = String(pub?.title || "").trim();
+          if (title) {
+            evidenceItems.push({
+              title,
+              collaborator: String(prof.name || "").trim() || void 0,
+              affil: String(ca.universityName || "").trim(),
+              year: Number(pub?.year || 0)
+            });
+          }
+        }
+      }
+    }
+  }
+  for (const digest of Object.values(params.digests || {})) {
+    if (String(digest?.scholarUserId || "").trim() === targetId && digest?.name) {
+      recordName(String(digest.name), "works-digest", 80);
+      const digestOrcid = extractEmbeddedOrcid(String(digest.orcid || ""));
+      if (digestOrcid && !bestOrcid) bestOrcid = digestOrcid;
+      if (Array.isArray(digest.fields) && digest.fields.length > 0 && !bestFields) {
+        bestFields = digest.fields;
+      }
+      recordAffilVote(digest.affiliation, digest.country, 300);
+      for (const pub of digest?.works || []) {
+        const title = String(pub?.title || "").trim();
+        if (title) {
+          evidenceItems.push({
+            title,
+            affil: String(digest.affiliation || "").trim(),
+            year: Number(pub?.year || 0)
+          });
+        }
+      }
+    }
+    for (const ca of digest?.coAuthors || []) {
+      if (String(ca?.scholarUserId || "").trim() === targetId && ca?.name) {
+        recordCoAuthorName(String(ca.name), "digest-coauthor", 45);
+        recordAffilVote(ca.universityName, ca.countryCode, 1);
+      }
+    }
+  }
+  for (const item of params.colleagueList || []) {
+    const id = String(item?.u || item?.userId || "").trim();
+    const nm = String(item?.n || item?.name || "").trim();
+    if (id === targetId && nm) {
+      recordName(nm, "colleague-list", 70);
+      recordAffilVote(item?.university, void 0, 2);
+    }
+  }
+  for (const entry of Object.values(params.colleagueDirectory || {})) {
+    if (String(entry?.userId || "").trim() === targetId && entry?.name) {
+      recordName(String(entry.name), "colleague-directory", 65);
+      recordAffilVote(entry.university, void 0, 2);
+    }
+  }
+  for (const [rawKey, entry] of Object.entries(params.coAuthorMap || {})) {
+    if (String(entry?.u || "").trim() === targetId && rawKey.trim()) {
+      recordName(rawKey.trim(), "coauthor-map", 20);
+    }
+  }
+  if (coAuthorNameCounts.size > 0 && (!bestName.value || bestName.value.priority < 50)) {
+    const sortedCo = [...coAuthorNameCounts.values()].sort(
+      (a, b) => b.count - a.count || b.priority - a.priority
+    );
+    bestName.value = {
+      name: sortedCo[0].display,
+      source: sortedCo[0].source,
+      priority: sortedCo[0].priority
+    };
+  }
+  if (!bestName.value) {
+    return { identity: null, knownWorkTitles: [], knownCollaboratorNames: [] };
+  }
+  const topAffil = [...affilVotes.values()].sort((a, b) => b.weight - a.weight)[0];
+  const winningAffilLower = topAffil?.affil.toLowerCase();
+  const sortedEvidence = [...evidenceItems].sort((a, b) => {
+    const aAligned = winningAffilLower && a.affil?.toLowerCase() === winningAffilLower ? 1 : 0;
+    const bAligned = winningAffilLower && b.affil?.toLowerCase() === winningAffilLower ? 1 : 0;
+    return bAligned - aAligned || b.year - a.year;
+  });
+  const knownWorkTitles = [];
+  const seenTitles = /* @__PURE__ */ new Set();
+  const knownCollaboratorNames = [];
+  const seenCollabs = /* @__PURE__ */ new Set();
+  for (const item of sortedEvidence) {
+    if (winningAffilLower && item.affil && isInformativeAffiliation(item.affil) && item.affil.toLowerCase() !== winningAffilLower && knownWorkTitles.length > 0) {
+      continue;
+    }
+    const tKey = item.title.toLowerCase();
+    if (!seenTitles.has(tKey) && knownWorkTitles.length < 6) {
+      seenTitles.add(tKey);
+      knownWorkTitles.push(item.title);
+    }
+    if (item.collaborator) {
+      const cKey = item.collaborator.toLowerCase();
+      if (!seenCollabs.has(cKey) && knownCollaboratorNames.length < 6) {
+        seenCollabs.add(cKey);
+        knownCollaboratorNames.push(item.collaborator);
+      }
+    }
+  }
+  const resolvedOrcid = bestOrcid || extractEmbeddedOrcid(bestName.value.name);
+  if (!bestFields && bestName.value && params.verifiedSnapshot) {
+    for (const snapVal of Object.values(params.verifiedSnapshot)) {
+      const prof = snapVal?.profile || (snapVal?.publications ? snapVal : void 0);
+      if (prof?.name && isSameResearcherNameMatch(prof.name, bestName.value.name)) {
+        if (Array.isArray(prof.fields) && prof.fields.length > 0) {
+          bestFields = prof.fields;
+          break;
+        }
+      }
+    }
+  }
+  return {
+    identity: {
+      name: bestName.value.name,
+      ...topAffil?.affil ? { affiliationHint: topAffil.affil } : {},
+      ...topAffil?.countryCode ? { countryCodeHint: topAffil.countryCode } : {},
+      ...resolvedOrcid ? { orcid: resolvedOrcid } : {},
+      ...bestFields && bestFields.length > 0 ? { fields: bestFields } : {},
+      source: bestName.value.source
+    },
+    knownWorkTitles,
+    knownCollaboratorNames
+  };
+}
+function lookupScholarIdentityInStores(params) {
+  return collectScholarStoreIdentityAndEvidence(params).identity;
+}
+function lookupScholarWorkEvidenceInStores(params) {
+  const res = collectScholarStoreIdentityAndEvidence(params);
+  return {
+    knownWorkTitles: res.knownWorkTitles,
+    knownCollaboratorNames: res.knownCollaboratorNames,
+    ...res.identity?.affiliationHint ? { affiliationHint: res.identity.affiliationHint } : {},
+    ...res.identity?.countryCodeHint ? { countryCodeHint: res.identity.countryCodeHint } : {}
+  };
+}
+function decodeSearchRedirectUrl(rawHref) {
+  const unescaped = decodeHtmlEntitiesBasic(rawHref);
+  try {
+    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
+    if (uddgMatch?.[1]) {
+      return decodeURIComponent(decodeURIComponent(uddgMatch[1]));
+    }
+  } catch {
+  }
+  try {
+    const uddgMatch = unescaped.match(/[?&]uddg=([^&]+)/i);
+    if (uddgMatch?.[1]) {
+      return decodeURIComponent(uddgMatch[1]);
+    }
+  } catch {
+  }
+  try {
+    return decodeURIComponent(unescaped);
+  } catch {
+    return unescaped;
+  }
+}
+function extractScholarIdentityFromDdgHtml(html, scholarId) {
+  if (!html || !scholarId) return null;
+  const escapedId = escapeRegExp(scholarId.trim());
+  const exactUserParamRe = new RegExp(`[?&]user=${escapedId}(?:&|$|#)`);
+  const titleAnchorRe = /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
+  const snippetRe = /class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/(?:a|div|span)>/i;
+  const blocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
+  const segments = blocks.length > 0 ? blocks : [...html.matchAll(/<h2[^>]*class="[^"]*result__title[^"]*"[\s\S]{0,1800}/gi)].map(
+    (m) => m[0]
+  );
+  for (const rawSeg of segments) {
+    const seg = rawSeg.slice(0, 4e3);
+    const anchor = seg.match(titleAnchorRe);
+    if (!anchor) continue;
+    const decodedHref = decodeSearchRedirectUrl(anchor[1] || "");
+    const hrefMatchesExact = decodedHref.includes("scholar.google.") && exactUserParamRe.test(decodedHref);
+    if (!hrefMatchesExact) continue;
+    const titleName = extractNameFromScholarTitle(anchor[2] || "");
+    const snippetRaw = seg.match(snippetRe)?.[1] || "";
+    const snippetText = snippetRaw ? cleanTextFragment(snippetRaw) : "";
+    let resolvedName = titleName;
+    let affiliationHint = "";
+    if (snippetText) {
+      const beforeCitedBy = snippetText.split(/\bCited\s+by\b/i)[0] || "";
+      const cleanParts = beforeCitedBy.split(/\s+[-–]\s+/).map((p) => p.replace(/^Verified email at\s+\S+/i, "").trim()).filter((p) => p && !/^google\s+scholar$/i.test(p));
+      if (!resolvedName && cleanParts.length >= 1) {
+        const candidateName = extractNameFromScholarTitle(cleanParts[0]);
+        if (candidateName && candidateName.split(/\s+/).length <= 6) {
+          resolvedName = candidateName;
+        }
+      }
+      if (cleanParts.length >= 2) {
+        affiliationHint = cleanParts.slice(resolvedName && cleanParts[0].includes(resolvedName) ? 1 : 0).join(", ").slice(0, 140);
+      } else if (resolvedName && cleanParts.length === 1 && cleanParts[0] !== resolvedName) {
+        affiliationHint = cleanParts[0].slice(0, 140);
+      }
+    }
+    if (resolvedName) {
+      return {
+        name: resolvedName,
+        ...affiliationHint ? { affiliationHint } : {},
+        source: "ddg-scholar-index"
+      };
+    }
+  }
+  return null;
+}
+function extractCandidateScholarIdsFromSearchHtml(html, researcherName, affiliationHint, nameMatcher) {
+  if (!html || !researcherName) return [];
+  const cleanTarget = researcherName.trim();
+  const affTokens = String(affiliationHint || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(
+    (t) => t.length >= 4 && !(/* @__PURE__ */ new Set([
+      "university",
+      "institute",
+      "college",
+      "department",
+      "research",
+      "school",
+      "center",
+      "centre",
+      "national",
+      "international"
+    ])).has(t)
+  );
+  const scored = [];
+  const seen = /* @__PURE__ */ new Set();
+  const ddgBlocks = html.split(/<div[^>]*class="[^"]*results_links[^"]*"/i).slice(1);
+  const yahooBlocks = html.split(/<div[^>]*class="[^"]*algo(?:-sr)?[^"]*"/i).slice(1);
+  const blocks = ddgBlocks.length > 0 ? ddgBlocks : yahooBlocks;
+  for (const rawBlock of blocks) {
+    const seg = rawBlock.slice(0, 4500);
+    const hrefs = [...seg.matchAll(/href="([^"]+)"/gi)].map(
+      (m) => decodeSearchRedirectUrl(m[1])
+    );
+    const scholarHref = hrefs.find(
+      (h) => h.includes("scholar.google.") && /[?&]user=([a-zA-Z0-9_-]{10,14})/.test(h)
+    );
+    if (!scholarHref) continue;
+    const idMatch = scholarHref.match(/[?&]user=([a-zA-Z0-9_-]{10,14})/);
+    const candId = idMatch?.[1]?.trim();
+    if (!candId || seen.has(candId)) continue;
+    const titleHtml = seg.match(/<a[^>]*class="[^"]*result__a[^"]*"[^>]*>([\s\S]*?)<\/a>/i)?.[1] || seg.match(/<h3[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i)?.[1] || "";
+    const titleName = extractNameFromScholarTitle(titleHtml);
+    if (!titleName) continue;
+    const matchesName = nameMatcher ? nameMatcher(titleName, cleanTarget) : titleName.toLowerCase() === cleanTarget.toLowerCase();
+    if (!matchesName) continue;
+    const fullText = cleanTextFragment(seg).toLowerCase();
+    const affHits = affTokens.filter((tok) => fullText.includes(tok)).length;
+    seen.add(candId);
+    scored.push({
+      id: candId,
+      score: 10 + affHits * 15
+    });
+  }
+  return scored.sort((a, b) => b.score - a.score).map((entry) => entry.id);
+}
+function extractGeneralUrlsFromDdgHtml(html) {
+  if (!html) return [];
+  const urls = [];
+  const seen = /* @__PURE__ */ new Set();
+  const matches = html.matchAll(
+    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"/gi
+  );
+  for (const m of matches) {
+    const decoded = decodeSearchRedirectUrl(m[1] || "").trim();
+    if (!decoded || !/^https?:\/\//i.test(decoded)) continue;
+    if (/duckduckgo\.com|google\.com\/search|scholar\.google\.|youtube\.com|facebook\.com|twitter\.com|x\.com|linkedin\.com\/pub\/dir/i.test(
+      decoded
+    )) {
+      continue;
+    }
+    if (!seen.has(decoded)) {
+      seen.add(decoded);
+      urls.push(decoded);
+    }
+  }
+  return urls;
+}
+
 // src/data/verifiedColleagueDirectory.json
 var verifiedColleagueDirectory_default = {
   colleagues: [
@@ -101339,6 +101387,17 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
   const snapProf = snapObj?.profile || (snapObj?.publications ? snapObj : void 0);
   const isSnapMetricsMatching = snapProf?.name && targetName ? isSameResearcherName(snapProf.name, targetName) : !snapProf?.name;
   const snapMetrics = isSnapMetricsMatching ? snapProf?.officialMetrics : void 0;
+  let matchedSnapProfile = isSnapMetricsMatching && snapProf ? snapProf : void 0;
+  if (!matchedSnapProfile && targetName) {
+    for (const snapItem of Object.values(verifiedScholarCache_default)) {
+      const p = snapItem?.profile || (snapItem?.publications ? snapItem : void 0);
+      if (p?.name && isSameResearcherName(p.name, targetName)) {
+        matchedSnapProfile = p;
+        break;
+      }
+    }
+  }
+  const verifiedStoreFields = (matchedSnapProfile?.fields && Array.isArray(matchedSnapProfile.fields) && matchedSnapProfile.fields.length > 0 ? matchedSnapProfile.fields : void 0) || (fallbackIdentity?.fields && Array.isArray(fallbackIdentity.fields) && fallbackIdentity.fields.length > 0 ? fallbackIdentity.fields : void 0) || (storeDigest?.fields && Array.isArray(storeDigest.fields) && storeDigest.fields.length > 0 ? storeDigest.fields : void 0);
   if (Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
     const oaCitByYr = {};
     const oaWorksByYr = {};
@@ -101458,7 +101517,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     homeLng: homeMapped.lng,
     verifiedDomain: scraped?.verifiedDomain || "scholar.google.com",
     orcid: orcidRaw,
-    fields: scraped && scraped.fields.length > 0 ? scraped.fields : openAlexTopics.length > 0 ? openAlexTopics : ["Engineering", "Computer Science"],
+    fields: scraped && scraped.fields && scraped.fields.length > 0 && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName)) ? scraped.fields : verifiedStoreFields && verifiedStoreFields.length > 0 ? verifiedStoreFields : openAlexTopics.length > 0 ? openAlexTopics : ["Engineering", "Computer Science"],
     officialMetrics: finalOfficialMetrics,
     publications: normalizedPublications
   };

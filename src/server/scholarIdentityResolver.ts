@@ -1,4 +1,5 @@
 import { inferCountryCodeFromAffiliationString } from './affiliationParser';
+import { isSameResearcherNameMatch } from './openAlexDisambiguation';
 
 function decodeHtmlEntitiesBasic(raw: string): string {
   return String(raw || '')
@@ -51,6 +52,7 @@ export interface ResolvedScholarIdentity {
   affiliationHint?: string;
   countryCodeHint?: string;
   orcid?: string;
+  fields?: string[];
   source: string;
 }
 
@@ -229,6 +231,7 @@ function collectScholarStoreIdentityAndEvidence(
   }> = [];
 
   let bestOrcid: string | undefined;
+  let bestFields: string[] | undefined;
 
   const recordName = (name: string, source: string, priority: number) => {
     const clean = String(name || '').trim();
@@ -296,6 +299,9 @@ function collectScholarStoreIdentityAndEvidence(
       recordName(prof.name, 'snapshot-profile', 90);
       const snapOrcid = extractEmbeddedOrcid(String(prof.orcid || ''));
       if (snapOrcid && !bestOrcid) bestOrcid = snapOrcid;
+      if (Array.isArray(prof.fields) && prof.fields.length > 0 && !bestFields) {
+        bestFields = prof.fields;
+      }
       recordAffilVote(
         prof.homeUniversity || prof.affiliation,
         undefined,
@@ -336,6 +342,9 @@ function collectScholarStoreIdentityAndEvidence(
       recordName(String(digest.name), 'works-digest', 80);
       const digestOrcid = extractEmbeddedOrcid(String(digest.orcid || ''));
       if (digestOrcid && !bestOrcid) bestOrcid = digestOrcid;
+      if (Array.isArray(digest.fields) && digest.fields.length > 0 && !bestFields) {
+        bestFields = digest.fields;
+      }
       recordAffilVote(digest.affiliation, digest.country, 300);
       for (const pub of digest?.works || []) {
         const title = String(pub?.title || '').trim();
@@ -435,12 +444,25 @@ function collectScholarStoreIdentityAndEvidence(
 
   const resolvedOrcid = bestOrcid || extractEmbeddedOrcid(bestName.value.name);
 
+  if (!bestFields && bestName.value && params.verifiedSnapshot) {
+    for (const snapVal of Object.values(params.verifiedSnapshot)) {
+      const prof = snapVal?.profile || (snapVal?.publications ? snapVal : undefined);
+      if (prof?.name && isSameResearcherNameMatch(prof.name, bestName.value.name)) {
+        if (Array.isArray(prof.fields) && prof.fields.length > 0) {
+          bestFields = prof.fields;
+          break;
+        }
+      }
+    }
+  }
+
   return {
     identity: {
       name: bestName.value.name,
       ...(topAffil?.affil ? { affiliationHint: topAffil.affil } : {}),
       ...(topAffil?.countryCode ? { countryCodeHint: topAffil.countryCode } : {}),
       ...(resolvedOrcid ? { orcid: resolvedOrcid } : {}),
+      ...(bestFields && bestFields.length > 0 ? { fields: bestFields } : {}),
       source: bestName.value.source,
     },
     knownWorkTitles,

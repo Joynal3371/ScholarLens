@@ -1,4 +1,28 @@
 import crypto from 'crypto';
+import verifiedScholarSnapshot from '../data/verifiedScholarCache.json';
+
+function findSnapshotProfileForOrcid(
+  orcidId?: string,
+  scholarUserId?: string,
+  name?: string
+): any | undefined {
+  if (!orcidId && !scholarUserId && !name) return undefined;
+  const snapshot = verifiedScholarSnapshot as Record<string, any>;
+  if (scholarUserId && snapshot[scholarUserId]) {
+    const prof =
+      snapshot[scholarUserId].profile ||
+      (snapshot[scholarUserId].publications ? snapshot[scholarUserId] : undefined);
+    if (prof) return prof;
+  }
+  for (const entry of Object.values(snapshot)) {
+    const prof = entry?.profile || (entry?.publications ? entry : undefined);
+    if (!prof) continue;
+    if (orcidId && prof.orcid && prof.orcid === orcidId) return prof;
+    if (scholarUserId && prof.scholarUserId && prof.scholarUserId === scholarUserId) return prof;
+    if (name && prof.name && prof.name.trim().toLowerCase() === name.trim().toLowerCase()) return prof;
+  }
+  return undefined;
+}
 
 export type OrcidEnvironment = 'production' | 'sandbox';
 export type AuthProvider = 'google' | 'orcid' | 'email';
@@ -1199,28 +1223,40 @@ export class OrcidAccountStore {
               createdAt: nowIso,
             };
 
+      const snapForUpdated = findSnapshotProfileForOrcid(
+        canonicalOrcid,
+        cleanScholarUserId || baseUser.scholarUserId,
+        baseUser.name
+      );
+
       const updatedUser: AuthenticatedResearcherRecord = {
         ...baseUser,
         uid: existingUid,
         name:
           baseUser.name && baseUser.name !== canonicalOrcid
             ? baseUser.name
-            : params.verifiedName || canonicalOrcid,
+            : params.verifiedName || snapForUpdated?.name || canonicalOrcid,
         emailOrId: baseUser.emailOrId || canonicalOrcid,
         ...(baseUser.photoURL
           ? { photoURL: baseUser.photoURL }
           : cleanPhotoURL
           ? { photoURL: cleanPhotoURL }
+          : snapForUpdated?.avatarUrl
+          ? { photoURL: snapForUpdated.avatarUrl }
           : {}),
         ...(cleanScholarUrl
           ? { scholarUrl: cleanScholarUrl }
           : baseUser.scholarUrl
           ? { scholarUrl: baseUser.scholarUrl }
+          : snapForUpdated?.scholarUrl
+          ? { scholarUrl: snapForUpdated.scholarUrl }
           : {}),
         ...(cleanScholarUserId
           ? { scholarUserId: cleanScholarUserId }
           : baseUser.scholarUserId
           ? { scholarUserId: baseUser.scholarUserId }
+          : snapForUpdated?.scholarUserId
+          ? { scholarUserId: snapForUpdated.scholarUserId }
           : {}),
         orcidId: canonicalOrcid,
         verified: true,
@@ -1269,21 +1305,28 @@ export class OrcidAccountStore {
           : this.mirror.getUser(linkToUid);
     }
 
+    const snapForNew = findSnapshotProfileForOrcid(
+      canonicalOrcid,
+      cleanScholarUserId || existingProfile?.scholarUserId,
+      existingProfile?.name || params.verifiedName
+    );
+
     const newUser: AuthenticatedResearcherRecord = {
       uid: targetUid,
       name:
         existingProfile?.name ||
         (params.verifiedName && params.verifiedName.trim()) ||
+        snapForNew?.name ||
         canonicalOrcid,
       emailOrId: existingProfile?.emailOrId || canonicalOrcid,
-      ...(cleanPhotoURL || existingProfile?.photoURL
-        ? { photoURL: cleanPhotoURL || existingProfile?.photoURL }
+      ...(cleanPhotoURL || existingProfile?.photoURL || snapForNew?.avatarUrl
+        ? { photoURL: cleanPhotoURL || existingProfile?.photoURL || snapForNew?.avatarUrl }
         : {}),
-      ...(cleanScholarUrl || existingProfile?.scholarUrl
-        ? { scholarUrl: cleanScholarUrl || existingProfile?.scholarUrl }
+      ...(cleanScholarUrl || existingProfile?.scholarUrl || snapForNew?.scholarUrl
+        ? { scholarUrl: cleanScholarUrl || existingProfile?.scholarUrl || snapForNew?.scholarUrl }
         : {}),
-      ...(cleanScholarUserId || existingProfile?.scholarUserId
-        ? { scholarUserId: cleanScholarUserId || existingProfile?.scholarUserId }
+      ...(cleanScholarUserId || existingProfile?.scholarUserId || snapForNew?.scholarUserId
+        ? { scholarUserId: cleanScholarUserId || existingProfile?.scholarUserId || snapForNew?.scholarUserId }
         : {}),
       orcidId: canonicalOrcid,
       verified: true,
