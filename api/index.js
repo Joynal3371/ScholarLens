@@ -99083,6 +99083,13 @@ async function resolveGoogleScholarIdByName(researcherName, affiliationHint) {
   if (knownColleague?.userId && isValidScholarId(knownColleague.userId)) {
     return knownColleague.userId;
   }
+  const rawSnap = verifiedScholarCache_default || {};
+  for (const [snapId, snapData] of Object.entries(rawSnap)) {
+    const p = snapData?.profile || snapData;
+    if (p && p.name && isSameResearcherName(p.name, clean) && isValidScholarId(snapId)) {
+      return snapId;
+    }
+  }
   try {
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(
       clean
@@ -99339,12 +99346,23 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
   const cleanQueryNameInput = String(queryNameInput || "").trim();
   const effectiveQueryName = cleanQueryNameInput && cleanQueryNameInput !== String(userIdInput || "").trim() && !isValidScholarId(cleanQueryNameInput) ? cleanQueryNameInput : "";
   let effectiveUserId = String(userIdInput || "").trim();
-  if (effectiveQueryName && !isValidScholarId(effectiveUserId)) {
-    const resolvedScholarId = await resolveGoogleScholarIdByName(
-      effectiveQueryName
-    );
-    if (resolvedScholarId) {
-      effectiveUserId = resolvedScholarId;
+  if (effectiveQueryName) {
+    if (!isValidScholarId(effectiveUserId)) {
+      const resolvedScholarId = await resolveGoogleScholarIdByName(
+        effectiveQueryName
+      );
+      if (resolvedScholarId) {
+        effectiveUserId = resolvedScholarId;
+      }
+    } else {
+      const snapForId = verifiedScholarCache_default?.[effectiveUserId];
+      const snapName = snapForId?.profile?.name || snapForId?.name || "";
+      if (snapName && !isSameResearcherName(snapName, effectiveQueryName)) {
+        const resolvedScholarId = await resolveGoogleScholarIdByName(
+          effectiveQueryName
+        );
+        effectiveUserId = resolvedScholarId || "";
+      }
     }
   }
   const bundledMirrorDigests = getSocialStore().getMirrorWorksDigests();
@@ -99368,6 +99386,9 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     scrapeGoogleScholarFullProfile(effectiveUserId),
     new Promise((resolve) => setTimeout(() => resolve(null), 7500))
   ]) : null;
+  if (scraped && effectiveQueryName && !isSameResearcherName(scraped.name, effectiveQueryName)) {
+    scraped = null;
+  }
   if (!scraped && !effectiveQueryName && effectiveUserId && !isValidScholarId(effectiveUserId)) {
     const byNameId = await resolveGoogleScholarIdByName(effectiveUserId);
     if (byNameId && byNameId !== effectiveUserId) {
@@ -99388,10 +99409,10 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       };
     }
   }
-  const resolvedCandidateName = scraped?.name || effectiveQueryName || fallbackIdentity?.name || "";
+  const resolvedCandidateName = (scraped && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName)) ? scraped.name : "") || effectiveQueryName || (fallbackIdentity?.name && (!effectiveQueryName || isSameResearcherName(fallbackIdentity.name, effectiveQueryName)) ? fallbackIdentity.name : "") || "";
   const targetName = resolvedCandidateName || (!isValidScholarId(effectiveUserId) || /^[a-z]{6,14}$/.test(effectiveUserId) ? effectiveUserId : "");
   if (!targetName) return null;
-  const cleanScholarId = scraped?.userId || (isValidScholarId(effectiveUserId) ? effectiveUserId : "") || (isValidScholarId(userIdInput) ? userIdInput : "") || userIdInput || slugifyInstitution(targetName).slice(0, 12);
+  const cleanScholarId = (scraped?.userId && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName)) ? scraped.userId : "") || (isValidScholarId(effectiveUserId) ? effectiveUserId : "") || (isValidScholarId(userIdInput) && (!effectiveQueryName || isSameResearcherName(verifiedScholarCache_default?.[userIdInput]?.name || "", effectiveQueryName)) ? userIdInput : "") || slugifyInstitution(targetName).slice(0, 12);
   const orcidHint = extractEmbeddedOrcid(scraped?.name || "") || extractEmbeddedOrcid(effectiveQueryName) || fallbackIdentity?.orcid || extractEmbeddedOrcid(fallbackIdentity?.name || "") || "";
   const domainResolvedHome = await resolveInstitutionByVerifiedDomain(
     scraped?.verifiedDomain
@@ -101273,7 +101294,9 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     const snapObj2 = verifiedScholarCache_default?.[effectiveLookupId];
     const snapProf2 = snapObj2?.profile || (snapObj2?.publications ? snapObj2 : void 0);
     const storeDigest2 = bundledMirrorDigests[effectiveLookupId] || (effectiveLookupId ? bundledMirrorDigests[`scholar-${effectiveLookupId}`] : void 0);
-    const candidateStoreWorks = snapProf2?.publications || storeDigest2?.works || [];
+    const isSnapMatching = snapProf2?.name && targetName ? isSameResearcherName(snapProf2.name, targetName) : !snapProf2?.name;
+    const isStoreDigestMatching = storeDigest2?.authorName && targetName ? isSameResearcherName(storeDigest2.authorName, targetName) : true;
+    const candidateStoreWorks = (isSnapMatching ? snapProf2?.publications : []) || (isStoreDigestMatching ? storeDigest2?.works : []) || [];
     for (let sIdx = 0; sIdx < candidateStoreWorks.length; sIdx++) {
       const sw = candidateStoreWorks[sIdx];
       const sTitle = String(sw.title || "").trim();
@@ -101314,7 +101337,8 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
   const storeDigest = bundledMirrorDigests[cleanScholarId] || (cleanScholarId ? bundledMirrorDigests[`scholar-${cleanScholarId}`] : void 0);
   const snapObj = verifiedScholarCache_default?.[cleanScholarId];
   const snapProf = snapObj?.profile || (snapObj?.publications ? snapObj : void 0);
-  const snapMetrics = snapProf?.officialMetrics;
+  const isSnapMetricsMatching = snapProf?.name && targetName ? isSameResearcherName(snapProf.name, targetName) : !snapProf?.name;
+  const snapMetrics = isSnapMetricsMatching ? snapProf?.officialMetrics : void 0;
   if (Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
     const oaCitByYr = {};
     const oaWorksByYr = {};
@@ -101412,7 +101436,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
     }
   } catch {
   }
-  const resolvedProfileName = scraped?.name || primaryOpenAlexAuthor?.display_name || cleanSearchName || targetName;
+  const resolvedProfileName = (scraped && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName)) ? scraped.name : "") || (primaryOpenAlexAuthor?.display_name && (!effectiveQueryName || isSameResearcherName(primaryOpenAlexAuthor.display_name, effectiveQueryName)) ? primaryOpenAlexAuthor.display_name : "") || cleanSearchName || targetName;
   const profile = {
     id: `scholar-${cleanScholarId}`,
     scholarUserId: cleanScholarId,
@@ -101425,7 +101449,7 @@ async function buildLiveResearcherProfile(userIdInput, queryNameInput) {
       resolvedProfileName
     )}&uni=${encodeURIComponent(homeMapped.universityName)}${orcidRaw ? `&orcid=${encodeURIComponent(orcidRaw)}` : ""}`,
     name: resolvedProfileName,
-    affiliation: scraped?.affiliation || `${homeMapped.universityName} (${homeMapped.country})`,
+    affiliation: (scraped && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName)) ? scraped.affiliation : "") || `${homeMapped.universityName} (${homeMapped.country})`,
     homeUniversityId: homeMapped.universityId,
     homeUniversity: homeMapped.universityName,
     homeCity: homeMapped.city,
@@ -103716,6 +103740,13 @@ app.get("/api/auth/session", async (req, res) => {
     res.json({ authenticated: false, user: null });
     return;
   }
+  if (!user.scholarUserId && user.name) {
+    const autoScholarId = await resolveGoogleScholarIdByName(user.name);
+    if (autoScholarId && isValidScholarId(autoScholarId)) {
+      user.scholarUserId = autoScholarId;
+      user.scholarUrl = `https://scholar.google.com/citations?user=${encodeURIComponent(autoScholarId)}&hl=en`;
+    }
+  }
   res.json({ authenticated: true, user });
 });
 app.post("/api/auth/logout", (req, res) => {
@@ -104910,7 +104941,15 @@ app.get("/api/scholar/analyze", async (req, res) => {
     return;
   }
   try {
-    const resolvedId = isValidScholarId(userId) ? userId : queryName ? await resolveGoogleScholarIdByName(queryName) || userId : userId;
+    let resolvedId = isValidScholarId(userId) ? userId : queryName ? await resolveGoogleScholarIdByName(queryName) || userId : userId;
+    if (queryName && isValidScholarId(resolvedId)) {
+      const snapForId = verifiedScholarCache_default?.[resolvedId];
+      const snapName = snapForId?.profile?.name || snapForId?.name || "";
+      if (snapName && !isSameResearcherName(snapName, queryName)) {
+        const byName = await resolveGoogleScholarIdByName(queryName);
+        if (byName) resolvedId = byName;
+      }
+    }
     const result = await buildLiveResearcherProfile(
       resolvedId || userId,
       queryName
@@ -104920,10 +104959,12 @@ app.get("/api/scholar/analyze", async (req, res) => {
       const snapObj = verifiedScholarCache_default?.[resolvedId || userId];
       const snapProf = snapObj?.profile || (snapObj?.publications ? snapObj : void 0);
       if (snapProf && snapProf.publications && snapProf.publications.length > 0) {
-        finalResult = {
-          profile: snapProf,
-          source: "verified-snapshot"
-        };
+        if (!queryName || isSameResearcherName(snapProf.name, queryName)) {
+          finalResult = {
+            profile: snapProf,
+            source: "verified-snapshot"
+          };
+        }
       }
     }
     if (!finalResult) {

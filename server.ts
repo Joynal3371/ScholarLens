@@ -2617,6 +2617,15 @@ async function resolveGoogleScholarIdByName(
     return knownColleague.userId;
   }
 
+  // 1b. Check verified Scholar snapshot for direct researcher name match
+  const rawSnap: Record<string, any> = (verifiedScholarSnapshot as any) || {};
+  for (const [snapId, snapData] of Object.entries(rawSnap)) {
+    const p = snapData?.profile || snapData;
+    if (p && p.name && isSameResearcherName(p.name, clean) && isValidScholarId(snapId)) {
+      return snapId;
+    }
+  }
+
   try {
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(
       clean
@@ -2963,13 +2972,24 @@ export async function buildLiveResearcherProfile(
 
   let effectiveUserId = String(userIdInput || '').trim();
 
-  // If the user searched by researcher name (and userIdInput is not already a valid 12-char Google Scholar ID), resolve their official Google Scholar ID first
-  if (effectiveQueryName && !isValidScholarId(effectiveUserId)) {
-    const resolvedScholarId = await resolveGoogleScholarIdByName(
-      effectiveQueryName
-    );
-    if (resolvedScholarId) {
-      effectiveUserId = resolvedScholarId;
+  // If the user searched by researcher name, ensure effectiveUserId belongs to effectiveQueryName (or resolve official ID)
+  if (effectiveQueryName) {
+    if (!isValidScholarId(effectiveUserId)) {
+      const resolvedScholarId = await resolveGoogleScholarIdByName(
+        effectiveQueryName
+      );
+      if (resolvedScholarId) {
+        effectiveUserId = resolvedScholarId;
+      }
+    } else {
+      const snapForId = (verifiedScholarSnapshot as Record<string, any>)?.[effectiveUserId];
+      const snapName = snapForId?.profile?.name || snapForId?.name || '';
+      if (snapName && !isSameResearcherName(snapName, effectiveQueryName)) {
+        const resolvedScholarId = await resolveGoogleScholarIdByName(
+          effectiveQueryName
+        );
+        effectiveUserId = resolvedScholarId || '';
+      }
     }
   }
 
@@ -3014,6 +3034,10 @@ export async function buildLiveResearcherProfile(
         new Promise<null>((resolve) => setTimeout(() => resolve(null), 7500)),
       ])
     : null;
+
+  if (scraped && effectiveQueryName && !isSameResearcherName(scraped.name, effectiveQueryName)) {
+    scraped = null;
+  }
 
   // If direct userIdInput failed and looks like a typed name (not a Scholar ID), try resolving via Wikidata P1960 / web index
   if (
@@ -3060,7 +3084,14 @@ export async function buildLiveResearcherProfile(
 
   // Never query OpenAlex with a raw Google Scholar userId when no researcher name could be resolved
   const resolvedCandidateName =
-    scraped?.name || effectiveQueryName || fallbackIdentity?.name || '';
+    (scraped && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName))
+      ? scraped.name
+      : '') ||
+    effectiveQueryName ||
+    (fallbackIdentity?.name && (!effectiveQueryName || isSameResearcherName(fallbackIdentity.name, effectiveQueryName))
+      ? fallbackIdentity.name
+      : '') ||
+    '';
   const targetName =
     resolvedCandidateName ||
     (!isValidScholarId(effectiveUserId) ||
@@ -3070,10 +3101,13 @@ export async function buildLiveResearcherProfile(
   if (!targetName) return null;
 
   const cleanScholarId =
-    scraped?.userId ||
+    (scraped?.userId && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName))
+      ? scraped.userId
+      : '') ||
     (isValidScholarId(effectiveUserId) ? effectiveUserId : '') ||
-    (isValidScholarId(userIdInput) ? userIdInput : '') ||
-    userIdInput ||
+    (isValidScholarId(userIdInput) && (!effectiveQueryName || isSameResearcherName((verifiedScholarSnapshot as any)?.[userIdInput]?.name || '', effectiveQueryName))
+      ? userIdInput
+      : '') ||
     slugifyInstitution(targetName).slice(0, 12);
 
   const orcidHint =
@@ -5644,7 +5678,19 @@ export async function buildLiveResearcherProfile(
       bundledMirrorDigests[effectiveLookupId] ||
       (effectiveLookupId ? (bundledMirrorDigests as any)[`scholar-${effectiveLookupId}`] : undefined);
 
-    const candidateStoreWorks = snapProf?.publications || storeDigest?.works || [];
+    const isSnapMatching =
+      snapProf?.name && targetName
+        ? isSameResearcherName(snapProf.name, targetName)
+        : !snapProf?.name;
+    const isStoreDigestMatching =
+      (storeDigest as any)?.authorName && targetName
+        ? isSameResearcherName((storeDigest as any).authorName, targetName)
+        : true;
+
+    const candidateStoreWorks =
+      (isSnapMatching ? snapProf?.publications : []) ||
+      (isStoreDigestMatching ? storeDigest?.works : []) ||
+      [];
     for (let sIdx = 0; sIdx < candidateStoreWorks.length; sIdx++) {
       const sw: any = candidateStoreWorks[sIdx];
       const sTitle = String(sw.title || '').trim();
@@ -5699,7 +5745,11 @@ export async function buildLiveResearcherProfile(
     (cleanScholarId ? (bundledMirrorDigests as any)[`scholar-${cleanScholarId}`] : undefined);
   const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[cleanScholarId];
   const snapProf: ResearcherProfile | undefined = snapObj?.profile || (snapObj?.publications ? snapObj : undefined);
-  const snapMetrics = snapProf?.officialMetrics;
+  const isSnapMetricsMatching =
+    snapProf?.name && targetName
+      ? isSameResearcherName(snapProf.name, targetName)
+      : !snapProf?.name;
+  const snapMetrics = isSnapMetricsMatching ? snapProf?.officialMetrics : undefined;
 
   if (Array.isArray(primaryOpenAlexAuthor?.counts_by_year)) {
     const oaCitByYr: Record<number, number> = {};
@@ -5854,8 +5904,12 @@ export async function buildLiveResearcherProfile(
   }
 
   const resolvedProfileName =
-    scraped?.name ||
-    primaryOpenAlexAuthor?.display_name ||
+    (scraped && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName))
+      ? scraped.name
+      : '') ||
+    (primaryOpenAlexAuthor?.display_name && (!effectiveQueryName || isSameResearcherName(primaryOpenAlexAuthor.display_name, effectiveQueryName))
+      ? primaryOpenAlexAuthor.display_name
+      : '') ||
     cleanSearchName ||
     targetName;
 
@@ -5876,7 +5930,9 @@ export async function buildLiveResearcherProfile(
       }`,
     name: resolvedProfileName,
     affiliation:
-      scraped?.affiliation ||
+      (scraped && (!effectiveQueryName || isSameResearcherName(scraped.name, effectiveQueryName))
+        ? scraped.affiliation
+        : '') ||
       `${homeMapped.universityName} (${homeMapped.country})`,
     homeUniversityId: homeMapped.universityId,
     homeUniversity: homeMapped.universityName,
@@ -8680,6 +8736,14 @@ app.get('/api/auth/session', async (req, res) => {
     res.json({ authenticated: false, user: null });
     return;
   }
+  // Auto-enrich user with verified Google Scholar ID if not yet bound
+  if (!user.scholarUserId && user.name) {
+    const autoScholarId = await resolveGoogleScholarIdByName(user.name);
+    if (autoScholarId && isValidScholarId(autoScholarId)) {
+      user.scholarUserId = autoScholarId;
+      user.scholarUrl = `https://scholar.google.com/citations?user=${encodeURIComponent(autoScholarId)}&hl=en`;
+    }
+  }
   res.json({ authenticated: true, user });
 });
 
@@ -10330,11 +10394,20 @@ app.get('/api/scholar/analyze', async (req, res) => {
   }
 
   try {
-    const resolvedId = isValidScholarId(userId)
+    let resolvedId = isValidScholarId(userId)
       ? userId
       : queryName
       ? (await resolveGoogleScholarIdByName(queryName)) || userId
       : userId;
+
+    if (queryName && isValidScholarId(resolvedId)) {
+      const snapForId = (verifiedScholarSnapshot as Record<string, any>)?.[resolvedId];
+      const snapName = snapForId?.profile?.name || snapForId?.name || '';
+      if (snapName && !isSameResearcherName(snapName, queryName)) {
+        const byName = await resolveGoogleScholarIdByName(queryName);
+        if (byName) resolvedId = byName;
+      }
+    }
 
     const result = await buildLiveResearcherProfile(
       resolvedId || userId,
@@ -10345,10 +10418,12 @@ app.get('/api/scholar/analyze', async (req, res) => {
       const snapObj = (verifiedScholarSnapshot as Record<string, any>)?.[resolvedId || userId];
       const snapProf: ResearcherProfile | undefined = snapObj?.profile || (snapObj?.publications ? snapObj : undefined);
       if (snapProf && snapProf.publications && snapProf.publications.length > 0) {
-        finalResult = {
-          profile: snapProf,
-          source: 'verified-snapshot',
-        };
+        if (!queryName || isSameResearcherName(snapProf.name, queryName)) {
+          finalResult = {
+            profile: snapProf,
+            source: 'verified-snapshot',
+          };
+        }
       }
     }
     if (!finalResult) {

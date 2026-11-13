@@ -1661,7 +1661,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
               </div>
             )}
 
-            {/* Export World Map PNG Button inside the globe box (top-right corner) */}
+            {/* Export World Map PNG Button inside the globe box (bottom-left corner) */}
             <button
               type="button"
               onClick={(e) => {
@@ -1674,7 +1674,7 @@ export const GlobeCollaborationMap: React.FC<GlobeCollaborationMapProps> = ({
                 );
               }}
               aria-label="Export Flattened World Collaboration Map as PNG"
-              className="absolute top-3 right-3 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-900/85 hover:bg-slate-800/95 hover:text-white border border-slate-700/80 rounded-lg backdrop-blur-xs transition-colors whitespace-nowrap shadow-md cursor-pointer"
+              className="absolute bottom-3 left-3 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-900/85 hover:bg-slate-800/95 hover:text-white border border-slate-700/80 rounded-lg backdrop-blur-xs transition-colors whitespace-nowrap shadow-md cursor-pointer"
             >
               <ImageDown className="w-3.5 h-3.5" />
               <span>Export World Map PNG</span>

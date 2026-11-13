@@ -2294,42 +2294,51 @@ export default function App() {
           <button
             type="button"
             onClick={() => {
-              const targetScholar =
-                authUser?.scholarUserId ||
-                authUser?.scholarUrl ||
-                activeProfile?.scholarUserId;
-              const targetName = authUser?.name || activeProfile?.name;
+              if (authUser) {
+                const targetScholar =
+                  authUser.scholarUserId ||
+                  authUser.scholarUrl ||
+                  '';
+                const targetName = authUser.name;
+                const parsed = targetScholar
+                  ? parseGoogleScholarInput(targetScholar)
+                  : null;
+                const queryId =
+                  parsed?.valid && parsed.userId ? parsed.userId : targetScholar;
 
-              const parsed = targetScholar
-                ? parseGoogleScholarInput(targetScholar)
-                : null;
-              const queryId =
-                parsed?.valid && parsed.userId ? parsed.userId : targetScholar;
-
-              if (!queryId) {
-                if (authUser) {
-                  setIsProfileModalOpen(true);
-                } else {
-                  setPendingExport(null);
-                  setIsAuthModalOpen(true);
+                if (activePage !== 'overview') {
+                  if (activeProfile) {
+                    pushNavHistory();
+                  }
+                  navigateToPage('overview');
                 }
+                void fetchProfileFromServer(queryId, targetName, true);
                 return;
               }
 
-              if (activePage !== 'overview') {
-                if (activeProfile) {
+              if (activeProfile) {
+                if (activePage !== 'overview') {
                   pushNavHistory();
+                  navigateToPage('overview');
                 }
-                navigateToPage('overview');
+                void fetchProfileFromServer(
+                  activeProfile.scholarUserId,
+                  activeProfile.name,
+                  true
+                );
+              } else {
+                setPendingExport(null);
+                setIsAuthModalOpen(true);
               }
-              void fetchProfileFromServer(queryId, targetName, true);
             }}
             data-testid="bottom-nav-profile"
             aria-current={
               activePage === 'overview' &&
               Boolean(
-                (authUser?.scholarUserId &&
-                  activeProfile?.scholarUserId === authUser.scholarUserId) ||
+                (authUser &&
+                  (activeProfile?.name === authUser.name ||
+                    (authUser.scholarUserId &&
+                      activeProfile?.scholarUserId === authUser.scholarUserId))) ||
                   (!authUser && activeProfile)
               )
                 ? 'page'
@@ -2338,8 +2347,10 @@ export default function App() {
             className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
               activePage === 'overview' &&
               Boolean(
-                (authUser?.scholarUserId &&
-                  activeProfile?.scholarUserId === authUser.scholarUserId) ||
+                (authUser &&
+                  (activeProfile?.name === authUser.name ||
+                    (authUser.scholarUserId &&
+                      activeProfile?.scholarUserId === authUser.scholarUserId))) ||
                   (!authUser && activeProfile)
               )
                 ? 'bg-blue-600 text-white font-semibold shadow-2xs'
@@ -2357,9 +2368,9 @@ export default function App() {
         isOpen={isAuthModalOpen}
         externalError={authExternalError}
         defaultScholarUrl={
-          activeProfile?.scholarUrl ||
-          (activeProfile?.scholarUserId
-            ? `https://scholar.google.com/citations?user=${activeProfile.scholarUserId}`
+          authUser?.scholarUrl ||
+          (authUser?.scholarUserId
+            ? `https://scholar.google.com/citations?user=${authUser.scholarUserId}`
             : '')
         }
         pendingActionLabel={
